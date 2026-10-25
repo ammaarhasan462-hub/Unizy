@@ -49,6 +49,41 @@
     return s;
   }
   function go() { location.href = next; }
+  // ---------- cross-device pairing ----------
+  function b64url(bytes) { var s = ''; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function getPair(fresh) {
+    var p = null;
+    try { var raw = JSON.parse(sessionStorage.getItem('unizy.pair') || 'null'); if (!fresh && raw && raw.v && Date.now() - raw.t < 18 * 60000) p = raw.v; } catch (e) {}
+    if (!p) { var a = new Uint8Array(32); crypto.getRandomValues(a); p = b64url(a); try { sessionStorage.setItem('unizy.pair', JSON.stringify({ v: p, t: Date.now() })); } catch (e) {} }
+    return p;
+  }
+  function confirmUrl(pair) { return location.origin + '/confirmed?pair=' + pair + (next !== '/app.html' ? '&next=' + encodeURIComponent(next) : ''); }
+  function fn(name, body, token) {
+    return fetch(CFG.supabaseUrl + '/functions/v1/' + name, { method: 'POST', headers: headers(token || CFG.anonKey), body: JSON.stringify(body) }).then(function (r) { return r.json().catch(function () { return {}; }); });
+  }
+  var waiter = null;
+  function stopWaiting() { if (waiter) { clearTimeout(waiter.t); document.removeEventListener('visibilitychange', waiter.vis); window.removeEventListener('focus', waiter.vis); window.removeEventListener('storage', waiter.st); waiter = null; } }
+  function waitForLink(pair, statusEl) {
+    stopWaiting();
+    var started = Date.now(), busyNow = false;
+    var done = function (b) {
+      stopWaiting(); saveSession(b); try { sessionStorage.removeItem('unizy.pair'); } catch (e) {}
+      render([el('div', { class: 'inbox-icon ok', 'aria-hidden': 'true', text: '✓' }), h1('You’re logged in', 'Your link was opened, so this page has logged you in too. Taking you to your dashboard…')]);
+      setTimeout(go, 1100);
+    };
+    var tick = function () {
+      if (!waiter || busyNow) return;
+      if (Date.now() - started > 20 * 60000) { stopWaiting(); if (statusEl) statusEl.textContent = 'Stopped checking after 20 minutes. Once you’ve opened the link, log in here.'; return; }
+      busyNow = true;
+      fn('handoff', { action: 'claim', pair: pair }).then(function (r) {
+        if (r && r.token_hash) return api('verify', { type: r.type || 'magiclink', token_hash: r.token_hash }).then(done, function () { return api('verify', { type: 'email', token_hash: r.token_hash }).then(done); });
+      }).catch(function () {}).then(function () { busyNow = false; schedule(); });
+    };
+    var schedule = function () { if (!waiter) return; clearTimeout(waiter.t); waiter.t = setTimeout(tick, document.hidden ? 8000 : 3000); };
+    waiter = { t: 0, vis: function () { if (!document.hidden) { clearTimeout(waiter.t); tick(); } }, st: function (e) { if (e.key === SKEY && e.newValue) { var s2 = getSession(); if (s2 && s2.access_token) { stopWaiting(); go(); } } } };
+    document.addEventListener('visibilitychange', waiter.vis); window.addEventListener('focus', waiter.vis); window.addEventListener('storage', waiter.st);
+    schedule();
+  }
   function link(path) { return path + (params.get('next') ? '?next=' + encodeURIComponent(next) : ''); }
 
   function el(tag, attrs, kids) {
@@ -93,24 +128,28 @@
     var resend = el('button', { type: 'button', class: 'btn ghost', text: 'Send it again' });
     resend.addEventListener('click', function () {
       busy(resend, true, 'Sending…');
-      var p = kind === 'signup' ? api('resend', { type: 'signup', email: email }) : kind === 'reset' ? api('recover?redirect_to=' + encodeURIComponent(location.origin + '/reset.html'), { email: email }) : api('otp?redirect_to=' + encodeURIComponent(location.origin + next), { email: email, create_user: true });
+      var pr = getPair(false);
+      var p = kind === 'signup' ? api('resend?redirect_to=' + encodeURIComponent(confirmUrl(pr)), { type: 'signup', email: email }) : kind === 'reset' ? api('recover?redirect_to=' + encodeURIComponent(location.origin + '/reset.html'), { email: email }) : api('otp?redirect_to=' + encodeURIComponent(confirmUrl(pr)), { email: email, create_user: true });
       p.then(function () { busy(resend, false, 'Send it again'); showMsg(box, 'Sent again. It can take a minute to arrive.', 'ok'); })
         .catch(function (e) { busy(resend, false, 'Send it again'); showMsg(box, friendly(e)); });
     });
     var lines = {
-      signup: ['Confirm your email', 'We’ve sent a link to ', '. Open it on this device to confirm your account and go straight to your dashboard.'],
+      signup: ['Confirm your email', 'We’ve sent a link to ', '. Open it on any device (your phone is fine) and this page will log you in automatically.'],
       reset: ['Check your inbox', 'If there’s an account for ', ', we’ve sent a link to choose a new password. It works once and expires in an hour.'],
-      link: ['Check your inbox', 'We’ve sent a sign-in link to ', '. Open it on this device to log in. No password needed.']
+      link: ['Check your inbox', 'We’ve sent a sign-in link to ', '. Open it on any device (your phone is fine) and this page will log you in automatically.']
     }[kind];
+    var waiting = kind === 'reset' ? null : el('p', { class: 'waiting', role: 'status' }, [el('span', { class: 'dot', 'aria-hidden': 'true' }), 'Waiting for you to open the link…']);
     render([
       el('div', { class: 'inbox-icon', 'aria-hidden': 'true' }, [svgMail()]),
       h1(lines[0]),
       el('p', { class: 'sub' }, [lines[1], el('strong', { text: email }), lines[2]]),
+      waiting,
       el('p', { class: 'hint', text: 'Can’t see it? Check your spam or promotions folder. The email comes from noreply@unizy.uk.' + (kind === 'signup' ? ' If you already have an Unizy account, log in instead.' : '') }),
       box,
       el('div', { class: 'actions' }, [resend, el('a', { class: 'btn ghost', href: kind === 'signup' ? link('/signup') : link('/login'), text: 'Use a different email' })]),
       kind === 'signup' ? el('p', { class: 'switch' }, ['Already confirmed? ', el('a', { href: link('/login'), text: 'Log in' })]) : el('p', { class: 'switch' }, [el('a', { href: link('/login'), text: 'Back to log in' })])
     ]);
+    if (waiting) waitForLink(getPair(false), waiting);
   }
   function svgMail() {
     var ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns, 'svg');
@@ -152,7 +191,7 @@
           var f = friendly(err);
           if (f === 'confirm') {
             var again = el('button', { type: 'button', class: 'linkish', text: 'Send the confirmation email again' });
-            again.addEventListener('click', function () { api('resend', { type: 'signup', email: em }).then(function () { inbox(em, 'signup'); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
+            again.addEventListener('click', function () { api('resend?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { type: 'signup', email: em }).then(function () { inbox(em, 'signup'); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
             showMsg(box, el('span', {}, ['You need to confirm your email first. Open the link we sent to ', el('strong', { text: em }), '. ', again]));
           } else showMsg(box, f);
         });
@@ -161,7 +200,7 @@
       var em = email.input.value.trim();
       if (!EMAIL_RE.test(em)) { showMsg(box, 'Type your email above, then choose “Email me a link instead”.'); email.input.focus(); return; }
       busy(magic, true, 'Sending…');
-      api('otp?redirect_to=' + encodeURIComponent(location.origin + next), { email: em, create_user: true }).then(function () { inbox(em, 'link'); })
+      api('otp?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, create_user: true }).then(function () { inbox(em, 'link'); })
         .catch(function (err) { busy(magic, false, 'Email me a link instead'); showMsg(box, friendly(err)); });
     });
     render([h1('Welcome back', 'Log in to pick up where you left off.'), form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
@@ -215,7 +254,7 @@
       if (p.length < 8) { showMsg(box, 'Your password needs at least 8 characters.'); pw.input.focus(); return; }
       if (p.toLowerCase() === em.toLowerCase() || /^(password|12345678|qwerty)/i.test(p)) { showMsg(box, 'Choose a password that’s harder to guess.'); pw.input.focus(); return; }
       busy(submit, true, 'Creating your account…'); showMsg(box, '');
-      api('signup?redirect_to=' + encodeURIComponent(location.origin + next), { email: em, password: p, data: nm ? { full_name: nm } : {} })
+      api('signup?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, password: p, data: nm ? { full_name: nm } : {} })
         .then(function (b) {
           if (b && b.access_token) { saveSession(b); go(); return; }
           inbox(em, 'signup');
@@ -253,7 +292,33 @@
     render([h1('Choose a new password', 'Pick something you haven’t used elsewhere.'), form]);
   }
 
+  // ---------- the page the email link opens ----------
+  function confirmedView() {
+    var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var pair = params.get('pair') || '';
+    if (location.hash) history.replaceState(null, '', location.pathname + (next !== '/app.html' ? '?next=' + encodeURIComponent(next) : ''));
+    if (h.get('error_description') || !h.get('access_token')) {
+      var s0 = getSession();
+      render([h1('That link has already been used', 'Links work once and expire after an hour. If you’ve already logged in somewhere, you’re all set.'),
+        el('div', { class: 'actions' }, [s0 && s0.access_token ? el('a', { class: 'btn primary', href: next, text: 'Go to my dashboard' }) : el('a', { class: 'btn primary', href: '/login', text: 'Log in' }), el('a', { class: 'btn ghost', href: '/login', text: 'Get a new link' })])]);
+      return;
+    }
+    var tok = { access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), expires_in: +h.get('expires_in') || 3600 };
+    var status = el('p', { class: 'waiting', role: 'status' }, [el('span', { class: 'dot', 'aria-hidden': 'true' }), 'Logging in your other tab or device…']);
+    render([el('div', { class: 'inbox-icon ok', 'aria-hidden': 'true', text: '✓' }), h1('You’re in!', 'Your email is confirmed and you’re logged in.'), pair ? status : null,
+      el('div', { class: 'actions' }, [el('a', { class: 'btn primary', href: next, text: 'Go to my dashboard here' })])]);
+    fetch(CFG.supabaseUrl + '/auth/v1/user', { headers: headers(tok.access_token) }).then(function (r) { return r.ok ? r.json() : null; }).then(function (u) {
+      saveSession(Object.assign({}, tok, { user: u || null }));
+      if (!pair) return;
+      return fn('handoff', { action: 'complete', pair: pair }, tok.access_token).then(function (r) {
+        status.textContent = r && r.ok ? 'Done. The page where you signed up has logged in too, so you can close this one or carry on here.' : 'You’re logged in here. If your other page doesn’t log in by itself, just log in there.';
+        status.className = 'waiting done';
+      });
+    }).catch(function () { status.textContent = 'You’re logged in here. If your other page doesn’t log in by itself, just log in there.'; status.className = 'waiting done'; });
+  }
+
   // ---------- start ----------
+  if (MODE === 'confirmed') { confirmedView(); return; }
   var hash = new URLSearchParams(location.hash.replace(/^#/, ''));
   if (hash.get('access_token') || hash.get('error_description')) history.replaceState(null, '', location.pathname + location.search);
   if (MODE === 'reset') {
