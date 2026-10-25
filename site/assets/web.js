@@ -1,0 +1,358 @@
+/* Unizy on the web: accounts (Supabase magic-link email), syncing saved work, and the AI (via the Unizy AI function). */
+(function () {
+  'use strict';
+  var CFG = window.UNIZY_CONFIG;
+  var SKEY = 'unizy.session';
+  var listeners = [];
+
+  // ---------------- auth ----------------
+  var Auth = {
+    session: null,
+    load: function () {
+      try { Auth.session = JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { Auth.session = null; }
+    },
+    store: function (s) {
+      Auth.session = s;
+      try { if (s) localStorage.setItem(SKEY, JSON.stringify(s)); else localStorage.removeItem(SKEY); } catch (e) {}
+      listeners.forEach(function (f) { try { f(s); } catch (e) {} });
+    },
+    headers: function (withUser) {
+      var h = { apikey: CFG.anonKey, 'Content-Type': 'application/json' };
+      if (withUser && Auth.session) h.Authorization = 'Bearer ' + Auth.session.access_token;
+      return h;
+    },
+    fromHash: function () {
+      var h = location.hash.replace(/^#/, '');
+      if (!/access_token=/.test(h) && !/error_description=/.test(h)) return null;
+      var p = new URLSearchParams(h);
+      history.replaceState(null, '', location.pathname + location.search);
+      if (p.get('error_description')) return { error: p.get('error_description') };
+      return { access_token: p.get('access_token'), refresh_token: p.get('refresh_token'), expires_at: Math.floor(Date.now() / 1000) + (+p.get('expires_in') || 3600) };
+    },
+    sendLink: function (email) {
+      var redirect = location.origin + location.pathname;
+      return fetch(CFG.supabaseUrl + '/auth/v1/otp?redirect_to=' + encodeURIComponent(redirect), {
+        method: 'POST', headers: Auth.headers(false), body: JSON.stringify({ email: email, create_user: true })
+      }).then(function (r) {
+        if (r.ok) return true;
+        return r.json().catch(function () { return {}; }).then(function (b) {
+          var m = (b && (b.msg || b.error_description || b.message)) || '';
+          if (r.status === 429 || /rate/i.test(m)) throw new Error('Too many sign-in emails just now. Wait a few minutes and try again.');
+          throw new Error(m || 'Couldn’t send the sign-in email. Check the address and try again.');
+        });
+      });
+    },
+    refresh: function () {
+      var s = Auth.session;
+      if (!s || !s.refresh_token) return Promise.resolve(null);
+      return fetch(CFG.supabaseUrl + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST', headers: Auth.headers(false), body: JSON.stringify({ refresh_token: s.refresh_token })
+      }).then(function (r) { return r.ok ? r.json() : null; }).then(function (b) {
+        if (!b || !b.access_token) { Auth.store(null); return null; }
+        var ns = { access_token: b.access_token, refresh_token: b.refresh_token, expires_at: b.expires_at || Math.floor(Date.now() / 1000) + (b.expires_in || 3600), user: b.user || s.user };
+        Auth.store(ns);
+        return ns;
+      }).catch(function () { return Auth.session; });
+    },
+    fresh: function () {
+      var s = Auth.session;
+      if (!s) return Promise.resolve(null);
+      if ((s.expires_at || 0) - 60 > Date.now() / 1000) return Promise.resolve(s);
+      return Auth.refresh();
+    },
+    fetchUser: function () {
+      return Auth.fresh().then(function (s) {
+        if (!s) return null;
+        return fetch(CFG.supabaseUrl + '/auth/v1/user', { headers: Auth.headers(true) }).then(function (r) { return r.ok ? r.json() : null; }).then(function (u) {
+          if (!u) return null;
+          Auth.store(Object.assign({}, Auth.session, { user: { id: u.id, email: u.email } }));
+          return u;
+        });
+      });
+    },
+    signOut: function () {
+      var s = Auth.session;
+      if (s) fetch(CFG.supabaseUrl + '/auth/v1/logout', { method: 'POST', headers: Auth.headers(true) }).catch(function () {});
+      Auth.store(null);
+    }
+  };
+
+  // ---------------- sync of saved work ----------------
+  var Sync = {
+    queue: {}, timer: null, status: 'idle',
+    rest: function (path, opts) {
+      return Auth.fresh().then(function (s) {
+        if (!s) throw new Error('signed out');
+        opts = opts || {};
+        opts.headers = Object.assign(Auth.headers(true), opts.headers || {});
+        return fetch(CFG.supabaseUrl + '/rest/v1/' + path, opts);
+      });
+    },
+    push: function (key, val) {
+      if (!Auth.session || key.indexOf('unizy:') !== 0) return;
+      Sync.queue[key] = val;
+      clearTimeout(Sync.timer);
+      Sync.timer = setTimeout(Sync.flush, 1200);
+    },
+    flush: function () {
+      var keys = Object.keys(Sync.queue);
+      if (!keys.length || !Auth.session || !Auth.session.user) return Promise.resolve();
+      var uid = Auth.session.user.id, now = new Date().toISOString();
+      var rows = keys.map(function (k) { return { user_id: uid, key: k, value: Sync.queue[k] === undefined ? null : Sync.queue[k], updated_at: now }; });
+      Sync.queue = {};
+      Sync.status = 'saving'; refreshUi();
+      return Sync.rest('user_store?on_conflict=user_id,key', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(rows) })
+        .then(function (r) { Sync.status = r.ok ? 'saved' : 'error'; if (!r.ok) rows.forEach(function (x) { Sync.queue[x.key] = x.value; }); refreshUi(); })
+        .catch(function () { Sync.status = 'error'; rows.forEach(function (x) { Sync.queue[x.key] = x.value; }); refreshUi(); });
+    },
+    pull: function () {
+      // Server copy wins for keys it has; anything only on this device is uploaded.
+      return Sync.rest('user_store?select=key,value', { method: 'GET' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) {
+        var server = {};
+        rows.forEach(function (x) { server[x.key] = x.value; });
+        var local = {};
+        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('unizy:') === 0) local[k] = JSON.parse(localStorage.getItem(k)); } } catch (e) {}
+        Object.keys(server).forEach(function (k) { try { localStorage.setItem(k, JSON.stringify(server[k])); } catch (e) {} });
+        Object.keys(local).forEach(function (k) { if (!(k in server)) Sync.queue[k] = local[k]; });
+        Sync.flush();
+        return Object.assign({}, local, server);
+      }).catch(function () { return null; });
+    }
+  };
+
+  // ---------------- AI client (same call shape as Claude's in-app sampling) ----------------
+  function aiError(code, message) { return { code: code, message: message, userMessage: message }; }
+  function blobToJpegBase64(blob) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(blob), img = new Image();
+      img.onload = function () {
+        var max = 1568, w = img.naturalWidth, h = img.naturalHeight, k = Math.min(1, max / Math.max(w, h));
+        var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL('image/jpeg', 0.86).split(',')[1]);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(aiError('image_rejected', 'One of the photos couldn’t be read. Try a JPEG or PNG.')); };
+      img.src = url;
+    });
+  }
+  function guessKind(input) {
+    var t = typeof input === 'string' ? input : (input[0] && input[0].content) || '';
+    if (/Mark it as a|COURSE KNOWLEDGE ===[\s\S]*Student’s typed work/.test(t)) return 'assess';
+    if (/^You are .*examiner/.test(t)) return 'mark';
+    if (/revision flashcards/.test(t)) return 'cards';
+    if (/practice questions/.test(t)) return 'questions';
+    if (/Turn the student’s notes/.test(t)) return 'notes';
+    if (Array.isArray(input)) return 'tutor';
+    return 'other';
+  }
+  function parseJson(text) {
+    var s = String(text || '').trim();
+    try { return JSON.parse(s); } catch (e) {}
+    var m = /```(?:json)?\s*([\s\S]*?)```/.exec(s);
+    if (m) { try { return JSON.parse(m[1]); } catch (e) {} }
+    var a = s.search(/[\[{]/), b = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+    if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (e) {} }
+    throw { code: 'invalid_json', message: 'The AI reply wasn’t readable. Try again.', userMessage: 'The AI reply wasn’t readable. Try again.', text: s };
+  }
+  function call(input, opts, asJson) {
+    opts = opts || {};
+    return Auth.fresh().then(function (s) {
+      if (!s) throw aiError('not_granted', 'Sign in to use the AI tutor and marking.');
+      var imgs = opts.images ? Array.prototype.slice.call(opts.images.length !== undefined ? opts.images : [opts.images]) : [];
+      return Promise.all(imgs.map(blobToJpegBase64)).then(function (b64) {
+        var body = { input: input, json: !!asJson, kind: guessKind(input), tier: opts.modelTier || 'default', stream: typeof opts.onText === 'function', images: b64.map(function (d) { return { media_type: 'image/jpeg', data: d }; }) };
+        return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: Auth.headers(true), body: JSON.stringify(body), signal: opts.signal });
+      });
+    }).then(function (r) {
+      var left = r.headers.get('X-Unizy-Units-Left');
+      if (left !== null) { Account.left = +left; refreshUi(); }
+      if (!r.ok) {
+        return r.json().catch(function () { return {}; }).then(function (b) {
+          var code = b.code || (r.status === 401 ? 'session_expired' : r.status === 429 ? 'rate_limited' : 'upstream_error');
+          if (code === 'session_expired') Auth.refresh();
+          throw aiError(code, b.message || 'The AI had a problem. Try again.');
+        });
+      }
+      if (!opts.onText || !r.body || !r.body.getReader) {
+        return r.headers.get('Content-Type') && r.headers.get('Content-Type').indexOf('event-stream') >= 0
+          ? r.text().then(function (raw) { return sseText(raw); })
+          : r.json().then(function (b) { if (opts.onText && b.text) opts.onText({ text: b.text, delta: b.text }); return { text: b.text || '', truncated: !!b.truncated }; });
+      }
+      var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', text = '', truncated = false;
+      function pump() {
+        return reader.read().then(function (res) {
+          if (res.done) return { text: text, truncated: truncated };
+          buf += dec.decode(res.value, { stream: true });
+          var parts = buf.split('\n\n'); buf = parts.pop();
+          parts.forEach(function (ev) {
+            var line = ev.split('\n').filter(function (l) { return l.indexOf('data:') === 0; }).map(function (l) { return l.slice(5).trim(); }).join('');
+            if (!line) return;
+            try {
+              var d = JSON.parse(line);
+              if (d.type === 'content_block_delta' && d.delta && d.delta.type === 'text_delta') { text += d.delta.text; opts.onText({ text: text, delta: d.delta.text }); }
+              if (d.type === 'message_delta' && d.delta && d.delta.stop_reason === 'max_tokens') truncated = true;
+              if (d.type === 'error') throw aiError('upstream_error', 'The AI stopped part-way. Try again.');
+            } catch (e) { if (e && e.code) throw e; }
+          });
+          return pump();
+        });
+      }
+      return pump();
+    }).then(function (res) {
+      if (!res.text) throw aiError('empty_completion', 'The AI didn’t reply. Try again.');
+      return res;
+    }).catch(function (e) {
+      if (e && e.name === 'AbortError') throw { code: 'cancelled', message: 'Stopped.' };
+      if (e && e.code) throw e;
+      throw aiError('upstream_error', 'Couldn’t reach the AI. Check your connection and try again.');
+    });
+  }
+  function sseText(raw) {
+    var text = '', truncated = false;
+    raw.split('\n').forEach(function (l) {
+      if (l.indexOf('data:') !== 0) return;
+      try { var d = JSON.parse(l.slice(5)); if (d.type === 'content_block_delta' && d.delta && d.delta.text) text += d.delta.text; if (d.type === 'message_delta' && d.delta && d.delta.stop_reason === 'max_tokens') truncated = true; } catch (e) {}
+    });
+    return { text: text, truncated: truncated };
+  }
+  var sample = function (input, opts) { return call(input, opts, false); };
+  sample.json = function (input, opts) {
+    var o = Object.assign({}, opts || {}); var onText = o.onText; delete o.onText;
+    if (onText) o.onText = onText;
+    return call(input, o, true).then(function (r) { return parseJson(r.text); });
+  };
+  sample.limits = function () { return Promise.resolve({ maxPromptBytes: 100000, images: { maxCount: 5, maxInputBytes: 20000000, mediaTypes: ['image/jpeg', 'image/png', 'image/webp'] } }); };
+
+  window.claude = { use: function (name) { return Promise.resolve(name === 'sample' && Auth.session ? sample : null); } };
+
+  // ---------------- account UI ----------------
+  var Account = {
+    inst: null, left: null, open: false, msg: '', busy: false,
+    vals: function () {
+      var s = Auth.session, email = s && s.user && s.user.email;
+      return {
+        signedIn: !!s, label: s ? (email ? email.charAt(0).toUpperCase() : 'Me') : 'Sign in',
+        title: s ? 'Your account' : 'Sign in to save your work and use the AI',
+        open: function () { Account.show(); }
+      };
+    },
+    show: function () { Account.open = true; Account.msg = ''; drawModal(); },
+    hide: function () { Account.open = false; drawModal(); }
+  };
+  function refreshUi() { if (Account.open) drawModal(); if (Account.inst && Account.inst.__app) Account.inst.__app.schedule(); }
+
+  var modal;
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { if (k === 'style') e.style.cssText = attrs[k]; else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2), attrs[k]); else e.setAttribute(k, attrs[k]); });
+    (kids || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function drawModal() {
+    if (modal) { modal.remove(); modal = null; }
+    if (!Account.open) return;
+    var s = Auth.session, theme = (Account.inst && Account.inst.__theme) || { c1: '#141414', on1: '#FFFFFF' };
+    var btn = 'font:inherit;font-size:15px;font-weight:600;padding:12px 18px;min-height:44px;border-radius:999px;cursor:pointer;';
+    var card = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': s ? 'Your account' : 'Sign in', style: 'background:#fff;color:#141414;border-radius:20px;max-width:420px;width:100%;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Inter,system-ui,sans-serif' });
+    var close = el('button', { 'aria-label': 'Close', style: 'align-self:flex-end;border:none;background:none;font-size:22px;cursor:pointer;width:44px;height:44px;margin:-14px -14px -10px 0', onclick: Account.hide }, ['×']);
+    card.appendChild(close);
+    if (!s) {
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#3F3F3B' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
+      var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'you@university.ac.uk', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #CFCFC8' });
+      var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
+      var submit = function () {
+        var v = (input.value || '').trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { Account.msg = 'Enter a valid email address.'; drawModal(); return; }
+        Account.busy = true; Account.msg = ''; drawModal();
+        Auth.sendLink(v).then(function () { Account.busy = false; Account.msg = 'Check your inbox for a link from Unizy and open it on this device. It can take a minute; check spam too.'; drawModal(); })
+          .catch(function (e) { Account.busy = false; Account.msg = e.message; drawModal(); });
+      };
+      go.addEventListener('click', submit);
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
+      card.appendChild(input); card.appendChild(go);
+      if (Account.msg) card.appendChild(el('p', { role: 'status', style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [Account.msg]));
+      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5C5C57' }, ['By signing in you agree to the ', el('a', { href: 'terms.html', style: 'color:#141414' }, ['terms']), ' and ', el('a', { href: 'privacy.html', style: 'color:#141414' }, ['privacy policy']), '.']));
+      setTimeout(function () { input.focus(); }, 30);
+    } else {
+      var email = (s.user && s.user.email) || 'your account';
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, ['Signed in as ', el('strong', {}, [email])]));
+      card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [
+        Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.',
+        Account.left !== null ? ' AI allowance left today: ' + Account.left + '.' : ''
+      ]));
+      card.appendChild(el('button', { style: btn + 'border:1.5px solid #CFCFC8;background:#fff;color:#141414', onclick: function () { Sync.flush().then(function () { Auth.signOut(); Account.hide(); location.reload(); }); } }, ['Sign out']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5C5C57' }, ['To delete your account and everything saved in it, email ', el('a', { href: 'mailto:' + CFG.contactEmail, style: 'color:#141414' }, [CFG.contactEmail]), '.']));
+    }
+    modal = el('div', { style: 'position:fixed;inset:0;z-index:1000;background:rgba(10,10,10,.5);display:flex;align-items:center;justify-content:center;padding:16px', onclick: function (e) { if (e.target === modal) Account.hide(); } }, [card]);
+    document.body.appendChild(modal);
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && Account.open) Account.hide(); });
+
+  // ---------------- start-up ----------------
+  function attach(proto) {
+    var origSave = proto.save, origRender = proto.renderVals;
+    if (origSave) proto.save = function (key, val) { origSave.call(this, key, val); Sync.push(key, val); };
+    proto.renderVals = function () {
+      var v = origRender.call(this);
+      v.account = Account.vals();
+      this.__theme = v.theme;
+      // remember the chosen uni, course, year and modules between visits
+      var st = this.state || {};
+      if (st.screen === 'app' && st.uni && st.degree) {
+        var setup = { uni: st.uni, degree: st.degree, year: st.year || 1, mods: st.mods || null, active: st.active || null };
+        var js = JSON.stringify(setup);
+        if (js !== this.__lastSetup) { this.__lastSetup = js; try { localStorage.setItem('unizy:setup', js); } catch (e) {} Sync.push('unizy:setup', setup); }
+      }
+      return v;
+    };
+  }
+  function enableAi(inst) {
+    inst.sampleFn = Auth.session ? sample : null;
+    inst.setState({ ai: Auth.session ? 'ready' : 'off', aiImages: Auth.session ? { maxCount: 5, mediaTypes: ['image/jpeg', 'image/png', 'image/webp'] } : null });
+  }
+  function restoreSetup(inst, all) {
+    var setup = all && all['unizy:setup'];
+    if (!setup) { try { setup = JSON.parse(localStorage.getItem('unizy:setup') || 'null'); } catch (e) { setup = null; } }
+    var params = new URLSearchParams(location.search), want = params.get('uni');
+    if (want) {
+      history.replaceState(null, '', location.pathname + location.hash);
+      if (!(setup && setup.uni === want && setup.degree)) { inst.setState({ uni: want, screen: 'degree', degree: null, year: null, mods: null, active: null }); return; }
+    }
+    if (setup && setup.uni && setup.degree && !(inst.state && inst.state.screen === 'app')) inst.setState(Object.assign({ screen: 'app' }, setup));
+  }
+
+  window.UnizyWeb = {
+    start: function (root, templateHTML, Comp) {
+      Auth.load();
+      var fromLink = Auth.fromHash();
+      attach(Comp.prototype);
+      var inst = window.UnizyRuntime.mount(root, templateHTML, Comp, {});
+      Account.inst = inst;
+      restoreSetup(inst, null);
+      if (/signin/.test(location.hash)) { history.replaceState(null, '', location.pathname + location.search); Account.show(); }
+      var after = function () {
+        if (!Auth.session) { enableAi(inst); return; }
+        Auth.fetchUser().then(function (u) {
+          if (!u) { Auth.store(null); enableAi(inst); return; }
+          enableAi(inst);
+          Sync.pull().then(function (all) {
+            if (!all) return;
+            var store = {};
+            Object.keys(all).forEach(function (k) { store[k] = all[k]; });
+            inst.setState({ store: Object.assign({}, (inst.state || {}).store, store) });
+            restoreSetup(inst, all);
+          });
+        });
+      };
+      if (fromLink && fromLink.error) { Account.show(); Account.msg = 'That sign-in link didn’t work (' + fromLink.error + '). Ask for a new one.'; drawModal(); after(); }
+      else if (fromLink) { Auth.store(fromLink); after(); }
+      else after();
+      window.addEventListener('beforeunload', function () { Sync.flush(); });
+      return inst;
+    },
+    account: Account
+  };
+})();
