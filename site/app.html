@@ -1,4 +1,4 @@
-<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unizy · your uni, your modules, your AI tutor</title><meta name="description" content="Notes, flashcards, topic tests, essay marking and an AI tutor for your exact modules at UCL, Imperial, LSE, Oxford, Cambridge and Queen Mary."><meta property="og:title" content="Unizy · your uni, your modules, your AI tutor"><meta property="og:description" content="Notes, flashcards, topic tests, essay marking and an AI tutor for your exact modules at UCL, Imperial, LSE, Oxford, Cambridge and Queen Mary."><meta property="og:type" content="website"><meta name="theme-color" content="#141414"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap"></head><body style="margin:0"><div id="root"><p style="font-family:Inter,system-ui,sans-serif;padding:40px">Loading Unizy…</p></div><noscript><p style="font-family:Inter,system-ui,sans-serif;padding:40px">Unizy needs JavaScript switched on.</p></noscript><script type="text/x-template" id="unizy-tpl">
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unizy · your uni, your modules, your AI tutor</title><meta name="description" content="Notes, flashcards, topic tests, essay marking and an AI tutor for your exact modules at UCL, Imperial, LSE, Oxford, Cambridge and Queen Mary."><meta property="og:title" content="Unizy · your uni, your modules, your AI tutor"><meta property="og:description" content="Notes, flashcards, topic tests, essay marking and an AI tutor for your exact modules at UCL, Imperial, LSE, Oxford, Cambridge and Queen Mary."><meta property="og:type" content="website"><meta name="theme-color" content="#141414"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap"><style>.uz-tab:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(0,0,0,.16)!important}.uz-tab:active{transform:translateY(1px)}.uz-tab:focus-visible{outline:3px solid #141414;outline-offset:2px}</style></head><body style="margin:0"><div id="root"><p style="font-family:Inter,system-ui,sans-serif;padding:40px">Loading Unizy…</p></div><noscript><p style="font-family:Inter,system-ui,sans-serif;padding:40px">Unizy needs JavaScript switched on.</p></noscript><script type="text/x-template" id="unizy-tpl">
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
 <style>
@@ -264,8 +264,10 @@ body{margin:0}
 
 <nav style="display: flex; flex-wrap: wrap; gap: 8px">
 <sc-for list="{{tabs}}" as="t" hint-placeholder-count="7">
-<button onClick="{{t.pick}}" style="font: inherit; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; cursor: pointer">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
+<button class="uz-tab" onClick="{{t.pick}}" aria-current="{{t.current}}" style="font: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 9px; padding: 7px 18px 7px 7px; min-height: 48px; border-radius: 999px; border: 2px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; cursor: pointer; box-shadow: {{t.shadow}}; transition: transform 0.12s ease, box-shadow 0.12s ease">
+<span style="width: 32px; height: 32px; border-radius: 999px; background: {{t.chipBg}}; color: {{t.chipFg}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
+</span>
 <span>{{t.label}}</span>
 </button>
 </sc-for>
@@ -1414,7 +1416,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk"};</script><script src="/assets/runtime.js?v=1"></script><script src="/assets/web.js?v=1"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk"};</script><script src="/assets/runtime.js?v=2"></script><script src="/assets/web.js?v=2"></script><script>
 class Component extends DCLogic {
   static dataUrl() { return '/data/modules.json'; }
 
@@ -1431,7 +1433,7 @@ class Component extends DCLogic {
   static errText(e) {
     if (e && e.userMessage) return e.userMessage;
     const c = e && e.code;
-    if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') return 'Sign in to use the AI features.';
+    if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') return 'Log in to use the AI features.';
     if (c === 'rate_limited') return 'Too many AI requests just now. Try again in a minute.';
     if (c === 'session_expired') return 'Your Claude session has expired. Sign in again and retry.';
     if (c === 'invalid_json' || c === 'empty_completion') return 'The AI reply came back malformed. Try again.';
@@ -1953,7 +1955,15 @@ class Component extends DCLogic {
     const TABS = [['overview', 'Year overview'], ['notes', 'Notes'], ['quiz', 'Topic tests'], ['flash', 'Flashcards'], ['assess', 'Assess practice'], ['time', 'Timetable'], ['friends', 'Friend groups'], ['tutor', tutorName]];
     const tabs = TABS.map(([id, label]) => {
       const on = id === tab;
-      return { label, icon: ICONS[id], bg: on ? theme.c1 : '#FFFFFF', fg: on ? theme.on1 : '#2B2B28', border: on ? theme.c1 : '#E2E2DC', pick: () => set({ tab: id }) };
+      const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
+      const strong = lightTheme ? theme.onBtn : theme.btn, onStrong = lightTheme ? '#FFFFFF' : theme.onBtn;
+      return {
+        label, icon: ICONS[id], current: on ? 'page' : 'false',
+        bg: on ? strong : theme.tint, fg: on ? onStrong : '#141414', border: strong,
+        chipBg: on ? onStrong : strong, chipFg: on ? strong : onStrong,
+        shadow: on ? '0 6px 16px rgba(0,0,0,0.22)' : '0 2px 0 rgba(0,0,0,0.10)',
+        pick: () => set({ tab: id })
+      };
     });
     const resetModState = { fi: 0, flipped: false, fdeck: 'all', note: 0, tTopic: 'all', test: null, fLimit: 60 };
     const sideMods = selMods.map((m) => {
@@ -2237,7 +2247,7 @@ class Component extends DCLogic {
     else if (pool.length >= tLen) availText = pool.length + ' questions match these settings. Your test takes ' + tLen + ' of them, easiest first.';
     else if (aiReady) availText = pool.length + ' ready-made questions match. Claude writes the other ' + (tLen - pool.length) + ' as you go, with mark schemes.';
     else if (pool.length) availText = pool.length + ' questions match these settings, so the test will have ' + pool.length + '. Widen the difficulty (try “Mixed”) or topic for more' + (linkIds.length ? '' : '') + '.';
-    else availText = 'No ready-made questions match. Try “Mixed” difficulty or another topic' + (aiState === 'pending' ? ' (sign in for AI)' : '') + '.';
+    else availText = 'No ready-made questions match. Try “Mixed” difficulty or another topic' + (aiState === 'pending' ? ' (log in for AI)' : '') + '.';
     const canStart = !(bankLoading && linkIds.length) && typeList.length > 0 && (pool.length > 0 || aiReady);
     const topicOptsT = [{ id: 'all', label: 'All topics' }];
     linkIds.forEach((id) => { topicOptsT.push({ id: 'b:' + id, label: bTitle(id) }); });
@@ -2520,7 +2530,7 @@ class Component extends DCLogic {
       ? { who: 'You', text, align: 'flex-end', bg: '#141414', fg: '#FFFFFF', radius: '18px 18px 4px 18px' }
       : { who: tutorName, text, align: 'flex-start', bg: theme.tint, fg: '#141414', radius: '4px 18px 18px 18px' };
     const tchat = [bubble('assistant', intro)].concat(turns.map((t) => bubble(t.role, t.content)));
-    const ask = (text) => { if (!aiReady) { set({ tErr: aiState === 'pending' ? 'Sign in (top right) to use the AI tutor.' : 'Sign in (top right) to chat with ' + tutorName + '.' }); return; } self.tutorAsk(Object.assign({}, genCtxBase, { text })); };
+    const ask = (text) => { if (!aiReady) { set({ tErr: aiState === 'pending' ? 'Log in (top right) to use the AI tutor.' : 'Log in (top right) to chat with ' + tutorName + '.' }); return; } self.tutorAsk(Object.assign({}, genCtxBase, { text })); };
     const tutorSub = degData ? 'Grounded in ' + (uni ? uni.short : '') + '’s official outlines for ' + (degree ? degree.name : '') : 'Your AI tutor for ' + (degree ? degree.name : '') + ' at ' + (uni ? uni.short : '');
     const tutorKnows = 'Each answer is grounded in this module’s course knowledge. ' + tutorName + ' searches it for the parts that match your question and teaches from them:';
     const knowMods = selMods.slice(0, 12).map((m) => ({ label: (m.code ? m.code + ' · ' : '') + m.name, bg: m.key === activeMod.key ? theme.tint : '#F6F6F2' }));
@@ -2599,7 +2609,7 @@ class Component extends DCLogic {
       wordLabel: asWords + (asWords === 1 ? ' word' : ' words') + (asLimit ? ' of ' + asLimit : ''),
       wordColor: asLimit && asWords > +asLimit * 1.1 ? '#9A1B12' : '#4E4E49',
       canPhotos: aiReady && !!imgCaps, noPhotos: !(aiReady && imgCaps),
-      noPhotoText: aiReady ? 'Photo marking isn’t available in this view. Type or paste your work instead.' : 'Sign in to have photos of handwritten work marked. You can still use the self-assessment checklist.',
+      noPhotoText: aiReady ? 'Photo marking isn’t available in this view. Type or paste your work instead.' : 'Log in to have photos of handwritten work marked. You can still use the self-assessment checklist.',
       photoHint: 'Photos of handwritten or printed work, in page order' + (imgCaps && imgCaps.maxCount ? ' (up to ' + imgCaps.maxCount + ')' : '') + '. Make sure the writing is sharp and well lit.',
       photoAccept: imgCaps && imgCaps.mediaTypes ? imgCaps.mediaTypes.join(',') : 'image/jpeg,image/png,image/webp',
       onPhotos: (e) => {
@@ -2630,7 +2640,7 @@ class Component extends DCLogic {
       selfCheck: () => set({ asSelf: !s.asSelf }),
       clear: () => set({ asText: '', asTitle: '', asLimit: '', asMarks: '', asFiles: [], asErr: '', asTicks: {} }),
       hasStatus: asBusy || !!s.asErr || !aiReady,
-      status: asBusy ? tutorName + ' is reading and marking your work against the module. This usually takes one to two minutes' + (s.asStream ? ' (writing feedback…)' : '…') : s.asErr ? s.asErr : (aiState === 'pending' ? 'Sign in to use AI marking.' : 'Sign in (top right) to have ' + tutorName + ' mark your work. The checklist and model answers work here.'),
+      status: asBusy ? tutorName + ' is reading and marking your work against the module. This usually takes one to two minutes' + (s.asStream ? ' (writing feedback…)' : '…') : s.asErr ? s.asErr : (aiState === 'pending' ? 'Log in to use AI marking.' : 'Log in (top right) to have ' + tutorName + ' mark your work. The checklist and model answers work here.'),
       statusColor: s.asErr ? '#9A1B12' : '#3F3F3B',
       showSelf: !!s.asSelf, subjectWord,
       checks: checksSrc.map((c, i) => { const on = !!asTicks[i]; return { crit: c[0], text: c[1], border: on ? theme.c1 : '#E4E4DE', boxBorder: on ? theme.btn : '#BDBDB6', boxBg: on ? theme.btn : '#FFFFFF', toggle: () => { const t = Object.assign({}, asTicks); if (t[i]) delete t[i]; else t[i] = 1; set({ asTicks: t }); } }; }),
@@ -2737,7 +2747,7 @@ class Component extends DCLogic {
       tutorSend: () => ask(get('tInput', '')),
       tutorChips: chips.map((c) => ({ label: c, pick: () => ask(c) })),
       tutorPlaceholder: 'Ask ' + tutorName + ' anything about ' + activeMod.name,
-      aiPill: aiReady ? 'Live' : aiState === 'pending' ? 'Connecting…' : 'Sign in for AI', aiPillBg: aiReady ? '#E3F3E8' : '#F0F0EB',
+      aiPill: aiReady ? 'Live' : aiState === 'pending' ? 'Connecting…' : 'Log in for AI', aiPillBg: aiReady ? '#E3F3E8' : '#F0F0EB',
 
       toastOn, showToast: () => set({ toast: true }), hideToast: () => set({ toast: false }),
       toastTitle: pickL(0) + ' lecture', toastSub: 'Monday 10:00 · starts in 10 minutes'

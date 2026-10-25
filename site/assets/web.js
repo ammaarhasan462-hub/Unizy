@@ -65,7 +65,7 @@
         if (!s) return null;
         return fetch(CFG.supabaseUrl + '/auth/v1/user', { headers: Auth.headers(true) }).then(function (r) { return r.ok ? r.json() : null; }).then(function (u) {
           if (!u) return null;
-          Auth.store(Object.assign({}, Auth.session, { user: { id: u.id, email: u.email } }));
+          Auth.store(Object.assign({}, Auth.session, { user: { id: u.id, email: u.email, name: (u.user_metadata || {}).full_name || '' } }));
           return u;
         });
       });
@@ -232,12 +232,12 @@
     vals: function () {
       var s = Auth.session, email = s && s.user && s.user.email;
       return {
-        signedIn: !!s, label: s ? (email ? email.charAt(0).toUpperCase() : 'Me') : 'Sign in',
+        signedIn: !!s, label: s ? ((s.user && s.user.name) ? s.user.name.charAt(0).toUpperCase() : email ? email.charAt(0).toUpperCase() : 'Me') : 'Log in',
         title: s ? 'Your account' : 'Sign in to save your work and use the AI',
         open: function () { Account.show(); }
       };
     },
-    show: function () { Account.open = true; Account.msg = ''; drawModal(); },
+    show: function () { if (!Auth.session) { Sync.flush(); location.href = '/login?next=' + encodeURIComponent('/app.html'); return; } Account.open = true; Account.msg = ''; drawModal(); },
     hide: function () { Account.open = false; drawModal(); }
   };
   function refreshUi() { if (Account.open) drawModal(); if (Account.inst && Account.inst.__app) Account.inst.__app.schedule(); }
@@ -278,7 +278,8 @@
     } else {
       var email = (s.user && s.user.email) || 'your account';
       card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, ['Signed in as ', el('strong', {}, [email])]));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
+      card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#141414' }, ['Set or change your password']));
       card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [
         Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.',
         Account.left !== null ? ' AI allowance left today: ' + Account.left + '.' : ''
@@ -332,7 +333,7 @@
       var inst = window.UnizyRuntime.mount(root, templateHTML, Comp, {});
       Account.inst = inst;
       restoreSetup(inst, null);
-      if (/signin/.test(location.hash)) { history.replaceState(null, '', location.pathname + location.search); Account.show(); }
+      if (/signin/.test(location.hash)) { location.replace('/login?next=' + encodeURIComponent('/app.html')); return inst; }
       var after = function () {
         if (!Auth.session) { enableAi(inst); return; }
         Auth.fetchUser().then(function (u) {
@@ -347,7 +348,7 @@
           });
         });
       };
-      if (fromLink && fromLink.error) { Account.show(); Account.msg = 'That sign-in link didn’t work (' + fromLink.error + '). Ask for a new one.'; drawModal(); after(); }
+      if (fromLink && fromLink.error) { location.replace('/login?next=' + encodeURIComponent('/app.html') + '#error_description=' + encodeURIComponent(fromLink.error)); return inst; }
       else if (fromLink) { Auth.store(fromLink); after(); }
       else after();
       window.addEventListener('beforeunload', function () { Sync.flush(); });
