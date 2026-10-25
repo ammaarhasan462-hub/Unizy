@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       if (error) return fail("could not save subscription");
       return ok("monthly on");
     }
-    if (o.mode === "payment" && o.payment_status === "paid") {
+    if (o.mode === "payment" && (o.payment_status === "paid" || o.payment_status === "no_payment_required")) {
       // with Adaptive Pricing the buyer may pay in their own currency; the original GBP amount is in currency_conversion
       const gbpTotal = String(o.currency).toLowerCase() === "gbp" ? o.amount_total
         : String(o.currency_conversion?.source_currency || "").toLowerCase() === "gbp" ? o.currency_conversion?.amount_total : null;
