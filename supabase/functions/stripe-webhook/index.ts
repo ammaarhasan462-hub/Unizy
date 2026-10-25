@@ -9,6 +9,13 @@ const ok = (msg = "ok") => new Response(JSON.stringify({ received: true, note: m
 const bad = (status: number, msg: string) => new Response(JSON.stringify({ error: msg }), { status, headers: { "Content-Type": "application/json" } });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PASSES: Record<number, { plan: "year" | "exam"; days: number }> = { 3900: { plan: "year", days: 365 }, 1200: { plan: "exam", days: 42 } };
+// Unizy's payment links in the shared Stripe account (anything else in the account is ignored)
+const LINKS: Record<string, "monthly" | "year" | "exam"> = {
+  plink_1UUYFEJ9aAvWLq3XbojDY7bX: "monthly",
+  plink_1UUYGrJ9aAvWLq3X1aKjYYJW: "year",
+  plink_1UUYHvJ9aAvWLq3XSzRuvsdO: "exam",
+};
+const PASS_BY_PLAN = { year: PASSES[3900], exam: PASSES[1200] };
 
 async function verify(raw: string, header: string, secret: string) {
   const items = header.split(",").map((kv) => kv.trim());
@@ -44,6 +51,8 @@ Deno.serve(async (req) => {
 
   if (ev.type === "checkout.session.completed" || ev.type === "checkout.session.async_payment_succeeded") {
     const uid = typeof o.client_reference_id === "string" && UUID.test(o.client_reference_id) ? o.client_reference_id : null;
+    const linkPlan = o.payment_link ? LINKS[o.payment_link] : undefined;
+    if (o.payment_link && !linkPlan) return ok("not a Unizy payment link");
     if (!uid) return ok("no unizy user on this checkout");
     if (o.customer) await db.from("billing").upsert({ user_id: uid, stripe_customer: o.customer, updated_at: new Date().toISOString() }, { onConflict: "user_id", ignoreDuplicates: false });
     if (o.mode === "subscription" && o.subscription) {
@@ -54,8 +63,11 @@ Deno.serve(async (req) => {
       if (error) return fail("could not save subscription");
       return ok("monthly on");
     }
-    if (o.mode === "payment" && o.payment_status === "paid" && String(o.currency).toLowerCase() === "gbp") {
-      const pass = PASSES[o.amount_total];
+    if (o.mode === "payment" && o.payment_status === "paid") {
+      // with Adaptive Pricing the buyer may pay in their own currency; the original GBP amount is in currency_conversion
+      const gbpTotal = String(o.currency).toLowerCase() === "gbp" ? o.amount_total
+        : String(o.currency_conversion?.source_currency || "").toLowerCase() === "gbp" ? o.currency_conversion?.amount_total : null;
+      const pass = linkPlan === "year" || linkPlan === "exam" ? PASS_BY_PLAN[linkPlan] : PASSES[gbpTotal as number];
       if (!pass) return ok("unknown amount " + o.amount_total);
       const { data: b } = await db.from("billing").select("pass_until").eq("user_id", uid).maybeSingle();
       const start = Math.max(Date.now(), b?.pass_until ? new Date(b.pass_until).getTime() : 0);
@@ -72,6 +84,8 @@ Deno.serve(async (req) => {
     const { data: existing } = await db.from("stripe_subscriptions").select("user_id").eq("sub_id", o.id).maybeSingle();
     let uid = existing?.user_id || null;
     if (!uid && o.customer) { const { data: b } = await db.from("billing").select("user_id").eq("stripe_customer", o.customer).maybeSingle(); uid = b?.user_id || null; }
+    // only Unizy subscriptions: ones we already know, or from a customer who bought through Unizy
+    if (!existing && !uid) { await db.from("stripe_events").delete().eq("id", ev.id); return ok("not a Unizy subscription (yet)"); }
     const row: any = { sub_id: o.id, customer: o.customer, status: ev.type === "customer.subscription.deleted" ? "canceled" : o.status, cancel_at_period_end: !!o.cancel_at_period_end, updated_at: new Date().toISOString() };
     if (periodEnd) row.period_end = periodEnd;
     if (uid) row.user_id = uid;
@@ -88,6 +102,7 @@ Deno.serve(async (req) => {
     if (end) row.period_end = new Date(new Date(end).getTime() + 2 * 86400_000).toISOString(); // 2 days' grace for renewals
     const { data: existing } = await db.from("stripe_subscriptions").select("user_id").eq("sub_id", sub).maybeSingle();
     if (!existing?.user_id && o.customer) { const { data: b } = await db.from("billing").select("user_id").eq("stripe_customer", o.customer).maybeSingle(); if (b?.user_id) row.user_id = b.user_id; }
+    if (!existing && !row.user_id) { await db.from("stripe_events").delete().eq("id", ev.id); return ok("not a Unizy invoice (yet)"); }
     const { error } = await db.from("stripe_subscriptions").upsert(row, { onConflict: "sub_id" });
     if (error) return fail("could not update invoice");
     return ok("renewed");
