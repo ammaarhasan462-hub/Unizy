@@ -166,11 +166,12 @@
       });
     }).then(function (r) {
       var left = r.headers.get('X-Unizy-Units-Left');
-      if (left !== null) { Account.left = +left; refreshUi(); }
+      if (left !== null) { Account.left = +left; Plan.refresh(); }
       if (!r.ok) {
         return r.json().catch(function () { return {}; }).then(function (b) {
           var code = b.code || (r.status === 401 ? 'session_expired' : r.status === 429 ? 'rate_limited' : 'upstream_error');
           if (code === 'session_expired') Auth.refresh();
+          if (b.upgrade) showUpgrade(b.message);
           throw aiError(code, b.message || 'The AI had a problem. Try again.');
         });
       }
@@ -225,6 +226,38 @@
   sample.limits = function () { return Promise.resolve({ maxPromptBytes: 100000, images: { maxCount: 5, maxInputBytes: 20000000, mediaTypes: ['image/jpeg', 'image/png', 'image/webp'] } }); };
 
   window.claude = { use: function (name) { return Promise.resolve(name === 'sample' && Auth.session ? sample : null); } };
+
+  // ---------------- plan (free / trial / Pro) ----------------
+  function fmtDay(iso) { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
+  var Plan = {
+    data: null, busy: false,
+    refresh: function () {
+      if (!Auth.session) { Plan.data = null; return Promise.resolve(null); }
+      if (Plan.busy) return Plan.busy;
+      Plan.busy = Sync.rest('rpc/my_plan', { method: 'POST', body: '{}' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) { Plan.busy = false; if (d) Plan.data = d; refreshUi(); return d; })
+        .catch(function () { Plan.busy = false; return null; });
+      return Plan.busy;
+    },
+    label: function () {
+      var d = Plan.data; if (!d) return '';
+      if (d.tier === 'pro') return 'Unizy Pro' + (d.plan === 'monthly' ? (d.renews ? ', renews ' : ', ends ') + fmtDay(d.until) : ' (' + (d.plan === 'year' ? 'year pass' : 'exam pass') + '), until ' + fmtDay(d.until));
+      if (d.tier === 'trial') return 'Free Pro trial, ends ' + fmtDay(d.until);
+      return 'Free plan: ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerWeek + ' AI actions and ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerWeek + ' Assess marking left this week';
+    }
+  };
+  var toastEl = null;
+  function toast(text, linkText, href, ms) {
+    if (toastEl) toastEl.remove();
+    toastEl = el('div', { role: 'status', style: 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1100;background:#141414;color:#fff;border-radius:14px;padding:12px 14px 12px 16px;max-width:min(560px,calc(100vw - 32px));box-sizing:border-box;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 12px 40px rgba(0,0,0,.3);font:14px/1.45 Inter,system-ui,sans-serif' }, [
+      el('span', { style: 'flex:1 1 220px' }, [text]),
+      linkText ? el('a', { href: href, style: 'background:#C6F432;color:#141414;font-weight:700;text-decoration:none;padding:8px 14px;border-radius:999px;white-space:nowrap' }, [linkText]) : null,
+      el('button', { 'aria-label': 'Dismiss', style: 'border:none;background:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px', onclick: function () { if (toastEl) { toastEl.remove(); toastEl = null; } } }, ['×'])
+    ]);
+    document.body.appendChild(toastEl);
+    if (ms) { var mine = toastEl; setTimeout(function () { if (toastEl === mine) { mine.remove(); toastEl = null; } }, ms); }
+  }
+  function showUpgrade(msg) { toast(msg || 'You’ve reached your free limit.', 'See Pro plans', '/pricing'); }
 
   // ---------------- account UI ----------------
   var Account = {
@@ -281,9 +314,19 @@
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
       card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#141414' }, ['Set or change your password']));
       card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [
-        Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.',
-        Account.left !== null ? ' AI allowance left today: ' + Account.left + '.' : ''
+        Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.'
       ]));
+      var pd = Plan.data;
+      if (pd) {
+        var planBox = el('div', { style: 'display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:' + (pd.tier === 'free' ? '#F3F3EF' : '#F2FAE1') + ';border:1.5px solid ' + (pd.tier === 'free' ? '#E2E2DC' : '#C6F432') }, [
+          el('span', { style: 'font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4E4E49' }, ['Your plan']),
+          el('span', { style: 'font-size:15px;font-weight:700;line-height:1.4' }, [Plan.label()])
+        ]);
+        if (pd.tier !== 'free' && pd.unitsLeft != null) planBox.appendChild(el('span', { style: 'font-size:13px;color:#3F3F3B' }, ['AI allowance left today: ' + Math.max(0, pd.unitsLeft) + '.']));
+        if (pd.tier !== 'pro') planBox.appendChild(el('a', { href: '/pricing', style: btn + 'text-decoration:none;text-align:center;border:none;background:#141414;color:#fff;box-shadow:0 3px 0 #C6F432' }, [pd.tier === 'trial' ? 'Keep Pro after your trial' : 'Upgrade to Pro']));
+        else if (pd.plan === 'monthly' && CFG.stripe && CFG.stripe.portal) planBox.appendChild(el('a', { href: CFG.stripe.portal + (s.user && s.user.email ? '?prefilled_email=' + encodeURIComponent(s.user.email) : ''), target: '_blank', rel: 'noopener', style: 'font-size:14px;font-weight:600;color:#141414' }, ['Manage or cancel your subscription']));
+        card.appendChild(planBox);
+      } else Plan.refresh();
       card.appendChild(el('button', { style: btn + 'border:1.5px solid #CFCFC8;background:#fff;color:#141414', onclick: function () { Sync.flush().then(function () { Auth.signOut(); Account.hide(); location.reload(); }); } }, ['Sign out']));
       card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5C5C57' }, ['To delete your account and everything saved in it, email ', el('a', { href: 'mailto:' + CFG.contactEmail, style: 'color:#141414' }, [CFG.contactEmail]), '.']));
     }
@@ -299,6 +342,10 @@
     proto.renderVals = function () {
       var v = origRender.call(this);
       v.account = Account.vals();
+      if (window.UnizySocial) {
+        try { v.fg = window.UnizySocial.vals(this, v); } catch (e) { console.error('[unizy] friends', e); v.fg = { demo: true, live: false }; }
+        if (v.fg && v.fg.badge && Array.isArray(v.tabs)) v.tabs = v.tabs.map(function (t) { return t.label === 'Friend groups' ? Object.assign({}, t, { label: 'Friend groups (' + v.fg.badge + ')' }) : t; });
+      }
       this.__theme = v.theme;
       // remember the chosen uni, course, year and modules between visits
       var st = this.state || {};
@@ -339,6 +386,13 @@
         Auth.fetchUser().then(function (u) {
           if (!u) { Auth.store(null); enableAi(inst); return; }
           enableAi(inst);
+          Plan.refresh();
+          if (/[?&]upgraded=1/.test(location.search)) {
+            history.replaceState(null, '', location.pathname + location.hash);
+            toast('Payment received. Switching on Unizy Pro…');
+            var tries = 0, check = function () { Plan.refresh().then(function (d) { if (d && d.tier === 'pro') toast('You’re on Unizy Pro. Enjoy the full AI tutor and marking!', null, null, 7000); else if (++tries < 20) setTimeout(check, 3000); else toast('Your payment went through, but Pro hasn’t switched on yet. Refresh in a minute, or email ' + CFG.contactEmail + '.'); }); };
+            setTimeout(check, 1500);
+          }
           Sync.pull().then(function (all) {
             if (!all) return;
             var store = {};
@@ -354,6 +408,8 @@
       window.addEventListener('beforeunload', function () { Sync.flush(); });
       return inst;
     },
-    account: Account
+    account: Account,
+    plan: Plan,
+    _internal: { Auth: Auth, Sync: Sync, refresh: function () { refreshUi(); } }
   };
 })();

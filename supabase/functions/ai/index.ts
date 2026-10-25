@@ -6,7 +6,7 @@ const CORS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Expose-Headers": "X-Unizy-Units-Left",
+  "Access-Control-Expose-Headers": "X-Unizy-Units-Left, X-Unizy-Tier",
 };
 const MODELS: Record<string, string> = { quick: "claude-haiku-5-5", default: "claude-sonnet-5-5", complex: "claude-sonnet-5-5" };
 const MAX_TOKENS: Record<string, number> = { tutor: 2000, mark: 3000, cards: 8000, questions: 8000, notes: 6000, assess: 8000, other: 4000 };
@@ -61,16 +61,25 @@ Deno.serve(async (req) => {
     if (!im || !IMAGE_TYPES.has(im.media_type) || typeof im.data !== "string" || im.data.length > MAX_IMAGE_B64) return json(400, { code: "image_rejected", message: "One of the photos couldn’t be used. Try a smaller JPEG or PNG." });
   }
 
-  const kind = typeof body.kind === "string" && MAX_TOKENS[body.kind] ? body.kind : "other";
+  let kind = typeof body.kind === "string" && MAX_TOKENS[body.kind] ? body.kind : "other";
+  // marking work (typed or photographed) always counts as an Assess marking, whatever the client says
+  if (images.length || /Mark it as a|Student’s typed work/.test(merged[merged.length - 1].content)) kind = "assess";
   const tier = body.tier === "quick" ? "quick" : body.tier === "complex" ? "complex" : "default";
   const units = 1 + Math.floor(inputBytes / 30000) + images.length + (kind === "assess" ? 1 : 0);
 
-  const { data: left, error: takeErr } = await service.rpc("ai_take", { p_user: user.id, p_units: units });
-  if (takeErr) return json(500, { code: "upstream_error", message: "Couldn’t check your AI allowance. Try again." });
-  if (left === -1) return json(429, { code: "rate_limited", message: "You’ve used today’s AI allowance. It resets at midnight (UK time). Notes, flashcards and tests still work." });
-  if (left === -2) return json(429, { code: "rate_limited", message: "Unizy’s AI is very busy today and has reached its daily limit. Please try again tomorrow." });
-
-  const refund = () => service.rpc("ai_refund", { p_user: user.id, p_units: units });
+  const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: units, p_kind: kind });
+  if (takeErr || !take) return json(500, { code: "upstream_error", message: "Couldn’t check your AI allowance. Try again." });
+  if (!take.ok) {
+    const msg: Record<string, string> = {
+      free_weekly: "You’ve used this week’s 10 free AI actions. Upgrade to Unizy Pro for much more, or your free allowance resets on Monday. Notes, flashcards and tests still work.",
+      free_assess: "Your free plan includes 1 Assess marking a week, and you’ve used it. Upgrade to Unizy Pro to have more work marked, or try again on Monday.",
+      daily: "You’ve used today’s AI allowance. It resets at midnight (UK time). Notes, flashcards and tests still work.",
+      global: "Unizy’s AI is very busy today and has reached its daily limit. Please try again tomorrow.",
+    };
+    return json(429, { code: "rate_limited", reason: take.reason, upgrade: take.reason === "free_weekly" || take.reason === "free_assess", message: msg[take.reason] || msg.daily });
+  }
+  const left = take.left;
+  const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: units, p_kind: kind, p_tier: take.tier });
 
   const last = merged[merged.length - 1];
   const messages: any[] = merged.slice(0, -1).map((t) => ({ role: t.role, content: t.content }));
@@ -105,7 +114,7 @@ Deno.serve(async (req) => {
     return json(502, { code: "upstream_error", message: "The AI had a problem. Try again." });
   }
 
-  const headers = { ...CORS, "X-Unizy-Units-Left": String(left) };
+  const headers = { ...CORS, "X-Unizy-Units-Left": String(left), "X-Unizy-Tier": String(take.tier) };
   if (stream) return new Response(upstream.body, { headers: { ...headers, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" } });
   const data = await upstream.json();
   const text = (data.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("");

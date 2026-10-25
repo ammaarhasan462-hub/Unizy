@@ -945,6 +945,10 @@ Notes file
 </sc-if>
 
 <sc-if value="{{tFriends}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{fg.demo}}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{fg.demoBanner}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 14px 16px; margin-bottom: 14px; border-radius: 14px; background: #141414; color: #FFFFFF"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: #C6F432; color: #141414; padding: 5px 9px; border-radius: 999px">Example</span><span style="flex: 1 1 280px; font-size: 14px; line-height: 1.5">This is what Friend groups looks like. Log in to get your own friend code, add friends at your uni and start group chats where you can ask {{tutorName}} questions.</span><button onClick="{{fg.login}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1.5px solid #FFFFFF; background: none; color: #FFFFFF; cursor: pointer">Log in</button><button onClick="{{fg.signup}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: #C6F432; color: #141414; cursor: pointer">Sign up free</button></div>
+</sc-if>
 <div style="display: flex; flex-wrap: wrap; background: #FFFFFF; border-radius: 18px; overflow: hidden; border: 1px solid #E4E4DE; min-height: 600px">
 <div style="flex: 1 1 250px; background: #FAFAF7; border-right: 1px solid #ECECE6; padding: 18px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px">
 <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57; padding: 0 8px 10px">Friend groups</span>
@@ -986,6 +990,229 @@ Notes file
 </label>
 </div>
 </div>
+</sc-if>
+<sc-if value="{{fg.live}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; background: #FFFFFF; border-radius: 18px; overflow: hidden; border: 1px solid #E4E4DE; min-height: 620px">
+
+<div style="flex: 1 1 260px; max-width: 100%; background: #FAFAF7; border-right: 1px solid #ECECE6; padding: 16px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px">
+<div style="background: {{theme.btn}}; color: {{theme.onBtn}}; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px">
+<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85">Your friend code</span>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<span style="font-family: 'Bricolage Grotesque', ui-monospace, monospace; font-weight: 800; font-size: 24px; letter-spacing: 0.04em">{{fg.code}}</span>
+<button onClick="{{fg.copy}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 8px; border: 1.5px solid {{theme.onBtn}}; background: transparent; color: {{theme.onBtn}}; cursor: pointer">{{fg.copyLabel}}</button>
+</div>
+<span style="font-size: 12px; line-height: 1.45; opacity: 0.9">{{fg.codeHint}}</span>
+</div>
+
+<button onClick="{{fg.showFriends}}" style="font: inherit; text-align: left; border: none; border-radius: 10px; padding: 11px 10px; cursor: pointer; background: {{fg.friendsBg}}; color: #141414; display: flex; align-items: center; gap: 10px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M19 8v6M22 11h-6"></path></svg>
+<span style="flex: 1 1 auto; font-size: 14px; font-weight: 700">Friends <span style="font-weight: 500; color: #4E4E49">({{fg.friendCount}})</span></span>
+<sc-if value="{{fg.hasReq}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 800; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C8102E; color: #FFFFFF; display: flex; align-items: center; justify-content: center">{{fg.reqCount}}</span>
+</sc-if>
+</button>
+
+<span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4E4E49; padding: 14px 8px 4px">Group chats</span>
+<sc-for list="{{fg.groups}}" as="g" hint-placeholder-count="3">
+<button onClick="{{g.pick}}" style="font: inherit; text-align: left; border: none; border-radius: 10px; padding: 10px; cursor: pointer; background: {{g.bg}}; color: #141414; display: flex; align-items: center; gap: 10px">
+<span style="width: 36px; height: 36px; border-radius: 10px; flex: 0 0 auto; background: {{theme.tint}}; border: 1.5px solid {{theme.btn}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px">{{g.initial}}</span>
+<span style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{g.name}}</span>
+<span style="font-size: 12px; color: #4E4E49; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{g.sub}}</span>
+</span>
+<sc-if value="{{g.hasUnread}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 800; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: {{theme.btn}}; color: {{theme.onBtn}}; display: flex; align-items: center; justify-content: center">{{g.unread}}</span>
+</sc-if>
+</button>
+</sc-for>
+<sc-if value="{{fg.noGroups}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 13px; line-height: 1.5; color: #4E4E49; padding: 2px 10px 6px">No group chats yet.</span>
+</sc-if>
+<button onClick="{{fg.newGroup}}" style="font: inherit; font-size: 14px; font-weight: 700; text-align: left; border: 1.5px dashed {{theme.btn}}; border-radius: 10px; background: #FFFFFF; color: #141414; padding: 10px; margin-top: 4px; cursor: pointer">+ New group chat</button>
+</div>
+
+<div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column">
+
+<sc-if value="{{fg.hasNotice}}" hint-placeholder-val="{{ false }}">
+<div role="status" style="margin: 14px 18px 0; padding: 10px 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; background: {{fg.noticeBg}}; display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="flex: 1 1 220px">{{fg.notice}}</span>
+<sc-if value="{{fg.noticeUpgrade}}" hint-placeholder-val="{{ false }}">
+<a href="/pricing" style="font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 999px; background: #141414; color: #FFFFFF; text-decoration: none">See Pro plans</a>
+</sc-if>
+<button onClick="{{fg.clearNotice}}" aria-label="Dismiss" style="font: inherit; border: none; background: none; font-size: 18px; cursor: pointer; padding: 0 4px">×</button>
+</div>
+</sc-if>
+
+<sc-if value="{{fg.loading}}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; padding: 28px; font-size: 15px; color: #4E4E49">Loading your friends and chats…</p>
+</sc-if>
+
+<sc-if value="{{fg.vFriends}}" hint-placeholder-val="{{ true }}">
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Friends</h3>
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">{{fg.friendsSub}}</span>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 14px">
+<div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; border: 2px solid {{theme.btn}}; background: {{theme.tint}}">
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 14px; font-weight: 700">Add a friend by their code</span>
+<input type="text" data-fg-code="1" value="{{fg.codeInput}}" onChange="{{fg.onCodeInput}}" onKeyDown="{{fg.onCodeKey}}" placeholder="{{fg.codePlaceholder}}" autocapitalize="characters" autocomplete="off" spellcheck="false" style="font: inherit; font-size: 16px; letter-spacing: 0.04em; padding: 11px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8; background: #FFFFFF; text-transform: uppercase">
+</label>
+<button onClick="{{fg.addFriend}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 11px 16px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fg.addLabel}}</button>
+<span style="font-size: 12px; line-height: 1.5; color: #4E4E49">{{fg.uniRule}}</span>
+</div>
+<div style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; border: 1px solid #E4E4DE">
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 14px; font-weight: 700">Your name on Unizy</span>
+<input type="text" data-fg-name="1" value="{{fg.nameInput}}" onChange="{{fg.onNameInput}}" onKeyDown="{{fg.onNameKey}}" placeholder="e.g. Sam" maxlength="40" style="font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8">
+</label>
+<button onClick="{{fg.saveName}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Save name</button>
+<span style="font-size: 12px; line-height: 1.5; color: #4E4E49">This is what friends see. Your email is never shown.</span>
+</div>
+</div>
+
+<sc-if value="{{fg.hasIncoming}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h4 style="margin: 0; font-size: 15px; font-weight: 700">Friend requests</h4>
+<sc-for list="{{fg.incoming}}" as="rq" hint-placeholder-count="1">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; background: #FFF8E6; border: 1px solid #F3DFA2; flex-wrap: wrap">
+<span style="width: 38px; height: 38px; border-radius: 999px; background: #2B2B28; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; flex: 0 0 auto">{{rq.initial}}</span>
+<span style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{rq.name}}</span><span style="font-size: 13px; color: #4E4E49">{{rq.meta}}</span></span>
+<button onClick="{{rq.accept}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Accept</button>
+<button onClick="{{rq.decline}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #CFCFC8; background: #FFFFFF; color: #141414; cursor: pointer">Decline</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h4 style="margin: 0; font-size: 15px; font-weight: 700">Your friends</h4>
+<sc-for list="{{fg.friends}}" as="fr" hint-placeholder-count="3">
+<div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #ECECE6; flex-wrap: wrap">
+<span style="width: 38px; height: 38px; border-radius: 999px; background: #2B2B28; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; flex: 0 0 auto">{{fr.initial}}</span>
+<span style="flex: 1 1 160px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 700">{{fr.name}}</span><span style="font-size: 13px; color: #4E4E49">{{fr.meta}}</span></span>
+<button onClick="{{fr.chat}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Start a chat</button>
+<button onClick="{{fr.remove}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 10px; border-radius: 999px; border: none; background: none; color: {{fr.removeColor}}; cursor: pointer; text-decoration: underline">{{fr.removeLabel}}</button>
+</div>
+</sc-for>
+<sc-if value="{{fg.noFriends}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 18px; border-radius: 12px; background: #F6F6F2; font-size: 14px; line-height: 1.6; color: #3F3F3B">No friends yet. Send your code, <strong>{{fg.code}}</strong>, to coursemates and flatmates at {{fg.uniShort}}, or type theirs above. Once you’re friends you can start group chats together.</div>
+</sc-if>
+</div>
+
+<sc-if value="{{fg.hasOutgoing}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #3F3F3B">Waiting for them to accept</h4>
+<sc-for list="{{fg.outgoing}}" as="og" hint-placeholder-count="1">
+<div style="display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 2px">
+<span style="flex: 1 1 auto">{{og.name}}</span>
+<button onClick="{{og.cancel}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; color: #3F3F3B; cursor: pointer; text-decoration: underline">Cancel request</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{fg.vNew}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 18px; max-width: 640px">
+<h3 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">New group chat</h3>
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 14px; font-weight: 700">Group name</span>
+<input type="text" data-fg-gname="1" value="{{fg.newName}}" onChange="{{fg.onNewName}}" placeholder="{{fg.newNamePlaceholder}}" maxlength="60" style="font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8">
+</label>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 14px; font-weight: 700">Add friends <span style="font-weight: 500; color: #4E4E49">({{fg.newPickedCount}} picked)</span></span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{fg.newChoices}}" as="nc" hint-placeholder-count="3">
+<button onClick="{{nc.toggle}}" aria-pressed="{{nc.pressed}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 2px solid {{nc.border}}; background: {{nc.bg}}; color: {{nc.fg}}; cursor: pointer">{{nc.label}}</button>
+</sc-for>
+</div>
+<sc-if value="{{fg.noFriendsForGroup}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">You need at least one friend first. Go to Friends and add someone by their code.</span>
+</sc-if>
+</div>
+<span style="font-size: 13px; line-height: 1.5; color: #4E4E49">{{fg.tutorNote}}</span>
+<div style="display: flex; gap: 10px; flex-wrap: wrap">
+<button onClick="{{fg.createGroup}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 12px 20px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fg.createLabel}}</button>
+<button onClick="{{fg.showFriends}}" style="font: inherit; font-size: 15px; font-weight: 600; padding: 12px 16px; border-radius: 999px; border: none; background: none; color: #141414; cursor: pointer; text-decoration: underline">Cancel</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{fg.vGroup}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 560px">
+<div style="padding: 14px 18px; border-bottom: 1px solid #ECECE6; display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<div style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 17px; font-weight: 800">{{fg.gName}}</span>
+<span style="font-size: 12px; color: #4E4E49; overflow: hidden; text-overflow: ellipsis">{{fg.gMembers}}</span>
+</div>
+<span style="font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; background: {{theme.tint}}; border: 1px solid {{theme.btn}}">{{fg.tutorsIn}}</span>
+<button onClick="{{fg.toggleAdd}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">+ Add people</button>
+<button onClick="{{fg.leave}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 8px; border: none; background: none; color: {{fg.leaveColor}}; cursor: pointer; text-decoration: underline">{{fg.leaveLabel}}</button>
+</div>
+<sc-if value="{{fg.adding}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 12px 18px; border-bottom: 1px solid #ECECE6; background: #FAFAF7; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; font-weight: 700">Add friends to this chat</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{fg.addChoices}}" as="ac" hint-placeholder-count="2">
+<button onClick="{{ac.toggle}}" aria-pressed="{{ac.pressed}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 999px; border: 2px solid {{ac.border}}; background: {{ac.bg}}; color: {{ac.fg}}; cursor: pointer">{{ac.label}}</button>
+</sc-for>
+<sc-if value="{{fg.noAddChoices}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 13px; color: #4E4E49">All your friends are already here.</span>
+</sc-if>
+</div>
+<button onClick="{{fg.addPeople}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add to chat</button>
+</div>
+</sc-if>
+
+<div data-chat-scroll="1" style="flex: 1 1 auto; overflow-y: auto; max-height: 560px; min-height: 320px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+<sc-if value="{{fg.msgsLoading}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; color: #4E4E49">Loading messages…</span>
+</sc-if>
+<sc-for list="{{fg.msgs}}" as="m" hint-placeholder-count="4">
+<sc-if value="{{m.sys}}" hint-placeholder-val="{{ false }}">
+<span style="align-self: center; font-size: 12px; color: #4E4E49; background: #F3F3EF; padding: 5px 10px; border-radius: 999px; text-align: center; max-width: 90%">{{m.text}}</span>
+</sc-if>
+<sc-if value="{{m.bubble}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; gap: 10px; align-items: flex-end; flex-direction: {{m.dir}}">
+<span style="width: 34px; height: 34px; border-radius: 999px; flex: 0 0 auto; background: {{m.avBg}}; color: {{m.avFg}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px">{{m.initial}}</span>
+<div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; max-width: min(620px, 78%); align-items: {{m.align}}">
+<span style="font-size: 12px; font-weight: 700; color: #3F3F3B">{{m.who}} <span style="font-weight: 500; color: #6A6A63">{{m.time}}</span></span>
+<span style="font-size: 15px; line-height: 1.5; padding: 9px 13px; border-radius: {{m.radius}}; background: {{m.bg}}; color: {{m.fg}}; border: 1px solid {{m.border}}; white-space: pre-wrap; overflow-wrap: anywhere">{{m.text}}</span>
+</div>
+</div>
+</sc-if>
+</sc-for>
+<sc-if value="{{fg.thinking}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 13px; font-weight: 600; color: #3F3F3B; padding: 4px 2px">{{fg.thinkingText}}</span>
+</sc-if>
+<sc-if value="{{fg.emptyChat}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; color: #4E4E49">Say hello, or ask the tutor something with {{fg.mentionExample}}.</span>
+</sc-if>
+</div>
+
+<div style="padding: 10px 14px 14px; border-top: 1px solid #ECECE6; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+<span style="font-size: 12px; font-weight: 600; color: #4E4E49">Ask the tutor:</span>
+<sc-for list="{{fg.mentions}}" as="mn" hint-placeholder-count="2">
+<button onClick="{{mn.insert}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1.5px solid {{theme.btn}}; background: {{theme.tint}}; color: #141414; cursor: pointer">{{mn.label}}</button>
+</sc-for>
+</div>
+<label style="display: flex; align-items: center; gap: 8px; border: 1.5px solid #CFCFC8; border-radius: 14px; padding: 5px 5px 5px 14px; background: #FFFFFF">
+<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Message the group</span>
+<input type="text" data-fg-input="1" value="{{fg.chatText}}" onChange="{{fg.onChat}}" onKeyDown="{{fg.onChatKey}}" placeholder="{{fg.chatPlaceholder}}" maxlength="2000" autocomplete="off" style="border: none; outline: none; font: inherit; font-size: 16px; flex: 1 1 auto; min-width: 0; background: transparent; padding: 8px 0">
+<button onClick="{{fg.send}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 16px; border-radius: 10px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Send</button>
+</label>
+</div>
+</div>
+</sc-if>
+
+</div>
+</div>
+</sc-if>
 </sc-if>
 
 <sc-if value="{{tAssess}}" hint-placeholder-val="{{ false }}">
@@ -1416,7 +1643,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk"};</script><script src="/assets/runtime.js?v=3"></script><script src="/assets/web.js?v=3"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "", "year": "", "exam": "", "portal": ""}};</script><script src="/assets/runtime.js?v=4"></script><script src="/assets/web.js?v=4"></script><script src="/assets/social.js?v=4"></script><script>
 class Component extends DCLogic {
   static dataUrl() { return '/data/modules.json'; }
 
@@ -2741,6 +2968,7 @@ class Component extends DCLogic {
       groups, groupName: GROUPS[groupIdx].name, groupHasChat: groupIdx === 0, groupNoChat: groupIdx !== 0, chat,
       chatPlaceholder: 'Message the group, or type @' + tutorName,
 
+      meInfo: { uni: uni ? uni.id : null, uniShort: uni ? uni.short : '', degree: degree ? degree.id : null, degreeName: degree ? degree.name : '', year: year || 1, isMed },
       tutorName, tutorMono, tutorSub, tutorKnows, knowMods, tchat, tutorSources: sourceList, mascotMed: isMed, mascotProf: !isMed, tAssess: tab === 'assess', as,
       tBusy: !!s.tBusy, tStreamText: s.tStream || 'Thinking…', tHasErr: !!s.tErr, tErrText: s.tErr || '',
       tInput: get('tInput', ''), onTInput: (e) => set({ tInput: e && e.target ? e.target.value : '' }),
