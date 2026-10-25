@@ -1643,7 +1643,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=5"></script><script src="/assets/web.js?v=5"></script><script src="/assets/social.js?v=5"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=6"></script><script src="/assets/web.js?v=6"></script><script src="/assets/social.js?v=6"></script><script>
 class Component extends DCLogic {
   static dataUrl() { return '/data/modules.json'; }
 
@@ -1890,13 +1890,22 @@ class Component extends DCLogic {
     const turns = (all[ctx.mk] || []).concat([{ role: 'user', content: text }]);
     all[ctx.mk] = turns;
     self.setState({ tchat: all, tInput: '', tBusy: true, tStream: '', tErr: '' });
+    // Keep the main course knowledge the same for the whole chat session so it can be cached (much cheaper),
+    // and add a small set of notes picked for each new question.
+    self._tPack = self._tPack || {};
+    let pack = self._tPack[ctx.mk];
+    if (!pack || Date.now() - pack.at > 25 * 60 * 1000) { pack = { at: Date.now(), text: ctx.kn ? ctx.kn(text, { notes: 16000, qs: 3000 }) : self.ctxText(ctx) }; self._tPack[ctx.mk] = pack; }
+    else pack.at = Date.now();
+    const extra = ctx.kn && turns.length > 1 ? ctx.kn(text, { notes: 3500, qs: 0 }) : '';
     const rules = [
       'You are ' + ctx.tutorName + ', the Unizy AI tutor for ' + ctx.mod.name + ' on ' + ctx.degName + ' at ' + ctx.uniFull + '. You are a friendly cat in ' + ctx.uniShort + ' colours ' + (ctx.isMed ? 'wearing a stethoscope' : 'wearing a professor’s mortarboard') + ', but you answer as a rigorous, patient university ' + (ctx.isMed ? 'clinical teacher' : 'tutor') + ': explain clearly, use examples from this course, check understanding, and point the student to the right topic. Keep cat jokes to a rare light touch.',
       'Ground every answer in the COURSE KNOWLEDGE below, which is this module’s official outline and the checked Unizy library notes and mark schemes for it. Teach it the way ' + ctx.uniShort + ' teaches it at Year ' + ctx.year + ' level. If the question goes beyond the knowledge, answer from established knowledge and say so.',
-      '=== COURSE KNOWLEDGE ===', ctx.kn ? ctx.kn(text + ' ' + turns.slice(-4).map((t) => t.content).join(' ').slice(0, 2000), { notes: 18000, qs: 3000 }) : self.ctxText(ctx), '=== END ===',
+      '=== COURSE KNOWLEDGE ===', pack.text, '=== END ===',
       'Stay accurate and current. Never invent cases, statutes, studies, statistics or quotations; say when you are unsure. Plain Unicode for maths. No drug doses. Keep answers focused (usually under 250 words) unless asked for more.'
     ].join('\n');
-    fn([{ role: 'user', content: rules }].concat(turns.slice(-12).map((t) => ({ role: t.role, content: String(t.content).slice(0, 4000) }))), { cache: false, onText: (u) => self.setState({ tStream: u.text }) })
+    const sent = turns.slice(-12).map((t) => ({ role: t.role, content: String(t.content).slice(0, 4000) }));
+    if (extra && sent.length) sent[sent.length - 1] = { role: 'user', content: sent[sent.length - 1].content + '\n\n(More course notes relevant to this question:\n' + extra.slice(0, 6000) + ')' };
+    fn([{ role: 'user', content: rules }].concat(sent), { cache: true, onText: (u) => self.setState({ tStream: u.text }) })
       .then((r) => { const a = Object.assign({}, (self.state || {}).tchat); a[ctx.mk] = (a[ctx.mk] || []).concat([{ role: 'assistant', content: r.text }]); self.setState({ tchat: a, tBusy: false, tStream: '' }); })
       .catch((e) => self.setState({ tBusy: false, tStream: '', tErr: Component.errText(e) }));
   }

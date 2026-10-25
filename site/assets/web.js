@@ -161,7 +161,7 @@
       if (!s) throw aiError('not_granted', 'Sign in to use the AI tutor and marking.');
       var imgs = opts.images ? Array.prototype.slice.call(opts.images.length !== undefined ? opts.images : [opts.images]) : [];
       return Promise.all(imgs.map(blobToJpegBase64)).then(function (b64) {
-        var body = { input: input, json: !!asJson, kind: guessKind(input), tier: opts.modelTier || 'default', stream: typeof opts.onText === 'function', images: b64.map(function (d) { return { media_type: 'image/jpeg', data: d }; }) };
+        var body = { input: input, json: !!asJson, kind: guessKind(input), tier: opts.modelTier || 'default', cache: !!opts.cache, stream: typeof opts.onText === 'function', images: b64.map(function (d) { return { media_type: 'image/jpeg', data: d }; }) };
         return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: Auth.headers(true), body: JSON.stringify(body), signal: opts.signal });
       });
     }).then(function (r) {
@@ -172,6 +172,7 @@
           var code = b.code || (r.status === 401 ? 'session_expired' : r.status === 429 ? 'rate_limited' : 'upstream_error');
           if (code === 'session_expired') Auth.refresh();
           if (b.upgrade) showUpgrade(b.message);
+          else if (code === 'ai_paused') toast(b.message, null, null, 8000);
           throw aiError(code, b.message || 'The AI had a problem. Try again.');
         });
       }

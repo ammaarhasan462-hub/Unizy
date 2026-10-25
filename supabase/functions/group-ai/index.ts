@@ -2,6 +2,9 @@
 // this writes the tutor's reply into the chat for everyone. Counts against the asker's AI allowance.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { BUDGET_MSG, PAUSED_MSG, budgetReached, handleAccountProblem, isAccountProblem, recordSpend } from "./common.ts";
+
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +27,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json(405, { message: "POST only" });
   const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) return json(503, { message: "The AI isn’t switched on yet." });
+  if (!apiKey) return json(503, { message: PAUSED_MSG });
 
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
   const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -54,11 +57,16 @@ Deno.serve(async (req) => {
   const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: 1, p_kind: "group" });
   if (takeErr || !take) return json(500, { message: "Couldn’t check your AI allowance." });
   if (!take.ok) {
+    if (take.reason === "budget") {
+      EdgeRuntime.waitUntil(service.from("ai_settings").select("daily_budget_gbp").eq("id", true).single().then(({ data }: any) => budgetReached(service, "£" + (data?.daily_budget_gbp ?? "?") + " a day")));
+      return json(503, { message: BUDGET_MSG });
+    }
     const m = take.reason === "free_weekly" ? "You’ve used this week’s free AI actions, so " + tutor + " can’t answer you right now. Upgrade to Unizy Pro, or try again on Monday."
       : take.reason === "global" ? "Unizy’s AI is very busy today. Try again tomorrow." : "You’ve used today’s AI allowance. It resets at midnight (UK time).";
     return json(429, { message: m, upgrade: take.reason === "free_weekly" });
   }
   const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: 1, p_kind: "group", p_tier: take.tier });
+  const model = take.tier === "free" ? "claude-haiku-5-5" : "claude-sonnet-5-5";
 
   // recent conversation for context
   const { data: recent } = await service.from("chat_messages").select("id, user_id, kind, ai_name, body").eq("group_id", groupId).lte("id", messageId).order("id", { ascending: false }).limit(20);
@@ -92,10 +100,16 @@ Deno.serve(async (req) => {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-5-5", max_tokens: 900, system, messages: [{ role: "user", content: prompt }] }),
+      body: JSON.stringify({ model, max_tokens: 900, system, messages: [{ role: "user", content: prompt }] }),
     });
-    if (!r.ok) { await refund(); return json(r.status === 429 || r.status === 529 ? 429 : 502, { message: tutor + " is busy right now. Try again in a minute." }); }
+    if (!r.ok) {
+      await refund();
+      let et = ""; try { et = await r.text(); et = JSON.parse(et)?.error?.message || et; } catch { /* ignore */ }
+      if (isAccountProblem(r.status, et)) { EdgeRuntime.waitUntil(handleAccountProblem(service, r.status, et)); return json(503, { message: PAUSED_MSG }); }
+      return json(r.status === 429 || r.status === 529 ? 429 : 502, { message: tutor + " is busy right now. Try again in a minute." });
+    }
     const d = await r.json();
+    EdgeRuntime.waitUntil(recordSpend(service, model, d.usage));
     text = (d.content || []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("").trim();
   } catch {
     await refund();
