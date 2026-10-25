@@ -400,13 +400,32 @@ body{margin:0}
 <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4E4E49; padding: 6px 8px">My notes</span>
 <sc-for list="{{nt.myFolders}}" as="mf" hint-placeholder-count="3">
 <div style="display: flex; flex-direction: column; gap: 2px">
-<span style="font-size: 13px; font-weight: 700; padding: 8px 8px 4px; display: flex; align-items: center; gap: 6px; color: #2B2B28">
-<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8; stroke-linejoin: round"><path d="M3 6h7l2 2h9v11H3z"></path></svg>
-{{mf.name}} <span style="font-weight: 500; color: #4E4E49">({{mf.count}})</span>
+<div style="display: flex; align-items: center; gap: 4px; padding: 4px 4px 2px 8px">
+<span style="flex: 1 1 auto; min-width: 0; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; color: #2B2B28">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="flex: 0 0 auto; stroke-width: 1.8; stroke-linejoin: round"><path d="M3 6h7l2 2h9v11H3z"></path></svg>
+<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{mf.name}}</span> <span style="font-weight: 500; color: #4E4E49">({{mf.count}})</span>
 </span>
+<button onClick="{{mf.add}}" aria-label="{{mf.addAria}}" title="{{mf.addAria}}" style="flex: 0 0 auto; font: inherit; font-size: 18px; font-weight: 600; line-height: 1; width: 32px; height: 32px; border-radius: 9px; border: 1.5px solid {{mf.addBorder}}; background: {{mf.addBg}}; color: #141414; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center">+</button>
+</div>
+<sc-if value="{{mf.adding}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px; margin: 2px 4px 6px 26px; padding: 10px; border-radius: 10px; background: #FFFFFF; border: 1.5px solid {{theme.c1}}">
+<label style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; color: #3F3F3B">New page in {{mf.name}}</span>
+<input type="text" data-np-input="1" value="{{mf.newName}}" onChange="{{mf.onNewName}}" onKeyDown="{{mf.onNewKey}}" placeholder="{{mf.placeholder}}" style="font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1.5px solid #CFCFC8; width: 100%; box-sizing: border-box">
+</label>
+<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+<button onClick="{{mf.create}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 8px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add page</button>
+<button onClick="{{mf.upload}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 10px; border-radius: 8px; border: 1.5px solid #CFCFC8; background: #FFFFFF; color: #141414; cursor: pointer">Upload notes here</button>
+<button onClick="{{mf.cancel}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 4px; border: none; background: none; color: #3F3F3B; cursor: pointer; text-decoration: underline">Cancel</button>
+</div>
+</div>
+</sc-if>
 <sc-for list="{{mf.pages}}" as="pg" hint-placeholder-count="2">
 <button onClick="{{pg.pick}}" style="font: inherit; font-size: 14px; text-align: left; border: none; border-radius: 9px; padding: 8px 10px 8px 28px; cursor: pointer; background: {{pg.bg}}; color: #141414; line-height: 1.3">{{pg.title}}</button>
 </sc-for>
+<sc-if value="{{mf.empty}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{mf.add}}" style="font: inherit; font-size: 13px; text-align: left; border: none; border-radius: 9px; padding: 4px 10px 6px 28px; cursor: pointer; background: none; color: #4E4E49">No pages yet · add one</button>
+</sc-if>
 </div>
 </sc-for>
 <sc-if value="{{nt.addingFolder}}" hint-placeholder-val="{{ false }}">
@@ -447,6 +466,14 @@ body{margin:0}
 Notes file
 <input type="file" accept=".txt,.md,.markdown,.csv,.text" onChange="{{nt.onFile}}" style="font: inherit; font-size: 14px">
 </label>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 700; color: #3F3F3B">Save to folder</span>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-for list="{{nt.upFolders}}" as="uf" hint-placeholder-count="4">
+<button onClick="{{uf.pick}}" aria-pressed="{{uf.on}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 8px; border: 1.5px solid {{uf.border}}; background: {{uf.bg}}; color: #141414; cursor: pointer">{{uf.name}}</button>
+</sc-for>
+</div>
+</div>
 <label style="display: flex; flex-direction: column; gap: 6px">
 <span style="font-size: 13px; font-weight: 700; color: #3F3F3B">Title</span>
 <input type="text" value="{{nt.upTitle}}" onChange="{{nt.onUpTitle}}" placeholder="e.g. Week 3 lecture" style="font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8">
@@ -494,7 +521,7 @@ Notes file
 </label>
 <label style="display: flex">
 <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Page notes</span>
-<textarea value="{{nt.pageBody}}" onChange="{{nt.onPageBody}}" placeholder="Start typing your notes… Tip: write “Term: definition” lines and Unizy can turn them into flashcards." style="font: inherit; font-size: 16px; line-height: 1.7; min-height: 420px; padding: 4px 0; border: none; outline: none; resize: vertical; width: 100%; box-sizing: border-box; color: #141414; background: transparent"></textarea>
+<textarea data-page-body="1" value="{{nt.pageBody}}" onChange="{{nt.onPageBody}}" placeholder="Start typing your notes… Tip: write “Term: definition” lines and Unizy can turn them into flashcards." style="font: inherit; font-size: 16px; line-height: 1.7; min-height: 420px; padding: 4px 0; border: none; outline: none; resize: vertical; width: 100%; box-sizing: border-box; color: #141414; background: transparent"></textarea>
 </label>
 <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid #EFEFEA">
 <button onClick="{{nt.makeCards}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Make flashcards from this page</button>
@@ -2355,12 +2382,24 @@ class Component extends DCLogic {
       if (cards.length) self.save('unizy:' + mk + ':notecards', noteCards.concat(cards));
       set({ ntMsg: cards.length ? cards.length + (cards.length === 1 ? ' flashcard' : ' flashcards') + ' made from “' + title + '”. Find them under “From your notes” in Flashcards.' : 'No flashcards found in “' + title + '”. Write lines like “Term: definition” or “Q: …” then “A: …”, or use headings with bullet points.' });
     };
+    const focusSoon = (sel) => { try { setTimeout(() => { try { const el = document.querySelector(sel); if (el) el.focus(); } catch (e) { /* ignore */ } }, 40); } catch (e) { /* ignore */ } };
+    const addIn = s.ntAddIn && myFoldersList.indexOf(s.ntAddIn) !== -1 ? s.ntAddIn : null;
+    const upFolder = s.ntUpFolder && myFoldersList.indexOf(s.ntUpFolder) !== -1 ? s.ntUpFolder : (myFoldersList.indexOf('Uploaded notes') !== -1 ? 'Uploaded notes' : myFoldersList[myFoldersList.length - 1]);
+    const openAdd = (fname) => { set({ ntAddIn: fname, ntNewName: '', ntFolder: false }); focusSoon('[data-np-input]'); };
+    const createIn = (fname, raw) => {
+      const nm = String(raw == null ? get('ntNewName', '') : raw).trim();
+      const n = myNotes.filter((p) => (p.folder || myFoldersList[0]) === fname).length;
+      newPage(nm || (fname === 'Lecture notes' ? 'Lecture ' + (n + 1) : 'Untitled page'), '', fname);
+      set({ ntAddIn: null, ntNewName: '', ntMsg: '' });
+      focusSoon('[data-page-body]');
+    };
     const fmtWhen = (iso) => { try { const d = new Date(iso); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
     const nt = {
       hasMsg: !!s.ntMsg, msg: s.ntMsg || '', msgBg: s.ntBusy ? theme.tint : '#F3F3EF',
       aiReady, aiLabel: s.ntBusy ? 'Working…' : 'Make flashcards with AI',
-      newPage: () => newPage('Untitled page', '', myFoldersList[0]),
+      newPage: () => openAdd(addIn || myFoldersList[0]),
       openUpload: () => set({ ntUpload: true, nsel: null }),
+      upFolders: myFoldersList.map((fname) => ({ name: fname, on: fname === upFolder ? 'true' : 'false', border: fname === upFolder ? theme.c1 : '#E4E4DE', bg: fname === upFolder ? theme.tint : '#FFFFFF', pick: () => set({ ntUpFolder: fname }) })),
       closeUpload: () => set({ ntUpload: false }),
       uploading: !!s.ntUpload,
       upTitle: get('upTitle', ''), upText: get('upText', ''),
@@ -2377,12 +2416,26 @@ class Component extends DCLogic {
           r.readAsText(f);
         } catch (err) { set({ ntMsg: 'Couldn’t read that file here. Paste the text instead.' }); }
       },
-      saveUpload: () => { const tx = String(get('upText', '')).trim(); if (!tx) { set({ ntMsg: 'Add a file or paste some notes first.' }); return; } newPage(String(get('upTitle', '')).trim() || 'Uploaded notes', tx, 'Uploaded notes'); set({ upText: '', upTitle: '', ntMsg: 'Saved to “Uploaded notes”.' }); },
-      saveUploadCards: () => { const tx = String(get('upText', '')).trim(); if (!tx) { set({ ntMsg: 'Add a file or paste some notes first.' }); return; } const title = String(get('upTitle', '')).trim() || 'Uploaded notes'; newPage(title, tx, 'Uploaded notes'); parseToCards(tx, title); set({ upText: '', upTitle: '' }); },
-      saveUploadAi: () => { const tx = String(get('upText', '')).trim(); if (!tx || s.ntBusy) return; const title = String(get('upTitle', '')).trim() || 'Uploaded notes'; newPage(title, tx, 'Uploaded notes'); set({ upText: '', upTitle: '' }); self.notesToCardsAi(Object.assign({}, genCtxBase, { text: tx, title })); },
+      saveUpload: () => { const tx = String(get('upText', '')).trim(); if (!tx) { set({ ntMsg: 'Add a file or paste some notes first.' }); return; } newPage(String(get('upTitle', '')).trim() || 'Uploaded notes', tx, upFolder); set({ upText: '', upTitle: '', ntMsg: 'Saved to “' + upFolder + '”.' }); },
+      saveUploadCards: () => { const tx = String(get('upText', '')).trim(); if (!tx) { set({ ntMsg: 'Add a file or paste some notes first.' }); return; } const title = String(get('upTitle', '')).trim() || 'Uploaded notes'; newPage(title, tx, upFolder); parseToCards(tx, title); set({ upText: '', upTitle: '' }); },
+      saveUploadAi: () => { const tx = String(get('upText', '')).trim(); if (!tx || s.ntBusy) return; const title = String(get('upTitle', '')).trim() || 'Uploaded notes'; newPage(title, tx, upFolder); set({ upText: '', upTitle: '' }); self.notesToCardsAi(Object.assign({}, genCtxBase, { text: tx, title })); },
       myFolders: myFoldersList.map((fname) => {
         const pages = myNotes.filter((n) => (n.folder || myFoldersList[0]) === fname);
-        return { name: fname, count: pages.length, pages: pages.map((p) => ({ title: p.title || 'Untitled page', bg: selMine && selMine.id === p.id ? theme.tint : 'transparent', pick: () => set({ nsel: { kind: 'mine', id: p.id }, ntUpload: false }) })) };
+        const adding = addIn === fname;
+        return {
+          name: fname, count: pages.length, empty: !pages.length && !adding,
+          addAria: 'Add a page to ' + fname,
+          addBorder: adding ? theme.c1 : '#DDDDD6', addBg: adding ? theme.tint : '#FFFFFF',
+          add: () => { if (adding) set({ ntAddIn: null, ntNewName: '' }); else openAdd(fname); },
+          adding, newName: adding ? get('ntNewName', '') : '',
+          placeholder: fname === 'Lecture notes' ? 'e.g. Week 3: Supply and demand' : fname === 'Seminar prep' ? 'e.g. Seminar 2 reading' : fname === 'Revision' ? 'e.g. Exam topics summary' : 'Page name',
+          onNewName: (e) => set({ ntNewName: e && e.target ? e.target.value : '' }),
+          onNewKey: (e) => { if (!e) return; if (e.key === 'Enter') { e.preventDefault(); createIn(fname, e.target ? e.target.value : null); } else if (e.key === 'Escape') set({ ntAddIn: null, ntNewName: '' }); },
+          create: () => createIn(fname),
+          upload: () => set({ ntUpload: true, nsel: null, ntUpFolder: fname, ntAddIn: null, ntNewName: '', upTitle: String(get('ntNewName', '')).trim() || get('upTitle', '') }),
+          cancel: () => set({ ntAddIn: null, ntNewName: '' }),
+          pages: pages.map((p) => ({ title: p.title || 'Untitled page', bg: selMine && selMine.id === p.id ? theme.tint : 'transparent', pick: () => set({ nsel: { kind: 'mine', id: p.id }, ntUpload: false }) }))
+        };
       }),
       addingFolder: !!s.ntFolder, folderName: get('ntFolderName', ''),
       toggleFolder: () => set({ ntFolder: !s.ntFolder }),
