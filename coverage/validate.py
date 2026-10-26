@@ -19,6 +19,8 @@ def check(pid):
             errs.append('missing key ' + k)
     if errs:
         return errs, warns
+    if re.search(r'worklist', json.dumps(d), re.I):
+        errs.append('pack text mentions our internal worklist; describe sources without it')
     if d['id'] != pid:
         errs.append('id mismatch')
     if pid in WL and d['module'].get('name') != WL[pid]['name']:
