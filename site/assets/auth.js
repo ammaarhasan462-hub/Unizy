@@ -242,7 +242,7 @@
   function signupView() {
     var box = msgBox();
     var name = field({ name: 'name', label: 'First name', autocomplete: 'given-name', placeholder: 'e.g. Sam' });
-    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'Any email works, personal or uni. Personal emails usually get our sign-in emails fastest, as some uni inboxes filter them.' });
+    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'Any email works, personal or uni.' });
     var pw = field({ name: 'password', type: 'password', label: 'Password', autocomplete: 'new-password', required: true, minlength: 8 });
     var meter = el('div', { class: 'meter', 'aria-hidden': 'true' }, [el('i'), el('i'), el('i'), el('i')]);
     var meterText = el('p', { class: 'hint', id: 'f-password-hint', text: 'At least 8 characters.' });
@@ -262,16 +262,23 @@
       if (p.toLowerCase() === em.toLowerCase() || /^(password|12345678|qwerty)/i.test(p)) { showMsg(box, 'Choose a password that’s harder to guess.'); pw.input.focus(); return; }
       busy(submit, true, 'Creating your account…'); showMsg(box, '');
       track('signup_submit');
-      api('signup?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, password: p, data: nm ? { full_name: nm } : {} })
-        .then(function (b) {
-          if (b && b.access_token) { saveSession(b); go(); return; }
-          inbox(em, 'signup');
-        })
+      // create the account (no email link needed), then log straight in with the same details
+      fetch(CFG.supabaseUrl + '/functions/v1/signup', { method: 'POST', headers: headers(CFG.anonKey), body: JSON.stringify({ email: em, password: p, name: nm }) })
+        .then(function (r) {
+          return r.json().catch(function () { return {}; }).then(function (b) {
+            if (r.ok) return b;
+            var e = new Error(''); e.status = r.status;
+            e.code = b.error === 'exists' ? 'user_already_exists' : b.error === 'rate_limited' ? 'over_request_rate_limit' : b.error === 'weak_password' ? 'weak_password' : b.error === 'invalid_email' ? 'validation_failed' : '';
+            throw e;
+          });
+        }, function () { var e = new Error('offline'); e.code = 'offline'; throw e; })
+        .then(function () { busy(submit, true, 'Logging you in…'); return api('token?grant_type=password', { email: em, password: p }); })
+        .then(function (b) { saveSession(b); go(); })
         .catch(function (err) {
           busy(submit, false, 'Create account');
           var f = friendly(err);
           if (f === 'exists') showMsg(box, el('span', {}, ['There’s already an account with that email. ', el('a', { href: '/login?email=' + encodeURIComponent(em) + (params.get('next') ? '&next=' + encodeURIComponent(next) : ''), text: 'Log in instead' }), '.']));
-          else showMsg(box, f === 'confirm' ? 'Check your inbox to confirm your email.' : f);
+          else showMsg(box, f === 'confirm' ? 'Your account was created. Log in to continue.' : f);
         });
     });
     render([h1('Create your account', 'Free for students. Save your notes, flashcards and progress, and switch on your AI tutor and essay marking.'), form,
