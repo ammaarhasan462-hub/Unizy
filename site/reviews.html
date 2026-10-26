@@ -1,0 +1,143 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Reviews · Unizy</title><meta name="description" content="Honest reviews of Unizy from students with verified accounts. One review per account."><meta property="og:title" content="Reviews · Unizy"><meta property="og:description" content="Honest reviews of Unizy from students with verified accounts. One review per account."><meta property="og:type" content="website"><meta name="theme-color" content="#141414"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap"><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#141414;background:#F3F3EF;-webkit-font-smoothing:antialiased}
+a{color:#141414}
+.in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.top{padding:18px 24px;border-bottom:1px solid #E2E2DC}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#141414}
+.brand b{width:36px;height:36px;border-radius:10px;background:#141414;color:#C6F432;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:21px}
+.brand span{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.03em}
+nav{display:flex;gap:20px;font-size:15px;font-weight:600}
+nav a{text-decoration:none}
+main{max-width:1100px;margin:0 auto;padding:48px 24px 72px;display:flex;flex-direction:column;gap:40px}
+.hero{display:flex;flex-direction:column;gap:14px;max-width:760px}
+.eyebrow{align-self:flex-start;background:#141414;color:#C6F432;font-size:13px;font-weight:700;padding:7px 13px;border-radius:999px}
+.hero h1{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(36px,6vw,58px);line-height:1.02;letter-spacing:-.035em}
+.lead{margin:0;font-size:18px;line-height:1.6;color:#3F3F3B}
+.current{padding:12px 16px;border-radius:12px;background:#FFFFFF;border:1.5px solid #C6F432;font-weight:600;font-size:15px}
+.plans{display:flex;flex-wrap:wrap;gap:20px;align-items:stretch}
+.plan{flex:1 1 320px;background:#FFFFFF;border:1px solid #E2E2DC;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:16px;position:relative}
+.plan.pro{flex:1.25 1 380px;background:#141414;color:#FFFFFF;border:none}
+.plan.pro a{color:#FFFFFF}
+.plan h2{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;letter-spacing:-.02em}
+.price{margin:0;font-size:15px;color:#55554F}.price span{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:44px;color:#141414;margin-right:6px}
+.sub{margin:0;color:#C9C9C2;font-size:15px}
+.plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;font-size:15px;line-height:1.5;flex:1 1 auto}
+.plan li{position:relative;padding-left:30px}
+.plan li:before{content:'';position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:999px;background:#C6F432 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23141414' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E") center/12px no-repeat}
+.ribbon{position:absolute;top:-12px;right:24px;background:#C6F432;color:#141414;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px}
+.options{border:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.options legend{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#C9C9C2;margin-bottom:8px;padding:0}
+.opt{position:relative;display:flex;flex-direction:column;gap:3px;padding:14px 16px 14px 48px;border-radius:14px;border:2px solid #3A3A36;cursor:pointer;background:#1E1E1C}
+.opt input{position:absolute;left:16px;top:17px;width:20px;height:20px;accent-color:#C6F432;margin:0}
+.opt:has(input:checked){border-color:#C6F432;background:#24261C}
+.o-main{display:flex;justify-content:space-between;gap:10px;font-size:16px}.o-main em{font-style:normal;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px}.o-main small{font-family:Inter,sans-serif;font-size:13px;font-weight:600;color:#C9C9C2}
+.o-sub{font-size:13px;color:#C9C9C2;line-height:1.45}.o-sub strong{color:#C6F432}
+.tag{position:absolute;top:-10px;left:48px;font-style:normal;background:#C6F432;color:#141414;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+.btn{font:inherit;font-size:16px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;padding:14px 20px;min-height:52px;border-radius:999px;cursor:pointer;border:none}
+.btn.wide{width:100%}
+.btn.ghost{background:#FFFFFF;color:#141414;border:1.5px solid #141414}
+.btn.primary{background:#C6F432;color:#141414!important;box-shadow:0 4px 0 #8DB01A}
+.btn.primary:hover{transform:translateY(-1px)}
+.btn[aria-disabled=true]{opacity:.65;cursor:default;transform:none}
+.btn:focus-visible,a:focus-visible,summary:focus-visible,.opt:focus-within{outline:3px solid #C6F432;outline-offset:2px}
+.fine{margin:0;font-size:13px;line-height:1.5;color:#C9C9C2}
+.faq{display:flex;flex-direction:column;gap:10px;max-width:780px}
+.faq h2{margin:0 0 6px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px}
+details{background:#FFFFFF;border:1px solid #E2E2DC;border-radius:14px;padding:4px 18px}
+summary{cursor:pointer;font-weight:700;font-size:16px;padding:14px 0}
+details p{margin:0 0 16px;font-size:15px;line-height:1.6;color:#3F3F3B}
+.foot{padding:28px 24px;border-top:1px solid #E2E2DC;font-size:13px;color:#6A6A63}
+@media (max-width:600px){main{padding:32px 16px 56px}.plan{padding:22px}.top{padding:14px 16px}}
+
+.rv-top{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.rv-summary{flex:1 1 280px;background:#141414;color:#fff;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:10px}
+.rv-avg{display:flex;align-items:baseline;gap:10px}.rv-avg span:first-child{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:64px;line-height:1;color:#C6F432}.rv-outof{color:#C9C9C2;font-size:15px}
+.rv-count{margin:0;color:#E4E4DE;font-size:15px}
+.rv-bars{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.rv-bar{display:grid;grid-template-columns:42px 1fr 32px;gap:10px;align-items:center;font-size:13px;color:#E4E4DE}
+.rv-track{height:8px;border-radius:9px;background:#33332F;overflow:hidden}.rv-track i{display:block;height:8px;background:#C6F432;border-radius:9px}
+.rv-n{text-align:right}
+.rv-stars{display:inline-flex;gap:2px;font-size:18px;line-height:1}.rv-stars i{font-style:normal;color:#CFCFC8}.rv-stars i.on{color:#E8A33D}
+.rv-stars.big{font-size:26px}.rv-summary .rv-stars i{color:#4A4A45}.rv-summary .rv-stars i.on{color:#C6F432}
+.rv-write{flex:1.4 1 360px;background:#fff;border:1px solid #E2E2DC;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:14px}
+.rv-write h2,.rv-list-head h2{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em}
+.muted{margin:0;color:#55554F;font-size:15px;line-height:1.55}.small{font-size:13px}
+.rv-actions{display:flex;gap:10px;flex-wrap:wrap}
+.rv-actions .btn{min-height:46px;padding:11px 18px;font-size:15px}
+.rv-form{display:flex;flex-direction:column;gap:14px}
+.rv-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lab{font-size:14px;font-weight:700;color:#2B2B28}
+.rv-pick{display:inline-flex;gap:4px}
+.rv-pick button{font:inherit;font-size:32px;line-height:1;width:44px;height:44px;border:none;background:none;cursor:pointer;color:#CFCFC8;padding:0;border-radius:8px}
+.rv-pick button.on{color:#E8A33D}.rv-pick button:focus-visible{outline:3px solid #C6F432}
+.rv-pick-hint{font-size:14px;font-weight:600;color:#3F3F3B}
+.rv-field{display:flex;flex-direction:column;gap:6px}
+.rv-field input,.rv-field textarea{font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #CFCFC8;background:#fff;color:#141414;width:100%;box-sizing:border-box}
+.rv-field textarea{resize:vertical;line-height:1.55;min-height:140px}
+.rv-field input:focus,.rv-field textarea:focus{outline:none;border-color:#141414;box-shadow:0 0 0 3px #C6F432}
+.rv-check{display:flex;gap:10px;align-items:center;font-size:14px;color:#2B2B28}.rv-check input{width:20px;height:20px;accent-color:#141414}
+.msg{font-size:14px;line-height:1.5;padding:12px 14px;border-radius:12px;background:#FBEDEF;color:#7A0C1D;border:1px solid #F2C9D0}.msg.ok{background:#EEF6E4;color:#2D4A12;border-color:#CFE5B5}
+.rv-list-wrap{display:flex;flex-direction:column;gap:14px}
+.rv-list-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.rv-sort{font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}.rv-sort select{font:inherit;padding:8px 10px;border-radius:10px;border:1.5px solid #CFCFC8;background:#fff}
+.rv-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.rv-card{background:#fff;border:1px solid #E2E2DC;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.rv-card.mine{background:#FAFAF7}
+.rv-card-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rv-date{font-size:13px;color:#6A6A63}
+.rv-card h3{margin:0;font-size:17px;font-weight:800}
+.rv-body{margin:0;font-size:15px;line-height:1.6;color:#2B2B28;white-space:pre-wrap;overflow-wrap:anywhere}
+.rv-who{margin:0;font-size:13px;color:#55554F;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}
+.rv-verified{margin-left:auto;font-size:11px;font-weight:700;background:#EEF6E4;color:#2D4A12;padding:3px 8px;border-radius:999px}
+.rv-empty{grid-column:1/-1;background:#fff;border:1.5px dashed #CFCFC8;border-radius:18px;padding:28px;font-size:15px;line-height:1.6;color:#3F3F3B}
+#more{align-self:center}
+[hidden]{display:none!important}
+</style></head><body><header class="top"><div class="in">
+<a class="brand" href="/"><b>u</b><span>unizy</span></a>
+<nav><a href="/">Home</a><a href="/pricing">Pricing</a><a href="/app.html" id="nav-app">Log in</a></nav>
+</div></header>
+
+<main>
+<section class="hero">
+<span class="eyebrow">Reviews</span>
+<h1>What students say about Unizy</h1>
+<p class="lead">Every review comes from a student with a confirmed Unizy account, and each account can leave one review. We don’t edit reviews or hide them for being negative.</p>
+</section>
+
+<section class="rv-top">
+<div class="rv-summary" id="summary" aria-live="polite">
+<div class="rv-avg"><span id="avg">–</span><span class="rv-outof">out of 5</span></div>
+<div class="rv-stars big" id="avg-stars" aria-hidden="true"></div>
+<p class="rv-count" id="count">Loading reviews…</p>
+<div class="rv-bars" id="bars"></div>
+</div>
+
+<div class="rv-write" id="write">
+<h2>Leave a review</h2>
+<p class="muted" id="write-intro">Loading…</p>
+</div>
+</section>
+
+<section class="rv-list-wrap">
+<div class="rv-list-head">
+<h2>All reviews</h2>
+<label class="rv-sort">Sort by
+<select id="sort"><option value="newest">Newest</option><option value="highest">Highest rated</option><option value="lowest">Lowest rated</option></select>
+</label>
+</div>
+<div id="list" class="rv-list"></div>
+<button class="btn ghost" id="more" hidden>Show more reviews</button>
+</section>
+
+<section class="faq">
+<h2>Review rules</h2>
+<details><summary>Who can leave a review?</summary><p>Anyone with a Unizy account whose email address is confirmed. Each account, and so each email address, can leave one review. You can edit or delete it any time.</p></details>
+<details><summary>Do you remove reviews?</summary><p>Only reviews that break the rules: abuse or hate, spam or links, other people’s personal information, or reviews that aren’t about Unizy. We never remove or hide a review because it’s negative, and we don’t edit what you write.</p></details>
+<details><summary>What’s shown with my review?</summary><p>Your first name as it appears on Unizy, the date, and (if you choose) your university, course and year. Your email address is never shown.</p></details>
+<details><summary>Are reviews paid or incentivised?</summary><p>No. We don’t pay for reviews or offer rewards for them, and we don’t write reviews ourselves.</p></details>
+</section>
+</main>
+
+<footer class="foot"><div class="in"><span>Unizy is an independent study tool and is not affiliated with any university.</span><span><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="mailto:hello@unizy.uk">Contact</a></span></div></footer>
+<script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/reviews.js?v=8"></script></body></html>
