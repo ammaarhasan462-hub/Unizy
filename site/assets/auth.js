@@ -9,6 +9,13 @@
   var next = params.get('next') || '/app.html';
   if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/app.html';
   var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  // anonymous daily totals only: no cookies, no IDs
+  function track(ev) {
+    try {
+      if (navigator.webdriver || navigator.globalPrivacyControl || navigator.doNotTrack === '1' || localStorage.getItem('unizy:notrack') === '1') return;
+      fetch(CFG.supabaseUrl + '/rest/v1/rpc/track_event', { method: 'POST', keepalive: true, headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_event: ev }) }).catch(function () {});
+    } catch (e) {}
+  }
 
   // ---------- helpers ----------
   function headers(token) {
@@ -254,6 +261,7 @@
       if (p.length < 8) { showMsg(box, 'Your password needs at least 8 characters.'); pw.input.focus(); return; }
       if (p.toLowerCase() === em.toLowerCase() || /^(password|12345678|qwerty)/i.test(p)) { showMsg(box, 'Choose a password that’s harder to guess.'); pw.input.focus(); return; }
       busy(submit, true, 'Creating your account…'); showMsg(box, '');
+      track('signup_submit');
       api('signup?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, password: p, data: nm ? { full_name: nm } : {} })
         .then(function (b) {
           if (b && b.access_token) { saveSession(b); go(); return; }
@@ -330,6 +338,7 @@
   if (hash.get('access_token')) { saveSession({ access_token: hash.get('access_token'), refresh_token: hash.get('refresh_token'), expires_in: +hash.get('expires_in') || 3600 }); go(); return; }
   var s = getSession();
   if (s && s.access_token && s.refresh_token) { signedIn(s); return; }
+  track(MODE === 'signup' ? 'signup_view' : 'login_view');
   if (MODE === 'signup') signupView(); else loginView();
   if (hash.get('error_description')) showMsg(root.querySelector('.msg'), 'That link has expired or was already used. Log in, or ask for a new link.');
 })();

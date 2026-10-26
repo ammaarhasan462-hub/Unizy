@@ -148,6 +148,7 @@ body{margin:0}
 <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57; white-space: nowrap">{{m.tagLabel}}</span>
 </span>
 <span style="font-size: 12px; font-weight: 600; color: #4E4E49">{{m.meta}}</span>
+<span title="{{m.covTip}}" style="align-self: flex-start; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: {{m.covBg}}; color: {{m.covFg}}">{{m.covLabel}}</span>
 <span style="font-size: 13px; line-height: 1.45; color: #5C5C57">{{m.blurb}}</span>
 </span>
 </button>
@@ -255,26 +256,90 @@ body{margin:0}
 </sc-for>
 </div>
 </sc-if>
-<button onClick="{{showToast}}" aria-label="Preview a reminder" style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid #DCDCD6; background: #FFFFFF; color: #141414; display: flex; align-items: center; justify-content: center; cursor: pointer">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
-</button>
 <button onClick="{{account.open}}" title="{{account.title}}" style="font: inherit; min-width: 44px; height: 44px; padding: 0 16px; border-radius: 999px; border: none; background: #141414; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; cursor: pointer">{{account.label}}</button>
 </div>
 </div>
 
-<nav style="display: flex; flex-wrap: wrap; gap: 8px">
-<sc-for list="{{tabs}}" as="t" hint-placeholder-count="7">
-<button class="uz-tab" onClick="{{t.pick}}" aria-current="{{t.current}}" style="font: inherit; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 9px; padding: 7px 18px 7px 7px; min-height: 48px; border-radius: 999px; border: 2px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; cursor: pointer; box-shadow: {{t.shadow}}; transition: transform 0.12s ease, box-shadow 0.12s ease">
-<span style="width: 32px; height: 32px; border-radius: 999px; background: {{t.chipBg}}; color: {{t.chipFg}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
-<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
+<nav aria-label="Main sections" style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px">
+<sc-for list="{{navGroups}}" as="g" hint-placeholder-count="5">
+<button class="uz-group" data-group="{{g.id}}" onClick="{{g.pick}}" aria-current="{{g.current}}" style="font: inherit; text-align: left; display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 9px; min-height: 60px; border-radius: 16px; border: 2px solid {{g.border}}; background: {{g.bg}}; color: {{g.fg}}; cursor: pointer; box-shadow: {{g.shadow}}; transition: transform 0.12s ease, box-shadow 0.12s ease; min-width: 0; position: relative">
+<span style="width: 36px; height: 36px; border-radius: 11px; background: {{g.chipBg}}; color: {{g.chipFg}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="{{g.icon}}"></path></svg>
+</span>
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+<span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.1">{{g.label}}</span>
+<span style="font-size: 12px; font-weight: 600; opacity: {{g.subOp}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{g.sub}}</span>
+</span>
+<sc-if value="{{g.hasBadge}}" hint-placeholder-val="{{ false }}">
+<span style="position: absolute; top: -8px; right: 8px; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; border: 2px solid #FFFFFF; white-space: nowrap">{{g.badge}}</span>
+</sc-if>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{showSubTabs}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+<button class="uz-tab" onClick="{{t.pick}}" aria-current="{{t.current}}" style="font: inherit; font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; padding: 5px 16px 5px 5px; min-height: 42px; border-radius: 999px; border: 2px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; cursor: pointer">
+<span style="width: 28px; height: 28px; border-radius: 999px; background: {{t.chipBg}}; color: {{t.chipFg}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
 </span>
 <span>{{t.label}}</span>
 </button>
 </sc-for>
+</div>
+</sc-if>
 </nav>
 
 <sc-if value="{{tOverview}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; flex-direction: column; gap: 18px">
+<sc-if value="{{ci.open}}" hint-placeholder-val="{{ false }}">
+<section id="checkin" style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.10)">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57">Finished a lecture</span>
+<h2 style="margin: 0; font-size: 21px; font-weight: 800; line-height: 1.25">{{ci.topic}}</h2>
+</div>
+<span style="font-size: 14px; color: #3F3F3B">Here’s what Unizy will set up so this lecture sticks before your next assessment:</span>
+<sc-if value="{{ci.hasMatch}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45"><span style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: {{theme.tint}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">1</span><span><b>Suggested revision:</b> {{ci.cardsLine}}. <button onClick="{{ci.goFlash}}" style="font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; padding: 0; text-decoration: underline; cursor: pointer; color: #141414">Open them</button></span></div>
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45"><span style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: {{theme.tint}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">2</span><span><b>Practice queue:</b> {{ci.qsLine}}.</span></div>
+</div>
+</sc-if>
+<sc-if value="{{ci.noMatch}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; background: #FFF6DA">{{ci.noMatchLine}}</span>
+</sc-if>
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45"><span style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; background: {{theme.tint}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">3</span><span><b>Reviews in your Plan:</b> {{ci.reviewLine}}.</span></div>
+<label style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 700">Anything you didn’t follow? (optional)</span>
+<textarea value="{{ci.q}}" onChange="{{ci.onQ}}" placeholder="e.g. The part about … didn’t make sense to me" style="font: inherit; font-size: 15px; line-height: 1.5; min-height: 70px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; resize: vertical; box-sizing: border-box; width: 100%"></textarea>
+<span style="font-size: 12px; color: #5C5C57">It goes into your practice queue so you can ask {{tutorName}} about it later.</span>
+</label>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button onClick="{{ci.confirm}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add to my plan and queue</button>
+<button onClick="{{ci.cancel}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Cancel</button>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{showStart}}" hint-placeholder-val="{{ true }}">
+<section style="background: #141414; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Start here</h2>
+<span style="display: flex; gap: 12px; align-items: baseline"><span style="font-size: 13px; font-weight: 700; color: #C6F432">{{startCount}}</span><button onClick="{{hideStart}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; color: #CFCFC8; text-decoration: underline; cursor: pointer; padding: 0">Hide</button></span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px">
+<sc-for list="{{startRows}}" as="sr" hint-placeholder-count="5">
+<div style="display: flex; gap: 10px; align-items: center; padding: 12px; border-radius: 14px; background: #232320; opacity: {{sr.op}}">
+<span style="flex: 0 0 auto; width: 24px; height: 24px; border-radius: 7px; border: 2px solid {{sr.boxBorder}}; background: {{sr.boxBg}}; color: {{sr.boxFg}}; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; box-sizing: border-box">{{sr.mark}}</span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto; min-width: 0"><span style="font-size: 14px; font-weight: 700; line-height: 1.3">{{sr.label}}</span><span style="font-size: 12px; color: #BDBDB6; line-height: 1.35">{{sr.sub}}</span></span>
+<sc-if value="{{sr.notDone}}" hint-placeholder-val="{{ true }}">
+<button onClick="{{sr.go}}" style="flex: 0 0 auto; font: inherit; font-size: 12px; font-weight: 800; padding: 7px 11px; border-radius: 999px; border: none; background: #C6F432; color: #141414; cursor: pointer">{{sr.goLabel}}</button>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-if>
 <section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 16px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
 <h2 style="margin: 0; font-size: 18px; font-weight: 700">Year {{year}} at a glance</h2>
@@ -306,7 +371,7 @@ body{margin:0}
 <button onClick="{{res.goQuiz}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Topic test</button>
 </div>
 </div>
-<span style="font-size: 13px; line-height: 1.5; color: #4E4E49">{{res.sub}}</span>
+<span style="display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap"><span title="{{res.cov.tip}}" style="font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: {{res.cov.bg}}; color: {{res.cov.fg}}">{{res.cov.label}}</span><span style="font-size: 13px; line-height: 1.5; color: #4E4E49; flex: 1 1 300px">{{res.sub}}</span></span>
 <div style="display: flex; flex-wrap: wrap; gap: 10px">
 <sc-for list="{{res.decks}}" as="rk" hint-placeholder-count="2">
 <div style="flex: 1 1 260px; border-radius: 14px; padding: 14px 16px; background: {{theme.tint}}; display: flex; flex-direction: column; gap: 4px">
@@ -346,40 +411,73 @@ body{margin:0}
 </sc-if>
 <section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 6px">
 <h2 style="margin: 0 0 4px; font-size: 18px; font-weight: 700">What you're learning, week by week</h2>
+<span style="font-size: 13px; line-height: 1.5; color: #2B2B28; padding: 8px 10px; border-radius: 10px; background: {{theme.tint}}">Press <b>Finished</b> after each lecture: Unizy suggests what to revise, queues practice questions you haven’t done and schedules reviews before your next deadline.</span>
 <span style="font-size: 13px; line-height: 1.5; color: #5C5C57; padding-bottom: 8px">{{weeksNote}}</span>
 <sc-for list="{{weeks}}" as="wk" hint-placeholder-count="5">
 <div style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid #EFEFEA">
 <span style="width: 132px; flex: 0 0 auto; font-size: 12px; font-weight: 600; color: #5C5C57">{{wk.week}}</span>
 <span style="flex: 1 1 auto; font-size: 15px; font-weight: 600; line-height: 1.35">{{wk.topic}}</span>
 <span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: {{wk.pillBg}}; color: {{wk.pillFg}}; white-space: nowrap">{{wk.status}}</span>
+<sc-if value="{{wk.notDone}}" hint-placeholder-val="{{ true }}">
+<button onClick="{{wk.check}}" aria-label="{{wk.checkAria}}" title="Finished this lecture? Queue practice and schedule reviews" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 10px; min-height: 32px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer; white-space: nowrap">Finished</button>
+</sc-if>
+<sc-if value="{{wk.done}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 800; padding: 6px 10px; border-radius: 999px; background: #E3F3E8; color: #1C5E37; white-space: nowrap">{{wk.doneLabel}}</span>
+</sc-if>
 </div>
 </sc-for>
 </section>
 </div>
 <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
-<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
-<h2 style="margin: 0; font-size: 18px; font-weight: 700">Reading</h2>
-<sc-for list="{{reading}}" as="rd" hint-placeholder-count="2">
-<div style="display: flex; gap: 12px; align-items: flex-start">
-<span style="width: 20px; height: 20px; border-radius: 6px; flex: 0 0 auto; margin-top: 2px; box-sizing: border-box; border: 2px solid {{rd.boxBorder}}; background: {{rd.boxBg}}"></span>
-<span style="display: flex; flex-direction: column; gap: 2px">
-<span style="font-size: 15px; font-weight: 600">{{rd.title}}</span>
-<span style="font-size: 13px; color: #5C5C57">{{rd.meta}}</span>
-</span>
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Topics to revise</h2>
+<sc-if value="{{hasWeak}}" hint-placeholder-val="{{ true }}">
+<span style="font-size: 13px; color: #5C5C57">From your latest topic tests (under 60%).</span>
+<sc-for list="{{weakList}}" as="wl" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid #EFEFEA">
+<div style="display: flex; justify-content: space-between; gap: 10px"><span style="font-size: 15px; font-weight: 700; line-height: 1.35">{{wl.name}}</span><span style="font-size: 12px; font-weight: 800; color: #7A0C1D; white-space: nowrap">{{wl.label}}</span></div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<button onClick="{{wl.flash}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Flashcards</button>
+<button onClick="{{wl.test}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Test again</button>
+<button onClick="{{wl.plan}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">Plan 3 reviews</button>
+</div>
 </div>
 </sc-for>
-<sc-if value="{{hasModUrl}}" hint-placeholder-val="{{ true }}">
-<a href="{{activeMod.url}}" target="_blank" rel="noopener" style="font-size: 14px; font-weight: 600; color: #141414">Full reading list via the module page</a>
+</sc-if>
+<sc-if value="{{noWeak}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Take a topic test and any topic under 60% shows up here, with one-click flashcards, retests and review sessions.</span>
+<button onClick="{{goPractise}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">Take a topic test</button>
 </sc-if>
 </section>
-<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
-<h2 style="margin: 0; font-size: 18px; font-weight: 700">Questions to do</h2>
-<sc-for list="{{questions}}" as="qs" hint-placeholder-count="3">
-<div style="display: flex; gap: 12px; align-items: flex-start; justify-content: space-between">
-<span style="font-size: 15px; font-weight: 600; line-height: 1.35">{{qs.title}}</span>
-<span style="font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: {{qs.bg}}; color: {{qs.fg}}; white-space: nowrap">{{qs.meta}}</span>
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Practice queue</h2>
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B"><b>{{pqv.label}}</b>. {{pqv.sub}}</span>
+<sc-if value="{{pqv.hasQs}}" hint-placeholder-val="{{ false }}">
+<button onClick="{{pqv.start}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">{{pqv.startLabel}}</button>
+</sc-if>
+<sc-if value="{{pqv.hasOpen}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57; padding-top: 4px">Questions you still have</span>
+<sc-for list="{{pqv.open}}" as="oq" hint-placeholder-count="1">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: #F6F6F2">
+<span style="font-size: 14px; line-height: 1.45">{{oq.text}}</span>
+<span style="font-size: 12px; color: #5C5C57">{{oq.meta}}</span>
+<span style="display: flex; gap: 6px"><button onClick="{{oq.ask}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">Ask {{tutorName}}</button><button onClick="{{oq.remove}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Remove</button></span>
 </div>
 </sc-for>
+</sc-if>
+</section>
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Coming up</h2>
+<sc-if value="{{hasUpcoming}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{upcoming}}" as="up" hint-placeholder-count="2">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid #EFEFEA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 700">{{up.title}}</span><span style="font-size: 12px; color: #5C5C57">{{up.meta}}</span></span>
+<span style="font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: {{up.bg}}; color: {{up.fg}}; white-space: nowrap">{{up.when}}</span>
+</div>
+</sc-for>
+</sc-if>
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Add your essays, coursework and exams to Plan so reviews land before them.</span>
+<button onClick="{{goPlan}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Open Plan</button>
 </section>
 </div>
 </div>
@@ -574,6 +672,23 @@ Notes file
 <div style="flex: 999 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
 
 <sc-if value="{{tq.setup}}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{tq.pq.has}}" hint-placeholder-val="{{ false }}">
+<section style="background: #141414; color: #FFFFFF; border-radius: 18px; padding: 20px 22px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap">
+<span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #C6F432">Practice queue</span><span style="font-size: 17px; font-weight: 700">{{tq.pq.label}}</span><span style="font-size: 13px; color: #CFCFC8">{{tq.pq.sub}}</span></span>
+<sc-if value="{{tq.pq.hasQs}}" hint-placeholder-val="{{ true }}"><button onClick="{{tq.pq.start}}" style="font: inherit; font-size: 15px; font-weight: 800; padding: 11px 18px; min-height: 46px; border-radius: 999px; border: none; background: #C6F432; color: #141414; cursor: pointer">{{tq.pq.startLabel}}</button></sc-if>
+</section>
+</sc-if>
+<sc-if value="{{tq.hasWeak}}" hint-placeholder-val="{{ false }}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 22px; border: 1.5px solid #F2C9D0; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #7A0C1D">Topics to revise</span>
+<sc-for list="{{tq.weak}}" as="wl" hint-placeholder-count="2">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap">
+<span style="font-size: 14px; font-weight: 700">{{wl.name}} <span style="font-weight: 600; color: #7A0C1D">· {{wl.label}}</span></span>
+<span style="display: flex; gap: 6px"><button onClick="{{wl.test}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">Test again</button><button onClick="{{wl.flash}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Flashcards</button><button onClick="{{wl.plan}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Plan reviews</button></span>
+</div>
+</sc-for>
+</section>
+</sc-if>
 <section style="background: #FFFFFF; border-radius: 18px; padding: 24px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 22px; box-sizing: border-box">
 <div style="display: flex; flex-direction: column; gap: 6px">
 <h2 style="margin: 0; font-size: 22px; font-weight: 700">Build a topic test</h2>
@@ -829,6 +944,8 @@ Notes file
 </sc-for>
 </div>
 
+<span style="font-size: 13px; line-height: 1.5; color: #2B2B28; padding: 10px 14px; border-radius: 10px; background: {{theme.tint}}">{{fc.srsNote}}</span>
+
 <sc-if value="{{fc.adding}}" hint-placeholder-val="{{ false }}">
 <section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1.5px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
 <h3 style="margin: 0; font-size: 17px; font-weight: 700">New flashcard</h3>
@@ -883,6 +1000,10 @@ Notes file
 <button onClick="{{fc.shuffle}}" style="font: inherit; font-size: 15px; font-weight: 600; padding: 12px 20px; min-height: 44px; border-radius: 999px; border: none; background: none; color: #141414; cursor: pointer; text-decoration: underline">{{fc.shuffleLabel}}</button>
 <button onClick="{{fc.toggleHide}}" style="font: inherit; font-size: 15px; font-weight: 600; padding: 12px 20px; min-height: 44px; border-radius: 999px; border: none; background: none; color: #141414; cursor: pointer; text-decoration: underline">{{fc.hideLabel}}</button>
 </div>
+<div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: center; font-size: 13px; color: #4E4E49">
+<span>{{fc.knowHint}}</span>
+<sc-if value="{{fc.showReport}}" hint-placeholder-val="{{ false }}"><a href="{{fc.report}}" style="color: #4E4E49">Report a mistake in this card</a></sc-if>
+</div>
 </div>
 </sc-if>
 
@@ -911,35 +1032,91 @@ Notes file
 <sc-if value="{{tTime}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-direction: column; gap: 16px">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; background: #FFFFFF; border: 1px solid #E4E4DE; border-radius: 16px; padding: 14px 18px">
-<button onClick="{{toggleRemind}}" style="font: inherit; display: flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; color: #141414; padding: 0">
-<span style="width: 44px; height: 26px; border-radius: 999px; background: {{remindTrack}}; position: relative; display: block; flex: 0 0 auto">
-<span style="position: absolute; top: 3px; left: {{remindKnob}}px; width: 20px; height: 20px; border-radius: 999px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.25)"></span>
-</span>
-<span style="font-size: 15px; font-weight: 600">Notify me 10 minutes before each event</span>
-</button>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+<button onClick="{{pl.prev}}" aria-label="Previous week" style="font: inherit; font-size: 18px; font-weight: 700; width: 40px; height: 40px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer">‹</button>
+<span style="display: flex; flex-direction: column; gap: 1px; min-width: 150px"><span style="font-size: 16px; font-weight: 800">{{pl.weekLabel}}</span><span style="font-size: 12px; color: #5C5C57">{{pl.range}}</span></span>
+<button onClick="{{pl.next}}" aria-label="Next week" style="font: inherit; font-size: 18px; font-weight: 700; width: 40px; height: 40px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer">›</button>
+<sc-if value="{{pl.notThisWeek}}" hint-placeholder-val="{{ false }}"><button onClick="{{pl.thisWeek}}" style="font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; text-decoration: underline; cursor: pointer; color: #141414">Back to this week</button></sc-if>
+</div>
 <div style="display: flex; gap: 8px; flex-wrap: wrap">
-<button onClick="{{showToast}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Preview a reminder</button>
-<button style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">+ Add lecture or society</button>
+<button onClick="{{pl.addClass}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">+ Class</button>
+<button onClick="{{pl.addDeadline}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">+ Deadline or exam</button>
+<button onClick="{{pl.addSession}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">+ Revision session</button>
 </div>
 </div>
-<span style="font-size: 13px; color: #5C5C57">Sample week built from your Term 1 modules. Times and rooms come from your {{uni.short}} timetable once connected.</span>
-<div style="display: flex; flex-wrap: wrap; gap: 12px">
-<sc-for list="{{days}}" as="dy" hint-placeholder-count="5">
-<div style="flex: 1 1 170px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E4DE; border-radius: 16px; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; min-height: 360px">
-<span style="font-size: 14px; font-weight: 700; padding-bottom: 8px; border-bottom: 1px solid #EFEFEA">{{dy.day}}</span>
+<span style="font-size: 13px; color: #4E4E49">{{pl.summary}}. Classes repeat every week. Finishing a lecture in Learn, or planning reviews for a weak topic, adds sessions here automatically.</span>
+
+<sc-if value="{{pl.adding}}" hint-placeholder-val="{{ false }}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 14px">
+<h3 style="margin: 0; font-size: 18px; font-weight: 800">{{pl.formTitle}}</h3>
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Title</span>
+<input type="text" value="{{pl.title}}" onChange="{{pl.onTitle}}" placeholder="{{pl.titlePh}}" style="font: inherit; font-size: 15px; padding: 11px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; width: 100%"></label>
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Module</span>
+<div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{pl.mods}}" as="pm" hint-placeholder-count="3"><button onClick="{{pm.pick}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 7px 11px; border-radius: 9px; border: 2px solid {{pm.border}}; background: {{pm.bg}}; color: #141414; cursor: pointer">{{pm.label}}</button></sc-for></div></div>
+<div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end">
+<sc-if value="{{pl.isClass}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Day (every week)</span>
+<div style="display: flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{pl.dows}}" as="dw" hint-placeholder-count="7"><button onClick="{{dw.pick}}" style="font: inherit; font-size: 13px; font-weight: 700; width: 46px; height: 40px; border-radius: 10px; border: 1.5px solid #DADAD4; background: {{dw.bg}}; color: {{dw.fg}}; cursor: pointer">{{dw.label}}</button></sc-for></div></div>
+</sc-if>
+<sc-if value="{{pl.notClass}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Date</span>
+<input type="date" value="{{pl.date}}" onChange="{{pl.onDate}}" style="font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 44px"></label>
+</sc-if>
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Time (optional)</span>
+<input type="time" value="{{pl.time}}" onChange="{{pl.onTime}}" style="font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 44px"></label>
+</div>
+<sc-if value="{{pl.hasErr}}" hint-placeholder-val="{{ false }}"><span style="font-size: 14px; color: #9A1B12">{{pl.err}}</span></sc-if>
+<div style="display: flex; gap: 8px"><button onClick="{{pl.save}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Save</button><button onClick="{{pl.cancel}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Cancel</button></div>
+</section>
+</sc-if>
+
+<sc-if value="{{pl.isEmpty}}" hint-placeholder-val="{{ false }}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1.5px dashed #CFCFC8; font-size: 15px; line-height: 1.6; color: #3F3F3B">Your plan is empty. Add your weekly lectures and seminars once with <b>+ Class</b>, add essays and exams with <b>+ Deadline or exam</b>, and Unizy fits revision sessions around them.</section>
+</sc-if>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px">
+<sc-for list="{{pl.days}}" as="dy" hint-placeholder-count="7">
+<div style="min-width: 0; background: #FFFFFF; border: 1px solid #E4E4DE; border-radius: 16px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; min-height: 180px">
+<span style="font-size: 13px; font-weight: 800; padding: 6px 8px; border-radius: 10px; background: {{dy.headBg}}; color: {{dy.headFg}}">{{dy.day}}</span>
 <sc-for list="{{dy.events}}" as="ev" hint-placeholder-count="2">
-<div style="border-radius: 12px; padding: 12px; background: {{ev.bg}}; color: {{ev.fg}}; border: 1.5px solid {{ev.border}}; display: flex; flex-direction: column; gap: 4px">
-<span style="font-size: 12px; font-weight: 700; opacity: 0.85">{{ev.time}} · {{ev.kind}}</span>
-<span style="font-size: 14px; font-weight: 600; line-height: 1.3">{{ev.title}}</span>
+<div style="border-radius: 12px; padding: 10px; background: {{ev.bg}}; color: {{ev.fg}}; border: 1.5px solid {{ev.border}}; display: flex; flex-direction: column; gap: 4px; opacity: {{ev.op}}">
+<span style="font-size: 11px; font-weight: 800; opacity: 0.85">{{ev.time}} {{ev.meta}}</span>
+<span style="font-size: 13px; font-weight: 700; line-height: 1.3; text-decoration: {{ev.strike}}">{{ev.title}}</span>
+<span style="display: flex; gap: 8px; align-items: center">
+<sc-if value="{{ev.canTick}}" hint-placeholder-val="{{ true }}"><button onClick="{{ev.tick}}" style="font: inherit; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; border: 1.5px solid currentColor; background: transparent; color: inherit; cursor: pointer">{{ev.tickLabel}}</button></sc-if>
+<button onClick="{{ev.remove}}" aria-label="{{ev.removeAria}}" style="font: inherit; font-size: 14px; font-weight: 700; margin-left: auto; width: 26px; height: 26px; border-radius: 8px; border: none; background: transparent; color: inherit; cursor: pointer; opacity: 0.7">×</button>
+</span>
 </div>
 </sc-for>
 </div>
 </sc-for>
 </div>
-<div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: #4E4E49">
-<span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: {{theme.c1}}"></span>Lecture</span>
-<span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: {{theme.tint}}; border: 1.5px solid {{theme.c1}}; box-sizing: border-box"></span>Seminar</span>
-<span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #FFE9A8"></span>Society</span>
+
+<div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+<section style="flex: 1 1 320px; background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Deadlines and exams</h2>
+<sc-if value="{{pl.hasUpcoming}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{pl.upcoming}}" as="up" hint-placeholder-count="2">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid #EFEFEA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 700">{{up.title}}</span><span style="font-size: 12px; color: #5C5C57">{{up.meta}}</span></span>
+<span style="font-size: 12px; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: {{up.bg}}; color: {{up.fg}}; white-space: nowrap">{{up.when}}</span>
+</div>
+</sc-for>
+</sc-if>
+<span style="font-size: 13px; color: #5C5C57">Reviews from finished lectures are placed the day before your next deadline for that module.</span>
+</section>
+<section style="flex: 1 1 320px; background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Suggested revision</h2>
+<sc-if value="{{pl.hasWeak}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{pl.weak}}" as="wl" hint-placeholder-count="2">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #EFEFEA; flex-wrap: wrap">
+<span style="font-size: 14px; font-weight: 700">{{wl.name}} <span style="font-weight: 600; color: #7A0C1D">· {{wl.label}}</span></span>
+<button onClick="{{wl.plan}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; min-height: 38px; border-radius: 999px; cursor: pointer; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}">Plan 3 reviews</button>
+</div>
+</sc-for>
+</sc-if>
+<span style="font-size: 13px; color: #5C5C57">Weak topics from your tests in {{activeMod.name}} appear here. Switch module on the left to plan for another.</span>
+</section>
 </div>
 </div>
 </sc-if>
@@ -1182,6 +1359,57 @@ Notes file
 <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0; max-width: min(620px, 78%); align-items: {{m.align}}">
 <span style="font-size: 12px; font-weight: 700; color: #3F3F3B">{{m.who}} <span style="font-weight: 500; color: #6A6A63">{{m.time}}</span></span>
 <span style="font-size: 15px; line-height: 1.5; padding: 9px 13px; border-radius: {{m.radius}}; background: {{m.bg}}; color: {{m.fg}}; border: 1px solid {{m.border}}; white-space: pre-wrap; overflow-wrap: anywhere">{{m.text}}</span>
+<sc-if value="{{m.hasSrc}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 600; color: #5C5C57">Sources: {{m.srcText}}</span></sc-if>
+<sc-if value="{{m.noSrcAi}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #5C5C57">No sources given: treat this as general AI knowledge and check it.</span></sc-if>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{m.share}}" hint-placeholder-val="{{ false }}">
+<div data-share="{{m.id}}" style="flex: 0 0 auto; align-self: stretch; max-width: 640px; border: 2px solid {{m.accent}}; border-radius: 16px; background: #FFFFFF; overflow: hidden">
+<div style="display: flex; gap: 10px; align-items: center; padding: 10px 14px; background: {{m.tint}}">
+<span style="width: 30px; height: 30px; border-radius: 9px; background: {{m.accent}}; color: {{m.onAccent}}; display: flex; align-items: center; justify-content: center; font-weight: 900; flex: 0 0 auto">{{m.icon}}</span>
+<span style="display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #3F3F3B">{{m.kindLabel}} · {{m.who}} <span style="font-weight: 500; text-transform: none; letter-spacing: 0">{{m.time}}</span></span><span style="font-size: 15px; font-weight: 800; line-height: 1.3">{{m.title}}</span></span>
+<span style="font-size: 12px; color: #4E4E49; white-space: nowrap">{{m.meta}}</span>
+</div>
+<div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{m.isCards}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{m.preview}}" as="pc" hint-placeholder-count="3">
+<div style="border-radius: 10px; background: #F6F6F2; padding: 8px 10px; font-size: 13px; line-height: 1.45"><b>{{pc.f}}</b><br>{{pc.b}}</div>
+</sc-for>
+<sc-if value="{{m.hasMore}}" hint-placeholder-val="{{ false }}"><button onClick="{{m.toggleMore}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0; color: #141414">{{m.moreLabel}}</button></sc-if>
+</sc-if>
+<sc-if value="{{m.isNote}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 10px; background: #FBFAF4; border: 1px solid #E7E2D3; padding: 10px 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere">{{m.noteText}}</div>
+<sc-if value="{{m.hasMore}}" hint-placeholder-val="{{ false }}"><button onClick="{{m.toggleMore}}" style="align-self: flex-start; font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0; color: #141414">{{m.moreLabel}}</button></sc-if>
+</sc-if>
+<sc-if value="{{m.isPrep}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{m.points}}" as="pt" hint-placeholder-count="3">
+<button onClick="{{pt.toggle}}" style="font: inherit; text-align: left; display: flex; gap: 10px; align-items: flex-start; border: none; background: none; padding: 4px 0; cursor: pointer; color: #141414">
+<span style="flex: 0 0 auto; width: 22px; height: 22px; border-radius: 6px; border: 2px solid {{pt.boxBorder}}; background: {{pt.boxBg}}; color: {{pt.boxFg}}; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 900; box-sizing: border-box; margin-top: 1px">{{pt.box}}</span>
+<span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 600; line-height: 1.4">{{pt.text}}</span><span style="font-size: 12px; color: #5C5C57">{{pt.who}}</span></span>
+</button>
+</sc-for>
+</sc-if>
+<sc-if value="{{m.isQuiz}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{m.taking}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; font-weight: 800; color: #5C5C57">{{m.qNum}}</span>
+<span style="font-size: 15px; font-weight: 700; line-height: 1.4">{{m.qText}}</span>
+<sc-for list="{{m.qOpts}}" as="qo" hint-placeholder-count="4">
+<button onClick="{{qo.pick}}" style="font: inherit; text-align: left; font-size: 14px; padding: 9px 12px; border-radius: 10px; border: 2px solid {{qo.border}}; background: {{qo.bg}}; color: #141414; cursor: pointer; line-height: 1.4">{{qo.label}}</button>
+</sc-for>
+<sc-if value="{{m.answered}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 13px; line-height: 1.5; background: #F3F3EF; border-radius: 10px; padding: 8px 10px">{{m.why}}</span>
+<span style="display: flex; gap: 8px"><button onClick="{{m.next}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: none; background: {{m.accent}}; color: {{m.onAccent}}">{{m.nextLabel}}</button><button onClick="{{m.quit}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: 1.5px solid #141414; background: #FFFFFF; color: #141414">Stop</button></span>
+</sc-if>
+</sc-if>
+</sc-if>
+<span style="font-size: 12px; color: #4E4E49">{{m.status}}</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<sc-if value="{{m.isCards}}" hint-placeholder-val="{{ false }}"><button onClick="{{m.act}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: none; background: {{m.accent}}; color: {{m.onAccent}}">{{m.actLabel}}</button></sc-if>
+<sc-if value="{{m.isNote}}" hint-placeholder-val="{{ false }}"><button onClick="{{m.act}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: none; background: {{m.accent}}; color: {{m.onAccent}}">{{m.actLabel}}</button></sc-if>
+<sc-if value="{{m.isQuiz}}" hint-placeholder-val="{{ false }}"><sc-if value="{{m.notTaking}}" hint-placeholder-val="{{ true }}"><button onClick="{{m.act}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: none; background: {{m.accent}}; color: {{m.onAccent}}">{{m.actLabel}}</button></sc-if></sc-if>
+<sc-if value="{{m.mine}}" hint-placeholder-val="{{ false }}"><button onClick="{{m.remove}}" style="font: inherit; font-size: 12px; font-weight: 600; border: none; background: none; color: #9A1B12; cursor: pointer; text-decoration: underline; margin-left: auto">{{m.removeLabel}}</button></sc-if>
+</div>
 </div>
 </div>
 </sc-if>
@@ -1195,7 +1423,23 @@ Notes file
 </div>
 
 <div style="padding: 10px 14px 14px; border-top: 1px solid #ECECE6; display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{fg.shareOpen}}" hint-placeholder-val="{{ false }}">
+<div style="border: 2px solid {{theme.btn}}; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap"><span style="font-size: 14px; font-weight: 800">Share with the group · {{fg.shModule}}</span><button onClick="{{fg.toggleShare}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer; color: #141414">Close</button></div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{fg.shareTypes}}" as="st" hint-placeholder-count="4"><button onClick="{{st.pick}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 12px; min-height: 36px; border-radius: 999px; cursor: pointer; border: 1.5px solid {{st.border}}; background: {{st.bg}}; color: {{st.fg}}">{{st.label}}</button></sc-for></div>
+<sc-if value="{{fg.hasShareChoices}}" hint-placeholder-val="{{ true }}"><div style="display: flex; gap: 6px; flex-wrap: wrap; max-height: 150px; overflow: auto"><sc-for list="{{fg.shareChoices}}" as="sc" hint-placeholder-count="4"><button onClick="{{sc.pick}}" style="font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 9px; border: 1.5px solid {{sc.border}}; background: {{sc.bg}}; color: {{sc.fg}}; cursor: pointer; text-align: left">{{sc.label}}</button></sc-for></div></sc-if>
+<sc-if value="{{fg.shEmpty}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #4E4E49">{{fg.shEmptyText}}</span></sc-if>
+<sc-if value="{{fg.shIsQuiz}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 6px"><sc-for list="{{fg.shQuizSizes}}" as="qs" hint-placeholder-count="2"><button onClick="{{qs.pick}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 9px; border: 1.5px solid {{qs.border}}; background: {{qs.bg}}; color: {{qs.fg}}; cursor: pointer">{{qs.label}}</button></sc-for></div></sc-if>
+<sc-if value="{{fg.shIsPrep}}" hint-placeholder-val="{{ false }}">
+<input type="text" data-fg-prep-title="1" value="{{fg.shPrepTitle}}" onChange="{{fg.onPrepTitle}}" placeholder="Seminar title, e.g. Week 5: Sovereignty" maxlength="140" style="font: inherit; font-size: 15px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8">
+<textarea data-fg-prep-points="1" value="{{fg.shPrepText}}" onChange="{{fg.onPrepText}}" placeholder="One reading or discussion question per line" style="font: inherit; font-size: 14px; line-height: 1.5; min-height: 90px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #CFCFC8; resize: vertical"></textarea>
+</sc-if>
+<span style="font-size: 12px; color: #4E4E49; line-height: 1.45">{{fg.sharePrivacy}}</span>
+<button onClick="{{fg.shareGo}}" style="align-self: flex-start; font: inherit; font-size: 14px; font-weight: 800; padding: 9px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fg.shGoLabel}}</button>
+</div>
+</sc-if>
 <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center">
+<sc-if value="{{fg.shareClosed}}" hint-placeholder-val="{{ true }}"><button onClick="{{fg.toggleShare}}" style="font: inherit; font-size: 12px; font-weight: 800; padding: 5px 10px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">+ Share cards, a quiz, seminar prep or a note</button></sc-if>
 <span style="font-size: 12px; font-weight: 600; color: #4E4E49">Ask the tutor:</span>
 <sc-for list="{{fg.mentions}}" as="mn" hint-placeholder-count="2">
 <button onClick="{{mn.insert}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1.5px solid {{theme.btn}}; background: {{theme.tint}}; color: #141414; cursor: pointer">{{mn.label}}</button>
@@ -1581,6 +1825,23 @@ Notes file
 <div style="align-self: {{tm.align}}; max-width: 86%; display: flex; flex-direction: column; gap: 6px">
 <span style="font-size: 13px; font-weight: 700">{{tm.who}}</span>
 <div style="background: {{tm.bg}}; color: {{tm.fg}}; border-radius: {{tm.radius}}; padding: 13px 16px; font-size: 15px; line-height: 1.6; white-space: pre-line">{{tm.text}}</div>
+<sc-if value="{{tm.hasSrc}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+<span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57">Sources</span>
+<sc-for list="{{tm.src}}" as="sx" hint-placeholder-count="2">
+<span title="{{sx.tip}}" style="font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: {{sx.bg}}; color: {{sx.fg}}">{{sx.label}}</span>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{tm.noSrc}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 12px; color: #5C5C57">No sources listed for this answer, so treat it as general AI knowledge and check it.</span>
+</sc-if>
+<sc-if value="{{tm.isAi}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 14px; font-size: 12px; flex-wrap: wrap">
+<sc-if value="{{tm.hasUrl}}" hint-placeholder-val="{{ true }}"><a href="{{tm.url}}" target="_blank" rel="noopener" style="color: #141414; font-weight: 700">Official module page</a></sc-if>
+<a href="{{tm.report}}" style="color: #5C5C57">Report a mistake</a>
+</div>
+</sc-if>
 </div>
 </sc-for>
 <sc-if value="{{tBusy}}" hint-placeholder-val="{{ false }}">
@@ -1623,16 +1884,16 @@ Notes file
 </sc-if>
 
 <sc-if value="{{toastOn}}" hint-placeholder-val="{{ false }}">
-<div role="status" style="position: absolute; top: 24px; right: 36px; width: 340px; max-width: calc(100% - 48px); background: #141414; color: #FFFFFF; border-radius: 16px; padding: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.25); display: flex; gap: 14px; align-items: flex-start; z-index: 5">
+<div role="status" style="position: fixed; top: 24px; right: 24px; width: 340px; max-width: calc(100% - 48px); background: #141414; color: #FFFFFF; border-radius: 16px; padding: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.25); display: flex; gap: 14px; align-items: flex-start; z-index: 5">
 <span style="width: 40px; height: 40px; border-radius: 12px; background: {{theme.c1}}; color: {{theme.on1}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
 </span>
 <div style="display: flex; flex-direction: column; gap: 3px; flex: 1 1 auto; min-width: 0">
-<span style="font-size: 12px; font-weight: 600; color: #BDBDB6">Unizy · in 10 minutes</span>
+<span style="font-size: 12px; font-weight: 600; color: #BDBDB6">Unizy</span>
 <span style="font-size: 15px; font-weight: 700">{{toastTitle}}</span>
 <span style="font-size: 13px; color: #D6D6CF">{{toastSub}}</span>
 </div>
-<button onClick="{{hideToast}}" aria-label="Dismiss reminder" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
+<button onClick="{{hideToast}}" aria-label="Dismiss" style="width: 32px; height: 32px; border-radius: 8px; border: none; background: none; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
 </button>
 </div>
@@ -1643,7 +1904,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=8"></script><script src="/assets/web.js?v=8"></script><script src="/assets/social.js?v=8"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=9"></script><script src="/assets/web.js?v=9"></script><script src="/assets/social.js?v=9"></script><script>
 class Component extends DCLogic {
   static dataUrl() { return '/data/modules.json'; }
 
@@ -1901,7 +2162,8 @@ class Component extends DCLogic {
       'You are ' + ctx.tutorName + ', the Unizy AI tutor for ' + ctx.mod.name + ' on ' + ctx.degName + ' at ' + ctx.uniFull + '. You are a friendly cat in ' + ctx.uniShort + ' colours ' + (ctx.isMed ? 'wearing a stethoscope' : 'wearing a professor’s mortarboard') + ', but you answer as a rigorous, patient university ' + (ctx.isMed ? 'clinical teacher' : 'tutor') + ': explain clearly, use examples from this course, check understanding, and point the student to the right topic. Keep cat jokes to a rare light touch.',
       'Ground every answer in the COURSE KNOWLEDGE below, which is this module’s official outline and the checked Unizy library notes and mark schemes for it. Teach it the way ' + ctx.uniShort + ' teaches it at Year ' + ctx.year + ' level. If the question goes beyond the knowledge, answer from established knowledge and say so.',
       '=== COURSE KNOWLEDGE ===', pack.text, '=== END ===',
-      'Stay accurate and current. Never invent cases, statutes, studies, statistics or quotations; say when you are unsure. Plain Unicode for maths. No drug doses. Keep answers focused (usually under 250 words) unless asked for more.'
+      'Stay accurate and current. Never invent cases, statutes, studies, statistics or quotations; say when you are unsure. Plain Unicode for maths. No drug doses. Keep answers focused (usually under 250 words) unless asked for more.',
+      'SOURCES. Students must be able to check where your answer comes from. In the answer, put “(general knowledge)” straight after any claim that is not supported by the COURSE KNOWLEDGE. Then end with one final line that starts with “SOURCES:” and lists, separated by semicolons, only what you actually used: “Outline” for the official module outline or topic list; “Library: ” followed by the exact note title after ## for each Unizy library note; “Your notes: ” followed by the title for the student’s own notes; and “General knowledge” if anything went beyond the COURSE KNOWLEDGE. Never list a source you did not use.'
     ].join('\n');
     const sent = turns.slice(-12).map((t) => ({ role: t.role, content: String(t.content).slice(0, 4000) }));
     if (extra && sent.length) sent[sent.length - 1] = { role: 'user', content: sent[sent.length - 1].content + '\n\n(More course notes relevant to this question:\n' + extra.slice(0, 6000) + ')' };
@@ -2077,6 +2339,7 @@ class Component extends DCLogic {
     const tutorMono = isMed ? 'Dr' : 'Prof';
     const lc = (t) => t ? t.charAt(0).toLowerCase() + t.slice(1) : '';
 
+    const covOf = (m) => (m && m.L && m.L.length) ? (m.Lf ? { label: 'Closest library', bg: '#FFE9A8', fg: '#3D2E00', tip: 'No exact Unizy library for this module yet, so you get the closest one for your degree.' } : { label: 'Subject library', bg: '#DDF0C9', fg: '#24400B', tip: 'Matched to a Unizy library for this subject: notes, flashcards and test questions written for the subject, not your lecturer’s slides.' }) : { label: 'Outline only', bg: '#E6E6E0', fg: '#3F3F3B', tip: 'No library material yet: official outline, your own notes and cards, and the AI tutor.' };
     // ---- onboarding ----
     const stepIdx = { uni: 0, degree: 1, modules: 2, app: 3 }[screen] || 0;
     const stepDots = [0, 1, 2].map((i) => ({ w: i === stepIdx ? 28 : 8, op: i <= stepIdx ? 1 : 0.4 }));
@@ -2155,6 +2418,7 @@ class Component extends DCLogic {
             name: m.name, checked, meta: metaOf(m) + (m.groupDetail ? ' · ' + m.groupDetail : ''),
             blurb: blurb.length > 190 ? blurb.slice(0, 187).replace(/\s+\S*$/, '') + '…' : blurb,
             tagLabel: m.locked ? 'Compulsory' : m.notRunning ? 'Unavailable' : 'Optional',
+            covLabel: covOf(m).label, covBg: covOf(m).bg, covFg: covOf(m).fg, covTip: covOf(m).tip,
             border: checked ? theme.c1 : '#E4E4DE', bg: checked ? theme.tint : '#FFFFFF',
             boxBg: checked ? theme.btn : '#FFFFFF', boxBorder: checked ? theme.btn : '#BDBDB6',
             boxRadius: m.radio ? '999px' : '7px',
@@ -2188,19 +2452,42 @@ class Component extends DCLogic {
 
     // ---- dashboard basics ----
     const tab = get('tab', 'overview');
-    const TABS = [['overview', 'Year overview'], ['notes', 'Notes'], ['quiz', 'Topic tests'], ['flash', 'Flashcards'], ['assess', 'Assess practice'], ['time', 'Timetable'], ['friends', 'Friend groups'], ['tutor', tutorName]];
-    const tabs = TABS.map(([id, label]) => {
-      const on = id === tab;
-      const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
-      const strong = lightTheme ? theme.onBtn : theme.btn, onStrong = lightTheme ? '#FFFFFF' : theme.onBtn;
-      return {
-        label, icon: ICONS[id], current: on ? 'page' : 'false',
-        bg: on ? strong : theme.tint, fg: on ? onStrong : '#141414', border: strong,
-        chipBg: on ? onStrong : strong, chipFg: on ? strong : onStrong,
-        shadow: on ? '0 6px 16px rgba(0,0,0,0.22)' : '0 2px 0 rgba(0,0,0,0.10)',
-        pick: () => set({ tab: id })
-      };
-    });
+    const startState = store['unizy:start'] || {};
+    const bumpStart = (patch) => { const ns = Object.assign({}, startState, patch); if (!startState.first) ns.first = Date.now(); self.save('unizy:start', ns); };
+    const notify = (title, sub) => { set({ toastMsg: { title, sub: sub || '' } }); clearTimeout(self._toastT); self._toastT = setTimeout(() => { try { self.setState({ toastMsg: null }); } catch (e) { /* ignore */ } }, 6000); };
+    const DAY = 86400000;
+    const nowTs = Date.now();
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const ymd = (d) => d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+    const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const parseYmd = (t) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(t || '')); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; };
+    const daysFrom = (t) => { const d = parseYmd(t); return d ? Math.round((d - today0) / DAY) : null; };
+    const whenLabel = (n) => n === 0 ? 'today' : n === 1 ? 'tomorrow' : n === -1 ? 'yesterday' : n < 0 ? Math.abs(n) + ' days ago' : 'in ' + n + ' days';
+    const fmtDay = (d) => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const mailReport = (what, text) => 'mailto:' + ((typeof window !== 'undefined' && window.UNIZY_CONFIG && window.UNIZY_CONFIG.contactEmail) || 'hello@unizy.uk') + '?subject=' + encodeURIComponent('Unizy mistake report: ' + what) + '&body=' + encodeURIComponent('What looks wrong, and why (a source helps):\n\n\n---\n' + String(text || '').slice(0, 900));
+    // ---- plan (classes, deadlines, revision sessions) ----
+    const planKey = 'unizy:plan';
+    const planItems = (store[planKey] && store[planKey].items) || [];
+    const savePlan = (items) => { self.save(planKey, { items }); };
+    const nextDeadline = (modName) => {
+      const ds = planItems.filter((x) => x.kind === 'deadline' && !x.done && daysFrom(x.date) !== null && daysFrom(x.date) >= 2).sort((a, b) => (a.date < b.date ? -1 : 1));
+      return ds.find((x) => x.mod === modName) || ds[0] || null;
+    };
+    // review sessions after 1 and 3 days, and the day before the next deadline (or after a week)
+    const reviewDates = (modName) => {
+      const out = [addDays(today0, 1), addDays(today0, 3)];
+      const dl = nextDeadline(modName); let why = 'a week later';
+      if (dl && daysFrom(dl.date) > 4 && daysFrom(dl.date) <= 42) { out.push(addDays(parseYmd(dl.date), -1)); why = 'the day before ' + dl.title; }
+      else out.push(addDays(today0, 7));
+      return { dates: out, why };
+    };
+    const addSessions = (topicName, modName, extra) => {
+      const rd = reviewDates(modName);
+      const items = planItems.concat(rd.dates.map((d, i) => Object.assign({ id: 's' + Date.now() + i, kind: 'session', title: (i === 0 ? 'Review: ' : i === 1 ? 'Test yourself: ' : 'Final review: ') + topicName, mod: modName, date: ymd(d), time: '18:00', done: false }, extra || {})));
+      savePlan(items); bumpStart({ plan: 1 });
+      return rd;
+    };
     const resetModState = { fi: 0, flipped: false, fdeck: 'all', note: 0, tTopic: 'all', test: null, fLimit: 60 };
     const sideMods = selMods.map((m) => {
       const on = m.key === activeMod.key;
@@ -2235,18 +2522,18 @@ class Component extends DCLogic {
         const range = la === lb ? (wa === wb ? 'Week ' + wa : 'Weeks ' + wa + '–' + wb) : 'Week ' + wa + ' on';
         let status = 'Coming up';
         if (!la) status = 'Rotation';
-        else if (la === 1) { if (lb === 1 && wb < nowWeek) status = 'Done'; else if (wa <= nowWeek) status = 'This week'; }
+        else if (la === 1) { if (lb === 1 && wb < nowWeek) status = 'Past week'; else if (wa <= nowWeek) status = 'This week'; }
         else status = tname(la);
         return { week: (la ? tname(la) + ' · ' : '') + range, topic: tp, status };
       });
     };
     const plan = planWeeks(activeMod);
-    const pill = (st) => st === 'Done' ? ['#E3F3E8', '#1C5E37'] : st === 'This week' ? [theme.c1, theme.on1] : ['#F0F0EB', '#4E4E49'];
+    const pill = (st) => st === 'Past week' ? ['#E3F3E8', '#1C5E37'] : st === 'This week' ? [theme.c1, theme.on1] : ['#F0F0EB', '#4E4E49'];
     const weeks = plan.map((w) => { const p = pill(w.status); return Object.assign({}, w, { pillBg: p[0], pillFg: p[1] }); });
     let weeksNote = 'Topics are in the order ' + (uni ? uni.short : 'the university') + '’s official course pages list them. Exact week dates aren’t published, so the weeks are Unizy’s estimate; your module’s own page (Moodle, Canvas or the lecture list) has the timetable.';
     if (!plan.length) weeksNote = modsLoading ? 'Loading the module outline…' : 'No topic list is published for this module yet. Add your lecture notes and Unizy will build the weekly plan from them.';
     const nowIdx = plan.findIndex((w) => w.status === 'This week');
-    const doneIdx = plan.map((w, i) => w.status === 'Done' ? i : -1).filter((i) => i >= 0);
+    const doneIdx = plan.map((w, i) => w.status === 'Past week' ? i : -1).filter((i) => i >= 0);
     const curI = nowIdx >= 0 ? nowIdx : (doneIdx.length ? Math.min(doneIdx[doneIdx.length - 1] + 1, plan.length - 1) : 0);
     const reading = plan.length ? [
       { title: topics[curI], meta: 'Prepare before this week’s session', done: false },
@@ -2322,10 +2609,15 @@ class Component extends DCLogic {
     const noteCards = store['unizy:' + mk + ':notecards'] || [];
     const allCards = libCards.concat(aiCards, myCards, noteCards);
     const known = store['unizy:' + mk + ':known'] || {};
+    const srsKey = 'unizy:' + mk + ':srs';
+    const srs = store[srsKey] || {};
+    const isDue = (c) => { const r = srs[c.id]; return !!r && r[1] <= nowTs; };
+    const INTERVALS = [1, 3, 7, 14, 30, 60];
     const fdeck = get('fdeck', 'all');
     const hideKnown = !!get('fhide', false);
     const inDeck = (c) => {
       if (fdeck === 'all') return true;
+      if (fdeck === 'due') return isDue(c);
       if (fdeck === 'mine') return c.src === 'mine';
       if (fdeck === 'notes') return c.src === 'notes';
       if (fdeck === 'ai') return c.src === 'ai';
@@ -2352,11 +2644,21 @@ class Component extends DCLogic {
       if (!card) return;
       const k = Object.assign({}, known); if (val) k[card.id] = 1; else delete k[card.id];
       self.save(keyKnown, k);
-      set({ fi: hideKnown && val ? fi : fi + 1, flipped: false });
+      const r = srs[card.id] || [0, 0];
+      const box = val ? Math.min(INTERVALS.length, r[0] + 1) : 0;
+      const ns = Object.assign({}, srs); ns[card.id] = [box, val ? Date.now() + INTERVALS[box - 1] * DAY - 3600000 : Date.now()];
+      self.save(srsKey, ns);
+      bumpStart({ cards: (startState.cards || 0) + 1 });
+      const leaving = (hideKnown && val) || (fdeck === 'due' && val);
+      set({ fi: leaving ? fi : fi + 1, flipped: false });
     };
+    const dueCards = allCards.filter(isDue);
+    const futureDue = Object.keys(srs).map((k2) => srs[k2][1]).filter((t) => t > nowTs).sort((a, b) => a - b);
+    const nextBox = card ? Math.min(INTERVALS.length, ((srs[card.id] || [0])[0]) + 1) : 1;
     const selBank = String(fdeck).indexOf('b:') === 0 ? fdeck.slice(2) : String(fdeck).indexOf('bt:') === 0 ? fdeck.split(':')[1] : null;
     const chip = (id, label) => ({ label, border: fdeck === id ? theme.c1 : '#E4E4DE', bg: fdeck === id ? theme.tint : '#FFFFFF', pick: () => set({ fdeck: id, fi: 0, flipped: false, fLimit: 60 }) });
     let decks = [chip('all', 'All cards (' + allCards.length + ')')];
+    if (dueCards.length || Object.keys(srs).length) decks.unshift(chip('due', 'Due for review (' + dueCards.length + ')'));
     linkIds.forEach((id) => { decks.push(chip('b:' + id, bTitle(id) + ' (' + libCards.filter((c) => c.bank === id).length + ')')); });
     if (selBank) bTopics(selBank).forEach((t, i) => { decks.push(chip('bt:' + selBank + ':' + i, '↳ ' + t + ' (' + libCards.filter((c) => c.bank === selBank && c.t === i).length + ')')); });
     if (aiCards.length) decks.push(chip('ai', 'AI-made (' + aiCards.length + ')'));
@@ -2395,7 +2697,11 @@ class Component extends DCLogic {
         self.save('unizy:' + mk + ':mine', myCards.concat([{ id: 'm' + Date.now(), t: newT, bank: null, f, b, d: 1, src: 'mine' }]));
         set({ newF: '', newB: '' });
       },
-      empty: !deck.length, emptyText: hideKnown && deckSize ? 'You know every card in this deck. Show known cards again, or pick another deck.' : (fdeck === 'mine' ? 'You haven’t made any cards for this module yet. Use “+ Add your own card”.' : fdeck === 'notes' ? 'No cards from your notes yet. Use “Turn notes into cards”, or open a page in Notes and press “Make flashcards from this page”.' : (bankLoading ? 'Loading cards…' : 'No cards here yet.')),
+      srsNote: dueCards.length ? dueCards.length + (dueCards.length === 1 ? ' card is' : ' cards are') + ' due for review. Spaced repetition: “I know this” brings a card back after 1, 3, 7, 14, 30 and then 60 days; “Still learning” keeps it due today.' : Object.keys(srs).length ? 'Nothing due right now. Your next card comes back ' + whenLabel(Math.max(1, Math.round((futureDue[0] - nowTs) / DAY))) + '. Study new cards, or come back then.' : 'Spaced repetition: each card you mark “I know this” comes back after 1, 3, 7, 14, 30 and then 60 days, just before you’d forget it.',
+      knowHint: card ? 'I know this → next review ' + whenLabel(INTERVALS[nextBox - 1]) : '',
+      report: card ? mailReport(activeMod.name + ' flashcard', 'Card (' + srcLabel[card.src] + '): ' + card.f + '\nAnswer: ' + card.b) : '#',
+      showReport: !!card && (card.src === 'bank' || card.src === 'ai'),
+      empty: !deck.length, emptyText: fdeck === 'due' ? 'No cards are due right now. Pick another deck to learn new cards, or come back when cards are due.' : hideKnown && deckSize ? 'You know every card in this deck. Show known cards again, or pick another deck.' : (fdeck === 'mine' ? 'You haven’t made any cards for this module yet. Use “+ Add your own card”.' : fdeck === 'notes' ? 'No cards from your notes yet. Use “Turn notes into cards”, or open a page in Notes and press “Make flashcards from this page”.' : (bankLoading ? 'Loading cards…' : 'No cards here yet.')),
       study: fmode === 'study' && !!deck.length, browse: fmode === 'browse' && !!deck.length,
       counter: deck.length ? 'Card ' + (fi + 1) + ' of ' + deck.length : '',
       knownText: deckKnown + ' of ' + deckSize + ' known', knownPct: deckSize ? Math.round(deckKnown / deckSize * 100) : 0,
@@ -2430,6 +2736,13 @@ class Component extends DCLogic {
     const bankQs = libQs;
     const aiQs = store['unizy:' + mk + ':aiqs'] || [];
     const allQs = libQs.concat(aiQs);
+    const pqKey = 'unizy:' + mk + ':queue';
+    const pq = (store[pqKey] || []).filter((x) => x && x.id);
+    const pqIds = {}; pq.forEach((x) => { pqIds[x.id] = 1; });
+    const oqKey = 'unizy:' + mk + ':openqs';
+    const openQs = store[oqKey] || [];
+    const ansKey = 'unizy:' + mk + ':answered';
+    const answered = store[ansKey] || {};
     const tTopic = get('tTopic', 'all');
     const tLevel = get('tLevel', 3);
     const tTypes = get('tTypes', { mcq: 1, short: 1, long: 1 });
@@ -2470,11 +2783,15 @@ class Component extends DCLogic {
       const per = {}; let earned = 0, total = 0;
       test.qs.forEach((qq) => { const e = earnedOf(qq) || 0; earned += e; total += qq.marks; const k = progId(qq); per[k] = per[k] || [0, 0]; per[k][0] += e; per[k][1] += qq.marks; });
       const best = Object.assign({}, prog.best);
-      Object.keys(per).forEach((k) => { const pc = Math.round(per[k][0] / per[k][1] * 100); if (!(best[k] >= pc)) best[k] = pc; });
+      const last = Object.assign({}, prog.last || {});
+      Object.keys(per).forEach((k) => { const pc = Math.round(per[k][0] / per[k][1] * 100); if (!(best[k] >= pc)) best[k] = pc; last[k] = pc; });
+      const ans = Object.assign({}, answered); test.qs.forEach((qq) => { if (earnedOf(qq) !== null) ans[qq.id] = 1; }); self.save(ansKey, ans);
+      if (pq.length) { const ids = {}; test.qs.forEach((qq) => { ids[qq.id] = 1; }); self.save(pqKey, pq.filter((x) => !ids[x.id])); }
+      bumpStart({ test: (startState.test || 0) + 1 });
       const pct = total ? Math.round(earned / total * 100) : 0;
       const st = test.settings.tTopic;
       const label = (st === 'all' ? 'All topics' : String(st).indexOf('bt:') === 0 ? bTopics(st.split(':')[1])[+st.split(':')[2]] : bTitle(String(st).slice(2))) + ' · ' + (test.settings.tLevel ? LEVELS[test.settings.tLevel - 1] : 'Mixed') + ' · ' + test.qs.length + ' Qs';
-      self.save(progKey, { best, history: [{ label, score: pct + '%', at: Date.now() }].concat(prog.history || []).slice(0, 8) });
+      self.save(progKey, { best, last, history: [{ label: test.settings.queue ? 'Practice queue · ' + test.qs.length + ' Qs' : label, score: pct + '%', at: Date.now() }].concat(prog.history || []).slice(0, 8) });
       set({ test: Object.assign({}, test, { done: true }) });
     };
     const levelOpts = [1, 2, 3, 4, 5].map((n) => ({ aria: 'Difficulty ' + n + ': ' + LEVELS[n - 1], bg: tLevel && n <= tLevel ? theme.btn : '#E6E6E0', pick: () => set({ tLevel: n }) }));
@@ -2489,6 +2806,28 @@ class Component extends DCLogic {
     linkIds.forEach((id) => { topicOptsT.push({ id: 'b:' + id, label: bTitle(id) }); });
     const tSelBank = String(tTopic).indexOf('b:') === 0 ? tTopic.slice(2) : String(tTopic).indexOf('bt:') === 0 ? tTopic.split(':')[1] : (linkIds.length === 1 ? linkIds[0] : null);
     if (tSelBank) bTopics(tSelBank).forEach((t, i) => topicOptsT.push({ id: 'bt:' + tSelBank + ':' + i, label: '↳ ' + t }));
+    const weakTopics = [];
+    linkIds.forEach((id) => bTopics(id).forEach((t, i) => { const k = id + ':' + i; const v = (prog.last || {})[k] !== undefined ? prog.last[k] : prog.best[k]; if (v !== undefined && v < 60) weakTopics.push({ bank: id, t: i, name: t, pct: v }); }));
+    weakTopics.sort((a, b) => a.pct - b.pct);
+    const weakList = weakTopics.slice(0, 5).map((w) => ({
+      name: w.name, label: 'Last score ' + w.pct + '%',
+      flash: () => set({ tab: 'flash', fdeck: 'bt:' + w.bank + ':' + w.t, fi: 0, flipped: false, fmode: 'study' }),
+      test: () => set({ tab: 'quiz', tTopic: 'bt:' + w.bank + ':' + w.t, test: null }),
+      plan: () => { const rd = addSessions(w.name, activeMod.name); notify('3 review sessions added to your plan', w.name + ': ' + rd.dates.map(fmtDay).join(', ')); }
+    }));
+    const queueQs = allQs.filter((qq) => pqIds[qq.id]);
+    const startQueue = () => { const qs = queueQs.slice(0, 20); if (!qs.length) return; set({ tab: 'quiz', test: { id: Date.now(), mk, qs, target: qs.length, i: 0, done: false, settings: { tTopic: 'all', tLevel: 0, tLen: qs.length, queue: true } }, answers: {}, marks: {}, ticks: {}, showModel: {}, qErr: '' }); };
+    const pqv = {
+      count: queueQs.length, has: queueQs.length > 0 || openQs.length > 0, hasQs: queueQs.length > 0,
+      label: queueQs.length + (queueQs.length === 1 ? ' question' : ' questions') + ' waiting',
+      sub: queueQs.length ? 'Questions you haven’t answered yet from topics you’ve finished in lectures.' : 'Nothing waiting. Mark a lecture as finished in Learn to queue its questions here.',
+      start: startQueue, startLabel: 'Practise ' + Math.min(20, queueQs.length) + ' now',
+      open: openQs.map((o, i) => ({
+        text: o.text, meta: (o.topic ? o.topic + ' · ' : '') + 'added ' + whenLabel(Math.round((today0 - new Date(new Date(o.at).setHours(0, 0, 0, 0))) / -DAY)),
+        ask: () => { self.save(oqKey, openQs.filter((_, j) => j !== i)); set({ tab: 'tutor', tInput: 'From my lecture on ' + (o.topic || activeMod.name) + ', I didn’t understand: ' + o.text }); },
+        remove: () => self.save(oqKey, openQs.filter((_, j) => j !== i))
+      })), hasOpen: openQs.length > 0
+    };
     const progRows = [];
     linkIds.forEach((id) => bTopics(id).forEach((t, i) => { const b = prog.best[id + ':' + i]; progRows.push({ topic: (linkIds.length > 1 ? bTitle(id) + ' · ' : '') + t, pct: b || 0, label: b === undefined ? 'Not started' : 'Best ' + b + '%' }); }));
     if (prog.best.mod !== undefined || !progRows.length) progRows.push({ topic: activeMod.name + ' (AI-written questions)', pct: prog.best.mod || 0, label: prog.best.mod === undefined ? 'Not started' : 'Best ' + prog.best.mod + '%' });
@@ -2507,7 +2846,8 @@ class Component extends DCLogic {
       }),
       lenOpts: [20, 30, 50].map((n) => ({ label: n + ' questions', bg: tLen === n ? theme.c1 : '#FFFFFF', fg: tLen === n ? theme.on1 : '#141414', border: tLen === n ? theme.c1 : '#DADAD4', pick: () => set({ tLen: n }) })),
       availText, canStart, cannotStart: !canStart, start: () => { if (canStart) startTest(false); },
-      hasErr: !!s.qErr, err: s.qErr || ''
+      hasErr: !!s.qErr, err: s.qErr || '',
+      weak: weakList, hasWeak: weakList.length > 0, pq: pqv
     };
 
     // current question
@@ -2713,30 +3053,65 @@ class Component extends DCLogic {
 
     // ---- study resources summary ----
     const res = {
-      has: !!linkIds.length,
+      cov: covOf(activeMod), has: !!linkIds.length,
       decks: linkIds.map((id) => ({ title: bTitle(id), meta: ((lib[id] && lib[id].nNotes) || 0) + ' topic notes · ' + ((lib[id] && lib[id].nCards) || 0) + ' flashcards · ' + ((lib[id] && lib[id].nQs) || 0) + ' test questions' })),
       sub: linkIds.length ? (activeMod.Lf ? 'There’s no exact library match for this module yet, so these are the closest Unizy decks for your degree. Add your own notes and cards, or upload notes to turn into cards.' : 'From the Unizy library, matched to this module’s subject. Your own notes, cards and AI-written material add to these.') : 'Not linked to a library deck yet. Use your own notes and cards, or AI where available.',
       goNotes: () => set({ tab: 'notes' }), goFlash: () => set({ tab: 'flash' }), goQuiz: () => set({ tab: 'quiz' })
     };
     const profile = degData && Array.isArray(degData.profile) ? degData.profile.filter((p) => p && p.h && p.body) : [];
 
-    // ---- timetable ----
-    const isAssessment = (m) => /Applied Knowledge Test|Clinical and Professional Skills Assessment/i.test(m.name);
-    const runsT1 = (m) => !m.term || /terms? 1\b|term 1 or|terms 1,|academic year/i.test(m.term);
-    let ttMods = selMods.filter((m) => !isAssessment(m) && runsT1(m));
-    if (!ttMods.length) ttMods = selMods.filter((m) => !isAssessment(m));
-    const L = ttMods.length ? ttMods.map((m) => m.name) : ['Your module'];
-    const pickL = (i) => L[i % L.length];
-    const EVS = [
-      ['Monday', '10:00', pickL(0), 'Lecture'], ['Monday', '14:00', pickL(1), 'Lecture'],
-      ['Tuesday', '11:00', pickL(0), 'Seminar'], ['Tuesday', '17:30', 'Netball Club', 'Society'],
-      ['Wednesday', '09:00', pickL(2), 'Lecture'], ['Wednesday', '13:00', pickL(1), 'Seminar'],
-      ['Thursday', '10:00', pickL(3), 'Lecture'], ['Thursday', '19:00', 'Debating Society', 'Society'],
-      ['Friday', '11:00', pickL(2), 'Seminar'], ['Friday', '15:00', pickL(4), 'Lecture']
-    ];
-    const kindStyle = (k) => k === 'Lecture' ? { bg: theme.c1, fg: theme.on1, border: theme.c1 } : k === 'Seminar' ? { bg: theme.tint, fg: '#141414', border: theme.c1 } : { bg: '#FFE9A8', fg: '#3D2E00', border: '#FFE9A8' };
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map((d) => ({ day: d, events: EVS.filter((e) => e[0] === d).map((e) => Object.assign({ time: e[1], title: e[2], kind: e[3] }, kindStyle(e[3]))) }));
-    const remind = get('remind', true);
+    // ---- plan tab ----
+    const pw = get('pw', 0);
+    const monday = addDays(today0, -((today0.getDay() + 6) % 7) + 7 * pw);
+    const kindLook = { class: { bg: '#FFFFFF', fg: '#141414', border: '#CFCFC8', label: 'Class' }, deadline: { bg: '#FFE9A8', fg: '#3D2E00', border: '#F0D27A', label: 'Deadline' }, session: { bg: theme.c1, fg: theme.on1, border: theme.c1, label: 'Revision' } };
+    const evView = (x) => {
+      const look = kindLook[x.kind] || kindLook.class;
+      return {
+        time: x.time || '', title: x.title, meta: [look.label, x.mod].filter(Boolean).join(' · '), bg: look.bg, fg: look.fg, border: look.border,
+        canTick: x.kind !== 'class', tickLabel: x.done ? '✓ Done' : 'Mark done', op: x.done ? 0.55 : 1, strike: x.done ? 'line-through' : 'none',
+        tick: () => savePlan(planItems.map((y) => y.id === x.id ? Object.assign({}, y, { done: !y.done }) : y)),
+        remove: () => savePlan(planItems.filter((y) => y.id !== x.id)), removeAria: 'Remove ' + x.title
+      };
+    };
+    const days = [0, 1, 2, 3, 4, 5, 6].map((i) => {
+      const d = addDays(monday, i), key = ymd(d);
+      const evs = planItems.filter((x) => (x.kind === 'class' && x.dow === i) || (x.kind !== 'class' && x.date === key)).sort((a, b) => String(a.time || '99').localeCompare(String(b.time || '99')));
+      const isToday = key === ymd(today0);
+      return { day: d.toLocaleDateString('en-GB', { weekday: 'short' }) + ' ' + d.getDate(), isToday, headBg: isToday ? theme.c1 : 'transparent', headFg: isToday ? theme.on1 : '#141414', events: evs.map(evView), empty: !evs.length };
+    });
+    const plAdd = get('plAdd', null);
+    const plForm = { title: get('plTitle', ''), mod: get('plMod', activeMod.name), dow: get('plDow', 0), date: get('plDate', ymd(addDays(today0, 1))), time: get('plTime', plAdd === 'class' ? '10:00' : plAdd === 'session' ? '18:00' : '') };
+    const savePlForm = () => {
+      const t = String(plForm.title || '').trim();
+      if (!t) { set({ plErr: 'Add a title first.' }); return; }
+      if (plAdd !== 'class' && !parseYmd(plForm.date)) { set({ plErr: 'Choose a date.' }); return; }
+      const item = { id: 'p' + Date.now(), kind: plAdd, title: t, mod: plForm.mod || '', time: plForm.time || '', done: false };
+      if (plAdd === 'class') item.dow = +plForm.dow; else item.date = plForm.date;
+      savePlan(planItems.concat([item])); bumpStart({ plan: 1 });
+      set({ plAdd: null, plTitle: '', plErr: '' });
+      notify(kindLook[plAdd].label + ' added', t + (plAdd === 'class' ? ' · every ' + ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][+plForm.dow] : ' · ' + fmtDay(parseYmd(plForm.date))));
+    };
+    const upcoming = planItems.filter((x) => x.kind === 'deadline' && !x.done && daysFrom(x.date) !== null && daysFrom(x.date) >= 0).sort((a, b) => (a.date < b.date ? -1 : 1)).slice(0, 6)
+      .map((x) => { const n = daysFrom(x.date); return { title: x.title, meta: [x.mod, fmtDay(parseYmd(x.date)) + (x.time ? ' ' + x.time : '')].filter(Boolean).join(' · '), when: whenLabel(n), bg: n <= 3 ? '#FBEDEF' : '#F3F3EF', fg: n <= 3 ? '#7A0C1D' : '#3F3F3B' }; });
+    const sessionsLeft = planItems.filter((x) => x.kind === 'session' && !x.done && daysFrom(x.date) !== null && daysFrom(x.date) >= 0).length;
+    const pl = {
+      range: fmtDay(monday) + ' – ' + fmtDay(addDays(monday, 6)), weekLabel: pw === 0 ? 'This week' : pw === 1 ? 'Next week' : pw === -1 ? 'Last week' : (pw > 0 ? 'In ' + pw + ' weeks' : pw + ' weeks'),
+      prev: () => set({ pw: pw - 1 }), next: () => set({ pw: pw + 1 }), thisWeek: () => set({ pw: 0 }), notThisWeek: pw !== 0,
+      days, isEmpty: !planItems.length,
+      addClass: () => set({ plAdd: 'class', plErr: '', plTime: '10:00', plTitle: '' }), addDeadline: () => set({ plAdd: 'deadline', plErr: '', plTime: '', plTitle: '' }), addSession: () => set({ plAdd: 'session', plErr: '', plTime: '18:00', plTitle: '' }),
+      adding: !!plAdd, isClass: plAdd === 'class', notClass: !!plAdd && plAdd !== 'class',
+      formTitle: plAdd === 'class' ? 'Add a weekly class' : plAdd === 'deadline' ? 'Add a deadline or exam' : 'Add a revision session',
+      titlePh: plAdd === 'class' ? 'e.g. Lecture, Seminar 3B, Lab' : plAdd === 'deadline' ? 'e.g. Essay 1, Midterm exam' : 'e.g. Review week 4 readings',
+      title: plForm.title, onTitle: (e) => set({ plTitle: e && e.target ? e.target.value : '' }),
+      date: plForm.date, onDate: (e) => set({ plDate: e && e.target ? e.target.value : '' }),
+      time: plForm.time, onTime: (e) => set({ plTime: e && e.target ? e.target.value : '' }),
+      dows: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) => ({ label: d, bg: +plForm.dow === i ? theme.btn : '#FFFFFF', fg: +plForm.dow === i ? theme.onBtn : '#141414', pick: () => set({ plDow: i }) })),
+      mods: selMods.map((m) => m.name).concat(['Other']).map((n) => ({ label: n.length > 34 ? n.slice(0, 32) + '…' : n, bg: plForm.mod === n || (n === 'Other' && plForm.mod === '') ? theme.tint : '#FFFFFF', border: plForm.mod === n || (n === 'Other' && plForm.mod === '') ? theme.c1 : '#DADAD4', pick: () => set({ plMod: n === 'Other' ? '' : n }) })),
+      save: savePlForm, cancel: () => set({ plAdd: null, plErr: '' }), hasErr: !!s.plErr, err: s.plErr || '',
+      upcoming, hasUpcoming: upcoming.length > 0,
+      weak: weakList, hasWeak: weakList.length > 0,
+      summary: (upcoming.length ? upcoming.length + (upcoming.length === 1 ? ' deadline' : ' deadlines') + ' coming up' : 'No deadlines added') + ' · ' + sessionsLeft + ' revision ' + (sessionsLeft === 1 ? 'session' : 'sessions') + ' planned'
+    };
 
     // ---- friends ----
     const groupIdx = get('group', 0);
@@ -2762,13 +3137,25 @@ class Component extends DCLogic {
     const intro = activeMod.name + (activeMod.code ? ' (' + activeMod.code + ')' : '') + ': ' + (activeMod.summary || 'no detailed outline is published yet.') +
       (topics.length ? '\n\nIn the official order, the topics are: ' + topics.slice(0, 8).join('; ') + (topics.length > 8 ? '; and more' : '') + '. Ask me about any of them, or ask me to quiz you.' : ' Add your lecture notes and I’ll work from those.');
     const turns = (s.tchat || {})[mk] || [];
-    const bubble = (role, text) => role === 'user'
-      ? { who: 'You', text, align: 'flex-end', bg: '#141414', fg: '#FFFFFF', radius: '18px 18px 4px 18px' }
-      : { who: tutorName, text, align: 'flex-start', bg: theme.tint, fg: '#141414', radius: '4px 18px 18px 18px' };
-    const tchat = [bubble('assistant', intro)].concat(turns.map((t) => bubble(t.role, t.content)));
-    const ask = (text) => { if (!aiReady) { set({ tErr: aiState === 'pending' ? 'Log in (top right) to use the AI tutor.' : 'Log in (top right) to chat with ' + tutorName + '.' }); return; } self.tutorAsk(Object.assign({}, genCtxBase, { text })); };
+    const splitSrc = (text) => { const t = String(text || ''); const m = /\n*[ \t*_]*SOURCES?:[ \t*_]*([^\n]*)\s*$/i.exec(t); return m ? { body: t.slice(0, m.index).trim(), src: m[1].split(/\s*;\s*/).map((x) => x.replace(/[*_]/g, '').trim()).filter(Boolean).slice(0, 8) } : { body: t, src: null }; };
+    const srcChip = (x) => {
+      if (/^outline/i.test(x)) return { label: 'Official module outline', bg: '#DDF0C9', fg: '#24400B', tip: 'From ' + (uni ? uni.short : 'the university') + '’s published outline for this module' };
+      if (/^library/i.test(x)) return { label: 'Unizy library: ' + x.replace(/^library:?\s*/i, '').replace(/^.*? · /, ''), bg: theme.tint, fg: '#141414', tip: 'A checked Unizy library note for this subject' };
+      if (/^your notes/i.test(x)) return { label: 'Your notes: ' + x.replace(/^your notes:?\s*/i, ''), bg: '#F0F0EB', fg: '#3F3F3B', tip: 'Your own notes (they may contain mistakes)' };
+      if (/^general/i.test(x)) return { label: 'General AI knowledge: check this', bg: '#FFE9A8', fg: '#3D2E00', tip: 'Not from your module’s material. Check it against your lectures and reading.' };
+      return { label: x.slice(0, 60), bg: '#F0F0EB', fg: '#3F3F3B', tip: '' };
+    };
+    const bubble = (role, text, isIntro) => {
+      if (role === 'user') return { who: 'You', text, align: 'flex-end', bg: '#141414', fg: '#FFFFFF', radius: '18px 18px 4px 18px', isAi: false, hasSrc: false, src: [], noSrc: false };
+      const sp = isIntro ? { body: text, src: ['Outline'] } : splitSrc(text);
+      const src = (sp.src || []).map(srcChip);
+      return { who: tutorName, text: sp.body, align: 'flex-start', bg: theme.tint, fg: '#141414', radius: '4px 18px 18px 18px', isAi: true, hasSrc: src.length > 0, src, noSrc: !isIntro && !sp.src,
+        hasUrl: !!activeMod.url, url: activeMod.url || '#', report: mailReport(tutorName + ' answer (' + activeMod.name + ')', sp.body) };
+    };
+    const tchat = [bubble('assistant', intro, true)].concat(turns.map((t) => bubble(t.role, t.content)));
+    const ask = (text) => { if (aiReady && String(text || '').trim()) bumpStart({ ask: (startState.ask || 0) + 1 }); if (!aiReady) { set({ tErr: aiState === 'pending' ? 'Log in (top right) to use the AI tutor.' : 'Log in (top right) to chat with ' + tutorName + '.' }); return; } self.tutorAsk(Object.assign({}, genCtxBase, { text })); };
     const tutorSub = degData ? 'Grounded in ' + (uni ? uni.short : '') + '’s official outlines for ' + (degree ? degree.name : '') : 'Your AI tutor for ' + (degree ? degree.name : '') + ' at ' + (uni ? uni.short : '');
-    const tutorKnows = 'Each answer is grounded in this module’s course knowledge. ' + tutorName + ' searches it for the parts that match your question and teaches from them:';
+    const tutorKnows = tutorName + ' answers from this module’s course knowledge and labels its sources under each answer: the official outline, Unizy library notes, your notes, or general AI knowledge (shown in amber, so you know to check it). What it draws on:';
     const knowMods = selMods.slice(0, 12).map((m) => ({ label: (m.code ? m.code + ' · ' : '') + m.name, bg: m.key === activeMod.key ? theme.tint : '#F6F6F2' }));
     const chips = [
       'Explain ' + lc(topics[curI] || activeMod.name) + ' simply',
@@ -2914,7 +3301,7 @@ class Component extends DCLogic {
       }))
     };
 
-    const toastOn = !!get('toast', false);
+    const toastOn = !!s.toastMsg;
 
     // ---- changing uni, course or modules after setup ----
     const startEdit = (target) => set({ screen: target, editing: true, setupMenu: false, q: '', saved: { uni: uniId, degree: degId, year, mods: selKeys, active: activeMod.key, tab } });
@@ -2935,6 +3322,107 @@ class Component extends DCLogic {
       stepTab('Modules', degree && year ? selMods.length + ' selected' : 'Choose', 'modules', !!(degree && year))
     ];
     const hasTeaching = !!(degData && degData.teaching);
+
+    // ---- lecture check-in: finishing a lecture queues practice, revision and reviews ----
+    const lecKey = 'unizy:' + mk + ':lectures';
+    const lecDone = store[lecKey] || {};
+    const matchTopic = (name) => {
+      const qset = new Set(toks(name)); let best = null;
+      linkIds.forEach((id) => bTopics(id).forEach((t, i) => { const sc = overlap(qset, t); if (sc > 0 && (!best || sc > best.sc)) best = { bank: id, t: i, name: t, sc }; }));
+      if (!best && linkIds.length === 1 && bTopics(linkIds[0]).length === topics.length) { const i = Math.max(0, topics.indexOf(name)); best = { bank: linkIds[0], t: i, name: bTopics(linkIds[0])[i], sc: 0 }; }
+      return best;
+    };
+    const ciIdx = get('ciOpen', null);
+    const ciTopic = ciIdx !== null && plan[ciIdx] ? plan[ciIdx].topic : null;
+    const ciMatch = ciTopic ? matchTopic(ciTopic) : null;
+    const ciQs = ciMatch ? allQs.filter((qq) => qq.bank === ciMatch.bank && qq.t === ciMatch.t && !answered[qq.id] && !pqIds[qq.id]).sort((a, b) => a.d - b.d).slice(0, 6) : [];
+    const ciCards = ciMatch ? allCards.filter((c) => c.bank === ciMatch.bank && c.t === ciMatch.t).length : 0;
+    const ciRd = ciTopic ? reviewDates(activeMod.name) : { dates: [], why: '' };
+    const ci = {
+      open: !!ciTopic, topic: ciTopic || '', libTopic: ciMatch ? ciMatch.name : '', hasMatch: !!ciMatch, noMatch: !!ciTopic && !ciMatch,
+      cardsLine: ciMatch ? ciCards + ' flashcards on “' + ciMatch.name + '” to start reviewing tonight' : '',
+      qsLine: ciQs.length ? ciQs.length + ' practice questions you haven’t answered yet go into your practice queue' : (ciMatch ? 'You’ve already answered the library questions on this topic. Try a harder level in Practise.' : ''),
+      reviewLine: 'Review sessions on ' + ciRd.dates.map(fmtDay).join(', ') + ' (after 1 and 3 days, and ' + ciRd.why + ')',
+      noMatchLine: 'There’s no library topic that matches this lecture closely, so no ready-made questions. Reviews will still be scheduled, and you can make cards from your own notes or ask ' + tutorName + '.',
+      q: get('ciQ', ''), onQ: (e) => set({ ciQ: e && e.target ? e.target.value : '' }),
+      cancel: () => set({ ciOpen: null, ciQ: '' }),
+      confirm: () => {
+        const ld = Object.assign({}, lecDone); ld[ciIdx] = Date.now(); self.save(lecKey, ld);
+        if (ciQs.length) self.save(pqKey, pq.concat(ciQs.map((qq) => ({ id: qq.id, topic: ciMatch.name, at: Date.now() }))));
+        const qtext = String(get('ciQ', '') || '').trim();
+        if (qtext) self.save(oqKey, openQs.concat([{ text: qtext.slice(0, 600), topic: ciTopic, at: Date.now() }]));
+        addSessions(ciMatch ? ciMatch.name : ciTopic, activeMod.name, { lecture: ciTopic });
+        bumpStart({ lecture: (startState.lecture || 0) + 1 });
+        set({ ciOpen: null, ciQ: '' });
+        notify('Lecture done: ' + ciTopic, [ciQs.length ? ciQs.length + ' questions queued' : '', '3 reviews planned', qtext ? 'your question saved' : ''].filter(Boolean).join(' · '));
+      },
+      goFlash: () => { if (ciMatch) set({ tab: 'flash', fdeck: 'bt:' + ciMatch.bank + ':' + ciMatch.t, fi: 0, flipped: false, fmode: 'study' }); }
+    };
+    const weeksX = weeks.map((w, i) => Object.assign({}, w, {
+      done: !!lecDone[i], notDone: !lecDone[i], doneLabel: '✓ Finished', check: () => set({ ciOpen: i, ciQ: '' }), checkAria: 'I’ve finished the lecture on ' + w.topic
+    }));
+
+    // ---- start here: the first useful things to do ----
+    const startRows = [
+      { label: 'Set up your modules', sub: selMods.length + ' modules for ' + (degree ? degree.name : 'your degree'), done: true, go: () => startEdit('modules'), goLabel: 'Edit' },
+      { label: 'Review 10 flashcards', sub: 'Spaced repetition schedules each card for you', done: (startState.cards || 0) >= 10, go: () => set({ tab: 'flash', fmode: 'study' }), goLabel: 'Start' },
+      { label: 'Take a topic test', sub: 'Finds the topics you need to revise', done: !!startState.test, go: () => set({ tab: 'quiz', test: null }), goLabel: 'Start' },
+      { label: 'Finish a lecture or plan a deadline', sub: 'Queues practice and schedules your reviews', done: !!(startState.plan || startState.lecture), go: () => set({ tab: 'time' }), goLabel: 'Open Plan' },
+      { label: 'Ask ' + tutorName + ' a question', sub: 'Answers show their sources', done: !!startState.ask, go: () => set({ tab: 'tutor' }), goLabel: 'Ask' }
+    ].map((r) => Object.assign(r, { mark: r.done ? '✓' : '', boxBg: r.done ? theme.btn : '#FFFFFF', boxFg: theme.onBtn, boxBorder: r.done ? theme.btn : '#BDBDB6', op: r.done ? 0.6 : 1, notDone: !r.done }));
+    const startDone = startRows.filter((r) => r.done).length;
+    const showStart = !startState.hidden && startDone < startRows.length;
+
+    // ---- what can be shared into group chats (only when the student chooses to) ----
+    const bankOf = (id) => { const p = String(id).split(':'); return { bank: p[1], t: +p[2] }; };
+    const shareKit = {
+      module: activeMod.name,
+      cardSets: (() => {
+        const out = [];
+        weakTopics.slice(0, 3).forEach((w) => { const n = libCards.filter((c) => c.bank === w.bank && c.t === w.t).length; if (n) out.push({ id: 'bt:' + w.bank + ':' + w.t, label: 'Weak topic: ' + w.name, n }); });
+        linkIds.forEach((id) => bTopics(id).forEach((t, i) => { const k = 'bt:' + id + ':' + i; if (out.some((o) => o.id === k)) return; const n = libCards.filter((c) => c.bank === id && c.t === i).length; if (n) out.push({ id: k, label: t, n }); }));
+        if (myCards.length + noteCards.length) out.unshift({ id: 'mine', label: 'Your own cards', n: myCards.length + noteCards.length });
+        return out.slice(0, 16);
+      })(),
+      cards: (id) => (id === 'mine' ? myCards.concat(noteCards) : libCards.filter((c) => { const b = bankOf(id); return c.bank === b.bank && c.t === b.t; })).slice(0, 40).map((c) => ({ f: String(c.f).slice(0, 400), b: String(c.b).slice(0, 800) })),
+      quizTopics: [{ id: 'all', label: 'Mixed topics' }].concat(linkIds.reduce((acc, id) => acc.concat(bTopics(id).map((t, i) => ({ id: 'bt:' + id + ':' + i, label: t }))), []))
+        .filter((o) => allQs.some((qq) => qq.type === 'mcq' && (o.id === 'all' || (qq.bank === bankOf(o.id).bank && qq.t === bankOf(o.id).t)))).slice(0, 16),
+      quiz: (id, n) => allQs.filter((qq) => qq.type === 'mcq' && (id === 'all' || (qq.bank === bankOf(id).bank && qq.t === bankOf(id).t)))
+        .map((x) => [Math.random(), x]).sort((a, b) => a[0] - b[0]).slice(0, n || 5)
+        .map((p) => ({ q: p[1].q.slice(0, 600), options: p[1].options.map((o) => String(o).slice(0, 300)), answer: p[1].answer, why: String(p[1].why || '').slice(0, 600) })),
+      notes: myNotes.filter((n) => String(n.body || '').trim()).slice(0, 30).map((n) => ({ id: n.id, title: n.title || 'Untitled page' })),
+      note: (id) => { const n = myNotes.find((x) => x.id === id); return n ? { title: n.title || 'Untitled page', body: String(n.body || '').slice(0, 12000) } : null; },
+      saveCards: (cards, from) => { const ts = Date.now(); self.save('unizy:' + mk + ':mine', myCards.concat(cards.map((c, i) => ({ id: 'm' + ts + '_' + i, t: null, bank: null, f: String(c.f), b: String(c.b) + (from ? '\n(shared by ' + from + ')' : ''), d: 1, src: 'mine' })))); },
+      saveNote: (title, body, from) => { saveNotes([{ id: 'p' + Date.now(), folder: myFoldersList[0], title: (from ? 'From ' + from + ': ' : '') + title, body: String(body || ''), updated: new Date().toISOString() }].concat(myNotes)); }
+    };
+
+    // ---- five core actions ----
+    const NAV = [
+      { id: 'learn', label: 'Learn', sub: 'Course & notes', icon: ICONS.overview, tabs: [['overview', 'Overview'], ['notes', 'Notes']] },
+      { id: 'practise', label: 'Practise', sub: 'Tests & marking', icon: ICONS.quiz, tabs: [['quiz', 'Topic tests'], ['assess', 'Assess practice']] },
+      { id: 'revise', label: 'Revise', sub: 'Flashcards', icon: ICONS.flash, tabs: [['flash', 'Flashcards']] },
+      { id: 'plan', label: 'Plan', sub: 'Week & deadlines', icon: ICONS.time, tabs: [['time', 'Plan']] },
+      { id: 'ask', label: 'Ask', sub: tutorName + ' & groups', icon: ICONS.tutor, tabs: [['tutor', tutorName], ['friends', 'Friend groups']] }
+    ];
+    const curGroup = NAV.find((g) => g.tabs.some((t) => t[0] === tab)) || NAV[0];
+    const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
+    const strong = lightTheme ? theme.onBtn : theme.btn, onStrong = lightTheme ? '#FFFFFF' : theme.onBtn;
+    const badgeOf = { revise: dueCards.length ? dueCards.length + ' due' : '', practise: queueQs.length ? queueQs.length + ' queued' : (weakList.length ? weakList.length + ' weak' : ''), plan: upcoming.length && daysFrom(planItems.filter((x) => x.kind === 'deadline' && !x.done && daysFrom(x.date) >= 0).sort((a, b) => (a.date < b.date ? -1 : 1))[0].date) <= 7 ? 'Deadline soon' : '' };
+    const navGroups = NAV.map((g) => {
+      const on = g === curGroup;
+      return {
+        id: g.id, label: g.label, sub: g.sub, icon: g.icon, current: on ? 'page' : 'false',
+        bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#141414', border: on ? strong : '#DADAD4', subOp: on ? 0.85 : 0.65,
+        chipBg: on ? onStrong : theme.tint, chipFg: on ? strong : '#141414',
+        shadow: on ? '0 6px 16px rgba(0,0,0,0.22)' : '0 2px 0 rgba(0,0,0,0.06)',
+        badge: badgeOf[g.id] || '', hasBadge: !!badgeOf[g.id], badgeBg: on ? onStrong : strong, badgeFg: on ? strong : onStrong,
+        pick: () => { if (!on) set({ tab: g.tabs[0][0] }); }
+      };
+    });
+    const tabs = curGroup.tabs.length > 1 ? curGroup.tabs.map(([id, label]) => {
+      const on = id === tab;
+      return { label, icon: ICONS[id], current: on ? 'page' : 'false', bg: on ? theme.tint : '#FFFFFF', fg: '#141414', border: on ? strong : '#DADAD4', chipBg: on ? strong : theme.tint, chipFg: on ? onStrong : '#141414', shadow: 'none', pick: () => set({ tab: id }) };
+    }) : [];
 
     return {
       theme, uni: uni || { short: '', full: '' }, degree: degree || { name: '', tag: '' }, year: year || 1,
@@ -2961,33 +3449,37 @@ class Component extends DCLogic {
       sideSub: (uni ? uni.short : '') + ' · Year ' + (year || 1) + (usesCredits ? ' · ' + fmtCr(selCredits) : ''),
       overviewSub: selMods.length + ' modules' + (usesCredits ? ' · ' + fmtCr(selCredits) : ''),
 
-      tabs, sideMods, modCards, activeMod: Object.assign({ codeOrName: activeMod.code || activeMod.name }, activeMod),
+      tabs, navGroups, showSubTabs: tabs.length > 1, sideMods, modCards,
+      shareKit,
+      ci, startRows, showStart, startCount: startDone + ' of ' + startRows.length + ' done', hideStart: () => bumpStart({ hidden: 1 }),
+      weakList, hasWeak: weakList.length > 0, noWeak: weakList.length === 0, pqv, upcoming, hasUpcoming: upcoming.length > 0,
+      goPractise: () => set({ tab: 'quiz', test: null }), goPlan: () => set({ tab: 'time' }), activeMod: Object.assign({ codeOrName: activeMod.code || activeMod.name }, activeMod),
       activeChips, hasModUrl: !!activeMod.url, catalogueLabel: 'Open ' + (activeMod.code || activeMod.name) + ' on ' + (uni ? uni.short : 'the university') + '’s course pages',
       selCount: selMods.length, selCredits,
       goModules: () => startEdit('modules'), goUni: () => startEdit('uni'),
       tOverview: tab === 'overview', tNotes: tab === 'notes', tQuiz: tab === 'quiz', tFlash: tab === 'flash', tTime: tab === 'time', tFriends: tab === 'friends', tTutor: tab === 'tutor',
-      terms, weeks, weeksNote, reading, questions, hasTeaching, showTeaching: hasTeaching && !(degData && degData.profile && degData.profile.length), teaching: hasTeaching ? degData.teaching : '',
+      terms, weeks: weeksX, weeksNote, hasTeaching, showTeaching: hasTeaching && !(degData && degData.profile && degData.profile.length), teaching: hasTeaching ? degData.teaching : '',
 
       nt, res, profile: profile.map((x) => ({ h: x.h, body: x.body })), hasProfile: profile.length > 0,
 
       fc, tq, cq, tr,
 
-      days, remindTrack: remind ? theme.btn : '#CFCFC8', remindKnob: remind ? 21 : 3, toggleRemind: () => set({ remind: !remind }),
+      pl,
 
       groups, groupName: GROUPS[groupIdx].name, groupHasChat: groupIdx === 0, groupNoChat: groupIdx !== 0, chat,
       chatPlaceholder: 'Message the group, or type @' + tutorName,
 
       meInfo: { uni: uni ? uni.id : null, uniShort: uni ? uni.short : '', degree: degree ? degree.id : null, degreeName: degree ? degree.name : '', year: year || 1, isMed },
       tutorName, tutorMono, tutorSub, tutorKnows, knowMods, tchat, tutorSources: sourceList, mascotMed: isMed, mascotProf: !isMed, tAssess: tab === 'assess', as,
-      tBusy: !!s.tBusy, tStreamText: s.tStream || 'Thinking…', tHasErr: !!s.tErr, tErrText: s.tErr || '',
+      tBusy: !!s.tBusy, tStreamText: String(s.tStream || 'Thinking…').replace(/\n*[ \t*_]*SOURCES?:[\s\S]*$/i, ''), tHasErr: !!s.tErr, tErrText: s.tErr || '',
       tInput: get('tInput', ''), onTInput: (e) => set({ tInput: e && e.target ? e.target.value : '' }),
       tutorSend: () => ask(get('tInput', '')),
       tutorChips: chips.map((c) => ({ label: c, pick: () => ask(c) })),
       tutorPlaceholder: 'Ask ' + tutorName + ' anything about ' + activeMod.name,
       aiPill: aiReady ? 'Live' : aiState === 'pending' ? 'Connecting…' : 'Log in for AI', aiPillBg: aiReady ? '#E3F3E8' : '#F0F0EB',
 
-      toastOn, showToast: () => set({ toast: true }), hideToast: () => set({ toast: false }),
-      toastTitle: pickL(0) + ' lecture', toastSub: 'Monday 10:00 · starts in 10 minutes'
+      toastOn, hideToast: () => set({ toastMsg: null }),
+      toastTitle: (s.toastMsg && s.toastMsg.title) || '', toastSub: (s.toastMsg && s.toastMsg.sub) || ''
     };
   }
 }

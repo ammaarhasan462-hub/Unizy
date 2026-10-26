@@ -77,6 +77,14 @@
     }
   };
 
+  // anonymous daily totals only: no cookies, no IDs
+  function track(ev) {
+    try {
+      if (navigator.webdriver || navigator.globalPrivacyControl || navigator.doNotTrack === '1' || localStorage.getItem('unizy:notrack') === '1') return;
+      fetch(CFG.supabaseUrl + '/rest/v1/rpc/track_event', { method: 'POST', keepalive: true, headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_event: ev }) }).catch(function () {});
+    } catch (e) {}
+  }
+
   // ---------------- sync of saved work ----------------
   var Sync = {
     queue: {}, timer: null, status: 'idle',
@@ -346,6 +354,7 @@
       if (window.UnizySocial) {
         try { v.fg = window.UnizySocial.vals(this, v); } catch (e) { console.error('[unizy] friends', e); v.fg = { demo: true, live: false }; }
         if (v.fg && v.fg.badge && Array.isArray(v.tabs)) v.tabs = v.tabs.map(function (t) { return t.label === 'Friend groups' ? Object.assign({}, t, { label: 'Friend groups (' + v.fg.badge + ')' }) : t; });
+        if (v.fg && v.fg.badge && Array.isArray(v.navGroups)) v.navGroups = v.navGroups.map(function (g) { return g.id === 'ask' && !g.hasBadge ? Object.assign({}, g, { badge: v.fg.badge + ' new', hasBadge: true }) : g; });
       }
       this.__theme = v.theme;
       // remember the chosen uni, course, year and modules between visits
@@ -353,7 +362,7 @@
       if (st.screen === 'app' && st.uni && st.degree) {
         var setup = { uni: st.uni, degree: st.degree, year: st.year || 1, mods: st.mods || null, active: st.active || null };
         var js = JSON.stringify(setup);
-        if (js !== this.__lastSetup) { this.__lastSetup = js; try { localStorage.setItem('unizy:setup', js); } catch (e) {} Sync.push('unizy:setup', setup); }
+        if (js !== this.__lastSetup) { var firstSetup = false; try { firstSetup = !localStorage.getItem('unizy:setup'); } catch (e) {} if (firstSetup) track('setup_done'); this.__lastSetup = js; try { localStorage.setItem('unizy:setup', js); } catch (e) {} Sync.push('unizy:setup', setup); }
       }
       return v;
     };
@@ -377,6 +386,7 @@
     start: function (root, templateHTML, Comp) {
       Auth.load();
       var fromLink = Auth.fromHash();
+      track('app_view');
       attach(Comp.prototype);
       var inst = window.UnizyRuntime.mount(root, templateHTML, Comp, {});
       Account.inst = inst;
@@ -388,6 +398,7 @@
           if (!u) { Auth.store(null); enableAi(inst); return; }
           enableAi(inst);
           Plan.refresh();
+          Sync.rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});
           if (/[?&]upgraded=1/.test(location.search)) {
             history.replaceState(null, '', location.pathname + location.hash);
             toast('Payment received. Switching on Unizy Pro…');

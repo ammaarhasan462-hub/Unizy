@@ -92,7 +92,9 @@ Deno.serve(async (req) => {
     `Answer the latest message that mentions you, using the chat for context. Be accurate, clear and encouraging, at UK university level, ${persona === "dr" ? "with a clinical, medical-school slant where relevant" : "in the style of a supportive lecturer"}. ` +
     `Keep it short for a chat: usually under 150 words, unless they ask for more detail. Use plain text with short paragraphs or simple dashes for lists; no markdown headings, tables or bold. ` +
     `Never invent cases, statutes, studies, statistics or quotations; say when you’re unsure. Never give drug doses. If they want assessed work written for them, help them learn and plan instead. ` +
-    `Don’t start with your name or a greeting like “Great question”.`;
+    `Don’t start with your name or a greeting like “Great question”. ` +
+    `Accuracy matters more than confidence: if you are not sure, say so plainly (“I’m not certain, but…”) and suggest how to check (lecture slides, the reading list, the module page). If someone in the chat has said something incorrect, gently correct it. ` +
+    `Put “(general knowledge)” after any claim that isn’t supported by the COURSE CONTEXT. End with one final line that starts with “SOURCES:” and lists, separated by semicolons, only what you used: “Outline” for the official module outline or topics in the COURSE CONTEXT, and “General knowledge” for anything beyond it.`;
   const prompt = (course ? "=== COURSE CONTEXT ===\n" + course + "\n\n" : "") + "=== GROUP CHAT (oldest first) ===\n" + transcript.slice(-12000) + "\n\nReply as " + tutor + " to the last message.";
 
   let text = "";

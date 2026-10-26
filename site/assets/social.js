@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
-  var S = {
+  var S = { marks: {}, marksAt: {}, open: {}, share: { open: false }, quiz: null, delArm: null,
     inst: null, ctx: null, data: null, loading: false, view: 'friends', group: null,
     msgs: {}, lastId: {}, msgsLoading: false, notice: '', noticeKind: '', noticeUpgrade: false,
     codeInput: '', nameInput: null, newName: '', newPick: {}, adding: false, addPick: {}, chatText: '',
@@ -65,6 +65,7 @@
         S.msgs[gid] = (S.msgs[gid] || []).concat(add.filter(function (m) { return !have[m.id]; }));
         S.lastId[gid] = add[add.length - 1].id;
         if (S.thinking && S.thinking.gid === gid && add.some(function (m) { return m.kind === 'ai' && m.replyTo === S.thinking.mid; })) S.thinking = null;
+        add.forEach(function (m) { if (m.kind === 'share' && m.marks) S.marks[m.id] = m.marks; });
         if (S.data) (S.data.groups || []).forEach(function (g) { if (g.id === gid) g.unread = 0; });
         scrollSoon(force);
       }
@@ -73,6 +74,33 @@
   }
 
   // ---------- polling: fast while the tab is open, slow otherwise (for the unread badge) ----------
+  function refreshMarks(gid) {
+    if (!gid || !(S.msgs[gid] || []).some(function (m) { return m.kind === 'share'; })) return;
+    if (Date.now() - (S.marksAt[gid] || 0) < 8000) return;
+    S.marksAt[gid] = Date.now();
+    rpc('share_marks_for', { p_group: gid }).then(function (r) { Object.keys(r || {}).forEach(function (k) { S.marks[k] = r[k]; }); redraw(); }).catch(function () {});
+  }
+  function mark(mid, data, gid) {
+    var mine = (S.marks[mid] || []).filter(function (x) { return !x.me; });
+    S.marks[mid] = mine.concat([{ me: true, name: 'You', data: data }]); redraw();
+    return rpc('mark_share', { p_message: mid, p_data: data }).then(function (r) { if (!r.ok) note(r.message, 'err'); S.marksAt[gid] = 0; refreshMarks(gid); }).catch(function (e) { note(e.message, 'err'); });
+  }
+  function postShare(gid, type, title, payload) {
+    S.busy = true; redraw();
+    return rpc('post_share', { p_group: gid, p_type: type, p_title: title, p_payload: payload }).then(function (r) {
+      S.busy = false;
+      if (!r.ok) { note(r.message, 'err'); return; }
+      S.share = { open: false }; note('');
+      loadMsgs(gid).then(function () { scrollSoon(true); });
+    }).catch(function (e) { S.busy = false; note(e.message, 'err'); });
+  }
+  // AI replies end with a "SOURCES:" line; show it as labels instead of text
+  function splitSources(t) {
+    t = String(t || ''); var m = /\n*[ \t*_]*SOURCES?:[ \t*_]*([^\n]*)\s*$/i.exec(t);
+    if (!m) return { body: t, src: '' };
+    var labels = m[1].split(/\s*;\s*/).map(function (x) { x = x.replace(/[*_]/g, '').trim(); return /^outline/i.test(x) ? 'Official module outline' : /^general/i.test(x) ? 'General AI knowledge (check this)' : x; }).filter(Boolean);
+    return { body: t.slice(0, m.index).trim(), src: labels.join(' · ') };
+  }
   function schedule() {
     clearTimeout(S.timer);
     if (!signedIn()) { S.timer = null; return; }
@@ -157,6 +185,7 @@
       setTimeout(function () { setFast(onTab); }, 0);
     }
     var d = S.data || { me: {}, friends: [], incoming: [], outgoing: [], groups: [] };
+    if (!d.me) d.me = {};
     var uniShort = S.ctx.uniShort || 'your uni';
     var lightBtn = String(theme.onBtn || '#FFFFFF').toUpperCase() !== '#FFFFFF';
     var strong = lightBtn ? theme.onBtn : theme.btn, onStrong = lightBtn ? '#FFFFFF' : theme.onBtn;
@@ -168,9 +197,119 @@
     var addable = (d.friends || []).filter(function (f) { return !memberIds[f.id]; });
     var meId = d.me && d.me.id;
     var msgs = (cur && S.msgs[cur.id]) || [];
+    if (cur && onTab) setTimeout(function () { refreshMarks(cur.id); }, 0);
+    var kit = v.shareKit || null, gidNow = cur ? cur.id : null, sh = S.share || { open: false };
+    var shType = sh.type || 'cards';
+    var pill = function (on) { return { bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#141414', border: on ? strong : '#DADAD4' }; };
     var tutorNames = ['Professor ' + uniShort, 'Dr ' + uniShort];
+    function shareView(m) {
+      var p = m.payload || {}, items = Array.isArray(p.items) ? p.items : [], type = p.type, marks = S.marks[m.id] || m.marks || [];
+      var myMark = marks.filter(function (x) { return x.me; })[0], myData = (myMark && myMark.data) || {};
+      var LBL = { cards: 'Flashcard set', quiz: 'Group quiz', prep: 'Seminar prep', note: 'Shared note' };
+      var ICON = { cards: '▤', quiz: '?', prep: '✎', note: '¶' };
+      var o = {
+        sys: false, bubble: false, share: true, id: m.id, kindLabel: LBL[type] || 'Shared', icon: ICON[type] || '•', title: p.title || '', who: m.mine ? 'You' : m.who, time: when(m.at),
+        meta: [p.module ? 'from ' + p.module : '', type === 'cards' ? items.length + ' cards' : type === 'quiz' ? items.length + ' questions' : type === 'prep' ? items.length + ' points' : ''].filter(Boolean).join(' · '),
+        isCards: type === 'cards', isQuiz: type === 'quiz', isPrep: type === 'prep', isNote: type === 'note',
+        mine: !!m.mine, removeLabel: S.delArm === m.id ? 'Tap again to remove' : 'Remove',
+        remove: function () {
+          if (S.delArm !== m.id) { S.delArm = m.id; redraw(); setTimeout(function () { if (S.delArm === m.id) { S.delArm = null; redraw(); } }, 4000); return; }
+          S.delArm = null;
+          rpc('delete_share', { p_message: m.id }).then(function (r) { note(r.message, r.ok ? 'info' : 'err'); if (r.ok && gidNow) S.msgs[gidNow] = (S.msgs[gidNow] || []).filter(function (x) { return x.id !== m.id; }); redraw(); }).catch(function (e) { note(e.message, 'err'); });
+        },
+        accent: strong, onAccent: onStrong, tint: theme.tint
+      };
+      if (type === 'cards') {
+        var savers = marks.filter(function (x) { return x.data && x.data.saved; }).map(function (x) { return x.name; });
+        o.preview = items.slice(0, S.open[m.id] ? 40 : 3).map(function (c) { return { f: c.f, b: c.b }; });
+        o.moreLabel = items.length > 3 ? (S.open[m.id] ? 'Show fewer' : 'Show all ' + items.length) : ''; o.hasMore = items.length > 3;
+        o.toggleMore = function () { S.open[m.id] = !S.open[m.id]; redraw(); };
+        o.actLabel = myData.saved ? '✓ Saved to your cards' : 'Save to my ' + ((kit && kit.module) || 'module') + ' cards';
+        o.act = function () { if (myData.saved || !kit) return; kit.saveCards(items, m.mine ? '' : m.who); mark(m.id, { saved: true }, gidNow); note(items.length + ' cards saved to ' + kit.module + '. Find them under Revise → Your cards.', 'ok'); };
+        o.status = savers.length ? 'Saved by ' + savers.join(', ') : 'Nobody has saved these yet';
+      }
+      if (type === 'quiz') {
+        var scores = marks.filter(function (x) { return x.data && x.data.total; }).sort(function (a, b) { return b.data.score - a.data.score; });
+        o.status = scores.length ? 'Scores: ' + scores.map(function (x) { return x.name + ' ' + x.data.score + '/' + x.data.total; }).join(' · ') : 'No one has taken it yet';
+        var qz = S.quiz && S.quiz.mid === m.id ? S.quiz : null;
+        o.taking = !!qz; o.notTaking = !qz;
+        o.actLabel = myData.total ? 'Retake (you scored ' + myData.score + '/' + myData.total + ')' : 'Take the quiz';
+        o.act = function () { S.quiz = { mid: m.id, i: 0, picks: {} }; redraw(); };
+        if (qz) {
+          var q = items[qz.i] || {}, pick = qz.picks[qz.i], answered = pick !== undefined, last = qz.i >= items.length - 1;
+          o.qNum = 'Question ' + (qz.i + 1) + ' of ' + items.length; o.qText = q.q || '';
+          o.qOpts = (q.options || []).map(function (op, i) {
+            var right = answered && i === q.answer, wrong = answered && i === pick && pick !== q.answer;
+            return { label: String.fromCharCode(65 + i) + '. ' + op, bg: right ? '#EEF6E4' : wrong ? '#FBEDEF' : '#FFFFFF', border: right ? '#2E7D32' : wrong ? '#C8102E' : '#DADAD4', pick: function () { if (qz.picks[qz.i] === undefined) { qz.picks[qz.i] = i; redraw(); } } };
+          });
+          o.answered = answered; o.why = answered ? (pick === q.answer ? 'Correct. ' : 'Not quite. ') + (q.why || '') : '';
+          o.nextLabel = last ? 'Finish and share my score' : 'Next question';
+          o.next = function () {
+            if (!last) { qz.i++; redraw(); return; }
+            var sc = 0; items.forEach(function (it, i) { if (qz.picks[i] === it.answer) sc++; });
+            S.quiz = null; mark(m.id, { score: sc, total: items.length }, gidNow); note('You scored ' + sc + '/' + items.length + '. Your score is shown to the group.', 'ok');
+          };
+          o.quit = function () { S.quiz = null; redraw(); };
+        }
+      }
+      if (type === 'prep') {
+        var mineDone = Array.isArray(myData.done) ? myData.done : [];
+        o.points = items.map(function (t, i) {
+          var who = marks.filter(function (x) { return x.data && Array.isArray(x.data.done) && x.data.done.indexOf(i) !== -1; }).map(function (x) { return x.name; });
+          var on = mineDone.indexOf(i) !== -1;
+          return { text: String(t), on: on, box: on ? '✓' : '', boxBg: on ? strong : '#FFFFFF', boxFg: onStrong, boxBorder: on ? strong : '#BDBDB6', who: who.length ? 'Prepared: ' + who.join(', ') : 'Not prepared yet',
+            toggle: function () { var d = mineDone.slice(); var k = d.indexOf(i); if (k === -1) d.push(i); else d.splice(k, 1); mark(m.id, { done: d }, gidNow); } };
+        });
+        o.status = 'Tick the points you’ve prepared so the group can split the work.';
+      }
+      if (type === 'note') {
+        var body = String(p.body || '');
+        o.noteText = S.open[m.id] ? body : body.slice(0, 420) + (body.length > 420 ? '…' : '');
+        o.hasMore = body.length > 420; o.moreLabel = S.open[m.id] ? 'Show less' : 'Read the whole note'; o.toggleMore = function () { S.open[m.id] = !S.open[m.id]; redraw(); };
+        o.actLabel = myData.saved ? '✓ Copy saved to your notes' : 'Save a copy to my notes';
+        o.act = function () { if (myData.saved || !kit) return; kit.saveNote(p.title || 'Shared note', body, m.mine ? '' : m.who); mark(m.id, { saved: true }, gidNow); note('Saved to your notes for ' + kit.module + '.', 'ok'); };
+        var nSaved = marks.filter(function (x) { return x.data && x.data.saved; }).length;
+        o.status = 'A copy of ' + (m.mine ? 'your' : m.who + '’s') + ' note. ' + (nSaved ? nSaved + ' saved a copy.' : '') ;
+      }
+      ['preview', 'points', 'qOpts'].forEach(function (k) { if (!o[k]) o[k] = []; });
+      return o;
+    }
+    var shareChoices = [];
+    if (kit && sh.open) {
+      if (shType === 'cards') shareChoices = kit.cardSets.map(function (c) { return Object.assign({ label: c.label + ' (' + Math.min(40, c.n) + ')', pick: function () { S.share.pick = c.id; S.share.pickLabel = c.label; redraw(); } }, pill(sh.pick === c.id)); });
+      if (shType === 'quiz') shareChoices = kit.quizTopics.map(function (c) { return Object.assign({ label: c.label, pick: function () { S.share.pick = c.id; S.share.pickLabel = c.label; redraw(); } }, pill(sh.pick === c.id)); });
+      if (shType === 'note') shareChoices = kit.notes.map(function (c) { return Object.assign({ label: c.title, pick: function () { S.share.pick = c.id; S.share.pickLabel = c.title; redraw(); } }, pill(sh.pick === c.id)); });
+    }
+    var shareTypes = [['cards', 'Flashcard set'], ['quiz', 'Group quiz'], ['prep', 'Seminar prep'], ['note', 'A note']].map(function (t) { return Object.assign({ label: t[1], pick: function () { S.share = { open: true, type: t[0], quizN: 5 }; redraw(); } }, pill(shType === t[0])); });
+    var shareGo = function () {
+      if (!kit || !gidNow) return;
+      var mod = kit.module;
+      if (shType === 'cards') { if (!sh.pick) return note('Pick a set of cards to share.', 'err'); var cs = kit.cards(sh.pick); if (!cs.length) return note('That set is empty.', 'err'); postShare(gidNow, 'cards', sh.pickLabel || 'Flashcards', { module: mod, items: cs }); }
+      if (shType === 'quiz') { if (!sh.pick) return note('Pick a topic for the quiz.', 'err'); var qs = kit.quiz(sh.pick, sh.quizN || 5); if (qs.length < 2) return note('Not enough questions on that topic yet. Try “Mixed topics”.', 'err'); postShare(gidNow, 'quiz', (sh.pickLabel || 'Quiz') + ' quiz', { module: mod, items: qs }); }
+      if (shType === 'prep') {
+        var tEl = document.querySelector('[data-fg-prep-title]'), pEl = document.querySelector('[data-fg-prep-points]');
+        var title = String((tEl && tEl.value) || sh.prepTitle || '').trim(), pts = String((pEl && pEl.value) || sh.prepText || '').split('\n').map(function (x) { return x.trim().replace(/^[-•*\d.)\s]+/, ''); }).filter(Boolean).slice(0, 20);
+        if (!title) return note('Give the seminar a title, e.g. “Week 5: Sovereignty”.', 'err');
+        if (!pts.length) return note('Add at least one reading or question, one per line.', 'err');
+        postShare(gidNow, 'prep', title, { module: mod, items: pts.map(function (x) { return x.slice(0, 300); }) });
+      }
+      if (shType === 'note') { if (!sh.pick) return note('Pick one of your notes.', 'err'); var nn = kit.note(sh.pick); if (!nn || !nn.body.trim()) return note('That note is empty.', 'err'); postShare(gidNow, 'note', nn.title, { module: mod, body: nn.body }); }
+    };
     var out = {
       demo: false, demoBanner: false, live: true,
+      shareOpen: !!sh.open && !!kit, shareClosed: !(sh.open && kit), canShare: !!kit,
+      toggleShare: function () { S.share = sh.open ? { open: false } : { open: true, type: 'cards', quizN: 5 }; redraw(); },
+      shareTypes: shareTypes, shareChoices: shareChoices, hasShareChoices: shareChoices.length > 0,
+      shIsPrep: shType === 'prep', shNotPrep: shType !== 'prep', shIsQuiz: shType === 'quiz', shIsNote: shType === 'note',
+      shEmpty: shType !== 'prep' && !shareChoices.length,
+      shEmptyText: shType === 'note' ? 'You don’t have any notes with text in ' + ((kit && kit.module) || 'this module') + ' yet. Write or upload notes in Learn → Notes first.' : 'Nothing to share for ' + ((kit && kit.module) || 'this module') + ' yet. Switch module, or add your own cards.',
+      shQuizSizes: [5, 10].map(function (n) { return Object.assign({ label: n + ' questions', pick: function () { S.share.quizN = n; redraw(); } }, pill((sh.quizN || 5) === n)); }),
+      shPrepTitle: sh.prepTitle || '', onPrepTitle: function (e) { S.share.prepTitle = e && e.target ? e.target.value : ''; },
+      shPrepText: sh.prepText || '', onPrepText: function (e) { S.share.prepText = e && e.target ? e.target.value : ''; },
+      shGoLabel: S.busy ? 'Sharing…' : shType === 'cards' ? 'Share these cards' : shType === 'quiz' ? 'Start the group quiz' : shType === 'prep' ? 'Post seminar prep' : 'Share a copy',
+      shareGo: shareGo,
+      shModule: (kit && kit.module) || '',
+      sharePrivacy: shType === 'note' ? 'Your notes are private. This posts a copy of the note you pick to everyone in ' + (cur ? cur.name : 'this group') + '; you can remove it later. Unizy never shares notes for you.' : 'Everyone in ' + (cur ? cur.name : 'this group') + ' will see this. You can remove anything you share.',
       badge: unreadTotal + (d.incoming || []).length,
       code: d.me.code || '…', uniShort: uniShort,
       codeHint: 'Friends at ' + uniShort + ' add you with this code.',
@@ -276,10 +415,12 @@
       },
       msgsLoading: S.msgsLoading && !msgs.length,
       msgs: msgs.map(function (m) {
-        if (m.kind === 'system') return { sys: true, bubble: false, text: m.body };
+        if (m.kind === 'system') return { sys: true, bubble: false, share: false, text: m.body };
+        if (m.kind === 'share') return shareView(m);
         var ai = m.kind === 'ai', mine = !!m.mine;
+        var sp = ai ? splitSources(m.body) : { body: m.body, src: '' };
         return {
-          sys: false, bubble: true, text: m.body, who: mine ? 'You' : m.who, time: when(m.at),
+          sys: false, bubble: true, share: false, text: sp.body, hasSrc: !!sp.src, srcText: sp.src, noSrcAi: ai && !sp.src, who: mine ? 'You' : m.who, time: when(m.at),
           dir: mine ? 'row-reverse' : 'row', align: mine ? 'flex-end' : 'flex-start',
           initial: ai ? (/^Dr\b/.test(m.who) ? 'Dr' : 'Prof') : initial(m.who),
           avBg: ai ? strong : mine ? '#141414' : '#55554F', avFg: ai ? onStrong : '#FFFFFF',
