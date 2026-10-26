@@ -172,7 +172,7 @@
   // ---------- log in ----------
   function loginView(prefill) {
     var box = msgBox();
-    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'you@university.ac.uk', required: true, value: prefill || params.get('email') || '', inputmode: 'email' });
+    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: prefill || params.get('email') || '', inputmode: 'email' });
     var forgot = el('a', { href: '#', class: 'small', text: 'Forgot password?' });
     var pw = field({ name: 'password', type: 'password', label: 'Password', autocomplete: 'current-password', required: true, after: forgot });
     var submit = el('button', { type: 'submit', class: 'btn primary wide', text: 'Log in' });
@@ -210,7 +210,7 @@
   // ---------- forgot password ----------
   function forgotView(prefill) {
     var box = msgBox();
-    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'you@university.ac.uk', required: true, value: prefill || '', inputmode: 'email' });
+    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: prefill || '', inputmode: 'email' });
     var submit = el('button', { type: 'submit', class: 'btn primary wide', text: 'Send reset link' });
     var form = el('form', { novalidate: true, method: 'post', action: '#' }, [email.node, box, submit]);
     form.addEventListener('submit', function (e) {
@@ -235,7 +235,7 @@
   function signupView() {
     var box = msgBox();
     var name = field({ name: 'name', label: 'First name', autocomplete: 'given-name', placeholder: 'e.g. Sam' });
-    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'you@university.ac.uk', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'Any email works. Your university one is fine.' });
+    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'Any email works, personal or uni. Personal emails usually get our sign-in emails fastest, as some uni inboxes filter them.' });
     var pw = field({ name: 'password', type: 'password', label: 'Password', autocomplete: 'new-password', required: true, minlength: 8 });
     var meter = el('div', { class: 'meter', 'aria-hidden': 'true' }, [el('i'), el('i'), el('i'), el('i')]);
     var meterText = el('p', { class: 'hint', id: 'f-password-hint', text: 'At least 8 characters.' });

@@ -294,7 +294,7 @@
     if (!s) {
       card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#3F3F3B' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
-      var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'you@university.ac.uk', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #CFCFC8' });
+      var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #CFCFC8' });
       var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
       var submit = function () {
         var v = (input.value || '').trim();
