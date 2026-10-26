@@ -22,8 +22,11 @@ For a `content` pack, for **each topic** (aim for 6–10 topics):
 - **3 questions**: 2 multiple choice (4 options, exactly one correct, plausible distractors, `why` explains the answer and why the others are wrong) and 1 short answer (4–6 marks, `markScheme` of 3–5 points, `modelAnswer`).
 Plus **2 long questions** for the module (essay or multi-part problem in the style of this university's exams; 15–25 marks; `markScheme` 5–8 points; `modelAnswer` 250–500 words or a full worked solution).
 
+## Working files
+Other writers work in the same folder at the same time. If you use a builder script, name it after your pack id (`build_<id>.py`), never overwrite or run anyone else's script, and only ever write your own pack files.
+
 ## Option letters
-The app shuffles multiple-choice options, so in `why` never refer to options by letter or position ("option A", "(C)", "the first"). Name them by their content instead, e.g. "Morgenthau's book is classical realism, so it can't be the answer".
+The app shuffles multiple-choice options, so in `why` never refer to options by letter or position ("option A", "(C)", "the first"). Name them by their content instead, e.g. "Morgenthau's book is classical realism, so it can't be the answer". Checkers keep finding `why` texts that give the wrong reason a distractor is wrong (e.g. saying a numeric distractor came from dropping a prefix when it actually came from a different formula): work out how each distractor arises and explain it correctly. Never give a lecturer's name, and label anything taken from a page older than the current academic year with that year.
 
 ## Accuracy rules (critical)
 - Only state things that are well established and that you are confident are correct. If in doubt, check with WebSearch, or leave it out.
