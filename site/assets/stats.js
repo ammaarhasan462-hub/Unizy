@@ -56,6 +56,23 @@
       h += '<section class="card"><h2>By day</h2><table><thead><tr><th>Day</th><th class="r">Homepage views</th><th class="r">Demo starts</th><th class="r">Sign-up page</th><th class="r">Sign-ups submitted</th></tr></thead><tbody>' +
         ((d.daily || []).slice().reverse().map(function (r) { return '<tr><td>' + esc(r.day) + '</td><td class="r">' + (r.views || 0) + '</td><td class="r">' + (r.demo || 0) + '</td><td class="r">' + (r.signupView || 0) + '</td><td class="r">' + (r.submits || 0) + '</td></tr>'; }).join('') || '<tr><td colspan="5" class="muted">No visits recorded yet.</td></tr>') + '</tbody></table></section>';
       box.innerHTML = h;
+      fresh().then(function (s2) {
+        return fetch(CFG.supabaseUrl + '/rest/v1/rpc/outcomes_report', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + s2.access_token, 'Content-Type': 'application/json' }, body: '{}' }).then(function (r) { return r.json(); });
+      }).then(function (o) {
+        if (!o || !o.ok) return;
+        var rt = o.retest || {}, rc = o.recall || {}, mn = o.minutes || {}, sv = o.survey || {}, hrs = sv.hours || {};
+        var row = function (a, b) { return '<tr><td>' + a + '</td><td class="r">' + b + '</td></tr>'; };
+        var sec = document.createElement('section'); sec.className = 'card';
+        sec.innerHTML = '<h2>Is it working? Learning outcomes (all time, excluding your accounts)</h2><p class="muted">The homepage only shows each figure once 20 or more students contribute to it.</p><table><tbody>' +
+          row('Students who retested a topic', (rt.students || 0) + ' (' + (rt.topics || 0) + ' topics)') +
+          row('Average score: first try → latest', rt.first == null ? '–' : rt.first + '% → ' + rt.latest + '% (' + (rt.improved || 0) + ' students improved)') +
+          row('Spaced flashcard reviews still known', rc.rate == null ? '–' : rc.rate + '% of ' + rc.reviews + ' reviews (' + rc.students + ' students)') +
+          row('Median active study, last 7 days', mn.median == null ? '–' : Math.round(mn.median) + ' min (' + mn.students + ' students)') +
+          row('Survey: saves time a lot / a bit / no difference / takes longer', (sv.aLot || 0) + ' / ' + (sv.aBit || 0) + ' / ' + (sv.same || 0) + ' / ' + (sv.longer || 0)) +
+          row('Hours saved a week (none / under 1 / 1–2 / 3–5 / 5+)', [hrs['0'] || 0, hrs['<1'] || 0, hrs['1-2'] || 0, hrs['3-5'] || 0, hrs['5+'] || 0].join(' / ')) +
+          '</tbody></table>';
+        box.insertBefore(sec, box.children[2] || null);
+      }).catch(function () {});
     }).catch(function () { box.innerHTML = '<p>Couldn’t load the figures. Check your connection and refresh.</p>'; });
   }
   box.addEventListener('click', function (ev) { var b = ev.target.closest('[data-d]'); if (b) { days = +b.getAttribute('data-d'); load(); } });

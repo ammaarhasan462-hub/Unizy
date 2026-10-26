@@ -31,10 +31,10 @@
   // ---------------- coverage ----------------
   (function () {
     var s = H.stats; if (!s) return;
-    var items = [[s.unis, 'universities'], [s.degrees, 'degrees'], [s.modules.toLocaleString('en-GB'), 'modules from official 2026/27 catalogues'], [s.libraries, 'subject libraries'], [s.cards.toLocaleString('en-GB'), 'library flashcards'], [s.questions.toLocaleString('en-GB'), 'test questions with mark schemes']];
+    var items = [[s.unis, 'universities'], [s.degrees, 'degrees'], [s.modules.toLocaleString('en-GB'), 'modules from official 2026/27 catalogues'], [s.packs, 'module packs written for one specific module and fact-checked'], [s.libraries, 'subject libraries'], [s.cards.toLocaleString('en-GB'), 'library flashcards']];
     $('stats').innerHTML = items.map(function (x) { return '<div class="stat"><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('');
-    var t = '<table class="covtable"><thead><tr><th>University</th><th>Degrees</th><th>Modules</th><th>Subject library</th><th>Closest library</th><th>Outline only</th></tr></thead><tbody>' +
-      H.perUni.map(function (u) { return '<tr><td><b>' + esc(u.name) + '</b></td><td>' + u.degrees + '</td><td>' + u.modules + '</td><td>' + u.full + '</td><td>' + u.close + '</td><td>' + u.outline + '</td></tr>'; }).join('') + '</tbody></table>';
+    var t = '<table class="covtable"><thead><tr><th>University</th><th>Degrees</th><th>Modules</th><th>Module pack</th><th>Subject library</th><th>Closest library</th><th>Outline only</th></tr></thead><tbody>' +
+      H.perUni.map(function (u) { return '<tr><td><b>' + esc(u.name) + '</b></td><td>' + u.degrees + '</td><td>' + u.modules + '</td><td>' + u.pack + '</td><td>' + u.full + '</td><td>' + u.close + '</td><td>' + u.outline + '</td></tr>'; }).join('') + '</tbody></table>';
     $('degList').innerHTML = '<div style="overflow-x:auto">' + t + '</div>' + H.perUni.map(function (u) { return '<div class="deg-uni"><h4>' + esc(u.name) + '</h4><ul>' + u.list.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul></div>'; }).join('') + '<p class="muted" style="margin-bottom:14px">More universities and degrees are on the way. Missing yours? Email <a href="mailto:' + esc(CFG.contactEmail) + '">' + esc(CFG.contactEmail) + '</a>.</p>';
   })();
 
@@ -55,6 +55,29 @@
           return '<article class="rv-card"><span class="rv-stars" aria-label="' + n + ' out of 5 stars">' + '★★★★★'.slice(0, n) + '<span style="color:#CFCFC8">' + '★★★★★'.slice(0, 5 - n) + '</span></span>' + (r.title ? '<h3>' + esc(r.title) + '</h3>' : '') + '<p>' + esc(r.body) + '</p><span class="rv-who">' + who + '</span></article>';
         }).join('') + '<div style="grid-column:1/-1"><a class="btn line small" href="/reviews">Read all ' + (+d.count) + ' review' + (+d.count === 1 ? '' : 's') + ' (average ' + esc(d.average) + ' / 5)</a></div>';
       }).catch(empty);
+  })();
+
+  // ---------------- measured outcomes (published only above a minimum sample) ----------------
+  (function () {
+    var box = $('outcomes'); if (!box || !CFG.supabaseUrl) return;
+    function tile(v, label, sub, ready, have, min) {
+      return '<div class="ev-tile"><b class="' + (ready ? '' : 'wait') + '">' + (ready ? v : 'Collecting data') + '</b><span>' + label + '</span><small>' + sub + '</small>' +
+        (ready ? '' : '<div class="ev-bar" title="' + have + ' of ' + min + ' students"><i style="width:' + Math.min(100, Math.round(have / min * 100)) + '%"></i></div><small>' + have + ' of ' + min + ' students so far</small>') + '</div>';
+    }
+    fetch(CFG.supabaseUrl + '/rest/v1/rpc/public_outcomes', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (o) {
+        if (!o) throw new Error('none');
+        var m = o.min || 20, rt = o.retest || {}, rc = o.recall || {}, mn = o.minutes || {}, sv = o.survey || {};
+        var rtReady = rt.first != null && rt.students >= m, rcReady = rc.rate != null && rc.students >= m, mnReady = mn.median != null && mn.students >= m, svReady = sv.students >= m;
+        var yes = svReady ? Math.round((sv.aLot + sv.aBit) / sv.students * 100) : 0;
+        box.innerHTML =
+          tile((Math.round(rt.latest) - Math.round(rt.first) >= 0 ? '+' : '') + (Math.round(rt.latest) - Math.round(rt.first)) + ' pts', 'Score change on retested topics', rtReady ? 'Average first try ' + Math.round(rt.first) + '% → latest ' + Math.round(rt.latest) + '% across ' + rt.topics + ' retested topics (' + rt.students + ' students).' : 'How much scores change when students revise a weak topic and test it again.', rtReady, rt.students || 0, m) +
+          tile(Math.round(rc.rate) + '%', 'Still known at spaced review', rcReady ? 'Of ' + rc.reviews + ' scheduled flashcard reviews by ' + rc.students + ' students.' : 'How many learned flashcards students still know when they come back days later.', rcReady, rc.students || 0, m) +
+          tile(yes + '%', 'Say Unizy saves them time', svReady ? sv.students + ' students answered. ' + (sv.longer ? sv.longer + ' said it takes longer.' : '') : 'From a two-question survey shown in the app after a student’s first week.', svReady, sv.students || 0, m) +
+          tile(Math.round(mn.median) + ' min', 'Typical active study per week', mnReady ? 'Median for ' + mn.students + ' students active in the last 7 days. Only minutes of real use count.' : 'Minutes students actually work in Unizy each week, not just time with the tab open.', mnReady, mn.students || 0, m);
+      })
+      .catch(function () { box.innerHTML = '<p class="ev-note">Results will appear here once enough students have used Unizy.</p>'; });
   })();
 
   // ---------------- interactive demo ----------------
@@ -100,15 +123,15 @@
     if (st.step === 0) {
       h = '<h3 class="st-h">Pick your uni and a module</h3><p class="st-p">Unizy recolours to your uni and sets up your modules from the official course pages.</p>' +
         '<div class="chips" role="group" aria-label="University">' + UNIS.map(function (x) { return '<button class="chip" data-uni="' + x.id + '" aria-pressed="' + (x.id === st.uni) + '" style="--c:' + x.c + ';--cf:' + (x.light ? '#141414' : '#fff') + '">' + esc(x.name) + '</button>'; }).join('') + '</div>' +
-        '<div class="modlist" role="group" aria-label="Module">' + (D[st.uni] || []).map(function (x, i) { return '<button class="modbtn" data-mod="' + i + '" aria-pressed="' + (i === st.mod) + '"><b>' + esc(x.name) + '</b><span>' + esc([x.code, x.deg, 'Year ' + x.year].filter(Boolean).join(' · ')) + '</span><span class="badge b-full" style="margin-top:4px">Subject library · ' + esc(x.bankTitle) + '</span></button>'; }).join('') + '</div>' +
+        '<div class="modlist" role="group" aria-label="Module">' + (D[st.uni] || []).map(function (x, i) { return '<button class="modbtn" data-mod="' + i + '" aria-pressed="' + (i === st.mod) + '"><b>' + esc(x.name) + '</b><span>' + esc([x.code, x.deg, 'Year ' + x.year].filter(Boolean).join(' · ')) + '</span>' + (x.pack ? '<span class="badge b-pack" style="margin-top:4px">Module pack · fact-checked</span>' : '<span class="badge b-full" style="margin-top:4px">Subject library · ' + esc(x.bankTitle) + '</span>') + '</button>'; }).join('') + '</div>' +
         '<div class="row-end"><span class="muted">' + esc(u.name) + ' · ' + (D[st.uni] || []).length + ' sample modules</span>' + nextBtn('Open my notes', 1) + '</div>';
     } else if (st.step === 1) {
-      h = '<h3 class="st-h">Turn notes into flashcards</h3><p class="st-p">Here are notes on <b>' + esc(m.topics[m.note.t]) + '</b> from the Unizy library for ' + esc(m.name) + '.</p>' +
+      h = '<h3 class="st-h">Turn notes into flashcards</h3><p class="st-p">Here are notes on <b>' + esc(m.topics[m.note.t]) + '</b> from the Unizy ' + (m.pack ? 'module pack' : 'library') + ' for ' + esc(m.name) + '.</p>' +
         '<div class="paper"><h4>' + esc(m.note.h) + '</h4>' + esc(m.note.body) + '</div>';
       if (!st.made && !st.making) h += '<div><button class="btn acc" id="mk">✨ Make flashcards from these notes</button></div>';
       else if (st.making) h += '<div class="cards"><div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div></div>';
       else h += '<p class="st-p"><b>Tap a card to flip it.</b></p><div class="cards">' + m.cards.map(function (c, i) { return '<button class="fcard" aria-pressed="false" style="animation-delay:' + (i * 0.08) + 's"><span class="inner"><span class="side front"><small>Question</small><b>' + esc(c.f) + '</b></span><span class="side back"><small>Answer</small>' + esc(c.b) + '</span></span></button>'; }).join('') + '</div>' +
-        '<p class="note">In this demo the cards come from the Unizy library for this subject. In the app you can also upload your own lecture notes and have AI turn them into cards.</p>';
+        '<p class="note">In this demo the cards come from ' + (m.pack ? 'the Unizy module pack for ' + esc(m.name) : 'the Unizy library for this subject') + '. In the app you can also upload your own lecture notes and have AI turn them into cards.</p>';
       h += '<div class="row-end"><span></span>' + nextBtn('Test myself', 2, !st.made) + '</div>';
     } else if (st.step === 2) {
       var q = m.qs[st.qi], pick = st.picks[st.qi], answered = pick !== undefined, last = st.qi === m.qs.length - 1;

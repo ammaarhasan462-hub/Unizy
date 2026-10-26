@@ -387,6 +387,20 @@
       Auth.load();
       var fromLink = Auth.fromHash();
       track('app_view');
+      // active study time: minutes in which the student actually interacted with the app (tab visible)
+      var lastAct = 0;
+      ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (ev) { document.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true, capture: true }); });
+      setInterval(function () {
+        if (document.hidden || Date.now() - lastAct > 90000) return;
+        try {
+          var t = JSON.parse(localStorage.getItem('unizy:time') || '{}') || {}, d = new Date();
+          var k = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+          t[k] = Math.min(1440, (t[k] || 0) + 1);
+          var keys = Object.keys(t).sort(); while (keys.length > 120) delete t[keys.shift()];
+          localStorage.setItem('unizy:time', JSON.stringify(t)); Sync.push('unizy:time', t);
+          var st = inst.state && inst.state.store; if (st) st['unizy:time'] = t;
+        } catch (e) {}
+      }, 60000);
       attach(Comp.prototype);
       var inst = window.UnizyRuntime.mount(root, templateHTML, Comp, {});
       Account.inst = inst;
