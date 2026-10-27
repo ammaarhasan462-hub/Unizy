@@ -25,6 +25,9 @@ Plus **2 long questions** for the module (essay or multi-part problem in the sty
 ## Working files
 Other writers work in the same folder at the same time. If you use a builder script, name it after your pack id (`build_<id>.py`), never overwrite or run anyone else's script, and only ever write your own pack files.
 
+## Current figures
+Interest rates, inflation, debt ratios and similar figures go out of date within weeks. Teach the mechanism; if you quote a current figure, check it on the official source (Bank of England, ONS, Fed, ECB, OBR) and write it as "at the time of writing (Month Year)" with a reminder to check the latest figure.
+
 ## Option letters
 The app shuffles multiple-choice options, so in `why` never refer to options by letter or position ("option A", "(C)", "the first"). Name them by their content instead, e.g. "Morgenthau's book is classical realism, so it can't be the answer". Checkers keep finding `why` texts that give the wrong reason a distractor is wrong (e.g. saying a numeric distractor came from dropping a prefix when it actually came from a different formula): work out how each distractor arises and explain it correctly. Never give a lecturer's name or cite a staff profile page, never mention our internal worklist in pack text, and label anything taken from a page older than the current academic year with that year.
 
