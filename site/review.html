@@ -1,0 +1,58 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Clinical review · Unizy</title><meta name="robots" content="noindex"><meta name="theme-color" content="#141414"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap"><style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:#141414;background:#F3F3EF;-webkit-font-smoothing:antialiased}
+a{color:#141414}
+.in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.top{padding:18px 24px;border-bottom:1px solid #E2E2DC;background:#F3F3EF;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#141414}
+.brand b{width:36px;height:36px;border-radius:10px;background:#141414;color:#C6F432;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:21px}
+.brand span{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.03em}
+.who{font-size:14px;font-weight:600;color:#3F3F3B}
+main{max-width:1100px;margin:0 auto;padding:32px 24px 72px;display:flex;flex-direction:column;gap:20px}
+h1{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(30px,5vw,44px);letter-spacing:-.03em;line-height:1.05}
+h2{margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px;letter-spacing:-.02em}
+h3{margin:0;font-size:17px;font-weight:800}
+.lead{margin:0;font-size:16px;line-height:1.6;color:#3F3F3B;max-width:760px}
+.card{background:#fff;border:1px solid #E2E2DC;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.pick{font:inherit;text-align:left;background:#fff;border:1.5px solid #E2E2DC;border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-height:72px}
+.pick:hover,.pick:focus-visible{border-color:#141414;outline:none}
+.pick small{color:#55554F;font-size:13px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:#F1F1EC}
+.pill.ok{background:#E3F3E8;color:#1C5E37}.pill.warn{background:#FDF0D5;color:#7A4E00}.pill.bad{background:#FCEBEB;color:#9A1B12}
+.btn{font:inherit;font-size:15px;font-weight:700;padding:11px 18px;min-height:46px;border-radius:999px;cursor:pointer;border:none;background:#C6F432;color:#141414}
+.btn.ghost{background:#fff;border:1.5px solid #141414}.btn.dark{background:#141414;color:#fff}
+.btn[disabled]{opacity:.55;cursor:default}
+.back{font:inherit;font-size:14px;font-weight:700;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;align-self:flex-start}
+.sec{border:1px solid #E4E4DE;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.sec .meta{font-size:12px;font-weight:700;color:#55554F}
+.body{font-size:15px;line-height:1.65;white-space:pre-line}
+.badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;align-self:flex-start}
+.src{font-size:12px;color:#3F3F3B}.src a{margin-right:10px}
+.q{border:1px solid #E4E4DE;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.opt{display:grid;grid-template-columns:auto 1fr;gap:8px;font-size:14px;line-height:1.5;padding:8px 10px;border-radius:10px;background:#F7F7F3}
+.opt.right{background:#E3F3E8}
+.opt em{font-style:normal;font-weight:800}
+.why{font-size:14px;line-height:1.55;color:#2B2B28}
+.k{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#4E4E49}
+table{border-collapse:collapse;font-size:13.5px;width:100%}td,th{border-bottom:1px solid #E4E4DE;padding:6px;text-align:left}
+.strip{overflow-x:auto}.strip img{display:block;width:720px;max-width:none}
+.diag{max-width:420px;width:100%}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.fc{border:1px solid #E4E4DE;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:4px}
+.decide{border:2px solid #141414}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5}.check input{width:20px;height:20px;margin-top:1px;accent-color:#141414;flex:0 0 auto}
+textarea{font:inherit;font-size:15px;padding:10px 12px;border-radius:12px;border:1.5px solid #CFCFC8;width:100%;min-height:90px;resize:vertical}
+.msg{font-size:14px;line-height:1.5;padding:10px 12px;border-radius:12px;background:#FBEDEF;color:#7A0C1D}.msg.ok{background:#EEF6E4;color:#2D4A12}
+.hist{font-size:13px;line-height:1.5;color:#3F3F3B}
+details summary{cursor:pointer;font-weight:700}
+.foot{padding:28px 24px;border-top:1px solid #E2E2DC;font-size:13px;color:#6A6A63}
+@media (max-width:600px){main{padding:24px 14px 56px}.top{padding:12px 14px}.card{padding:16px}}
+</style></head><body><header class="top"><div class="in">
+<a class="brand" href="/"><b>u</b><span>unizy</span></a>
+<span class="who" id="who"></span>
+</div></header>
+<main id="main"><p class="lead">Loading…</p></main>
+<footer class="foot"><div class="in"><span>Clinical review workspace for invited reviewers. Questions: <a href="mailto:hello@unizy.uk">hello@unizy.uk</a></span><span><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a></span></div></footer>
+<script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk"};</script>
+<script src="/assets/diagrams.js?v=1"></script><script src="/assets/review.js?v=1"></script></body></html>

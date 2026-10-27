@@ -196,6 +196,18 @@ const DIAG = (() => {
     return uri(svg);
   };
 
-  return { DIAGRAMS, NAMES, ALT, ecg, svg: (name, items) => (DIAGRAMS[name] || heart)(items) };
+  // ---- content fingerprint: a clinician's sign-off covers exactly this topic content; any edit changes the hash ----
+  const canon = (v) => Array.isArray(v) ? '[' + v.map(canon).join(',') + ']' : v && typeof v === 'object' ? '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}' : JSON.stringify(v === undefined ? null : v);
+  const topicContent = (pack, t) => {
+    const of = (k) => (pack && Array.isArray(pack[k]) ? pack[k] : []).filter((x) => x && +x.t === +t);
+    return { topic: (pack && pack.topics || [])[t] || '', notes: of('notes'), cards: of('cards'), questions: of('questions'), interpret: of('interpret'), cases: of('cases'), osce: of('osce'), labels: of('labels') };
+  };
+  const hash = (pack, t) => {
+    const str = canon(topicContent(pack, t)); let a = 2166136261, b = 5381;
+    for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = (Math.imul(b, 33) ^ c) >>> 0; }
+    return ('0000000' + a.toString(16)).slice(-8) + ('0000000' + b.toString(16)).slice(-8);
+  };
+
+  return { DIAGRAMS, NAMES, ALT, ecg, hash, topicContent, svg: (name, items) => (DIAGRAMS[name] || heart)(items) };
 })();
 if (typeof module !== 'undefined') module.exports = DIAG;
