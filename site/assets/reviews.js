@@ -1,4 +1,4 @@
-/* Unizy reviews page: public list + one review per confirmed account. */
+/* Unizy reviews page: public list + one review per account that has started its free trial. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG, SKEY = 'unizy.session';
@@ -77,12 +77,22 @@
     var box = $('write'); box.innerHTML = '';
     box.appendChild(el('h2', { text: state.mine ? 'Your review' : 'Leave a review' }));
     if (!state.token) {
-      box.appendChild(el('p', { class: 'muted', text: 'Reviews can only be left by students with a Unizy account, one per account.' }));
-      box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/login?next=' + encodeURIComponent('/reviews'), text: 'Log in to write a review' }), el('a', { class: 'btn ghost', href: '/signup?next=' + encodeURIComponent('/reviews'), text: 'Create an account' })]));
+      box.appendChild(el('p', { class: 'muted', text: 'Only students who have a Unizy account and have started their free 7-day trial can leave a review, one per account. No card needed.' }));
+      box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/signup?next=' + encodeURIComponent('/reviews'), text: 'Start free trial' }), el('a', { class: 'btn ghost', href: '/login?next=' + encodeURIComponent('/reviews'), text: 'Log in' })]));
       return;
     }
     if (!state.confirmed) {
       box.appendChild(el('p', { class: 'muted', text: 'Confirm your email address first: open the link we emailed you when you signed up. Then come back here to leave your review.' }));
+      return;
+    }
+    if (state.gate && !state.gate.eligible && state.gate.reason === 'owner') {
+      box.appendChild(el('p', { class: 'muted', text: state.gate.message }));
+      return;
+    }
+    if (state.gate && !state.gate.eligible && !state.mine) {
+      box.appendChild(el('p', { class: 'muted', text: 'Reviews come only from students who have started their free trial. Open Unizy and set up your university and course first: it takes a minute and you don’t need to use the tutor.' }));
+      box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/app.html', text: 'Start my free trial' })]));
+      box.appendChild(el('p', { class: 'muted small', text: 'Come back to this page afterwards to leave your review.' }));
       return;
     }
     if (state.mine && state.mine.status === 'hidden') {
@@ -147,7 +157,7 @@
         return rpc('submit_review', { p_rating: picked, p_title: title.value, p_body: body.value, p_show_course: showCourse.checked }, s.access_token);
       }).then(function (r) {
         submit.disabled = false; submit.textContent = state.mine ? 'Save changes' : 'Post my review';
-        if (!r.ok) { show(r.message); return; }
+        if (!r.ok) { show(r.message); if (r.reason === 'trial' || r.reason === 'owner') { state.gate = { eligible: false, reason: r.reason, message: r.message }; setTimeout(renderWrite, 2500); } return; }
         state.editing = false;
         return rpc('my_review', {}, state.token).then(function (d) { state.mine = d.review; renderWrite(); load(true); var ok = el('div', { class: 'msg ok', role: 'status', text: r.message }); $('write').insertBefore(ok, $('write').children[1] || null); });
       }).catch(function (err) { submit.disabled = false; submit.textContent = state.mine ? 'Save changes' : 'Post my review'; show(err.message || 'Something went wrong.'); });
@@ -161,7 +171,7 @@
     if (!s) { renderWrite(); return; }
     state.token = s.access_token;
     $('nav-app').textContent = 'My dashboard';
-    return rpc('my_review', {}, s.access_token).then(function (d) { state.confirmed = !!d.confirmed; state.mine = d.review; renderWrite(); })
+    return rpc('my_review', {}, s.access_token).then(function (d) { state.confirmed = !!d.confirmed; state.mine = d.review; state.gate = d.eligible === undefined ? null : { eligible: !!d.eligible, reason: d.reason, message: d.message }; renderWrite(); })
       .catch(function () { state.token = null; renderWrite(); });
   });
 })();
