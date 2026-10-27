@@ -677,10 +677,27 @@ Notes file
 <button onClick="{{ps.pick}}" aria-pressed="{{ps.on}}" style="font: inherit; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; min-height: 56px; border-radius: 12px; border: 1.5px solid {{ps.border}}; background: {{ps.bg}}; color: {{ps.fg}}; cursor: pointer"><span style="font-size: 14px; font-weight: 800">{{ps.n}}. {{ps.label}}</span><span style="font-size: 11px; opacity: 0.85">{{ps.sub}}</span><sc-if value="{{ps.hasCount}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700">{{ps.count}}</span></sc-if></button>
 </sc-for>
 </div>
+<sc-if value="{{mp.hasDue}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-radius: 12px; background: #F5F8FF; border: 1.5px solid #1D3F8F; padding: 10px 12px"><span style="font-size: 14px; font-weight: 600; line-height: 1.5; flex: 1 1 240px">{{mp.dueText}}</span><button onClick="{{mp.goDue}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: none; background: #1D3F8F; color: #FFFFFF; cursor: pointer">Start the check</button></div></sc-if>
+<sc-if value="{{mp.hasEv}}" hint-placeholder-val="{{ false }}"><details style="border-top: 1px solid #EFEFEA; padding-top: 8px"><summary style="cursor: pointer; font-size: 13px; font-weight: 800">Your learning evidence</summary><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 8px"><sc-for list="{{mp.ev}}" as="evx" hint-placeholder-count="3"><div style="border: 1px solid #E4E4DE; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800">{{evx.v}}</span><span style="font-size: 13px; font-weight: 700">{{evx.label}}</span><span style="font-size: 12px; color: #5C5C57">{{evx.sub}}</span></div></sc-for></div><p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #5C5C57">Only first attempts count. The aim: the second and third numbers should match or beat the first, which shows you can apply ideas to new cases rather than remember particular questions.</p></details></sc-if>
 </section>
 
 <section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 14px">
 <div><span style="font-size: 12px; font-weight: 700; color: #5C5C57">{{mp.topicNo}}</span><h3 style="margin: 2px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.01em">{{mp.topicName}}</h3></div>
+<div style="border: 1px solid #E4E4DE; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.5">
+<div style="display: flex; gap: 8px; align-items: flex-start"><span aria-hidden="true" style="flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; background: {{mp.chk.signBg}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">{{mp.chk.signMark}}</span><span><strong>Clinician review:</strong> {{mp.chk.signText}}<sc-if value="{{mp.chk.hasGmc}}" hint-placeholder-val="{{ false }}"> <a href="{{mp.chk.gmcUrl}}" target="_blank" rel="noopener" style="color: #141414">{{mp.chk.gmc}} (check the register)</a></sc-if></span></div>
+<div style="display: flex; gap: 8px; align-items: flex-start"><span aria-hidden="true" style="flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; background: #E8F0FB; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">✓</span><span>{{mp.chk.sourced}} {{mp.chk.guidance}}</span></div>
+<sc-if value="{{mp.chk.hasFixes}}" hint-placeholder-val="{{ false }}"><details><summary style="cursor: pointer; font-weight: 700">{{mp.chk.fixCount}}</summary><sc-for list="{{mp.chk.fixes}}" as="fx" hint-placeholder-count="1"><div style="padding: 4px 0">{{fx.when}}: {{fx.what}}</div></sc-for></details></sc-if>
+<sc-if value="{{mp.chk.repClosed}}" hint-placeholder-val="{{ true }}"><button onClick="{{mp.chk.repToggle}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 700; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 2px 0">Spotted a mistake? Report it</button></sc-if>
+<sc-if value="{{mp.chk.repOpen}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #E4E4DE; padding-top: 8px">
+<sc-if value="{{mp.chk.repDone}}" hint-placeholder-val="{{ false }}"><span role="status" style="font-weight: 600; color: #1C5E37">{{mp.chk.repNote}}</span><button onClick="{{mp.chk.repToggle}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 2px 0">Close</button></sc-if>
+<sc-if value="{{mp.chk.repNotDone}}" hint-placeholder-val="{{ true }}">
+<label style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">Which part? (optional)</span><input type="text" value="{{mp.chk.repItem}}" onChange="{{mp.chk.onRepItem}}" maxlength="300" placeholder="e.g. Management principles, or the question about chest pain" style="font: inherit; font-size: 15px; padding: 9px 11px; border-radius: 10px; border: 1.5px solid #CFCFC8"></label>
+<label style="display: flex; flex-direction: column; gap: 4px"><span style="font-weight: 700">What looks wrong, and why?</span><textarea value="{{mp.chk.repMsg}}" onChange="{{mp.chk.onRepMsg}}" maxlength="3000" rows="3" placeholder="A link to a guideline or textbook helps us fix it fast." style="font: inherit; font-size: 15px; padding: 9px 11px; border-radius: 10px; border: 1.5px solid #CFCFC8; resize: vertical"></textarea></label>
+<sc-if value="{{mp.chk.hasRepNote}}" hint-placeholder-val="{{ false }}"><span role="alert" style="color: #3F3F3B">{{mp.chk.repNote}}</span></sc-if>
+<div style="display: flex; gap: 8px"><button onClick="{{mp.chk.repSend}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Send report</button><button onClick="{{mp.chk.repToggle}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer">Cancel</button></div>
+</sc-if>
+</div></sc-if>
+</div>
 
 <sc-if value="{{mp.isU}}" hint-placeholder-val="{{ true }}">
 <div style="border-radius: 14px; background: {{theme.tint}}; padding: 14px 16px; font-size: 16px; line-height: 1.6">{{mp.overview}}</div>
@@ -701,11 +718,12 @@ Notes file
 </div>
 <sc-if value="{{mp.hasLabels}}" hint-placeholder-val="{{ false }}">
 <sc-for list="{{mp.labels}}" as="lb" hint-placeholder-count="1">
-<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px"><span style="font-size: 15px; font-weight: 800">Label the heart</span>
-<img src="{{lb.img}}" alt="Schematic four-chamber heart with numbered structures" style="width: 100%; max-width: 400px; height: auto; align-self: center"/>
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline"><span style="font-size: 15px; font-weight: 800">{{lb.title}}</span><span style="font-size: 13px; font-weight: 700; color: #3F3F3B">{{lb.score}}</span></div>
+<img src="{{lb.img}}" alt="{{lb.alt}}" style="width: 100%; max-width: 420px; height: auto; align-self: center"/>
 <sc-for list="{{lb.items}}" as="li" hint-placeholder-count="4">
 <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Which number is the {{li.name}}? <span style="font-weight: 600; color: #3F3F3B">{{li.verdict}}</span></span><div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{li.nums}}" as="ln" hint-placeholder-count="6"><button onClick="{{ln.pick}}" style="font: inherit; font-size: 14px; font-weight: 700; width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid {{ln.border}}; background: {{ln.bg}}; cursor: pointer">{{ln.n}}</button></sc-for></div></div>
 </sc-for>
+<sc-if value="{{lb.hasReset}}" hint-placeholder-val="{{ false }}"><button onClick="{{lb.reset}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 6px 0">Clear my answers</button></sc-if>
 </div>
 </sc-for>
 </sc-if>
@@ -788,7 +806,7 @@ Notes file
 </sc-if>
 <sc-if value="{{rq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{rq.clue}}</div></sc-if>
 <sc-if value="{{rq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{rq.concept}}</div></sc-if>
-<sc-if value="{{rq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{rq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{rq.secLabel}}</button><button onClick="{{rq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{rq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{rq.fuTitle}}</span>
+<sc-if value="{{rq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{rq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{rq.secLabel}}</button><button onClick="{{rq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{rq.fuHeld}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #1D3F8F">{{rq.fuHeldText}}</span></sc-if><sc-if value="{{rq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{rq.fuTitle}}</span>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{rq.fu.q}}</p>
 <sc-for list="{{rq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
@@ -868,7 +886,7 @@ Notes file
 <sc-if value="{{mp.hasInterp}}" hint-placeholder-val="{{ false }}">
 <sc-for list="{{mp.interp}}" as="iq" hint-placeholder-count="1">
 <div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Interpret · {{iq.kindLabel}}</span><span style="font-size: 15px; font-weight: 800">{{iq.title}}</span>
-<sc-if value="{{iq.isEcg}}" hint-placeholder-val="{{ false }}"><div style="overflow-x: auto"><img src="{{iq.ecgImg}}" alt="Illustrative ECG rhythm strip" style="display: block; width: 720px; max-width: none; height: auto"/></div></sc-if>
+<sc-if value="{{iq.isEcg}}" hint-placeholder-val="{{ false }}"><div style="overflow-x: auto; -webkit-overflow-scrolling: touch"><img src="{{iq.ecgImg}}" onClick="{{iq.ecgTap}}" alt="Illustrative ECG rhythm strip. Tap two points to measure the interval between them." style="display: block; width: 720px; max-width: none; height: auto; cursor: crosshair; touch-action: pan-x"/></div><div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 13px; line-height: 1.5; color: #1D3F8F"><span aria-live="polite">{{iq.calText}}</span><sc-if value="{{iq.hasCal}}" hint-placeholder-val="{{ false }}"><button onClick="{{iq.calReset}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 4px 0; color: #1D3F8F">Clear marks</button></sc-if></div></sc-if>
 <sc-if value="{{iq.isTable}}" hint-placeholder-val="{{ false }}"><div style="overflow-x: auto"><div role="table" style="display: grid; grid-template-columns: minmax(0, 1.5fr) auto auto minmax(0, 1.3fr); font-size: 13.5px; overflow-wrap: anywhere"><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Test</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700; text-align: right">Result</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Unit</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Typical range</span><sc-for list="{{iq.tableRows}}" as="tr2" hint-placeholder-count="4"><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE">{{tr2.name}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE; text-align: right; font-weight: 700; color: {{tr2.col}}">{{tr2.val}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE">{{tr2.unit}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE; color: #5C5C57">{{tr2.range}}</span></sc-for></div></div><span style="font-size: 12px; color: #5C5C57">{{iq.rangeNote}}</span></sc-if>
 
 <div style="display: flex; flex-direction: column; gap: 10px">
@@ -893,7 +911,7 @@ Notes file
 </sc-if>
 <sc-if value="{{iq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{iq.clue}}</div></sc-if>
 <sc-if value="{{iq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{iq.concept}}</div></sc-if>
-<sc-if value="{{iq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{iq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{iq.secLabel}}</button><button onClick="{{iq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{iq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{iq.fuTitle}}</span>
+<sc-if value="{{iq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{iq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{iq.secLabel}}</button><button onClick="{{iq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{iq.fuHeld}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #1D3F8F">{{iq.fuHeldText}}</span></sc-if><sc-if value="{{iq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{iq.fuTitle}}</span>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{iq.fu.q}}</p>
 <sc-for list="{{iq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
@@ -952,7 +970,7 @@ Notes file
 </sc-if>
 <sc-if value="{{aq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{aq.clue}}</div></sc-if>
 <sc-if value="{{aq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{aq.concept}}</div></sc-if>
-<sc-if value="{{aq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{aq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{aq.secLabel}}</button><button onClick="{{aq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{aq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{aq.fuTitle}}</span>
+<sc-if value="{{aq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{aq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{aq.secLabel}}</button><button onClick="{{aq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{aq.fuHeld}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #1D3F8F">{{aq.fuHeldText}}</span></sc-if><sc-if value="{{aq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{aq.fuTitle}}</span>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{aq.fu.q}}</p>
 <sc-for list="{{aq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
@@ -996,6 +1014,67 @@ Notes file
 </sc-if>
 
 <sc-if value="{{mp.isI}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{mp.hasCheck}}" hint-placeholder-val="{{ false }}">
+<div style="border: 2px solid #1D3F8F; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; background: #F5F8FF"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #1D3F8F">7-day check</span><span style="font-size: 15px; line-height: 1.5">A week ago you got these ideas right. Here are new questions on the same ideas that you haven’t seen, to check they have stuck. Your first answer counts towards your evidence.</span>
+<sc-for list="{{mp.checkQs}}" as="ck" hint-placeholder-count="2">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Apply</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{ck.q}}</p>
+<sc-for list="{{ck.opts}}" as="ock" hint-placeholder-count="4">
+<button onClick="{{ock.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{ock.border}}; background: {{ock.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{ock.letter}}</span>
+<span style="flex: 1 1 auto">{{ock.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{ock.markColor}}">{{ock.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{ck.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{ck.verdict}}</strong> {{ck.why}}</div>
+
+<sc-if value="{{ck.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ck.rows}}" as="rck" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rck.tagBg}}">{{rck.tag}}</span><span><strong>{{rck.opt}}</strong> · {{rck.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ck.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{ck.clue}}</div></sc-if>
+<sc-if value="{{ck.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{ck.concept}}</div></sc-if>
+<sc-if value="{{ck.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{ck.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{ck.secLabel}}</button><button onClick="{{ck.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{ck.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{ck.fuTitle}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{ck.fu.q}}</p>
+<sc-for list="{{ck.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
+<button onClick="{{oV_fu.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oV_fu.border}}; background: {{oV_fu.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oV_fu.letter}}</span>
+<span style="flex: 1 1 auto">{{oV_fu.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oV_fu.markColor}}">{{oV_fu.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{ck.fu.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{ck.fu.verdict}}</strong> {{ck.fu.why}}</div>
+
+<sc-if value="{{ck.fu.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{ck.fu.rows}}" as="rV_fu" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rV_fu.tagBg}}">{{rV_fu.tag}}</span><span><strong>{{rV_fu.opt}}</strong> · {{rV_fu.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ck.fu.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{ck.fu.clue}}</div></sc-if>
+<sc-if value="{{ck.fu.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{ck.fu.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
 <span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">{{mp.improveNote}}</span>
 <sc-for list="{{mp.mistakes}}" as="mm" hint-placeholder-count="2">
 <div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 15px; font-weight: 700; line-height: 1.5; white-space: pre-line">{{mm.q}}</span><span style="font-size: 14px; color: #9A1B12">You chose: {{mm.yours}}</span><span style="font-size: 14px; color: #1C5E37">Answer: {{mm.right}}</span><span style="font-size: 14px; line-height: 1.5">{{mm.why}}</span>
@@ -1008,7 +1087,7 @@ Notes file
 </sc-if>
 
 <div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid #E4E4DE; padding-top: 12px">
-<span style="font-size: 12px; line-height: 1.5; color: #5C5C57; max-width: 560px">{{mp.trust}} <a href="{{mp.report}}" style="color: #141414; font-weight: 700">Report a mistake</a></span>
+<span style="font-size: 12px; line-height: 1.5; color: #5C5C57; max-width: 560px">{{mp.trust}}</span>
 <button onClick="{{mp.next}}" style="font: inherit; font-size: 15px; font-weight: 800; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{mp.nextLabel}}</button>
 </div>
 </section>
@@ -1185,7 +1264,7 @@ Notes file
 </sc-if>
 <sc-if value="{{cq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{cq.clue}}</div></sc-if>
 <sc-if value="{{cq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{cq.concept}}</div></sc-if>
-<sc-if value="{{cq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{cq.fuTitle}}</span>
+<sc-if value="{{cq.fuHeld}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; line-height: 1.5; color: #1D3F8F">{{cq.fuHeldText}}</span></sc-if><sc-if value="{{cq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{cq.fuTitle}}</span>
 <div style="display: flex; flex-direction: column; gap: 10px">
 <p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{cq.fu.q}}</p>
 <sc-for list="{{cq.fu.opts}}" as="ocq_fu" hint-placeholder-count="4">
@@ -2318,7 +2397,223 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=10"></script><script src="/assets/web.js?v=10"></script><script src="/assets/social.js?v=10"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=12"></script><script src="/assets/web.js?v=12"></script><script src="/assets/social.js?v=12"></script><script>
+// Unizy medical diagrams and ECG strips. Pure functions returning SVG data URIs.
+// Pasted into app.html's Component class as static methods (keep in sync with the copy there).
+// UZDIAG:BEGIN (generated from coverage/diagrams.js by coverage/sync_diagrams.py; edit that file, not this copy)
+// Unizy medical diagrams and ECG strips. Pure functions returning SVG data URIs.
+// Pasted into app.html's Component class as static methods (keep in sync with the copy there).
+const UZDIAG = (() => {
+  const uri = (svg) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  const F = 'font-family="Inter,Arial,sans-serif"';
+  const mark = (p, i) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="13" fill="#141414" stroke="#FFFFFF" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 5) + '" text-anchor="middle" ' + F + ' font-size="14" font-weight="700" fill="#FFFFFF">' + (i + 1) + '</text>';
+  const marks = (P, items) => (items || []).map((k, i) => (P[k] ? mark(P[k], i) : '')).join('');
+  const foot = (y, lines) => lines.map((t, i) => '<text x="8" y="' + (y + i * 17) + '" ' + F + ' font-size="12" fill="#3F3F3B">' + t + '</text>').join('');
+  const wrap = (w, h, body) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '"><rect width="100%" height="100%" fill="#FFFFFF"/>' + body + '</svg>';
+
+  // ---- heart (unchanged from the original schematic) ----
+  const HEART_P = { svc: [125, 40], ivc: [125, 330], ra: [100, 125], rv: [120, 245], la: [295, 115], lv: [280, 250], septum: [200, 255], tricuspid: [110, 178], mitral: [290, 172], pulmonary: [180, 182], aortic: [220, 182], pa: [180, 70], aorta: [220, 40], pv: [360, 120] };
+  const heartBase = () =>
+    '<rect x="110" y="10" width="30" height="80" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+    '<rect x="110" y="292" width="30" height="62" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+    '<rect x="168" y="20" width="26" height="160" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+    '<path d="M206 180 L206 40 Q206 12 236 12 L262 12" fill="none" stroke="#A33A3A" stroke-width="26" stroke-linecap="round"/>' +
+    '<rect x="335" y="100" width="55" height="40" rx="8" fill="#F2C9C9" stroke="#A33A3A"/>' +
+    '<rect x="55" y="85" width="105" height="85" rx="22" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
+    '<path d="M55 190 L193 190 L193 300 Q130 330 70 260 Z" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
+    '<rect x="240" y="80" width="100" height="80" rx="22" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
+    '<path d="M207 190 L345 190 Q350 260 300 320 Q240 340 207 300 Z" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
+    '<rect x="193" y="190" width="14" height="115" fill="#D8C6C6" stroke="#6B4E4E"/>';
+  const heart = (items) => uri(wrap(400, 392, heartBase() +
+    '<line x1="72" y1="178" x2="150" y2="178" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
+    '<line x1="252" y1="172" x2="330" y2="172" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
+    '<line x1="168" y1="182" x2="194" y2="182" stroke="#141414" stroke-width="4"/>' +
+    '<line x1="207" y1="182" x2="233" y2="182" stroke="#141414" stroke-width="4"/>' + marks(HEART_P, items) +
+    foot(368, ['Schematic, not to scale · viewer’s left = patient’s right', 'Blue = deoxygenated blood, red = oxygenated blood'])));
+
+  // ---- cardiac conduction system ----
+  const COND_P = { san: [150, 96], avn: [196, 176], his: [212, 204], lbb: [250, 250], rbb: [168, 258], purkinje: [300, 318] };
+  const conduction = (items) => uri(wrap(400, 392,
+    '<g opacity="0.55">' + heartBase() + '</g>' +
+    '<path d="M132 92 C160 120 180 150 198 178" fill="none" stroke="#C77C00" stroke-width="3" stroke-dasharray="4 4"/>' +
+    '<path d="M140 96 C190 104 250 110 290 108" fill="none" stroke="#C77C00" stroke-width="3" stroke-dasharray="4 4"/>' +
+    '<ellipse cx="128" cy="90" rx="14" ry="9" fill="#F2A900" stroke="#7A4E00" stroke-width="2"/>' +
+    '<ellipse cx="198" cy="180" rx="12" ry="8" fill="#F2A900" stroke="#7A4E00" stroke-width="2"/>' +
+    '<path d="M200 186 L200 222" stroke="#E08700" stroke-width="7" stroke-linecap="round"/>' +
+    '<path d="M200 222 C204 260 222 290 250 306 C276 318 300 312 318 290 C330 270 336 240 332 210" fill="none" stroke="#E08700" stroke-width="5" stroke-linecap="round"/>' +
+    '<path d="M200 222 C196 255 176 285 140 298 C108 306 86 286 76 258" fill="none" stroke="#E08700" stroke-width="5" stroke-linecap="round"/>' +
+    '<path d="M250 306 l10 -18 M276 314 l6 -20 M300 310 l-2 -22 M318 290 l-14 -10 M330 254 l-16 -2 M140 298 l-2 -20 M108 302 l8 -18 M86 282 l16 -8" stroke="#E08700" stroke-width="2.5" stroke-linecap="round"/>' +
+    marks(COND_P, items) +
+    foot(368, ['Schematic, not to scale · viewer’s left = patient’s right', 'Orange = specialised conducting tissue'])));
+
+  // ---- lungs and airways (anterior view) ----
+  const LUNG_P = { trachea: [200, 40], carina: [200, 112], rmb: [160, 140], lmb: [250, 140], rul: [95, 115], rml: [128, 236], rll: [74, 300], lul: [300, 150], lll: [334, 292], hfissure: [140, 184], ofissure: [100, 262], diaphragm: [200, 362], pleura: [18, 210] };
+  const lungs = (items) => uri(wrap(400, 430,
+    // pleura (parietal outline)
+    '<path d="M170 70 C110 62 40 120 32 230 C26 300 40 340 70 352 C110 336 160 330 182 336 Z" fill="none" stroke="#7E8FB3" stroke-width="2" stroke-dasharray="6 5"/>' +
+    '<path d="M230 70 C290 62 360 120 368 230 C374 300 360 340 330 352 C290 336 240 330 218 336 Z" fill="none" stroke="#7E8FB3" stroke-width="2" stroke-dasharray="6 5"/>' +
+    // right lung (viewer's left): three lobes
+    '<path d="M168 80 C115 74 52 126 46 230 C42 290 52 322 74 336 C110 322 150 318 172 322 L172 150 Z" fill="#F4D3D3" stroke="#A35A5A" stroke-width="2"/>' +
+    '<path d="M54 178 C90 178 130 178 172 182" fill="none" stroke="#8A3F3F" stroke-width="2.5"/>' +
+    '<path d="M52 182 C80 232 110 290 140 326" fill="none" stroke="#8A3F3F" stroke-width="2.5"/>' +
+    // left lung (viewer's right): two lobes with cardiac notch
+    '<path d="M232 80 C285 74 348 126 354 230 C358 290 348 322 326 336 C296 324 268 320 252 322 C262 300 264 268 246 250 C236 240 232 220 232 200 Z" fill="#F4D3D3" stroke="#A35A5A" stroke-width="2"/>' +
+    '<path d="M350 168 C322 228 292 288 262 326" fill="none" stroke="#8A3F3F" stroke-width="2.5"/>' +
+    // trachea and bronchi
+    '<rect x="188" y="12" width="24" height="96" rx="8" fill="#E8E2CF" stroke="#7A6E4D" stroke-width="2"/>' +
+    '<path d="M196 104 L150 160 L136 152 L188 98 Z" fill="#E8E2CF" stroke="#7A6E4D" stroke-width="2"/>' +
+    '<path d="M204 104 L274 148 L266 160 L196 112 Z" fill="#E8E2CF" stroke="#7A6E4D" stroke-width="2"/>' +
+    '<path d="M150 160 l-18 22 M150 160 l-6 28 M266 160 l18 20 M266 160 l6 28" stroke="#7A6E4D" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M18 352 C80 300 160 330 200 340 C240 330 320 300 382 352" fill="none" stroke="#5A6B3F" stroke-width="5"/>' +
+    marks(LUNG_P, items) +
+    foot(392, ['Schematic anterior view, not to scale · viewer’s left = patient’s right', 'Dashed line = pleura; thick lines in the lungs = fissures'])));
+
+  // ---- nephron ----
+  const NEPH_P = { afferent: [62, 50], efferent: [96, 20], glomerulus: [164, 90], bowman: [128, 108], pct: [214, 150], dloop: [252, 272], aloop: [292, 236], dct: [296, 22], cd: [362, 250], jga: [196, 70] };
+  const nephron = (items) => uri(wrap(420, 432,
+    '<rect x="0" y="0" width="420" height="196" fill="#FBF6EC"/><rect x="0" y="196" width="420" height="200" fill="#F1ECF7"/>' +
+    '<text x="12" y="186" ' + F + ' font-size="12" font-weight="700" fill="#6B5A35">CORTEX</text><text x="12" y="214" ' + F + ' font-size="12" font-weight="700" fill="#5A4A7A">MEDULLA</text>' +
+    '<circle cx="164" cy="86" r="38" fill="#EAF1FB" stroke="#3B5B8C" stroke-width="3"/>' +
+    '<path d="M140 86 C144 66 160 62 166 76 C174 62 190 70 186 86 C196 96 184 112 170 104 C166 118 150 116 152 102 C138 104 134 92 140 86 Z" fill="#E07A7A" stroke="#9A2C2C" stroke-width="2"/>' +
+    '<path d="M164 124 C164 152 200 154 206 134 C212 112 240 114 238 142 C236 170 212 170 222 186 C230 198 252 196 252 214 L252 342" fill="none" stroke="#3B5B8C" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M252 340 C252 374 292 374 292 340" fill="none" stroke="#3B5B8C" stroke-width="7" stroke-linecap="round"/>' +
+    '<path d="M292 342 L292 80 C292 58 270 52 190 54" fill="none" stroke="#2E6E9E" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M190 52 C204 28 236 12 274 14 C314 16 334 32 340 60 C352 70 362 78 362 104 L362 392" fill="none" stroke="#2E6E9E" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M8 40 L150 58" stroke="#B23A3A" stroke-width="9" stroke-linecap="round"/>' +
+    '<path d="M156 50 L70 6" stroke="#B23A3A" stroke-width="6" stroke-linecap="round"/>' +
+    '<ellipse cx="180" cy="56" rx="16" ry="11" fill="none" stroke="#C77C00" stroke-width="3" stroke-dasharray="4 3"/>' +
+    marks(NEPH_P, items) +
+    foot(410, ['Schematic, not to scale', 'Red = arterioles, blue = tubule; orange ring = juxtaglomerular area'])));
+
+  // ---- brain, lateral view of the left hemisphere ----
+  const BRAIN_P = { frontal: [92, 112], parietal: [262, 92], temporal: [190, 236], occipital: [352, 178], cerebellum: [312, 268], brainstem: [236, 318], central: [212, 50], lateral: [140, 186], precentral: [168, 92], postcentral: [234, 132], broca: [84, 198], wernicke: [270, 206] };
+  const brain = (items) => {
+    const outline = 'M40 170 C30 100 90 40 180 36 C270 32 360 70 384 150 C396 196 380 226 352 236 C330 244 300 240 280 248 C250 262 220 268 190 262 C150 256 120 248 98 232 C70 216 46 206 40 170 Z';
+    return uri(wrap(420, 400,
+      '<defs><clipPath id="bc"><path d="' + outline + '"/></clipPath></defs>' +
+      '<g clip-path="url(#bc)">' +
+      '<rect x="0" y="0" width="420" height="400" fill="#D7E6F7"/>' +
+      '<path d="M222 20 C214 70 196 120 178 170 L0 200 L0 0 Z" fill="#CFE3C4"/>' +
+      '<path d="M222 20 C214 70 196 120 178 170 L250 196 C300 180 330 160 350 120 L350 0 Z" fill="#F6E2B3"/>' +
+      '<path d="M350 120 C330 160 300 180 250 196 L300 260 L420 260 L420 100 Z" fill="#E7D2F0"/>' +
+      '<path d="M178 170 L250 196 L300 260 L0 260 L0 200 Z" fill="#F7D2CF"/>' +
+      '<path d="M222 20 C214 70 196 120 178 170" fill="none" stroke="#2F2F2F" stroke-width="3"/>' +
+      '<path d="M205 16 C196 70 178 120 160 166" fill="none" stroke="#6C8F5B" stroke-width="2" stroke-dasharray="3 3"/>' +
+      '<path d="M240 24 C232 76 214 126 196 172" fill="none" stroke="#B08A35" stroke-width="2" stroke-dasharray="3 3"/>' +
+      '<path d="M60 200 C110 186 170 178 236 196 C262 202 284 214 300 226" fill="none" stroke="#2F2F2F" stroke-width="3"/>' +
+      '<path d="M66 204 C80 190 104 186 120 196" fill="#B9D7A8" stroke="#4E7A3C" stroke-width="1.5" opacity="0.9"/>' +
+      '<ellipse cx="268" cy="214" rx="24" ry="12" fill="#E9B7B2" stroke="#9A4A43" stroke-width="1.5"/>' +
+      '</g>' +
+      '<path d="' + outline + '" fill="none" stroke="#3F3F3B" stroke-width="2.5"/>' +
+      '<path d="M268 244 C290 236 340 236 360 256 C376 274 360 300 330 304 C300 308 276 296 266 278 Z" fill="#E9DCC8" stroke="#6E5A3A" stroke-width="2"/>' +
+      '<path d="M272 250 C300 248 340 252 356 266 M270 264 C300 262 340 270 352 282" fill="none" stroke="#6E5A3A" stroke-width="1"/>' +
+      '<path d="M214 258 L222 352 L250 352 L258 270 Z" fill="#E4D9D0" stroke="#6E5A3A" stroke-width="2"/>' +
+      marks(BRAIN_P, items) +
+      foot(372, ['Left hemisphere, side view · front of the head on the left', 'Thick lines = sulci; dashed = gyri either side of the central sulcus'])));
+  };
+
+  // ---- gastrointestinal tract (anterior view) ----
+  const GI_P = { oesophagus: [212, 30], stomach: [262, 120], duodenum: [178, 168], jejunum: [244, 210], ileum: [168, 262], caecum: [98, 300], appendix: [86, 340], ascending: [74, 232], transverse: [150, 180], descending: [334, 250], sigmoid: [282, 320], rectum: [204, 366], liver: [100, 84], gallbladder: [142, 140], pancreas: [214, 154], spleen: [342, 110] };
+  const gi = (items) => uri(wrap(420, 440,
+    '<path d="M30 60 C60 30 180 30 230 62 C240 92 210 120 170 130 C120 140 70 136 40 120 C24 104 22 80 30 60 Z" fill="#D9B48F" stroke="#7A5232" stroke-width="2"/>' +
+    '<ellipse cx="146" cy="134" rx="13" ry="18" fill="#9CC48A" stroke="#4E7A3C" stroke-width="2"/>' +
+    '<ellipse cx="346" cy="104" rx="30" ry="38" fill="#B86A8F" stroke="#6E2E4C" stroke-width="2"/>' +
+    '<path d="M206 10 L218 10 L222 70 L210 72 Z" fill="#F0C9B5" stroke="#8A5440" stroke-width="2"/>' +
+    '<path d="M214 66 C250 52 312 66 316 110 C320 150 280 168 236 160 C210 156 196 140 198 120 C210 118 222 104 214 66 Z" fill="#F0C9B5" stroke="#8A5440" stroke-width="2"/>' +
+    '<path d="M168 150 C220 150 260 150 284 140" fill="none" stroke="#E2B04A" stroke-width="14" stroke-linecap="round"/>' +
+    '<path d="M200 128 C176 128 164 140 164 158 C164 178 180 186 206 182" fill="none" stroke="#E6A88E" stroke-width="13" stroke-linecap="round"/>' +
+    '<path d="M74 312 L70 196 C70 182 80 178 96 180 L320 180 C336 180 344 190 344 204 L344 286 C344 300 336 304 324 306" fill="none" stroke="#C99A6B" stroke-width="22" stroke-linejoin="round"/>' +
+    '<path d="M324 306 C300 312 296 336 268 336 C244 336 230 318 214 330 C204 338 204 348 204 356" fill="none" stroke="#C99A6B" stroke-width="18" stroke-linecap="round"/>' +
+    '<rect x="192" y="352" width="24" height="40" rx="8" fill="#C99A6B" stroke="#7A5232" stroke-width="2"/>' +
+    '<ellipse cx="92" cy="306" rx="26" ry="20" fill="#C99A6B" stroke="#7A5232" stroke-width="2"/>' +
+    '<path d="M84 322 C82 336 80 346 86 356" fill="none" stroke="#C99A6B" stroke-width="7" stroke-linecap="round"/>' +
+    '<path d="M206 184 C240 196 290 200 300 222 C306 244 250 236 230 250 C210 262 270 270 276 286 C280 302 230 296 200 300 C170 304 150 290 160 276 C170 260 210 266 214 250 C218 236 150 248 132 236 C118 226 130 210 150 212 C170 214 186 206 206 184" fill="none" stroke="#E7A99A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M160 276 C140 290 118 300 110 302" fill="none" stroke="#E7A99A" stroke-width="10" stroke-linecap="round"/>' +
+    marks(GI_P, items) +
+    foot(414, ['Schematic anterior view, not to scale · viewer’s left = patient’s right', 'Small bowel loops are simplified; the pancreas lies behind the stomach'])));
+
+  const DIAGRAMS = { heart, conduction, lungs, nephron, brain, gi };
+  const NAMES = {
+    heart: { ra: 'right atrium', rv: 'right ventricle', la: 'left atrium', lv: 'left ventricle', tricuspid: 'tricuspid valve', mitral: 'mitral valve', pulmonary: 'pulmonary valve', aortic: 'aortic valve', septum: 'interventricular septum', svc: 'superior vena cava', ivc: 'inferior vena cava', aorta: 'aorta', pa: 'pulmonary trunk', pv: 'pulmonary veins' },
+    conduction: { san: 'sinoatrial (SA) node', avn: 'atrioventricular (AV) node', his: 'bundle of His', lbb: 'left bundle branch', rbb: 'right bundle branch', purkinje: 'Purkinje fibres' },
+    lungs: { trachea: 'trachea', carina: 'carina', rmb: 'right main bronchus', lmb: 'left main bronchus', rul: 'right upper lobe', rml: 'right middle lobe', rll: 'right lower lobe', lul: 'left upper lobe', lll: 'left lower lobe', hfissure: 'horizontal fissure', ofissure: 'right oblique fissure', diaphragm: 'diaphragm', pleura: 'parietal pleura' },
+    nephron: { afferent: 'afferent arteriole', efferent: 'efferent arteriole', glomerulus: 'glomerulus', bowman: 'Bowman’s capsule', pct: 'proximal convoluted tubule', dloop: 'descending limb of the loop of Henle', aloop: 'thick ascending limb of the loop of Henle', dct: 'distal convoluted tubule', cd: 'collecting duct', jga: 'juxtaglomerular apparatus' },
+    brain: { frontal: 'frontal lobe', parietal: 'parietal lobe', temporal: 'temporal lobe', occipital: 'occipital lobe', cerebellum: 'cerebellum', brainstem: 'brainstem', central: 'central sulcus', lateral: 'lateral sulcus', precentral: 'precentral gyrus (primary motor cortex)', postcentral: 'postcentral gyrus (primary somatosensory cortex)', broca: 'Broca’s area', wernicke: 'Wernicke’s area' },
+    gi: { oesophagus: 'oesophagus', stomach: 'stomach', duodenum: 'duodenum', jejunum: 'jejunum', ileum: 'ileum', caecum: 'caecum', appendix: 'appendix', ascending: 'ascending colon', transverse: 'transverse colon', descending: 'descending colon', sigmoid: 'sigmoid colon', rectum: 'rectum', liver: 'liver', gallbladder: 'gallbladder', pancreas: 'pancreas', spleen: 'spleen' }
+  };
+  const ALT = { heart: 'Schematic four-chamber heart with numbered structures', conduction: 'Schematic heart showing the conduction system with numbered structures', lungs: 'Schematic front view of the lungs and airways with numbered structures', nephron: 'Schematic nephron spanning cortex and medulla with numbered structures', brain: 'Schematic side view of the left cerebral hemisphere with numbered structures', gi: 'Schematic front view of the digestive tract with numbered structures' };
+
+  // ---- ECG: illustrative lead II strip drawn from numbers (25 mm/s, 10 mm/mV, 4 px per mm) ----
+  // e: { rhythm, rate, pr, qrs, qt, st, tw, ratio, atrialRate }; cal: [t1, t2] caliper times in seconds (optional)
+  const ecg = (e, cal) => {
+    e = e || {};
+    const W = 720, H = 170, PXS = 100, MV = 40, base = 105, dur = W / PXS;
+    let seed = 11; const rnd = () => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return (seed % 100000) / 100000; };
+    const rh = e.rhythm || 'sinus';
+    const rate = Math.max(20, Math.min(300, +e.rate || 75)), rr = 60 / rate;
+    let pr = +e.pr || 0.16; const qrs = Math.max(0.06, +e.qrs || (rh === 'vt' ? 0.16 : 0.08)), qt = +e.qt || Math.min(0.44, Math.max(0.26, 0.4 * Math.sqrt(rr)));
+    const st = Math.max(-0.4, Math.min(0.5, +e.st || 0)), tw = e.tw || 'normal';
+    const wide = qrs >= 0.12;
+    const ps = [], beats = [];
+    if (rh === 'af') { let t = 0.5; while (t < dur) { beats.push(t); t += rr * (0.6 + 0.8 * rnd()); } }
+    else if (rh === 'flutter') { const n = Math.max(2, Math.round(300 / rate)); for (let k = 0, t = 0.42; t < dur; k++, t += 0.2) { if (k % n === 1) beats.push(t + 0.06); } }
+    else if (rh === 'chb') { const ar = 60 / Math.max(40, +e.atrialRate || +e.atrial || 80); for (let t = 0.45; t < dur; t += ar) ps.push(t); for (let t = 0.85; t < dur; t += rr) beats.push(t); }
+    else if (rh === 'mobitz1') {
+      // rate = atrial (P-wave) rate; PR lengthens over a 4:3 cycle then one P wave is not conducted
+      const pp = 60 / Math.max(40, +e.atrialRate || rate); let k = 0;
+      for (let t = 0.45; t < dur; t += pp, k++) { ps.push(t); const c = k % 4; if (c < 3) beats.push(t + pr + [0, 0.1, 0.16][c]); }
+    } else if (rh === 'mobitz2') {
+      const pp = 60 / Math.max(40, +e.atrialRate || rate); const ratio = Math.max(2, Math.min(4, Math.round(+e.ratio || 2))); let k = 0;
+      for (let t = 0.45; t < dur; t += pp, k++) { ps.push(t); if (k % ratio !== ratio - 1) beats.push(t + pr); }
+    } else if (rh === 'svt' || rh === 'vt') { for (let t = 0.5; t < dur; t += rr) beats.push(t); }
+    else { for (let t = 0.45; t < dur; t += rr) { ps.push(t); beats.push(t + pr); } }
+    const g = (x, mu, sg, a) => a * Math.exp(-((x - mu) * (x - mu)) / (2 * sg * sg));
+    const tA = tw === 'peaked' ? 0.75 : tw === 'inverted' ? -0.28 : 0.3, tS = tw === 'peaked' ? 0.032 : 0.05;
+    const v = (t) => {
+      if (t < 0.38) return 0;
+      let y = 0;
+      ps.forEach((p) => { y += g(t, p + 0.045, 0.022, 0.15); });
+      beats.forEach((b) => {
+        if (rh === 'vt') { y += g(t, b + qrs * 0.45, qrs * 0.28, 1.1) + g(t, b + qrs + 0.08, 0.07, -0.55); return; }
+        y += wide ? g(t, b + qrs * 0.42, qrs * 0.2, 1.0) + g(t, b + qrs * 0.82, qrs * 0.13, -0.35) + g(t, b + qt - 0.12, 0.06, -0.25)
+          : g(t, b + qrs * 0.15, qrs * 0.1, -0.1) + g(t, b + qrs * 0.45, qrs * 0.13, 1.2) + g(t, b + qrs * 0.8, qrs * 0.11, -0.25) + g(t, b + qt - 0.11, tS, tA);
+        if (st) { const s0 = b + qrs, s1 = b + qt - 0.11; if (t > s0 - 0.01 && t < s1) { const ramp = Math.min(1, (t - s0 + 0.01) / 0.02) * Math.min(1, (s1 - t) / 0.06); y += st * Math.max(0, ramp); } }
+      });
+      if (rh === 'af') y += 0.045 * Math.sin(2 * Math.PI * 6.3 * t + 2.5 * Math.sin(1.1 * t)) + 0.03 * Math.sin(2 * Math.PI * 8.9 * t + 1);
+      if (rh === 'flutter') { const f = ((t - 0.42) / 0.2) % 1; y += f < 0.8 ? 0.08 - 0.3 * (f / 0.8) : -0.22 + 0.3 * ((f - 0.8) / 0.2); }
+      return y;
+    };
+    let grid = '';
+    for (let x = 0; x <= W; x += 4) grid += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + H + '" stroke="' + (x % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (x % 20 ? 0.5 : 1) + '"/>';
+    for (let y = 0; y <= H; y += 4) grid += '<line x1="0" y1="' + y + '" x2="' + W + '" y2="' + y + '" stroke="' + (y % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (y % 20 ? 0.5 : 1) + '"/>';
+    let d = '';
+    for (let x = 0; x <= W; x++) { const yy = base - v(x / PXS) * MV; d += (x ? 'L' : 'M') + x + ' ' + yy.toFixed(1); }
+    let calSvg = '';
+    const cs = (cal || []).filter((t) => Number.isFinite(t));
+    cs.forEach((t) => { const x = (t * PXS).toFixed(1); calSvg += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + H + '" stroke="#1D4ED8" stroke-width="2"/>'; });
+    if (cs.length === 2) { const a = Math.min(cs[0], cs[1]) * PXS, b = Math.max(cs[0], cs[1]) * PXS; calSvg += '<rect x="' + a.toFixed(1) + '" y="0" width="' + (b - a).toFixed(1) + '" height="' + H + '" fill="#1D4ED8" opacity="0.08"/><line x1="' + a.toFixed(1) + '" y1="14" x2="' + b.toFixed(1) + '" y2="14" stroke="#1D4ED8" stroke-width="2"/>'; }
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + (H + 18) + '" width="' + W + '" height="' + (H + 18) + '"><rect width="100%" height="100%" fill="#FFF8F8"/>' + grid +
+      '<path d="M4 ' + base + 'L8 ' + base + 'L8 ' + (base - MV) + 'L28 ' + (base - MV) + 'L28 ' + base + 'L32 ' + base + '" fill="none" stroke="#141414" stroke-width="1.5"/>' +
+      '<path d="' + d + '" fill="none" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/>' + calSvg +
+      '<text x="6" y="' + (H + 14) + '" ' + F + ' font-size="11" fill="#3F3F3B">Lead II · 25 mm/s · 10 mm/mV · small square 0.04 s · drawn illustration, not a real recording</text></svg>';
+    return uri(svg);
+  };
+
+  // ---- content fingerprint: a clinician's sign-off covers exactly this topic content; any edit changes the hash ----
+  const canon = (v) => Array.isArray(v) ? '[' + v.map(canon).join(',') + ']' : v && typeof v === 'object' ? '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}' : JSON.stringify(v === undefined ? null : v);
+  const topicContent = (pack, t) => {
+    const of = (k) => (pack && Array.isArray(pack[k]) ? pack[k] : []).filter((x) => x && +x.t === +t);
+    return { topic: (pack && pack.topics || [])[t] || '', notes: of('notes'), cards: of('cards'), questions: of('questions'), interpret: of('interpret'), cases: of('cases'), osce: of('osce'), labels: of('labels') };
+  };
+  const hash = (pack, t) => {
+    const str = canon(topicContent(pack, t)); let a = 2166136261, b = 5381;
+    for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); a = Math.imul(a ^ c, 16777619) >>> 0; b = (Math.imul(b, 33) ^ c) >>> 0; }
+    return ('0000000' + a.toString(16)).slice(-8) + ('0000000' + b.toString(16)).slice(-8);
+  };
+
+  return { DIAGRAMS, NAMES, ALT, ecg, hash, topicContent, svg: (name, items) => (DIAGRAMS[name] || heart)(items) };
+})();
+// UZDIAG:END
 class Component extends DCLogic {
   static dataUrl() { return '/data/modules.json'; }
 
@@ -2334,64 +2629,10 @@ class Component extends DCLogic {
     return idx;
   }
 
-  // Illustrative lead II strip drawn from numbers (25 mm/s, 10 mm/mV, 4 px per mm). Not a real recording.
-  static ecgSvg(e) {
-    e = e || {};
-    const W = 720, H = 170, PXS = 100, MV = 40, base = 105, dur = W / PXS;
-    let seed = 11; const rnd = () => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return (seed % 100000) / 100000; };
-    const rate = Math.max(20, Math.min(250, +e.rate || 75)), rr = 60 / rate;
-    const pr = +e.pr || 0.16, qrs = Math.max(0.06, +e.qrs || 0.08), qt = +e.qt || 0.38;
-    const rh = e.rhythm || 'sinus'; const wide = qrs >= 0.12;
-    const ps = [], beats = [];
-    if (rh === 'af') { let t = 0.5; while (t < dur) { beats.push(t); t += rr * (0.6 + 0.8 * rnd()); } }
-    else if (rh === 'flutter') { const n = Math.max(2, Math.round(300 / rate)); for (let k = 0, t = 0.42; t < dur; k++, t += 0.2) { if (k % n === 1) beats.push(t + 0.06); } }
-    else if (rh === 'chb') { const ar = 60 / Math.max(40, +e.atrialRate || +e.atrial || 80); for (let t = 0.45; t < dur; t += ar) ps.push(t); for (let t = 0.85; t < dur; t += rr) beats.push(t); }
-    else { for (let t = 0.45; t < dur; t += rr) { ps.push(t); beats.push(t + pr); } }
-    const g = (x, mu, sg, a) => a * Math.exp(-((x - mu) * (x - mu)) / (2 * sg * sg));
-    const v = (t) => {
-      if (t < 0.38) return 0;
-      let y = 0;
-      ps.forEach((p) => { y += g(t, p + 0.045, 0.022, 0.15); });
-      beats.forEach((b) => { y += wide ? g(t, b + qrs * 0.42, qrs * 0.2, 1.0) + g(t, b + qrs * 0.82, qrs * 0.13, -0.35) + g(t, b + qt - 0.12, 0.06, -0.25) : g(t, b + qrs * 0.15, qrs * 0.1, -0.1) + g(t, b + qrs * 0.45, qrs * 0.13, 1.2) + g(t, b + qrs * 0.8, qrs * 0.11, -0.25) + g(t, b + qt - 0.11, 0.05, 0.3); });
-      if (rh === 'af') y += 0.045 * Math.sin(2 * Math.PI * 6.3 * t + 2.5 * Math.sin(1.1 * t)) + 0.03 * Math.sin(2 * Math.PI * 8.9 * t + 1);
-      if (rh === 'flutter') { const f = ((t - 0.42) / 0.2) % 1; y += f < 0.8 ? 0.08 - 0.3 * (f / 0.8) : -0.22 + 0.3 * ((f - 0.8) / 0.2); }
-      return y;
-    };
-    let grid = '';
-    for (let x = 0; x <= W; x += 4) grid += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + H + '" stroke="' + (x % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (x % 20 ? 0.5 : 1) + '"/>';
-    for (let y = 0; y <= H; y += 4) grid += '<line x1="0" y1="' + y + '" x2="' + W + '" y2="' + y + '" stroke="' + (y % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (y % 20 ? 0.5 : 1) + '"/>';
-    let d = '';
-    for (let x = 0; x <= W; x++) { const yy = base - v(x / PXS) * MV; d += (x ? 'L' : 'M') + x + ' ' + yy.toFixed(1); }
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + (H + 18) + '" width="' + W + '" height="' + (H + 18) + '"><rect width="100%" height="100%" fill="#FFF8F8"/>' + grid +
-      '<path d="M4 ' + base + 'L8 ' + base + 'L8 ' + (base - MV) + 'L28 ' + (base - MV) + 'L28 ' + base + 'L32 ' + base + '" fill="none" stroke="#141414" stroke-width="1.5"/>' +
-      '<path d="' + d + '" fill="none" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/>' +
-      '<text x="6" y="' + (H + 14) + '" font-family="sans-serif" font-size="11" fill="#3F3F3B">Lead II · 25 mm/s · 10 mm/mV · small square 0.04 s · drawn illustration, not a real recording</text></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
-
-  // Schematic four-chamber heart (anterior view; the viewer's left is the patient's right). Numbers mark structures.
-  static heartSvg(items) {
-    const P = { svc: [125, 40], ivc: [125, 330], ra: [100, 125], rv: [120, 245], la: [295, 115], lv: [280, 250], septum: [200, 255], tricuspid: [110, 178], mitral: [290, 172], pulmonary: [180, 182], aortic: [220, 182], pa: [180, 70], aorta: [220, 40], pv: [360, 120] };
-    let marks = '';
-    (items || []).forEach((k, i) => { const p = P[k]; if (!p) return; marks += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="13" fill="#141414"/><text x="' + p[0] + '" y="' + (p[1] + 5) + '" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">' + (i + 1) + '</text>'; });
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 392" width="400" height="392"><rect width="100%" height="100%" fill="#FFFFFF"/>' +
-      '<rect x="110" y="10" width="30" height="80" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
-      '<rect x="110" y="292" width="30" height="62" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
-      '<rect x="168" y="20" width="26" height="160" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
-      '<path d="M206 180 L206 40 Q206 12 236 12 L262 12" fill="none" stroke="#A33A3A" stroke-width="26" stroke-linecap="round"/>' +
-      '<rect x="335" y="100" width="55" height="40" rx="8" fill="#F2C9C9" stroke="#A33A3A"/>' +
-      '<rect x="55" y="85" width="105" height="85" rx="22" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
-      '<path d="M55 190 L193 190 L193 300 Q130 330 70 260 Z" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
-      '<rect x="240" y="80" width="100" height="80" rx="22" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
-      '<path d="M207 190 L345 190 Q350 260 300 320 Q240 340 207 300 Z" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
-      '<rect x="193" y="190" width="14" height="115" fill="#D8C6C6" stroke="#6B4E4E"/>' +
-      '<line x1="72" y1="178" x2="150" y2="178" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
-      '<line x1="252" y1="172" x2="330" y2="172" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
-      '<line x1="168" y1="182" x2="194" y2="182" stroke="#141414" stroke-width="4"/>' +
-      '<line x1="207" y1="182" x2="233" y2="182" stroke="#141414" stroke-width="4"/>' + marks +
-      '<text x="6" y="368" font-family="sans-serif" font-size="12" fill="#3F3F3B">Schematic, not to scale · viewer’s left = patient’s right</text><text x="6" y="386" font-family="sans-serif" font-size="12" fill="#3F3F3B">Blue = deoxygenated blood, red = oxygenated blood</text></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
+  // Medical diagrams and ECG strips: see UZDIAG above the class (source kept in coverage/diagrams.js).
+  static ecgSvg(e, cal) { return UZDIAG.ecg(e, cal); }
+  static heartSvg(items) { return UZDIAG.svg('heart', items); }
+  static diagramSvg(name, items) { return UZDIAG.svg(name, items); }
 
   static errText(e) {
     if (e && e.userMessage) return e.userMessage;
@@ -3073,8 +3314,10 @@ class Component extends DCLogic {
         hasSec: done && !!q.sec && !!opts.goSec, secLabel: 'Re-read: ' + (SECNAME[q.sec] || 'the notes'), goSec: () => { if (opts.goSec) opts.goSec(q.sec); },
         retry: () => { const a = Object.assign({}, get('pwAns', {})); delete a[key]; delete a[key + ':fu']; set({ pwAns: a }); }
       };
-      v.hasFu = done && !!q.followUp && !opts.noFu;
-      v.fu = v.hasFu ? mcqView(Object.assign({ concept: '' }, q.followUp), key + ':fu', null, { noFu: true }) : { opts: [], rows: [] };
+      v.hasFu = done && !!q.followUp && !opts.noFu && !(opts.fuOnlyIfWrong && picked === q.answer);
+      v.fuHeld = done && !!q.followUp && !opts.noFu && !!opts.fuOnlyIfWrong && picked === q.answer;
+      v.fuHeldText = 'A new question on this idea comes back in your 7-day check, to see whether it has stuck.';
+      v.fu = v.hasFu ? mcqView(Object.assign({ concept: '' }, q.followUp), key + ':fu', opts.onFu || null, { noFu: true }) : { opts: [], rows: [] };
       v.fuTitle = 'Follow-up: same idea, different scenario';
       return v;
     };
@@ -3966,20 +4209,28 @@ class Component extends DCLogic {
       const st = pwStore[pT] || {};
       const res = st.res || {};
       const savePw = (patch) => { const all = Object.assign({}, store[pwKey] || {}); all[pT] = Object.assign({}, all[pT] || {}, patch); self.save(pwKey, all); };
-      const record = (key, ok) => { const r = Object.assign({}, ((store[pwKey] || {})[pT] || {}).res || {}); r[key] = ok ? 1 : 0; savePw({ res: r }); };
+      // res = latest answer per item; first = first attempt only [right 1/0, time, kind]: q = first try, f = new scenario straight after a mistake, d = unseen question 7+ days later
+      const record = (key, ok, kind) => {
+        const cur = (store[pwKey] || {})[pT] || {}; const r = Object.assign({}, cur.res || {}); const f = Object.assign({}, cur.first || {});
+        if (kind !== 'f' && kind !== 'd') r[key] = ok ? 1 : 0;
+        const fk = kind === 'f' ? key + 'f' : kind === 'd' ? key + 'd' : key;
+        if (kind && !f[fk]) f[fk] = [ok ? 1 : 0, Date.now(), kind];
+        savePw({ res: r, first: f });
+      };
       const goSec = (sec) => { const o = Object.assign({}, get('pwOpen', {})); o[pT + ':' + sec] = true; set({ pwStep: 'u', pwOpen: o }); };
       const srcs = medB.sources || [];
       const srcOf = (ix) => (ix || []).map((k) => srcs[k]).filter(Boolean).map((x) => ({ title: x.title, url: x.url }));
       const qs = (medB.questions || []).map((q, i) => ({ q, i })).filter((x) => +x.q.t === pT);
       const mcqs = qs.filter((x) => x.q.type === 'mcq');
-      const view = (x) => Object.assign(mcqView(x.q, 'q' + x.i, (ok) => record('q' + x.i, ok), { goSec }), { stage: x.q.stage === 'apply' ? 'Apply' : 'Retrieve' });
+      const view = (x) => Object.assign(mcqView(x.q, 'q' + x.i, (ok) => record('q' + x.i, ok, 'q'), { goSec, fuOnlyIfWrong: true, onFu: (ok) => record('q' + x.i, ok, 'f') }), { stage: x.q.stage === 'apply' ? 'Apply' : 'Retrieve' });
       const cards = (medB.cards || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
       const flip = get('pwFlip', {});
       const cardRes = st.cards || {};
       const interp = (medB.interpret || []).map((it, i) => ({ it, i })).filter((x) => +x.it.t === pT);
       const cases = (medB.cases || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
       const osce = (medB.osce || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
-      const labels = (medB.labels || []).filter((l) => +l.t === pT && l.diagram === 'heart');
+      const labels = (medB.labels || []).filter((l) => +l.t === pT && UZDIAG.DIAGRAMS[l.diagram] && Array.isArray(l.items));
+      const calAll = get('pwCal', {});
       const caseAt = get('pwCase', {});
       const labPick = get('pwLab', {});
       const retrieveQs = mcqs.filter((x) => x.q.stage !== 'apply');
@@ -3992,21 +4243,88 @@ class Component extends DCLogic {
       const nApp = applyQs.length + interp.length;
       const wrongKeys = Object.keys(res).filter((k) => res[k] === 0);
       const missedCards = cards.filter((x) => cardRes[x.i] === 0);
+      const WEEK = 7 * 24 * 3600 * 1000, nowMs = Date.now();
+      const itemOf = (k) => (k[0] === 'q' ? (medB.questions || [])[+k.slice(1)] : k[0] === 'i' ? (medB.interpret || [])[+k.slice(1)] : null);
+      const dueIn = (ti) => { const f = (pwStore[ti] || {}).first || {}; return Object.keys(f).filter((k) => /^[qi]\d+$/.test(k) && f[k][2] === 'q' && f[k][0] === 1 && nowMs - f[k][1] >= WEEK && !f[k + 'd'] && !f[k + 'f'] && itemOf(k) && itemOf(k).followUp); };
+      const dueByTopic = (medB.topics || []).map((_, ti) => dueIn(ti).length);
+      // keep questions answered in the last half hour on screen so the student can read the explanation
+      const checkKeys = (ti) => { const f = (pwStore[ti] || {}).first || {}; return Object.keys(f).filter((k) => /^[qi]\d+$/.test(k) && f[k][2] === 'q' && f[k][0] === 1 && nowMs - f[k][1] >= WEEK && !f[k + 'f'] && itemOf(k) && itemOf(k).followUp && (!f[k + 'd'] || nowMs - f[k + 'd'][1] < 30 * 60 * 1000)); };
+      const dueTotal = dueByTopic.reduce((a, b) => a + b, 0);
+      const evAll = { q: [0, 0], f: [0, 0], d: [0, 0] };
+      Object.keys(pwStore).forEach((ti) => { const f = (pwStore[ti] || {}).first || {}; Object.keys(f).forEach((k) => { const e = f[k]; if (Array.isArray(e) && evAll[e[2]]) { evAll[e[2]][0] += e[0] ? 1 : 0; evAll[e[2]][1]++; } }); });
+      const pct = (a) => (a[1] ? Math.round(a[0] / a[1] * 100) + '%' : '–');
       const STEPS = [['u', 'Understand', 'Read the notes'], ['r', 'Retrieve', 'Recall without notes'], ['a', 'Apply', 'Cases & data'], ['i', 'Improve', 'Fix weak spots']];
       const stepCount = { u: st.read ? 'Read' : '', r: (nCardsDone + nRetDone) + '/' + (cards.length + retrieveQs.length), a: nAppDone + '/' + nApp, i: (wrongKeys.length + missedCards.length) ? (wrongKeys.length + missedCards.length) + ' to fix' : '' };
       if (step === 'u' && !st.read && note) setTimeout(() => savePw({ read: Date.now() }), 0);
       const qByKey = (k) => { if (k[0] === 'q') { const x = (medB.questions || [])[+k.slice(1)]; return x ? { kind: 'q', q: x, i: +k.slice(1) } : null; } if (k[0] === 'i') { const x = (medB.interpret || [])[+k.slice(1)]; return x ? { kind: 'i', q: x, i: +k.slice(1) } : null; } return null; };
+      // ---- transparency: source check dates, clinician sign-off (tied to a content hash) and student error reports ----
+      const SIGN = Component._sign || (Component._sign = {});
+      if (SIGN[medId] === undefined) {
+        SIGN[medId] = null;
+        const C = window.UNIZY_CONFIG || {};
+        fetch(C.supabaseUrl + '/rest/v1/rpc/public_signoffs', { method: 'POST', headers: { apikey: C.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_pack: medId }) })
+          .then((r) => (r.ok ? r.json() : null)).then((d) => { SIGN[medId] = d || { topics: [], reports: {} }; set({ signTick: Date.now() }); })
+          .catch(() => { SIGN[medId] = { topics: [], reports: {} }; });
+      }
+      const sgAll = SIGN[medId] || { topics: [], reports: {}, fixes: [] };
+      const sgT = (sgAll.topics || []).find((x) => +x.topic === pT) || null;
+      const hNow = UZDIAG.hash(medB, pT);
+      const dmy = (d) => (d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+      const my = (d) => (d ? d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '');
+      const asOfs = (note && note.sections || []).filter((sx) => sx.kind === 'guidance' && /^\d{4}-\d{2}$/.test(sx.asOf || '')).map((sx) => sx.asOf).sort();
+      const guideOld = asOfs.length ? parseYmd(asOfs[0] + '-01') : null;
+      const guideDue = guideOld ? new Date(guideOld.getFullYear(), guideOld.getMonth() + 6, 1) : null;
+      const signed = !!(sgT && sgT.approvedHash && sgT.approvedHash === hNow && sgT.decision === 'approved');
+      const signedOld = !!(sgT && sgT.approvedHash && !signed);
+      const signWho = sgT ? sgT.name + (sgT.credentials ? ', ' + sgT.credentials : '') : '';
+      const rep = get('pwRep', {}); const repOpen = rep.t === pT && rep.open;
+      const fixesT = (sgAll.fixes || []).filter((f) => f.topic === null || +f.topic === pT);
       mp = {
-        has: true, title: medB.title, reviewed: medB.reviewed ? parseYmd(medB.reviewed).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '',
-        trust: 'Written from the sources listed with each section, then fact-checked twice by independent AI reviewers. Not yet reviewed by a clinician. For learning only, not clinical advice.',
+        has: true, title: medB.title,
+        chk: {
+          sourced: 'Every section lists its sources. Checked against them on ' + (medB.reviewed ? dmy(parseYmd(medB.reviewed)) : 'the date shown') + '.',
+          guidance: guideOld ? 'Clinical guidance in this topic checked ' + my(guideOld) + '. Next check due ' + my(guideDue) + (guideDue < new Date() ? ' (overdue: treat guidance points with extra care).' : '.') : 'This topic has no guideline-based recommendations, only stable science.',
+          signed, signedOld, unsigned: !signed && !signedOld,
+          signText: signed ? 'Signed off by ' + signWho + ' on ' + dmy(sgT.at) + '.' : signedOld ? 'Edited since ' + signWho + ' signed it off. Waiting for a clinician to review the changes.' : 'Not yet reviewed by a clinician.',
+          hasGmc: signed && !!sgT.gmc, gmc: signed && sgT.gmc ? 'GMC ' + sgT.gmc : '', gmcUrl: signed && sgT.gmc ? 'https://www.gmc-uk.org/registration-and-licensing/the-medical-register' : '',
+          signBg: signed ? '#E3F3E8' : signedOld ? '#FDF0D5' : '#F1F1EC', signMark: signed ? '✓' : signedOld ? '!' : '–',
+          hasFixes: fixesT.length > 0, fixes: fixesT.slice(0, 5).map((f) => ({ what: f.what, when: dmy(f.at) })),
+          fixCount: fixesT.length === 1 ? '1 correction made after a student report' : fixesT.length + ' corrections made after student reports',
+          repOpen, repClosed: !repOpen, repMsg: repOpen ? rep.msg || '' : '', repItem: repOpen ? rep.item || '' : '', repNote: repOpen ? rep.note || '' : '', hasRepNote: !!(repOpen && rep.note), repBusy: !!(repOpen && rep.busy),
+          repToggle: () => set({ pwRep: repOpen ? {} : { t: pT, open: true } }),
+          onRepMsg: (e) => set({ pwRep: Object.assign({}, get('pwRep', {}), { msg: e && e.target ? e.target.value : '' }) }),
+          onRepItem: (e) => set({ pwRep: Object.assign({}, get('pwRep', {}), { item: e && e.target ? e.target.value : '' }) }),
+          repSend: () => {
+            const r0 = get('pwRep', {}); const W = window.UnizyWeb && window.UnizyWeb._internal;
+            if (!W || !W.Auth.session) { location.href = mailReport(activeMod.name + ' · ' + (medB.topics[pT] || ''), 'Topic: ' + (medB.topics[pT] || '') + '\nPart: ' + (r0.item || '') + '\n\n' + (r0.msg || '')); return; }
+            if (String(r0.msg || '').trim().length < 10) { set({ pwRep: Object.assign({}, r0, { note: 'Say what looks wrong and why (a source helps).' }) }); return; }
+            set({ pwRep: Object.assign({}, r0, { busy: true, note: '' }) });
+            W.Sync.rest('rpc/report_content', { method: 'POST', body: JSON.stringify({ p_pack: medId, p_topic: pT, p_item: r0.item || '', p_message: r0.msg || '' }) })
+              .then((r) => r.json().catch(() => ({}))).then((d) => { set({ pwRep: d && d.ok ? { t: pT, open: true, note: d.message, done: true } : Object.assign({}, get('pwRep', {}), { busy: false, note: (d && d.message) || 'Couldn’t send that. Try again.' }) }); })
+              .catch(() => set({ pwRep: Object.assign({}, get('pwRep', {}), { busy: false, note: 'Couldn’t send that. Check your connection and try again.' }) }));
+          },
+          repDone: !!(repOpen && rep.done), repNotDone: !(repOpen && rep.done)
+        }, reviewed: medB.reviewed ? parseYmd(medB.reviewed).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '',
+        trust: 'For learning only, not clinical advice. Always follow current local guidance and senior advice on placement.',
         report: mailReport(activeMod.name + ' · ' + (medB.topics[pT] || ''), 'Topic: ' + (medB.topics[pT] || '')),
         topics: (medB.topics || []).map((name, i) => {
           const s2 = pwStore[i] || {}; const r2 = s2.res || {}; const tot = Object.keys(r2).length; const ok = Object.values(r2).filter((x) => x === 1).length;
-          return { name, n: i + 1, on: i === pT, bg: i === pT ? strongC : '#FFFFFF', fg: i === pT ? onStrongC : '#141414', border: i === pT ? strongC : '#DADAD4', meta: tot ? ok + '/' + tot + ' right' : s2.read ? 'Read' : 'Not started', pick: () => set({ pwT: i, pwStep: 'u' }) };
+          return { name, n: i + 1, on: i === pT, bg: i === pT ? strongC : '#FFFFFF', fg: i === pT ? onStrongC : '#141414', border: i === pT ? strongC : '#DADAD4', meta: (dueByTopic[i] ? dueByTopic[i] + ' to recheck · ' : '') + (tot ? ok + '/' + tot + ' right' : s2.read ? 'Read' : 'Not started'), pick: () => set({ pwT: i, pwStep: dueByTopic[i] ? 'i' : 'u' }) };
         }),
         topicName: medB.topics[pT] || '', topicNo: 'Topic ' + (pT + 1) + ' of ' + nT,
         steps: STEPS.map(([id, label, sub], k) => ({ n: k + 1, label, sub, count: stepCount[id], hasCount: !!stepCount[id], on: step === id, bg: step === id ? strongC : '#FFFFFF', fg: step === id ? onStrongC : '#141414', border: step === id ? strongC : '#DADAD4', pick: () => set({ pwStep: id }) })),
         isU: step === 'u', isR: step === 'r', isA: step === 'a', isI: step === 'i',
+        // measured learning evidence for this student (first attempts only)
+        hasEv: evAll.q[1] >= 3,
+        ev: [
+          { v: pct(evAll.q), label: 'Right first time', sub: evAll.q[1] + ' questions answered', show: true },
+          { v: pct(evAll.f), label: 'After a mistake, on a new scenario', sub: evAll.f[1] ? evAll.f[1] + ' follow-up questions' : 'Shows once you answer a follow-up', show: true },
+          { v: pct(evAll.d), label: 'A week later, on questions you hadn’t seen', sub: evAll.d[1] ? evAll.d[1] + ' questions in 7-day checks' : 'Your first 7-day check unlocks a week after you get questions right', show: true }
+        ],
+        hasDue: dueTotal > 0, dueText: dueTotal + (dueTotal === 1 ? ' question is' : ' questions are') + ' ready for your 7-day check in ' + dueByTopic.filter((n) => n).length + (dueByTopic.filter((n) => n).length === 1 ? ' topic.' : ' topics.'),
+        goDue: () => { const ti = dueByTopic.findIndex((n) => n > 0); if (ti >= 0) set({ pwT: ti, pwStep: 'i' }); },
+        hasCheck: checkKeys(pT).length > 0,
+        checkQs: checkKeys(pT).slice(0, 5).map((k) => { const q = itemOf(k).followUp; const v = mcqView(Object.assign({ sec: itemOf(k).sec, concept: itemOf(k).concept }, q), k + ':d', (ok) => record(k, ok, 'd'), { noFu: true, goSec }); return v; }),
         next: () => { const k = STEPS.findIndex((x) => x[0] === step); if (k < STEPS.length - 1) set({ pwStep: STEPS[k + 1][0] }); else if (pT < nT - 1) set({ pwT: pT + 1, pwStep: 'u' }); },
         nextLabel: step === 'i' ? (pT < nT - 1 ? 'Next topic' : 'All topics done') : 'Next: ' + STEPS[STEPS.findIndex((x) => x[0] === step) + 1][1],
         // Understand
@@ -4021,14 +4339,21 @@ class Component extends DCLogic {
         openAll: () => { const o = Object.assign({}, get('pwOpen', {})); (note && note.sections || []).forEach((sx) => { o[pT + ':' + sx.k] = true; }); set({ pwOpen: o }); },
         askTutor: () => { set({ tab: 'tutor', tInput: 'Explain ' + (medB.topics[pT] || 'this topic') + ' step by step, then ask me one question to check I understood.' }); },
         hasLabels: labels.length > 0,
-        labels: labels.map((lb, li) => ({
-          img: Component.heartSvg(lb.items),
+        labels: labels.map((lb, li) => {
+          const nm = UZDIAG.NAMES[lb.diagram] || {}; const picks = lb.items.map((it) => labPick[li + ':' + it]);
+          const nDone = picks.filter((p) => p !== undefined).length, nRight = lb.items.filter((it, k) => labPick[li + ':' + it] === k).length;
+          return {
+          title: lb.title || 'Label the diagram', alt: UZDIAG.ALT[lb.diagram] || 'Schematic diagram with numbered structures',
+          score: nDone ? nRight + ' of ' + lb.items.length + ' right' + (nDone < lb.items.length ? ' so far' : '') : 'Match each structure to its number',
+          hasReset: nDone > 0, reset: () => { const o = Object.assign({}, get('pwLab', {})); lb.items.forEach((it) => { delete o[li + ':' + it]; }); set({ pwLab: o }); },
+          img: Component.diagramSvg(lb.diagram, lb.items),
           items: lb.items.map((it, k) => {
             const key = li + ':' + it; const p = labPick[key];
-            return { name: HEARTNAME[it] || it, done: p !== undefined, ok: p === k, verdict: p === undefined ? '' : p === k ? 'Correct' : 'Not quite: it is ' + (k + 1),
+            return { name: nm[it] || HEARTNAME[it] || it, done: p !== undefined, ok: p === k, verdict: p === undefined ? '' : p === k ? 'Correct' : 'Not quite: it is ' + (k + 1),
               nums: lb.items.map((_, j) => ({ n: j + 1, bg: p === j ? (j === k ? '#E3F3E8' : '#FCEBEB') : '#FFFFFF', border: p === j ? (j === k ? '#1E7B45' : '#B42318') : '#CFCFC8', pick: () => { const o = Object.assign({}, get('pwLab', {})); o[key] = j; set({ pwLab: o }); } })) };
           })
-        })),
+          };
+        }),
         hasOsce: osce.length > 0,
         osce: osce.map((x) => { const k = 'osce:' + x.i; const open = !!pwOpen[k]; return { title: x.c.title, open, arrow: open ? '−' : '+', steps: (x.c.steps || []).map((t, j) => ({ n: j + 1, t })), tips: (x.c.tips || []).map((t) => ({ t })), hasTips: (x.c.tips || []).length > 0, srcs: srcOf(x.c.src), toggle: () => { const o = Object.assign({}, get('pwOpen', {})); o[k] = !open; set({ pwOpen: o }); } }; }),
         // Retrieve
@@ -4045,11 +4370,16 @@ class Component extends DCLogic {
         // Apply
         applyQs: applyQs.map(view), hasApplyQs: applyQs.length > 0,
         interp: interp.map((x) => {
-          const it = x.it; const v = mcqView(it, 'i' + x.i, (ok) => record('i' + x.i, ok), { goSec, noFu: !it.followUp });
-          return Object.assign(v, { title: it.title || '', kindLabel: it.kind === 'ecg' ? 'ECG' : it.kind === 'abg' ? 'Blood gas' : 'Blood results',
-            isEcg: it.kind === 'ecg', ecgImg: it.kind === 'ecg' ? Component.ecgSvg(it.ecg) : '',
+          const it = x.it; const v = mcqView(it, 'i' + x.i, (ok) => record('i' + x.i, ok, 'q'), { goSec, noFu: !it.followUp, fuOnlyIfWrong: true, onFu: (ok) => record('i' + x.i, ok, 'f') });
+          const ck = 'i' + x.i, cal = (calAll[ck] || []).filter((t) => Number.isFinite(t));
+          const iv = cal.length === 2 ? Math.abs(cal[1] - cal[0]) : 0;
+          return Object.assign(v, { title: it.title || '', kindLabel: ({ ecg: 'ECG', abg: 'Blood gas', bloods: 'Blood results', spirometry: 'Spirometry', csf: 'CSF', urine: 'Urine', obs: 'Observations' })[it.kind] || 'Results',
+            isEcg: it.kind === 'ecg', ecgImg: it.kind === 'ecg' ? Component.ecgSvg(it.ecg, cal) : '',
+            ecgTap: (ev) => { const im = ev && ev.target; const w = (im && im.clientWidth) || 720; const px = ev && Number.isFinite(ev.offsetX) ? ev.offsetX * 720 / w : 0; const t = Math.round(Math.max(0.04, Math.min(7.16, px / 100)) * 100) / 100; const o = Object.assign({}, get('pwCal', {})); const c = (o[ck] || []); o[ck] = c.length >= 2 ? [t] : c.concat([t]); set({ pwCal: o }); },
+            calText: cal.length === 2 ? (iv < 0.02 ? 'Those two points are the same. Tap a second point further along.' : 'Between your two marks: ' + iv.toFixed(2) + ' s = ' + Math.round(iv / 0.04) + ' small squares (' + (iv / 0.2).toFixed(1) + ' large). If that is one R–R interval, the rate is about ' + Math.round(60 / iv) + '/min.') : cal.length === 1 ? 'Now tap a second point.' : 'Measure it yourself: tap two points on the strip (e.g. two R waves, or the start of P and the start of QRS).',
+            hasCal: cal.length > 0, calReset: () => { const o = Object.assign({}, get('pwCal', {})); delete o[ck]; set({ pwCal: o }); },
             isTable: it.kind !== 'ecg', tableRows: (it.rows || []).map((r) => ({ name: r[0], val: r[1], unit: r[2] || '', range: r[3] || '', col: '#141414' })),
-            rangeNote: 'Typical adult UK reference ranges. They vary between labs.' });
+            rangeNote: it.kind === 'obs' ? 'Typical adult values. Early-warning score thresholds (e.g. NEWS2) are set by guidance and can change.' : 'Typical adult UK reference ranges. They vary between labs.' });
         }),
         hasInterp: interp.length > 0,
         cases: cases.map((x) => {

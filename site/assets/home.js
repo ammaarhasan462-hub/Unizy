@@ -69,13 +69,16 @@
       .then(function (o) {
         if (!o) throw new Error('none');
         var m = o.min || 20, rt = o.retest || {}, rc = o.recall || {}, mn = o.minutes || {}, sv = o.survey || {};
+        var wk = o.week || {}, am = o.afterMistake || {}, wkReady = wk.rate != null && wk.students >= m, amReady = am.rate != null && am.students >= m;
         var rtReady = rt.first != null && rt.students >= m, rcReady = rc.rate != null && rc.students >= m, mnReady = mn.median != null && mn.students >= m, svReady = sv.students >= m;
         var yes = svReady ? Math.round((sv.aLot + sv.aBit) / sv.students * 100) : 0;
         box.innerHTML =
           tile((Math.round(rt.latest) - Math.round(rt.first) >= 0 ? '+' : '') + (Math.round(rt.latest) - Math.round(rt.first)) + ' pts', 'Score change on retested topics', rtReady ? 'Average first try ' + Math.round(rt.first) + '% → latest ' + Math.round(rt.latest) + '% across ' + rt.topics + ' retested topics (' + rt.students + ' students).' : 'How much scores change when students revise a weak topic and test it again.', rtReady, rt.students || 0, m) +
           tile(Math.round(rc.rate) + '%', 'Still known at spaced review', rcReady ? 'Of ' + rc.reviews + ' scheduled flashcard reviews by ' + rc.students + ' students.' : 'How many learned flashcards students still know when they come back days later.', rcReady, rc.students || 0, m) +
           tile(yes + '%', 'Say Unizy saves them time', svReady ? sv.students + ' students answered. ' + (sv.longer ? sv.longer + ' said it takes longer.' : '') : 'From a two-question survey shown in the app after a student’s first week.', svReady, sv.students || 0, m) +
-          tile(Math.round(mn.median) + ' min', 'Typical active study per week', mnReady ? 'Median for ' + mn.students + ' students active in the last 7 days. Only minutes of real use count.' : 'Minutes students actually work in Unizy each week, not just time with the tab open.', mnReady, mn.students || 0, m);
+          tile(Math.round(mn.median) + ' min', 'Typical active study per week', mnReady ? 'Median for ' + mn.students + ' students active in the last 7 days. Only minutes of real use count.' : 'Minutes students actually work in Unizy each week, not just time with the tab open.', mnReady, mn.students || 0, m) +
+          tile(Math.round(wk.rate) + '%', 'Right on new questions a week later', wkReady ? 'Questions on ideas students had got right 7+ days earlier, which they hadn’t seen before (first attempts, ' + wk.items + ' questions by ' + wk.students + ' students).' : 'Unseen questions on ideas a student got right a week earlier, to check learning sticks and transfers.', wkReady, wk.students || 0, m) +
+          tile(Math.round(am.rate) + '%', 'Right on a new case after a mistake', amReady ? 'After a wrong answer and its explanation, the share right on a new scenario testing the same idea (' + am.items + ' questions by ' + am.students + ' students).' : 'Whether explanations fix a misunderstanding: after a wrong answer, a new scenario on the same idea.', amReady, am.students || 0, m);
       })
       .catch(function () { box.innerHTML = '<p class="ev-note">Results will appear here once enough students have used Unizy.</p>'; });
   })();

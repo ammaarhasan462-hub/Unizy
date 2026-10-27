@@ -322,6 +322,7 @@
       card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
       card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#141414' }, ['Set or change your password']));
+      card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#141414' }, ['Leave a review of Unizy']));
       card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [
         Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.'
       ]));

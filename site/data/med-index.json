@@ -1,0 +1,22 @@
+{
+ "packs": [
+  {
+   "id": "M-UCL-MBBS0015",
+   "title": "Circulation and Breathing",
+   "where": "UCL MBBS0015",
+   "kind": "content",
+   "reviewed": "2026-10-27",
+   "topics": [
+    "Respiratory structure and the mechanics of breathing",
+    "Gas exchange, gas transport and the control of breathing",
+    "Structure of the heart, the cardiac cycle and its electrical activity",
+    "Cardiac output, blood pressure and responses to changing demand",
+    "Origins and risk factors of common cardiovascular diseases",
+    "Origins and risk factors of common respiratory diseases",
+    "Basic clinical skills and tests of cardiorespiratory function",
+    "Principles of drug treatment for heart and lung disease",
+    "Introduction to clinical decision-making"
+   ]
+  }
+ ]
+}
