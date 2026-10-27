@@ -4,10 +4,133 @@ import json, os, re, sys, glob
 BASE = '/tmp/claude-0/-home-claude/6faa0a17-cb58-57d6-a184-d928761af053/scratchpad/coverage'
 WL = {e['id']: e for e in json.load(open(BASE + '/worklist.json'))}
 
+SECK = {'core', 'mechanism', 'features', 'investigations', 'management', 'clinical', 'misconceptions'}
+CARDK = {'recall', 'mechanism', 'why', 'distinguish', 'interpret', 'apply'}
+LETTER = re.compile(r'\b[Oo]ptions? [A-D]\b|(?:^|\s)\([A-D]\)|\b[A-D] (?:is|are) (?:wrong|incorrect|right|correct|the answer)\b')
+
+
+def _mcq(q, where, errs, nopt=None):
+    o = q.get('options')
+    if not isinstance(o, list) or len(o) < 3 or len(set(map(str, o))) != len(o):
+        errs.append(where + ' options'); return
+    if not isinstance(q.get('answer'), int) or not 0 <= q['answer'] < len(o):
+        errs.append(where + ' answer index')
+    if not q.get('why') or LETTER.search(str(q.get('why', ''))):
+        errs.append(where + ' why missing or names options by letter')
+
+
+def check_med(d, errs, warns):
+    n = len(d['topics'])
+    srcn = len(d.get('sources', []))
+    if not re.match(r'^\d{4}-\d{2}-\d{2}$', str(d.get('reviewed', ''))):
+        errs.append('med2: reviewed date YYYY-MM-DD required')
+    for i, nt in enumerate(d['notes']):
+        w = 'notes[%d]' % i
+        if not nt.get('overview') or len(str(nt['overview']).split()) > 70:
+            errs.append(w + ' overview missing or over 70 words')
+        ob = nt.get('objectives')
+        if not isinstance(ob, list) or not 3 <= len(ob) <= 6:
+            errs.append(w + ' needs 3-6 objectives')
+        secs = nt.get('sections')
+        if not isinstance(secs, list) or not secs:
+            errs.append(w + ' sections missing'); continue
+        ks = [x.get('k') for x in secs]
+        for req in ('core', 'mechanism', 'clinical', 'misconceptions'):
+            if req not in ks:
+                errs.append(w + ' missing section ' + req)
+        for j, sx in enumerate(secs):
+            ww = w + '.sections[%d]' % j
+            if sx.get('k') not in SECK:
+                errs.append(ww + ' bad k')
+            if not sx.get('h') or not sx.get('body'):
+                errs.append(ww + ' needs h and body')
+            if sx.get('kind') not in ('principle', 'guidance'):
+                errs.append(ww + ' kind must be principle or guidance')
+            if sx.get('kind') == 'guidance' and not re.match(r'^\d{4}-\d{2}$', str(sx.get('asOf', ''))):
+                errs.append(ww + ' guidance needs asOf YYYY-MM')
+            src = sx.get('src')
+            if not isinstance(src, list) or not src or not all(isinstance(k, int) and 0 <= k < srcn for k in src):
+                errs.append(ww + ' src must list valid source indices')
+    for i, c in enumerate(d['cards']):
+        if c.get('kind') not in CARDK:
+            errs.append('cards[%d] kind' % i)
+        if c.get('sec') not in SECK:
+            errs.append('cards[%d] sec' % i)
+        if not c.get('ex'):
+            errs.append('cards[%d] ex (explanation if wrong) missing' % i)
+        if 'q' in c and not (isinstance(c['q'], int) and 0 <= c['q'] < len(d['questions'])):
+            errs.append('cards[%d] q index' % i)
+    per = {}
+    for c in d['cards']:
+        if isinstance(c.get('t'), int):
+            per.setdefault(c['t'], []).append(c.get('kind'))
+    for t, ks in per.items():
+        if ks.count('recall') > 2:
+            warns.append('topic %d has %d recall cards (aim for at most 2)' % (t, ks.count('recall')))
+    stages = {}
+    for i, q in enumerate(d['questions']):
+        w = 'questions[%d]' % i
+        if q.get('sec') not in SECK:
+            errs.append(w + ' sec')
+        if not q.get('concept'):
+            errs.append(w + ' concept')
+        if q.get('type') != 'mcq':
+            continue
+        if q.get('stage') not in ('retrieve', 'apply'):
+            errs.append(w + ' stage')
+        stages.setdefault(q.get('t'), []).append(q.get('stage'))
+        ow = q.get('optWhy')
+        if not isinstance(ow, list) or len(ow) != len(q.get('options') or []) or not all(ow):
+            errs.append(w + ' optWhy needs one entry per option')
+        elif any(LETTER.search(str(x)) for x in ow):
+            errs.append(w + ' optWhy names options by letter')
+        if not q.get('clue'):
+            errs.append(w + ' clue')
+        fu = q.get('followUp')
+        if not isinstance(fu, dict):
+            errs.append(w + ' followUp missing')
+        else:
+            _mcq(fu, w + '.followUp', errs)
+    for t in range(n):
+        st = stages.get(t, [])
+        if st.count('retrieve') < 1 or st.count('apply') < 2:
+            errs.append('topic %d needs >=1 retrieve and >=2 apply MCQs' % t)
+    for i, cs in enumerate(d.get('cases', [])):
+        if not cs.get('title') or not isinstance(cs.get('steps'), list) or len(cs['steps']) < 3:
+            errs.append('cases[%d] needs title and 3+ steps' % i); continue
+        for j, st in enumerate(cs['steps']):
+            if not st.get('text'):
+                errs.append('cases[%d].steps[%d] text' % (i, j))
+            if st.get('ask'):
+                _mcq(st['ask'], 'cases[%d].steps[%d].ask' % (i, j), errs)
+    for i, o in enumerate(d.get('osce', [])):
+        if not o.get('title') or not isinstance(o.get('steps'), list) or len(o['steps']) < 5:
+            errs.append('osce[%d] needs title and 5+ steps' % i)
+    for i, it in enumerate(d.get('interpret', [])):
+        w = 'interpret[%d]' % i
+        if it.get('kind') not in ('bloods', 'ecg', 'abg'):
+            errs.append(w + ' kind'); continue
+        if it['kind'] == 'ecg':
+            e = it.get('ecg') or {}
+            if e.get('rhythm') not in ('sinus', 'af', 'flutter', 'chb', 'first_degree') or not isinstance(e.get('rate'), (int, float)):
+                errs.append(w + ' ecg rhythm/rate')
+        elif not isinstance(it.get('rows'), list) or not it['rows'] or not all(isinstance(r, list) and len(r) == 4 for r in it['rows']):
+            errs.append(w + ' rows must be [name, value, unit, range]')
+        _mcq(it, w, errs)
+        ow = it.get('optWhy')
+        if not isinstance(ow, list) or len(ow) != len(it.get('options') or []):
+            errs.append(w + ' optWhy')
+    HEART = {'ra', 'rv', 'la', 'lv', 'tricuspid', 'mitral', 'pulmonary', 'aortic', 'septum', 'svc', 'ivc', 'aorta', 'pa', 'pv'}
+    for i, lb in enumerate(d.get('labels', [])):
+        if lb.get('diagram') != 'heart' or not lb.get('items') or not set(lb['items']) <= HEART:
+            errs.append('labels[%d] diagram must be heart with known items' % i)
+
 
 def check(pid):
     errs, warns = [], []
-    p = BASE + '/packs/' + pid + '.json'
+    p = pid if pid.endswith('.json') else BASE + '/packs/' + pid + '.json'
+    if pid.endswith('.json'):
+        pid = os.path.basename(pid)[:-5]
     if not os.path.exists(p):
         return ['missing file'], []
     try:
@@ -98,6 +221,8 @@ def check(pid):
             errs.append('questions[%d] bad type' % i)
         if not q.get('q'):
             errs.append('questions[%d] empty question' % i)
+    if d.get('format') == 'med2':
+        check_med(d, errs, warns)
     if content:
         if len(d['cards']) < 4 * n:
             errs.append('too few cards (%d for %d topics)' % (len(d['cards']), n))

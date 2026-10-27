@@ -662,6 +662,359 @@ Notes file
 </div>
 </sc-if>
 
+
+<sc-if value="{{tPath}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline"><h2 style="margin: 0; font-size: 20px; font-weight: 800">Learning pathway · {{mp.title}}</h2><span style="font-size: 12px; color: #5C5C57">Reviewed {{mp.reviewed}}</span></div>
+<div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px">
+<sc-for list="{{mp.topics}}" as="pt" hint-placeholder-count="6">
+<button onClick="{{pt.pick}}" aria-pressed="{{pt.on}}" style="font: inherit; flex: 0 0 auto; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; min-height: 48px; border-radius: 12px; border: 1.5px solid {{pt.border}}; background: {{pt.bg}}; color: {{pt.fg}}; cursor: pointer; max-width: 220px"><span style="font-size: 13px; font-weight: 800">{{pt.n}}. {{pt.name}}</span><span style="font-size: 11px; opacity: 0.8">{{pt.meta}}</span></button>
+</sc-for>
+</div>
+<div class="uz-pw-steps" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 8px">
+<sc-for list="{{mp.steps}}" as="ps" hint-placeholder-count="4">
+<button onClick="{{ps.pick}}" aria-pressed="{{ps.on}}" style="font: inherit; text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; min-height: 56px; border-radius: 12px; border: 1.5px solid {{ps.border}}; background: {{ps.bg}}; color: {{ps.fg}}; cursor: pointer"><span style="font-size: 14px; font-weight: 800">{{ps.n}}. {{ps.label}}</span><span style="font-size: 11px; opacity: 0.85">{{ps.sub}}</span><sc-if value="{{ps.hasCount}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 700">{{ps.count}}</span></sc-if></button>
+</sc-for>
+</div>
+</section>
+
+<section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 14px">
+<div><span style="font-size: 12px; font-weight: 700; color: #5C5C57">{{mp.topicNo}}</span><h3 style="margin: 2px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.01em">{{mp.topicName}}</h3></div>
+
+<sc-if value="{{mp.isU}}" hint-placeholder-val="{{ true }}">
+<div style="border-radius: 14px; background: {{theme.tint}}; padding: 14px 16px; font-size: 16px; line-height: 1.6">{{mp.overview}}</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 800">By the end you should be able to</span>
+<sc-for list="{{mp.objectives}}" as="ob" hint-placeholder-count="3"><span style="font-size: 14px; line-height: 1.5">• {{ob.t}}</span></sc-for></div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{mp.openAll}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">Open every section</button><button onClick="{{mp.askTutor}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Ask {{tutorName}} about this</button></div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{mp.sections}}" as="sx" hint-placeholder-count="5">
+<div style="border: 1px solid #E4E4DE; border-radius: 12px; overflow: hidden">
+<button onClick="{{sx.toggle}}" aria-expanded="{{sx.open}}" style="font: inherit; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; min-height: 48px; border: none; background: #FAFAF7; cursor: pointer; text-align: left"><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 800">{{sx.h}}</span><span style="font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: {{sx.badgeBg}}; align-self: flex-start">{{sx.badge}}</span></span><span style="font-size: 20px; font-weight: 700">{{sx.arrow}}</span></button>
+<sc-if value="{{sx.open}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px"><div style="font-size: 15px; line-height: 1.7; white-space: pre-line">{{sx.body}}</div>
+<sc-if value="{{sx.hasSrcs}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span style="font-size: 12px; font-weight: 700; color: #5C5C57">Sources:</span><sc-for list="{{sx.srcs}}" as="sc" hint-placeholder-count="2"><a href="{{sc.url}}" target="_blank" rel="noopener" style="font-size: 12px; color: #141414">{{sc.title}}</a></sc-for></div></sc-if>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{mp.hasLabels}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.labels}}" as="lb" hint-placeholder-count="1">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px"><span style="font-size: 15px; font-weight: 800">Label the heart</span>
+<img src="{{lb.img}}" alt="Schematic four-chamber heart with numbered structures" style="width: 100%; max-width: 400px; height: auto; align-self: center"/>
+<sc-for list="{{lb.items}}" as="li" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Which number is the {{li.name}}? <span style="font-weight: 600; color: #3F3F3B">{{li.verdict}}</span></span><div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{li.nums}}" as="ln" hint-placeholder-count="6"><button onClick="{{ln.pick}}" style="font: inherit; font-size: 14px; font-weight: 700; width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid {{ln.border}}; background: {{ln.bg}}; cursor: pointer">{{ln.n}}</button></sc-for></div></div>
+</sc-for>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{mp.hasOsce}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.osce}}" as="os" hint-placeholder-count="1">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; overflow: hidden"><button onClick="{{os.toggle}}" aria-expanded="{{os.open}}" style="font: inherit; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; min-height: 48px; border: none; background: #FAFAF7; cursor: pointer; text-align: left"><span style="font-size: 15px; font-weight: 800">OSCE checklist · {{os.title}}</span><span style="font-size: 20px; font-weight: 700">{{os.arrow}}</span></button>
+<sc-if value="{{os.open}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 6px"><sc-for list="{{os.steps}}" as="oz" hint-placeholder-count="5"><span style="font-size: 14px; line-height: 1.5">{{oz.n}}. {{oz.t}}</span></sc-for><sc-if value="{{os.hasTips}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 800; margin-top: 6px">Tips</span><sc-for list="{{os.tips}}" as="ot" hint-placeholder-count="2"><span style="font-size: 13px; line-height: 1.5">• {{ot.t}}</span></sc-for></sc-if></div></sc-if>
+</div>
+</sc-for>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{mp.isR}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Close your notes. Say or write the answer before you reveal it, then be honest about whether you knew it.</span>
+<sc-for list="{{mp.cards}}" as="pc" hint-placeholder-count="3">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{pc.kind}}</span>
+<span style="font-size: 16px; font-weight: 700; line-height: 1.5">{{pc.f}}</span>
+<sc-if value="{{pc.notFlipped}}" hint-placeholder-val="{{ true }}"><button onClick="{{pc.show}}" style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 700; padding: 9px 16px; min-height: 42px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">Show answer</button></sc-if>
+<sc-if value="{{pc.flipped}}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 15px; line-height: 1.6; padding: 10px 12px; border-radius: 10px; background: #F7F7F3">{{pc.b}}</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{pc.got}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; min-height: 42px; border-radius: 999px; border: none; background: #E3F3E8; cursor: pointer">I knew it</button><button onClick="{{pc.miss}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; min-height: 42px; border-radius: 999px; border: none; background: #FCEBEB; cursor: pointer">I didn't</button></div>
+</sc-if>
+<sc-if value="{{pc.missed}}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 10px; background: #FDF0D5">{{pc.ex}}</div>
+<button onClick="{{pc.goSec}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{pc.secLabel}}</button>
+<sc-if value="{{pc.hasRel}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Related practice question</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{pc.rel.q}}</p>
+<sc-for list="{{pc.rel.opts}}" as="opc_rel" hint-placeholder-count="4">
+<button onClick="{{opc_rel.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{opc_rel.border}}; background: {{opc_rel.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{opc_rel.letter}}</span>
+<span style="flex: 1 1 auto">{{opc_rel.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{opc_rel.markColor}}">{{opc_rel.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{pc.rel.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{pc.rel.verdict}}</strong> {{pc.rel.why}}</div>
+
+<sc-if value="{{pc.rel.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{pc.rel.rows}}" as="rpc_rel" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rpc_rel.tagBg}}">{{rpc_rel.tag}}</span><span><strong>{{rpc_rel.opt}}</strong> · {{rpc_rel.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{pc.rel.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{pc.rel.clue}}</div></sc-if>
+<sc-if value="{{pc.rel.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{pc.rel.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if>
+</sc-if>
+</div>
+</sc-for>
+<sc-if value="{{mp.hasRetrieveQs}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.retrieveQs}}" as="rq" hint-placeholder-count="2">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Retrieve</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{rq.q}}</p>
+<sc-for list="{{rq.opts}}" as="orq" hint-placeholder-count="4">
+<button onClick="{{orq.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{orq.border}}; background: {{orq.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{orq.letter}}</span>
+<span style="flex: 1 1 auto">{{orq.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{orq.markColor}}">{{orq.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{rq.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{rq.verdict}}</strong> {{rq.why}}</div>
+
+<sc-if value="{{rq.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{rq.rows}}" as="rrq" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rrq.tagBg}}">{{rrq.tag}}</span><span><strong>{{rrq.opt}}</strong> · {{rrq.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{rq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{rq.clue}}</div></sc-if>
+<sc-if value="{{rq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{rq.concept}}</div></sc-if>
+<sc-if value="{{rq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{rq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{rq.secLabel}}</button><button onClick="{{rq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{rq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{rq.fuTitle}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{rq.fu.q}}</p>
+<sc-for list="{{rq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
+<button onClick="{{oV_fu.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oV_fu.border}}; background: {{oV_fu.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oV_fu.letter}}</span>
+<span style="flex: 1 1 auto">{{oV_fu.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oV_fu.markColor}}">{{oV_fu.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{rq.fu.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{rq.fu.verdict}}</strong> {{rq.fu.why}}</div>
+
+<sc-if value="{{rq.fu.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{rq.fu.rows}}" as="rV_fu" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rV_fu.tagBg}}">{{rV_fu.tag}}</span><span><strong>{{rV_fu.opt}}</strong> · {{rV_fu.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{rq.fu.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{rq.fu.clue}}</div></sc-if>
+<sc-if value="{{rq.fu.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{rq.fu.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{mp.isA}}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{mp.hasCases}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.cases}}" as="cs" hint-placeholder-count="1">
+<div style="border: 2px solid {{theme.c1}}; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px">
+<span style="font-size: 16px; font-weight: 800">Case walkthrough · {{cs.title}}</span>
+<sc-for list="{{cs.steps}}" as="cp" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 15px; line-height: 1.6; white-space: pre-line"><strong>{{cp.n}}.</strong> {{cp.text}}</span>
+<sc-if value="{{cp.hasAsk}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{cp.ask.q}}</p>
+<sc-for list="{{cp.ask.opts}}" as="ocp_ask" hint-placeholder-count="4">
+<button onClick="{{ocp_ask.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{ocp_ask.border}}; background: {{ocp_ask.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{ocp_ask.letter}}</span>
+<span style="flex: 1 1 auto">{{ocp_ask.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{ocp_ask.markColor}}">{{ocp_ask.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{cp.ask.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{cp.ask.verdict}}</strong> {{cp.ask.why}}</div>
+
+<sc-if value="{{cp.ask.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{cp.ask.rows}}" as="rcp_ask" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rcp_ask.tagBg}}">{{rcp_ask.tag}}</span><span><strong>{{rcp_ask.opt}}</strong> · {{rcp_ask.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{cp.ask.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{cp.ask.clue}}</div></sc-if>
+<sc-if value="{{cp.ask.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{cp.ask.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</sc-if></div>
+</sc-for>
+<sc-if value="{{cs.canNext}}" hint-placeholder-val="{{ false }}"><button onClick="{{cs.next}}" style="font: inherit; align-self: flex-start; font-size: 14px; font-weight: 700; padding: 10px 18px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Continue the case</button></sc-if>
+<sc-if value="{{cs.finished}}" hint-placeholder-val="{{ false }}"><div style="border-radius: 12px; background: #F7F7F3; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 800">Key learning</span><sc-for list="{{cs.debrief}}" as="db" hint-placeholder-count="2"><span style="font-size: 14px; line-height: 1.5">• {{db.t}}</span></sc-for><button onClick="{{cs.restart}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 600; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 6px 0">Start the case again</button></div></sc-if>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{mp.hasInterp}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.interp}}" as="iq" hint-placeholder-count="1">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Interpret · {{iq.kindLabel}}</span><span style="font-size: 15px; font-weight: 800">{{iq.title}}</span>
+<sc-if value="{{iq.isEcg}}" hint-placeholder-val="{{ false }}"><div style="overflow-x: auto"><img src="{{iq.ecgImg}}" alt="Illustrative ECG rhythm strip" style="display: block; width: 720px; max-width: none; height: auto"/></div></sc-if>
+<sc-if value="{{iq.isTable}}" hint-placeholder-val="{{ false }}"><div style="overflow-x: auto"><div role="table" style="display: grid; grid-template-columns: minmax(0, 1.5fr) auto auto minmax(0, 1.3fr); font-size: 13.5px; overflow-wrap: anywhere"><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Test</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700; text-align: right">Result</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Unit</span><span role="columnheader" style="padding: 7px 5px; border-bottom: 1.5px solid #141414; font-weight: 700">Typical range</span><sc-for list="{{iq.tableRows}}" as="tr2" hint-placeholder-count="4"><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE">{{tr2.name}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE; text-align: right; font-weight: 700; color: {{tr2.col}}">{{tr2.val}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE">{{tr2.unit}}</span><span role="cell" style="padding: 7px 5px; border-bottom: 1px solid #E4E4DE; color: #5C5C57">{{tr2.range}}</span></sc-for></div></div><span style="font-size: 12px; color: #5C5C57">{{iq.rangeNote}}</span></sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{iq.q}}</p>
+<sc-for list="{{iq.opts}}" as="oiq" hint-placeholder-count="4">
+<button onClick="{{oiq.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oiq.border}}; background: {{oiq.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oiq.letter}}</span>
+<span style="flex: 1 1 auto">{{oiq.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oiq.markColor}}">{{oiq.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{iq.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{iq.verdict}}</strong> {{iq.why}}</div>
+
+<sc-if value="{{iq.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{iq.rows}}" as="riq" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{riq.tagBg}}">{{riq.tag}}</span><span><strong>{{riq.opt}}</strong> · {{riq.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{iq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{iq.clue}}</div></sc-if>
+<sc-if value="{{iq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{iq.concept}}</div></sc-if>
+<sc-if value="{{iq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{iq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{iq.secLabel}}</button><button onClick="{{iq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{iq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{iq.fuTitle}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{iq.fu.q}}</p>
+<sc-for list="{{iq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
+<button onClick="{{oV_fu.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oV_fu.border}}; background: {{oV_fu.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oV_fu.letter}}</span>
+<span style="flex: 1 1 auto">{{oV_fu.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oV_fu.markColor}}">{{oV_fu.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{iq.fu.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{iq.fu.verdict}}</strong> {{iq.fu.why}}</div>
+
+<sc-if value="{{iq.fu.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{iq.fu.rows}}" as="rV_fu" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rV_fu.tagBg}}">{{rV_fu.tag}}</span><span><strong>{{rV_fu.opt}}</strong> · {{rV_fu.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{iq.fu.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{iq.fu.clue}}</div></sc-if>
+<sc-if value="{{iq.fu.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{iq.fu.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{mp.hasApplyQs}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.applyQs}}" as="aq" hint-placeholder-count="2">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Apply</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{aq.q}}</p>
+<sc-for list="{{aq.opts}}" as="oaq" hint-placeholder-count="4">
+<button onClick="{{oaq.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oaq.border}}; background: {{oaq.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oaq.letter}}</span>
+<span style="flex: 1 1 auto">{{oaq.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oaq.markColor}}">{{oaq.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{aq.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{aq.verdict}}</strong> {{aq.why}}</div>
+
+<sc-if value="{{aq.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{aq.rows}}" as="raq" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{raq.tagBg}}">{{raq.tag}}</span><span><strong>{{raq.opt}}</strong> · {{raq.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{aq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{aq.clue}}</div></sc-if>
+<sc-if value="{{aq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{aq.concept}}</div></sc-if>
+<sc-if value="{{aq.hasSec}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{aq.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{aq.secLabel}}</button><button onClick="{{aq.retry}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Try again</button></div></sc-if><sc-if value="{{aq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{aq.fuTitle}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{aq.fu.q}}</p>
+<sc-for list="{{aq.fu.opts}}" as="oV_fu" hint-placeholder-count="4">
+<button onClick="{{oV_fu.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{oV_fu.border}}; background: {{oV_fu.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{oV_fu.letter}}</span>
+<span style="flex: 1 1 auto">{{oV_fu.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{oV_fu.markColor}}">{{oV_fu.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{aq.fu.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{aq.fu.verdict}}</strong> {{aq.fu.why}}</div>
+
+<sc-if value="{{aq.fu.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{aq.fu.rows}}" as="rV_fu" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rV_fu.tagBg}}">{{rV_fu.tag}}</span><span><strong>{{rV_fu.opt}}</strong> · {{rV_fu.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{aq.fu.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{aq.fu.clue}}</div></sc-if>
+<sc-if value="{{aq.fu.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{aq.fu.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{mp.hasWritten}}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{mp.written}}" as="wq" hint-placeholder-count="1">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Written answer · {{wq.marks}}</span><span style="font-size: 15px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{wq.q}}</span><span style="font-size: 13px; color: #3F3F3B">Plan your answer on paper first, then compare.</span>
+<button onClick="{{wq.toggle}}" style="font: inherit; align-self: flex-start; font-size: 13px; font-weight: 700; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{wq.label}}</button>
+<sc-if value="{{wq.show}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px"><sc-for list="{{wq.scheme}}" as="ws" hint-placeholder-count="3"><span style="font-size: 14px; line-height: 1.5">✓ {{ws.t}}</span></sc-for><div style="font-size: 14px; line-height: 1.6; white-space: pre-line; padding: 10px 12px; border-radius: 10px; background: #F7F7F3">{{wq.model}}</div></div></sc-if></div>
+</sc-for>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{mp.isI}}" hint-placeholder-val="{{ false }}">
+<span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">{{mp.improveNote}}</span>
+<sc-for list="{{mp.mistakes}}" as="mm" hint-placeholder-count="2">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 15px; font-weight: 700; line-height: 1.5; white-space: pre-line">{{mm.q}}</span><span style="font-size: 14px; color: #9A1B12">You chose: {{mm.yours}}</span><span style="font-size: 14px; color: #1C5E37">Answer: {{mm.right}}</span><span style="font-size: 14px; line-height: 1.5">{{mm.why}}</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{mm.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{mm.secLabel}}</button><button onClick="{{mm.retry}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Retry now</button><button onClick="{{mm.later}}" style="font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: none; text-decoration: underline; cursor: pointer">Retry later (practice queue)</button></div></div>
+</sc-for>
+<sc-for list="{{mp.missedCards}}" as="mc" hint-placeholder-count="1">
+<div style="border: 1px solid #E4E4DE; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">Card you missed</span><span style="font-size: 15px; font-weight: 700">{{mc.f}}</span><span style="font-size: 14px; line-height: 1.5">{{mc.b}}</span><span style="font-size: 13px; line-height: 1.5; color: #3F3F3B">{{mc.ex}}</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{mc.goSec}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; cursor: pointer">{{mc.secLabel}}</button><button onClick="{{mc.clear}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 12px; min-height: 40px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Test me on it again</button></div></div>
+</sc-for>
+</sc-if>
+
+<div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; border-top: 1px solid #E4E4DE; padding-top: 12px">
+<span style="font-size: 12px; line-height: 1.5; color: #5C5C57; max-width: 560px">{{mp.trust}} <a href="{{mp.report}}" style="color: #141414; font-weight: 700">Report a mistake</a></span>
+<button onClick="{{mp.next}}" style="font: inherit; font-size: 15px; font-weight: 800; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{mp.nextLabel}}</button>
+</div>
+</section>
+</div>
+</sc-if>
+
 <sc-if value="{{tQuiz}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
 <section style="flex: 1 1 280px; min-width: 0; background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 16px; box-sizing: border-box">
@@ -822,7 +1175,44 @@ Notes file
 </sc-for>
 </div>
 <sc-if value="{{cq.mcqDone}}" hint-placeholder-val="{{ false }}">
-<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; font-size: 15px; line-height: 1.55"><strong>{{cq.verdict}}</strong> {{cq.why}}</div>
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px"><div style="font-size: 15px; line-height: 1.55"><strong>{{cq.verdict}}</strong> {{cq.why}}</div>
+<sc-if value="{{cq.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{cq.rows}}" as="rcq" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rcq.tagBg}}">{{rcq.tag}}</span><span><strong>{{rcq.opt}}</strong> · {{rcq.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{cq.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{cq.clue}}</div></sc-if>
+<sc-if value="{{cq.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{cq.concept}}</div></sc-if>
+<sc-if value="{{cq.hasFu}}" hint-placeholder-val="{{ false }}"><div style="border-top: 1px solid #E4E4DE; padding-top: 10px; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4E4E49">{{cq.fuTitle}}</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<p style="margin: 0; font-size: 16px; line-height: 1.6; font-weight: 600; white-space: pre-line">{{cq.fu.q}}</p>
+<sc-for list="{{cq.fu.opts}}" as="ocq_fu" hint-placeholder-count="4">
+<button onClick="{{ocq_fu.pick}}" style="font: inherit; font-size: 15px; line-height: 1.4; text-align: left; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{ocq_fu.border}}; background: {{ocq_fu.bg}}; color: #141414; cursor: pointer">
+<span style="width: 26px; height: 26px; border-radius: 8px; background: #F1F1EC; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex: 0 0 auto">{{ocq_fu.letter}}</span>
+<span style="flex: 1 1 auto">{{ocq_fu.text}}</span>
+<span style="font-size: 12px; font-weight: 700; color: {{ocq_fu.markColor}}">{{ocq_fu.mark}}</span>
+</button>
+</sc-for>
+<sc-if value="{{cq.fu.done}}" hint-placeholder-val="{{ false }}">
+<div style="border-radius: 12px; padding: 14px 16px; background: #F7F7F3; display: flex; flex-direction: column; gap: 10px">
+<div style="font-size: 15px; line-height: 1.55"><strong>{{cq.fu.verdict}}</strong> {{cq.fu.why}}</div>
+
+<sc-if value="{{cq.fu.hasRows}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{cq.fu.rows}}" as="rcq_fu" hint-placeholder-count="4">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5"><span style="flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{rcq_fu.tagBg}}">{{rcq_fu.tag}}</span><span><strong>{{rcq_fu.opt}}</strong> · {{rcq_fu.why}}</span></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{cq.fu.hasClue}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Key clue:</strong> {{cq.fu.clue}}</div></sc-if>
+<sc-if value="{{cq.fu.hasConcept}}" hint-placeholder-val="{{ false }}"><div style="font-size: 14px; line-height: 1.5"><strong>Concept tested:</strong> {{cq.fu.concept}}</div></sc-if>
+
+</div>
+</sc-if>
+</div>
+</div></sc-if></div>
 </sc-if>
 </sc-if>
 
@@ -1944,6 +2334,65 @@ class Component extends DCLogic {
     return idx;
   }
 
+  // Illustrative lead II strip drawn from numbers (25 mm/s, 10 mm/mV, 4 px per mm). Not a real recording.
+  static ecgSvg(e) {
+    e = e || {};
+    const W = 720, H = 170, PXS = 100, MV = 40, base = 105, dur = W / PXS;
+    let seed = 11; const rnd = () => { seed = (Math.imul(seed, 1103515245) + 12345) >>> 0; return (seed % 100000) / 100000; };
+    const rate = Math.max(20, Math.min(250, +e.rate || 75)), rr = 60 / rate;
+    const pr = +e.pr || 0.16, qrs = Math.max(0.06, +e.qrs || 0.08), qt = +e.qt || 0.38;
+    const rh = e.rhythm || 'sinus'; const wide = qrs >= 0.12;
+    const ps = [], beats = [];
+    if (rh === 'af') { let t = 0.5; while (t < dur) { beats.push(t); t += rr * (0.6 + 0.8 * rnd()); } }
+    else if (rh === 'flutter') { const n = Math.max(2, Math.round(300 / rate)); for (let k = 0, t = 0.42; t < dur; k++, t += 0.2) { if (k % n === 1) beats.push(t + 0.06); } }
+    else if (rh === 'chb') { const ar = 60 / Math.max(40, +e.atrialRate || +e.atrial || 80); for (let t = 0.45; t < dur; t += ar) ps.push(t); for (let t = 0.85; t < dur; t += rr) beats.push(t); }
+    else { for (let t = 0.45; t < dur; t += rr) { ps.push(t); beats.push(t + pr); } }
+    const g = (x, mu, sg, a) => a * Math.exp(-((x - mu) * (x - mu)) / (2 * sg * sg));
+    const v = (t) => {
+      if (t < 0.38) return 0;
+      let y = 0;
+      ps.forEach((p) => { y += g(t, p + 0.045, 0.022, 0.15); });
+      beats.forEach((b) => { y += wide ? g(t, b + qrs * 0.42, qrs * 0.2, 1.0) + g(t, b + qrs * 0.82, qrs * 0.13, -0.35) + g(t, b + qt - 0.12, 0.06, -0.25) : g(t, b + qrs * 0.15, qrs * 0.1, -0.1) + g(t, b + qrs * 0.45, qrs * 0.13, 1.2) + g(t, b + qrs * 0.8, qrs * 0.11, -0.25) + g(t, b + qt - 0.11, 0.05, 0.3); });
+      if (rh === 'af') y += 0.045 * Math.sin(2 * Math.PI * 6.3 * t + 2.5 * Math.sin(1.1 * t)) + 0.03 * Math.sin(2 * Math.PI * 8.9 * t + 1);
+      if (rh === 'flutter') { const f = ((t - 0.42) / 0.2) % 1; y += f < 0.8 ? 0.08 - 0.3 * (f / 0.8) : -0.22 + 0.3 * ((f - 0.8) / 0.2); }
+      return y;
+    };
+    let grid = '';
+    for (let x = 0; x <= W; x += 4) grid += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + H + '" stroke="' + (x % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (x % 20 ? 0.5 : 1) + '"/>';
+    for (let y = 0; y <= H; y += 4) grid += '<line x1="0" y1="' + y + '" x2="' + W + '" y2="' + y + '" stroke="' + (y % 20 ? '#F7D4D4' : '#E9A8A8') + '" stroke-width="' + (y % 20 ? 0.5 : 1) + '"/>';
+    let d = '';
+    for (let x = 0; x <= W; x++) { const yy = base - v(x / PXS) * MV; d += (x ? 'L' : 'M') + x + ' ' + yy.toFixed(1); }
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + (H + 18) + '" width="' + W + '" height="' + (H + 18) + '"><rect width="100%" height="100%" fill="#FFF8F8"/>' + grid +
+      '<path d="M4 ' + base + 'L8 ' + base + 'L8 ' + (base - MV) + 'L28 ' + (base - MV) + 'L28 ' + base + 'L32 ' + base + '" fill="none" stroke="#141414" stroke-width="1.5"/>' +
+      '<path d="' + d + '" fill="none" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<text x="6" y="' + (H + 14) + '" font-family="sans-serif" font-size="11" fill="#3F3F3B">Lead II · 25 mm/s · 10 mm/mV · small square 0.04 s · drawn illustration, not a real recording</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  // Schematic four-chamber heart (anterior view; the viewer's left is the patient's right). Numbers mark structures.
+  static heartSvg(items) {
+    const P = { svc: [125, 40], ivc: [125, 330], ra: [100, 125], rv: [120, 245], la: [295, 115], lv: [280, 250], septum: [200, 255], tricuspid: [110, 178], mitral: [290, 172], pulmonary: [180, 182], aortic: [220, 182], pa: [180, 70], aorta: [220, 40], pv: [360, 120] };
+    let marks = '';
+    (items || []).forEach((k, i) => { const p = P[k]; if (!p) return; marks += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="13" fill="#141414"/><text x="' + p[0] + '" y="' + (p[1] + 5) + '" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">' + (i + 1) + '</text>'; });
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 392" width="400" height="392"><rect width="100%" height="100%" fill="#FFFFFF"/>' +
+      '<rect x="110" y="10" width="30" height="80" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+      '<rect x="110" y="292" width="30" height="62" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+      '<rect x="168" y="20" width="26" height="160" rx="8" fill="#C9D9F2" stroke="#3B5B8C"/>' +
+      '<path d="M206 180 L206 40 Q206 12 236 12 L262 12" fill="none" stroke="#A33A3A" stroke-width="26" stroke-linecap="round"/>' +
+      '<rect x="335" y="100" width="55" height="40" rx="8" fill="#F2C9C9" stroke="#A33A3A"/>' +
+      '<rect x="55" y="85" width="105" height="85" rx="22" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
+      '<path d="M55 190 L193 190 L193 300 Q130 330 70 260 Z" fill="#C9D9F2" stroke="#3B5B8C" stroke-width="2"/>' +
+      '<rect x="240" y="80" width="100" height="80" rx="22" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
+      '<path d="M207 190 L345 190 Q350 260 300 320 Q240 340 207 300 Z" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
+      '<rect x="193" y="190" width="14" height="115" fill="#D8C6C6" stroke="#6B4E4E"/>' +
+      '<line x1="72" y1="178" x2="150" y2="178" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
+      '<line x1="252" y1="172" x2="330" y2="172" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
+      '<line x1="168" y1="182" x2="194" y2="182" stroke="#141414" stroke-width="4"/>' +
+      '<line x1="207" y1="182" x2="233" y2="182" stroke="#141414" stroke-width="4"/>' + marks +
+      '<text x="6" y="368" font-family="sans-serif" font-size="12" fill="#3F3F3B">Schematic, not to scale · viewer’s left = patient’s right</text><text x="6" y="386" font-family="sans-serif" font-size="12" fill="#3F3F3B">Blue = deoxygenated blood, red = oxygenated blood</text></svg>';
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
   static errText(e) {
     if (e && e.userMessage) return e.userMessage;
     const c = e && e.code;
@@ -2140,10 +2589,16 @@ class Component extends DCLogic {
     if (type === 'mcq') {
       if (!Array.isArray(q.options) || q.options.length < 2 || !Number.isFinite(+q.answer)) return null;
       out.options = q.options.map(String); out.answer = +q.answer; out.why = String(q.why || ''); out.marks = 1;
+      if (Array.isArray(q.optWhy) && q.optWhy.length === q.options.length) out.optWhy = q.optWhy.map(String);
+      if (q.clue) out.clue = String(q.clue);
+      if (q.stage) out.stage = String(q.stage);
+      if (q.followUp && Array.isArray(q.followUp.options) && Number.isFinite(+q.followUp.answer)) out.followUp = { q: String(q.followUp.q), options: q.followUp.options.map(String), answer: +q.followUp.answer, why: String(q.followUp.why || '') };
     } else {
       out.markScheme = Array.isArray(q.markScheme) ? q.markScheme.map(String) : [];
       out.modelAnswer = String(q.modelAnswer || '');
     }
+    if (q.concept) out.concept = String(q.concept);
+    if (q.sec) out.sec = String(q.sec);
     return out;
   }
 
@@ -2285,7 +2740,8 @@ class Component extends DCLogic {
       flash: 'M3 8h13v12H3zM8 4h13v12',
       time: 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4',
       friends: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
-      tutor: 'M12 3l10 5-10 5L2 8zM6 10v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5'
+      tutor: 'M12 3l10 5-10 5L2 8zM6 10v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5',
+      path: 'M4 19h4v-6H4zM10 19h4V9h-4zM16 19h4V4h-4z'
     };
 
     // ---- core selections ----
@@ -2585,6 +3041,44 @@ class Component extends DCLogic {
     const tNames = topics;
     const labelOf = (it) => it.bank ? bTitle(it.bank) + (bTopics(it.bank)[it.t] ? ' · ' + bTopics(it.bank)[it.t] : '') : (it.t !== null && it.t !== undefined && tNames[it.t] ? tNames[it.t] : activeMod.name);
     const topicName = (i) => tNames[i] || activeMod.name;
+    const SECNAME = { core: 'Core concept', mechanism: 'Mechanism', features: 'Key features', investigations: 'Investigations', management: 'Management principles', clinical: 'Clinical application', misconceptions: 'Common misconceptions' };
+    const CARDKIND = { recall: 'Recall', mechanism: 'Mechanism', why: 'Why it happens', distinguish: 'Tell apart', interpret: 'Interpret', apply: 'Apply' };
+    const HEARTNAME = { ra: 'right atrium', rv: 'right ventricle', la: 'left atrium', lv: 'left ventricle', tricuspid: 'tricuspid valve', mitral: 'mitral valve', pulmonary: 'pulmonary valve', aortic: 'aortic valve', septum: 'interventricular septum', svc: 'superior vena cava', ivc: 'inferior vena cava', aorta: 'aorta', pa: 'pulmonary trunk', pv: 'pulmonary veins' };
+    const pwKey = 'unizy:' + mk + ':pw';
+    const pwStore = store[pwKey] || {};
+    const pwAns = get('pwAns', {});
+    // a multiple-choice question with every answer explained (used by the pathway and by topic tests)
+    const mcqView = (q, key, onAnswer, opts) => {
+      opts = opts || {};
+      const picked = pwAns[key];
+      const done = picked !== undefined;
+      const order = Component.optOrder(Object.assign({ id: key }, q));
+      const ow = Array.isArray(q.optWhy) ? q.optWhy : [];
+      const v = {
+        key, q: q.q, done, notDone: !done, right: done && picked === q.answer,
+        verdict: !done ? '' : picked === q.answer ? 'Correct.' : 'Not quite.',
+        verdictBg: done && picked === q.answer ? '#E3F3E8' : '#FCEBEB',
+        why: q.why || '',
+        opts: order.map((k, pos) => {
+          let bg = '#FFFFFF', border = '#DADAD4', mark = '', markColor = '#141414';
+          if (done && k === q.answer) { bg = '#E3F3E8'; border = '#1E7B45'; mark = 'Correct'; markColor = '#1C5E37'; }
+          else if (done && k === picked) { bg = '#FCEBEB'; border = '#B42318'; mark = 'Your answer'; markColor = '#9A1B12'; }
+          return { text: q.options[k], letter: 'ABCDEF'[pos], bg, border, mark, markColor,
+            pick: () => { if (done) return; const a = Object.assign({}, get('pwAns', {})); a[key] = k; set({ pwAns: a }); if (onAnswer) onAnswer(k === q.answer, k); } };
+        }),
+        hasRows: done && ow.length === q.options.length,
+        rows: done && ow.length === q.options.length ? order.map((k) => ({ opt: q.options[k], why: ow[k], tag: k === q.answer ? 'Right answer' : k === picked ? 'Your answer' : 'Why not', tagBg: k === q.answer ? '#E3F3E8' : k === picked ? '#FCEBEB' : '#F1F1EC' })) : [],
+        hasClue: done && !!q.clue, clue: q.clue || '',
+        hasConcept: done && !!q.concept, concept: q.concept || '',
+        hasSec: done && !!q.sec && !!opts.goSec, secLabel: 'Re-read: ' + (SECNAME[q.sec] || 'the notes'), goSec: () => { if (opts.goSec) opts.goSec(q.sec); },
+        retry: () => { const a = Object.assign({}, get('pwAns', {})); delete a[key]; delete a[key + ':fu']; set({ pwAns: a }); }
+      };
+      v.hasFu = done && !!q.followUp && !opts.noFu;
+      v.fu = v.hasFu ? mcqView(Object.assign({ concept: '' }, q.followUp), key + ':fu', null, { noFu: true }) : { opts: [], rows: [] };
+      v.fuTitle = 'Follow-up: same idea, different scenario';
+      return v;
+    };
+
     // ---- course knowledge pack: everything Unizy knows about this module, ranked for the question in hand ----
     const STOP = new Set('that this with from which what have their there about would could should between into more most than then them they were been being also such when where while your does explain discuss evaluate assess critically essay question answer marks words following given using used other these those some much many very only just over under after before because whether within without each every well like make made need case cases'.split(' '));
     const toks = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, ' ').split(' ').filter((w) => w.length > 3 && !STOP.has(w));
@@ -2926,6 +3420,11 @@ class Component extends DCLogic {
             return { text: o, letter: 'ABCDEF'[pos], bg, border, mark, markColor, pick: () => { if (!done) { const a = Object.assign({}, answers); a[qq.id] = k; set({ answers: a }); } } };
           }) : [],
           mcqDone: isMcq && ans !== undefined, verdict: isMcq && ans === qq.answer ? 'Correct.' : 'Not quite.', why: qq.why || '',
+          hasRows: isMcq && ans !== undefined && Array.isArray(qq.optWhy),
+          rows: isMcq && ans !== undefined && Array.isArray(qq.optWhy) ? Component.optOrder(qq).map((k) => ({ opt: qq.options[k], why: qq.optWhy[k], tag: k === qq.answer ? 'Right answer' : k === ans ? 'Your answer' : 'Why not', tagBg: k === qq.answer ? '#E3F3E8' : k === ans ? '#FCEBEB' : '#F1F1EC' })) : [],
+          hasClue: isMcq && ans !== undefined && !!qq.clue, clue: qq.clue || '',
+          hasConcept: ans !== undefined && !!qq.concept, concept: qq.concept || '',
+          hasFu: isMcq && ans !== undefined && !!qq.followUp, fu: isMcq && qq.followUp ? mcqView(qq.followUp, 'tfu:' + qq.id, null, { noFu: true }) : { opts: [], rows: [] },
           answer: isMcq ? '' : String(ans || ''),
           onAnswer: (e) => { const a = Object.assign({}, answers); a[qq.id] = e && e.target ? e.target.value : ''; set({ answers: a }); },
           placeholder: qq.type === 'long' ? 'Plan, then write your full answer here. Structure it as you would in the exam.' : 'Write your answer in a few sentences.',
@@ -3452,9 +3951,140 @@ class Component extends DCLogic {
       saveNote: (title, body, from) => { saveNotes([{ id: 'p' + Date.now(), folder: myFoldersList[0], title: (from ? 'From ' + from + ': ' : '') + title, body: String(body || ''), updated: new Date().toISOString() }].concat(myNotes)); }
     };
 
+    // ---- medical learning pathway (med2 packs): Understand → Retrieve → Apply → Improve ----
+    const lightC = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
+    const strongC = lightC ? theme.onBtn : theme.btn, onStrongC = lightC ? '#FFFFFF' : theme.onBtn;
+    const medId = linkIds.find((id) => banksLoaded[id] && banksLoaded[id].format === 'med2') || null;
+    const medB = medId ? banksLoaded[medId] : null;
+    let mp = { has: false };
+    if (medB) {
+      const nT = (medB.topics || []).length;
+      const pT = Math.max(0, Math.min(nT - 1, +get('pwT', 0) || 0));
+      const step = get('pwStep', 'u');
+      const pwOpen = get('pwOpen', {});
+      const note = (medB.notes || []).find((n) => +n.t === pT) || null;
+      const st = pwStore[pT] || {};
+      const res = st.res || {};
+      const savePw = (patch) => { const all = Object.assign({}, store[pwKey] || {}); all[pT] = Object.assign({}, all[pT] || {}, patch); self.save(pwKey, all); };
+      const record = (key, ok) => { const r = Object.assign({}, ((store[pwKey] || {})[pT] || {}).res || {}); r[key] = ok ? 1 : 0; savePw({ res: r }); };
+      const goSec = (sec) => { const o = Object.assign({}, get('pwOpen', {})); o[pT + ':' + sec] = true; set({ pwStep: 'u', pwOpen: o }); };
+      const srcs = medB.sources || [];
+      const srcOf = (ix) => (ix || []).map((k) => srcs[k]).filter(Boolean).map((x) => ({ title: x.title, url: x.url }));
+      const qs = (medB.questions || []).map((q, i) => ({ q, i })).filter((x) => +x.q.t === pT);
+      const mcqs = qs.filter((x) => x.q.type === 'mcq');
+      const view = (x) => Object.assign(mcqView(x.q, 'q' + x.i, (ok) => record('q' + x.i, ok), { goSec }), { stage: x.q.stage === 'apply' ? 'Apply' : 'Retrieve' });
+      const cards = (medB.cards || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
+      const flip = get('pwFlip', {});
+      const cardRes = st.cards || {};
+      const interp = (medB.interpret || []).map((it, i) => ({ it, i })).filter((x) => +x.it.t === pT);
+      const cases = (medB.cases || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
+      const osce = (medB.osce || []).map((c, i) => ({ c, i })).filter((x) => +x.c.t === pT);
+      const labels = (medB.labels || []).filter((l) => +l.t === pT && l.diagram === 'heart');
+      const caseAt = get('pwCase', {});
+      const labPick = get('pwLab', {});
+      const retrieveQs = mcqs.filter((x) => x.q.stage !== 'apply');
+      const applyQs = mcqs.filter((x) => x.q.stage === 'apply');
+      const writtenQs = qs.filter((x) => x.q.type !== 'mcq');
+      const showModelPw = get('pwModel', {});
+      const nCardsDone = cards.filter((x) => cardRes[x.i] !== undefined).length;
+      const nRetDone = retrieveQs.filter((x) => res['q' + x.i] !== undefined).length;
+      const nAppDone = applyQs.filter((x) => res['q' + x.i] !== undefined).length + interp.filter((x) => res['i' + x.i] !== undefined).length;
+      const nApp = applyQs.length + interp.length;
+      const wrongKeys = Object.keys(res).filter((k) => res[k] === 0);
+      const missedCards = cards.filter((x) => cardRes[x.i] === 0);
+      const STEPS = [['u', 'Understand', 'Read the notes'], ['r', 'Retrieve', 'Recall without notes'], ['a', 'Apply', 'Cases & data'], ['i', 'Improve', 'Fix weak spots']];
+      const stepCount = { u: st.read ? 'Read' : '', r: (nCardsDone + nRetDone) + '/' + (cards.length + retrieveQs.length), a: nAppDone + '/' + nApp, i: (wrongKeys.length + missedCards.length) ? (wrongKeys.length + missedCards.length) + ' to fix' : '' };
+      if (step === 'u' && !st.read && note) setTimeout(() => savePw({ read: Date.now() }), 0);
+      const qByKey = (k) => { if (k[0] === 'q') { const x = (medB.questions || [])[+k.slice(1)]; return x ? { kind: 'q', q: x, i: +k.slice(1) } : null; } if (k[0] === 'i') { const x = (medB.interpret || [])[+k.slice(1)]; return x ? { kind: 'i', q: x, i: +k.slice(1) } : null; } return null; };
+      mp = {
+        has: true, title: medB.title, reviewed: medB.reviewed ? parseYmd(medB.reviewed).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '',
+        trust: 'Written from the sources listed with each section, then fact-checked twice by independent AI reviewers. Not yet reviewed by a clinician. For learning only, not clinical advice.',
+        report: mailReport(activeMod.name + ' · ' + (medB.topics[pT] || ''), 'Topic: ' + (medB.topics[pT] || '')),
+        topics: (medB.topics || []).map((name, i) => {
+          const s2 = pwStore[i] || {}; const r2 = s2.res || {}; const tot = Object.keys(r2).length; const ok = Object.values(r2).filter((x) => x === 1).length;
+          return { name, n: i + 1, on: i === pT, bg: i === pT ? strongC : '#FFFFFF', fg: i === pT ? onStrongC : '#141414', border: i === pT ? strongC : '#DADAD4', meta: tot ? ok + '/' + tot + ' right' : s2.read ? 'Read' : 'Not started', pick: () => set({ pwT: i, pwStep: 'u' }) };
+        }),
+        topicName: medB.topics[pT] || '', topicNo: 'Topic ' + (pT + 1) + ' of ' + nT,
+        steps: STEPS.map(([id, label, sub], k) => ({ n: k + 1, label, sub, count: stepCount[id], hasCount: !!stepCount[id], on: step === id, bg: step === id ? strongC : '#FFFFFF', fg: step === id ? onStrongC : '#141414', border: step === id ? strongC : '#DADAD4', pick: () => set({ pwStep: id }) })),
+        isU: step === 'u', isR: step === 'r', isA: step === 'a', isI: step === 'i',
+        next: () => { const k = STEPS.findIndex((x) => x[0] === step); if (k < STEPS.length - 1) set({ pwStep: STEPS[k + 1][0] }); else if (pT < nT - 1) set({ pwT: pT + 1, pwStep: 'u' }); },
+        nextLabel: step === 'i' ? (pT < nT - 1 ? 'Next topic' : 'All topics done') : 'Next: ' + STEPS[STEPS.findIndex((x) => x[0] === step) + 1][1],
+        // Understand
+        overview: note ? note.overview || '' : '', objectives: note && Array.isArray(note.objectives) ? note.objectives.map((t) => ({ t })) : [],
+        sections: note && Array.isArray(note.sections) ? note.sections.map((sx) => {
+          const k = pT + ':' + sx.k; const open = !!pwOpen[k];
+          return { h: sx.h || SECNAME[sx.k] || '', body: sx.body, open, closed: !open, arrow: open ? '−' : '+',
+            badge: sx.kind === 'guidance' ? 'Clinical guidance · as of ' + (sx.asOf ? parseYmd(sx.asOf + '-01').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : 'date shown') + ' · can change' : 'Stable principle',
+            badgeBg: sx.kind === 'guidance' ? '#FDF0D5' : '#E8F0FB', srcs: srcOf(sx.src), hasSrcs: (sx.src || []).length > 0,
+            toggle: () => { const o = Object.assign({}, get('pwOpen', {})); o[k] = !open; set({ pwOpen: o }); } };
+        }) : [],
+        openAll: () => { const o = Object.assign({}, get('pwOpen', {})); (note && note.sections || []).forEach((sx) => { o[pT + ':' + sx.k] = true; }); set({ pwOpen: o }); },
+        askTutor: () => { set({ tab: 'tutor', tInput: 'Explain ' + (medB.topics[pT] || 'this topic') + ' step by step, then ask me one question to check I understood.' }); },
+        hasLabels: labels.length > 0,
+        labels: labels.map((lb, li) => ({
+          img: Component.heartSvg(lb.items),
+          items: lb.items.map((it, k) => {
+            const key = li + ':' + it; const p = labPick[key];
+            return { name: HEARTNAME[it] || it, done: p !== undefined, ok: p === k, verdict: p === undefined ? '' : p === k ? 'Correct' : 'Not quite: it is ' + (k + 1),
+              nums: lb.items.map((_, j) => ({ n: j + 1, bg: p === j ? (j === k ? '#E3F3E8' : '#FCEBEB') : '#FFFFFF', border: p === j ? (j === k ? '#1E7B45' : '#B42318') : '#CFCFC8', pick: () => { const o = Object.assign({}, get('pwLab', {})); o[key] = j; set({ pwLab: o }); } })) };
+          })
+        })),
+        hasOsce: osce.length > 0,
+        osce: osce.map((x) => { const k = 'osce:' + x.i; const open = !!pwOpen[k]; return { title: x.c.title, open, arrow: open ? '−' : '+', steps: (x.c.steps || []).map((t, j) => ({ n: j + 1, t })), tips: (x.c.tips || []).map((t) => ({ t })), hasTips: (x.c.tips || []).length > 0, srcs: srcOf(x.c.src), toggle: () => { const o = Object.assign({}, get('pwOpen', {})); o[k] = !open; set({ pwOpen: o }); } }; }),
+        // Retrieve
+        cards: cards.map((x) => {
+          const fl = !!flip[x.i]; const r = cardRes[x.i];
+          const rel = Number.isFinite(+x.c.q) && (medB.questions || [])[+x.c.q] && medB.questions[+x.c.q].type === 'mcq' ? mcqView(medB.questions[+x.c.q], 'q' + x.c.q, (ok) => record('q' + x.c.q, ok), { goSec }) : null;
+          return { kind: CARDKIND[x.c.kind] || 'Card', f: x.c.f, b: x.c.b, flipped: fl, notFlipped: !fl, rated: r !== undefined, missed: r === 0, ex: x.c.ex || '',
+            secLabel: 'Re-read: ' + (SECNAME[x.c.sec] || 'the notes'), goSec: () => goSec(x.c.sec), hasRel: r === 0 && !!rel, rel: rel || { opts: [], rows: [], fu: { opts: [], rows: [] } },
+            show: () => { const f2 = Object.assign({}, get('pwFlip', {})); f2[x.i] = true; set({ pwFlip: f2 }); },
+            got: () => { const c2 = Object.assign({}, cardRes); c2[x.i] = 1; savePw({ cards: c2 }); },
+            miss: () => { const c2 = Object.assign({}, cardRes); c2[x.i] = 0; savePw({ cards: c2 }); } };
+        }),
+        retrieveQs: retrieveQs.map(view), hasRetrieveQs: retrieveQs.length > 0,
+        // Apply
+        applyQs: applyQs.map(view), hasApplyQs: applyQs.length > 0,
+        interp: interp.map((x) => {
+          const it = x.it; const v = mcqView(it, 'i' + x.i, (ok) => record('i' + x.i, ok), { goSec, noFu: !it.followUp });
+          return Object.assign(v, { title: it.title || '', kindLabel: it.kind === 'ecg' ? 'ECG' : it.kind === 'abg' ? 'Blood gas' : 'Blood results',
+            isEcg: it.kind === 'ecg', ecgImg: it.kind === 'ecg' ? Component.ecgSvg(it.ecg) : '',
+            isTable: it.kind !== 'ecg', tableRows: (it.rows || []).map((r) => ({ name: r[0], val: r[1], unit: r[2] || '', range: r[3] || '', col: '#141414' })),
+            rangeNote: 'Typical adult UK reference ranges. They vary between labs.' });
+        }),
+        hasInterp: interp.length > 0,
+        cases: cases.map((x) => {
+          const at = Math.max(0, Math.min((x.c.steps || []).length - 1, +caseAt[x.i] || 0));
+          const steps = (x.c.steps || []).slice(0, at + 1).map((sp, j) => {
+            const v = sp.ask ? mcqView(sp.ask, 'c' + x.i + ':' + j, null, { noFu: true, goSec }) : null;
+            return { text: sp.text, hasAsk: !!v, ask: v || { opts: [], rows: [] }, n: j + 1 };
+          });
+          const cur = (x.c.steps || [])[at];
+          const curDone = !cur || !cur.ask || pwAns['c' + x.i + ':' + at] !== undefined;
+          const finished = at >= (x.c.steps || []).length - 1 && curDone;
+          return { title: x.c.title, steps, canNext: curDone && !finished, finished, debrief: (x.c.debrief || []).map((t) => ({ t })),
+            next: () => { const o = Object.assign({}, get('pwCase', {})); o[x.i] = at + 1; set({ pwCase: o }); },
+            restart: () => { const o = Object.assign({}, get('pwCase', {})); o[x.i] = 0; const a = Object.assign({}, get('pwAns', {})); Object.keys(a).forEach((k) => { if (k.indexOf('c' + x.i + ':') === 0) delete a[k]; }); set({ pwCase: o, pwAns: a }); } };
+        }),
+        hasCases: cases.length > 0,
+        written: writtenQs.map((x) => ({ q: x.q.q, marks: x.q.marks + ' marks', concept: x.q.concept || '', hasConcept: !!x.q.concept, scheme: (x.q.markScheme || []).map((t) => ({ t })), model: x.q.modelAnswer || '', show: !!showModelPw[x.i], label: showModelPw[x.i] ? 'Hide mark scheme' : 'Show mark scheme and model answer', toggle: () => { const o = Object.assign({}, get('pwModel', {})); o[x.i] = !o[x.i]; set({ pwModel: o }); } })),
+        hasWritten: writtenQs.length > 0,
+        // Improve
+        mistakes: wrongKeys.map(qByKey).filter(Boolean).map((m) => {
+          const q = m.q; const key = (m.kind === 'q' ? 'q' : 'i') + m.i; const yours = pwAns[key];
+          return { q: q.q, yours: yours !== undefined && q.options ? q.options[yours] : '(answered earlier)', right: q.options ? q.options[q.answer] : '', why: q.why || '',
+            secLabel: 'Re-read: ' + (SECNAME[q.sec] || 'the notes'), goSec: () => goSec(q.sec),
+            retry: () => { const a = Object.assign({}, get('pwAns', {})); delete a[key]; delete a[key + ':fu']; set({ pwAns: a, pwStep: q.stage === 'apply' || m.kind === 'i' ? 'a' : 'r' }); },
+            later: () => { if (m.kind === 'q') { const id = medId + ':q' + m.i; if (!pqIds[id]) self.save(pqKey, pq.concat([{ id, topic: medB.topics[pT] || '', at: Date.now() }])); notify('Added to your practice queue', 'It will come back in Practise → Topic tests.'); } } };
+        }),
+        missedCards: missedCards.map((x) => ({ f: x.c.f, b: x.c.b, ex: x.c.ex || '', secLabel: 'Re-read: ' + (SECNAME[x.c.sec] || 'the notes'), goSec: () => goSec(x.c.sec), clear: () => { const c2 = Object.assign({}, cardRes); delete c2[x.i]; const f2 = Object.assign({}, get('pwFlip', {})); delete f2[x.i]; set({ pwFlip: f2 }); savePw({ cards: c2 }); } })),
+        noMistakes: wrongKeys.length === 0 && missedCards.length === 0,
+        improveNote: wrongKeys.length + missedCards.length ? 'Re-read the exact section, retry now, or send questions to your practice queue to come back to later.' : 'Nothing to fix in this topic yet. Answer the Retrieve and Apply questions first, then come back here.'
+      };
+    }
+
     // ---- five core actions ----
     const NAV = [
-      { id: 'learn', label: 'Learn', sub: 'Course & notes', icon: ICONS.overview, tabs: [['overview', 'Overview'], ['notes', 'Notes']] },
+      { id: 'learn', label: 'Learn', sub: 'Course & notes', icon: ICONS.overview, tabs: medB ? [['overview', 'Overview'], ['path', 'Learning pathway'], ['notes', 'Notes']] : [['overview', 'Overview'], ['notes', 'Notes']] },
       { id: 'practise', label: 'Practise', sub: 'Tests & marking', icon: ICONS.quiz, tabs: [['quiz', 'Topic tests'], ['assess', 'Assess practice']] },
       { id: 'revise', label: 'Revise', sub: 'Flashcards', icon: ICONS.flash, tabs: [['flash', 'Flashcards']] },
       { id: 'plan', label: 'Plan', sub: 'Week & deadlines', icon: ICONS.time, tabs: [['time', 'Plan']] },
@@ -3514,7 +4144,7 @@ class Component extends DCLogic {
       activeChips, hasModUrl: !!activeMod.url, catalogueLabel: 'Open ' + (activeMod.code || activeMod.name) + ' on ' + (uni ? uni.short : 'the university') + '’s course pages',
       selCount: selMods.length, selCredits,
       goModules: () => startEdit('modules'), goUni: () => startEdit('uni'),
-      tOverview: tab === 'overview', tNotes: tab === 'notes', tQuiz: tab === 'quiz', tFlash: tab === 'flash', tTime: tab === 'time', tFriends: tab === 'friends', tTutor: tab === 'tutor',
+      tOverview: tab === 'overview' || (tab === 'path' && !mp.has), tNotes: tab === 'notes', tPath: tab === 'path' && mp.has, mp, tQuiz: tab === 'quiz', tFlash: tab === 'flash', tTime: tab === 'time', tFriends: tab === 'friends', tTutor: tab === 'tutor',
       terms, weeks: weeksX, weeksNote, hasTeaching, showTeaching: hasTeaching && !(degData && degData.profile && degData.profile.length), teaching: hasTeaching ? degData.teaching : '',
 
       nt, res, profile: profile.map((x) => ({ h: x.h, body: x.body })), hasProfile: profile.length > 0,
