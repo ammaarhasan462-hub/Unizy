@@ -357,6 +357,10 @@
         if (v.fg && v.fg.badge && Array.isArray(v.tabs)) v.tabs = v.tabs.map(function (t) { return t.label === 'Friend groups' ? Object.assign({}, t, { label: 'Friend groups (' + v.fg.badge + ')' }) : t; });
         if (v.fg && v.fg.badge && Array.isArray(v.navGroups)) v.navGroups = v.navGroups.map(function (g) { return g.id === 'ask' && !g.hasBadge ? Object.assign({}, g, { badge: v.fg.badge + ' new', hasBadge: true }) : g; });
       }
+      if (window.UnizyCampus) {
+        try { v.cx = window.UnizyCampus.vals(this, v); } catch (e) { console.error('[unizy] campus', e); v.cx = { ver: {}, imp: {}, feeds: {}, hub: {}, mkt: {}, fo: {} }; }
+        if (v.cx && v.cx.badge && Array.isArray(v.navGroups)) v.navGroups = v.navGroups.map(function (g) { return g.id === 'campus' && !g.hasBadge ? Object.assign({}, g, { badge: v.cx.badge, hasBadge: true }) : g; });
+      }
       this.__theme = v.theme;
       // remember the chosen uni, course, year and modules between visits
       var st = this.state || {};
