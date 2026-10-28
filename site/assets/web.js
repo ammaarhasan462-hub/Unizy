@@ -359,6 +359,9 @@
       }
       if (window.UnizyCampus) {
         try { v.cx = window.UnizyCampus.vals(this, v); } catch (e) { console.error('[unizy] campus', e); v.cx = { ver: {}, imp: {}, feeds: {}, hub: {}, mkt: {}, fo: {} }; }
+        try { v.rm = window.UnizyRooms ? window.UnizyRooms.vals(this, v) : {}; } catch (e) { console.error('[unizy] rooms', e); v.rm = {}; }
+        try { v.pk = window.UnizyPacks ? window.UnizyPacks.vals(this, v) : { lp: {}, rl: {} }; } catch (e) { console.error('[unizy] packs', e); v.pk = { lp: {}, rl: {} }; }
+        if (v.rm && v.rm.live && v.cx) v.cx.badge = 'Live quiz';
         if (v.cx && v.cx.badge && Array.isArray(v.navGroups)) v.navGroups = v.navGroups.map(function (g) { return g.id === 'campus' && !g.hasBadge ? Object.assign({}, g, { badge: v.cx.badge, hasBadge: true }) : g; });
       }
       this.__theme = v.theme;

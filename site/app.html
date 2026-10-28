@@ -119,9 +119,55 @@ body{margin:0}
 <sc-if value="{{cx.imp.closed}}">
 <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 16px 18px; border-radius: 16px; background: {{theme.tint}}; border: 2px solid {{theme.c1}}">
 <span style="width: 44px; height: 44px; border-radius: 12px; background: {{theme.c1}}; color: {{theme.on1}}; display: flex; align-items: center; justify-content: center; flex: 0 0 auto"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg></span>
-<span style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 800">Skip the setup: upload your timetable or handbook</span><span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Unizy picks your modules, adds every weekly class, deadline and exam to your plan, and files handbook notes for each module, in about 30 seconds.</span></span>
-<button onClick="{{cx.imp.show}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 12px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Upload it</button>
+<span style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 16px; font-weight: 800">Skip the setup: bring in your timetable</span><span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Upload your timetable or handbooks and Unizy picks your modules, adds every class, deadline and exam, and files handbook notes, in about 30 seconds. Or connect your Moodle, Canvas or Blackboard calendar (or an .ics file) so it stays in sync.</span></span>
+<span style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{cx.imp.show}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 12px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Upload it</button><button onClick="{{cx.feeds.show}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 12px 18px; min-height: 46px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Connect uni calendar</button></span>
 </div>
+</sc-if>
+<sc-if value="{{cx.feeds.open}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+<div style="display: flex; justify-content: space-between; gap: 12px; align-items: flex-start">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57">Calendar sync</span>
+<h2 style="margin: 0; font-size: 21px; font-weight: 800; line-height: 1.25">Connect your uni calendar</h2>
+</div>
+<button onClick="{{cx.feeds.hide}}" aria-label="Close" style="font: inherit; font-size: 22px; width: 40px; height: 40px; border-radius: 10px; border: none; background: none; color: #141414; cursor: pointer; flex: 0 0 auto">×</button>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3F3F3B">{{cx.feeds.intro}}</p>
+<sc-if value="{{cx.feeds.signedOut}}">
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px; border-radius: 14px; background: #F3F3EF"><span style="flex: 1 1 220px; font-size: 14px">Log in so Unizy can keep your calendar in sync on every device.</span><button onClick="{{cx.feeds.login}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Log in</button></div>
+</sc-if>
+<sc-if value="{{cx.feeds.signedIn}}">
+<sc-if value="{{cx.feeds.has}}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{cx.feeds.list}}" as="fd" hint-placeholder-count="1">
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px; border-radius: 14px; border: 1px solid #E4E4DE">
+<span style="font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 8px; background: {{theme.tint}}">{{fd.source}}</span>
+<span style="flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{fd.name}}</span><span style="font-size: 12px; color: {{fd.metaColor}}; line-height: 1.4">{{fd.meta}}</span></span>
+<sc-if value="{{fd.canSync}}"><button onClick="{{fd.sync}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fd.syncLabel}}</button></sc-if>
+<button onClick="{{fd.remove}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #3F3F3B; cursor: pointer">Disconnect</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{cx.feeds.notAdding}}"><button onClick="{{cx.feeds.startAdd}}" style="font: inherit; font-size: 14px; font-weight: 700; align-self: flex-start; padding: 9px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">+ Connect another calendar</button></sc-if>
+<sc-if value="{{cx.feeds.adding}}">
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Calendar link (iCal / webcal)</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<input data-cx-feed-url type="url" inputmode="url" autocomplete="off" value="{{cx.feeds.url}}" onChange="{{cx.feeds.onUrl}}" onKeyDown="{{cx.feeds.onUrlKey}}" placeholder="https://… or webcal://…" style="font: inherit; font-size: 15px; padding: 11px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; flex: 1 1 240px; min-width: 0">
+<button onClick="{{cx.feeds.add}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 18px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{cx.feeds.addLabel}}</button>
+</div></label>
+</sc-if>
+<sc-if value="{{cx.feeds.hasMsg}}"><div role="status" style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 12px; background: {{cx.feeds.msgBg}}">{{cx.feeds.msg}}</div></sc-if>
+<label style="position: relative; display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; border: 2px dashed #BDBDB6; background: #FAFAF7; cursor: pointer"><input type="file" accept=".ics,text/calendar" onChange="{{cx.feeds.onIcs}}" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 800">Or upload a calendar file (.ics)</span><span style="font-size: 12px; color: #5C5C57">Downloaded from your online timetable, Outlook or Google Calendar. It’s a one-off import: upload a new file if your timetable changes.</span></span></label>
+<button onClick="{{cx.feeds.toggleHow}}" style="font: inherit; font-size: 14px; font-weight: 700; text-align: left; align-self: flex-start; border: none; background: none; padding: 4px 0; color: #141414; text-decoration: underline; cursor: pointer">Where do I find my calendar link?</button>
+<sc-if value="{{cx.feeds.howOpen}}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: #FAFAF7; border: 1px solid #EFEFEA">
+<sc-for list="{{cx.feeds.how}}" as="hw" hint-placeholder-count="3"><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 800">{{hw.h}}</span><span style="font-size: 13px; line-height: 1.5; color: #3F3F3B">{{hw.t}}</span></div></sc-for>
+</div>
+</sc-if>
+<span style="font-size: 12px; line-height: 1.5; color: #5C5C57">{{cx.feeds.privacy}}</span>
+</sc-if>
+</section>
 </sc-if>
 <sc-if value="{{cx.imp.open}}">
 <section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
@@ -444,6 +490,13 @@ body{margin:0}
 </div>
 </section>
 </sc-if>
+<sc-if value="{{pl.isEmpty}}">
+<section style="background: {{theme.tint}}; border-radius: 18px; padding: 18px 20px; border: 2px solid {{theme.c1}}; display: flex; gap: 14px; align-items: center; flex-wrap: wrap">
+<span style="display: flex; flex-direction: column; gap: 3px; flex: 1 1 280px"><span style="font-size: 16px; font-weight: 800">Get your timetable in, without typing it</span><span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">Upload your timetable or handbook, or connect your uni calendar, and your lectures, seminars, deadlines and exams fill your plan by themselves.</span></span>
+<span style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{cx.imp.showInPlan}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Upload timetable</button><button onClick="{{cx.feeds.showInPlan}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 16px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Connect uni calendar</button></span>
+</section>
+</sc-if>
+
 <section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap"><h2 style="margin: 0; font-size: 18px; font-weight: 700">Is it working? Your measured progress</h2><span style="font-size: 12px; color: #5C5C57">Measured from what you do in Unizy, across all your modules</span></div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
@@ -490,6 +543,100 @@ body{margin:0}
 </sc-for>
 </div>
 </section>
+<section id="lecture-packs" style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: {{pk.lp.border}}; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57">Lecture packs</span>
+<h2 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.25">{{pk.lp.headline}}</h2>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3F3F3B">{{pk.lp.intro}}</p>
+<sc-if value="{{pk.lp.signedOut}}"><div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-radius: 14px; background: #F3F3EF"><span style="flex: 1 1 220px; font-size: 14px">Log in to build lecture packs.</span><button onClick="{{pk.lp.login}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Log in</button></div></sc-if>
+<sc-if value="{{pk.lp.signedIn}}">
+<sc-if value="{{pk.lp.hasDone}}">
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 16px; background: #EEF6E4; border: 1.5px solid #9FD38B">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: flex-start"><span style="font-size: 16px; font-weight: 800">✓ {{pk.lp.done.title}} is ready ({{pk.lp.done.secs}}s)</span><button onClick="{{pk.lp.clearDone}}" aria-label="Dismiss" style="font: inherit; font-size: 18px; border: none; background: none; cursor: pointer">×</button></div>
+<span style="font-size: 14px; line-height: 1.5">{{pk.lp.done.summary}}</span>
+<span style="font-size: 13px; font-weight: 700">{{pk.lp.done.line}}</span>
+<sc-if value="{{pk.lp.done.hasTopics}}"><div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{pk.lp.done.topics}}" as="lt" hint-placeholder-count="3"><span style="font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: #FFFFFF; border: 1px solid #CFE6C3">{{lt.label}}</span></sc-for></div></sc-if>
+<sc-if value="{{pk.lp.done.hasGaps}}"><span style="font-size: 13px; line-height: 1.5; color: #24400B">Worth reading up on: <sc-for list="{{pk.lp.done.gaps}}" as="lg" hint-placeholder-count="2">{{lg.text}}; </sc-for></span></sc-if>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<button onClick="{{pk.lp.goNotes}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Read the notes</button>
+<button onClick="{{pk.lp.goCards}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Study the cards</button>
+<button onClick="{{pk.lp.goTest}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Test me</button>
+<button onClick="{{pk.lp.goTutor}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Ask {{tutorName}} about it</button>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{pk.lp.isPick}}">
+<sc-if value="{{pk.lp.noFile}}">
+<label style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 22px 16px; border-radius: 16px; border: 2px dashed #BDBDB6; background: #FAFAF7; cursor: pointer; text-align: center">
+<input type="file" accept=".pdf,.pptx,.docx,.txt,.md,application/pdf" onChange="{{pk.lp.onFile}}" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg>
+<span style="font-size: 15px; font-weight: 800">Choose a lecture file</span>
+<span style="font-size: 12px; color: #5C5C57">PDF, PowerPoint (.pptx), Word (.docx) or text · one lecture at a time · up to 100 pages</span>
+</label>
+</sc-if>
+<sc-if value="{{pk.lp.hasFile}}">
+<div style="display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid #E4E4DE"><span style="flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{pk.lp.fileName}}</span><span style="font-size: 12px; color: #5C5C57">{{pk.lp.fileSize}}</span><button onClick="{{pk.lp.clearFile}}" aria-label="Remove file" style="font: inherit; font-size: 18px; border: none; background: none; cursor: pointer">×</button></div>
+<label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; font-weight: 700">Lecture title</span><input data-lp-title type="text" maxlength="120" value="{{pk.lp.title}}" onChange="{{pk.lp.onTitle}}" placeholder="e.g. Lecture 4: Consumer choice" style="font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 44px; box-sizing: border-box; width: 100%"></label>
+<button onClick="{{pk.lp.build}}" style="font: inherit; font-size: 15px; font-weight: 800; align-self: flex-start; padding: 12px 22px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Build the study pack</button>
+</sc-if>
+<sc-if value="{{pk.lp.hasErr}}"><div style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 12px; background: #FBEDEF; color: #7A0C1D">{{pk.lp.err}} <sc-if value="{{pk.lp.upgrade}}"><a href="/pricing" style="color: #141414; font-weight: 700">See Pro plans</a></sc-if></div></sc-if>
+</sc-if>
+<sc-if value="{{pk.lp.isBuilding}}">
+<div style="display: flex; align-items: center; gap: 14px; padding: 18px; border-radius: 16px; background: {{theme.tint}}">
+<span aria-hidden="true" style="width: 26px; height: 26px; border-radius: 999px; border: 3px solid rgba(0,0,0,0.15); border-top-color: #141414; animation: uzspin 0.9s linear infinite; flex: 0 0 auto"></span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 auto"><span data-lp-stage style="font-size: 15px; font-weight: 700">{{pk.lp.stage}}</span><span style="font-size: 13px; color: #3F3F3B">Usually about a minute. Keep this page open.</span></span>
+<span data-lp-clock style="font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums">{{pk.lp.clock}}</span>
+</div>
+</sc-if>
+<sc-if value="{{pk.lp.hasPacks}}">
+<details style="border-top: 1px solid #EFEFEA; padding-top: 10px">
+<summary style="font-size: 14px; font-weight: 800; cursor: pointer">{{pk.lp.packsTitle}}</summary>
+<div style="display: flex; flex-direction: column; gap: 2px; padding-top: 8px">
+<sc-for list="{{pk.lp.packs}}" as="pp" hint-placeholder-count="2"><div style="display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid #F3F3EF; flex-wrap: wrap"><span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 220px"><span style="font-size: 14px; font-weight: 700">{{pp.title}}</span><span style="font-size: 12px; color: #5C5C57">{{pp.meta}}</span></span><button onClick="{{pp.del}}" style="font: inherit; font-size: 12px; font-weight: 700; border: none; background: none; color: #9A1B12; cursor: pointer">{{pp.delLabel}}</button></div></sc-for>
+<span style="font-size: 12px; color: #5C5C57; padding-top: 6px">{{pk.lp.packsNote}}</span>
+</div>
+</details>
+</sc-if>
+</sc-if>
+</section>
+
+<sc-if value="{{pk.rl.show}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Reading list</h2>
+<span style="font-size: 13px; font-weight: 700; color: #3F3F3B">{{pk.rl.progress}}</span>
+</div>
+<sc-if value="{{pk.rl.unsupported}}"><span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">{{pk.rl.unsupportedText}}</span></sc-if>
+<sc-if value="{{pk.rl.supported}}">
+<sc-if value="{{pk.rl.signedOut}}"><span style="font-size: 14px; color: #3F3F3B">Log in to bring in the official {{activeMod.code}} reading list.</span></sc-if>
+<sc-if value="{{pk.rl.loading}}"><span style="font-size: 14px; color: #3F3F3B">Fetching the {{activeMod.code}} reading list from {{uni.short}}…</span></sc-if>
+<sc-if value="{{pk.rl.failed}}"><span style="font-size: 14px; color: #3F3F3B">{{pk.rl.message}}</span></sc-if>
+<sc-if value="{{pk.rl.notFound}}"><span style="font-size: 14px; color: #3F3F3B">{{pk.rl.message}}</span></sc-if>
+<sc-if value="{{pk.rl.found}}">
+<span style="font-size: 13px; color: #5C5C57">{{pk.rl.title}}, from {{uni.short}}’s reading lists. {{pk.rl.weekNote}} Tick things off as you read them.</span>
+<sc-for list="{{pk.rl.sections}}" as="sec" hint-placeholder-count="2">
+<div style="border-radius: 12px; border: 1px solid #E4E4DE; background: {{sec.bg}}; overflow: hidden">
+<button onClick="{{sec.toggle}}" style="font: inherit; width: 100%; text-align: left; display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: none; background: none; color: #141414; cursor: pointer"><span style="font-size: 14px; width: 14px">{{sec.chevron}}</span><span style="flex: 1 1 auto; font-size: 14px; font-weight: 700; line-height: 1.35">{{sec.name}}</span><sc-if value="{{sec.thisWeek}}"><span style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: {{theme.btn}}; color: {{theme.onBtn}}">This week</span></sc-if><span style="font-size: 12px; color: #5C5C57; white-space: nowrap">{{sec.count}}</span></button>
+<sc-if value="{{sec.open}}">
+<div style="display: flex; flex-direction: column; padding: 0 12px 8px">
+<sc-for list="{{sec.items}}" as="it" hint-placeholder-count="3">
+<div style="display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid #EFEFEA; opacity: {{it.op}}">
+<button onClick="{{it.toggle}}" aria-label="Mark as read" style="width: 22px; height: 22px; border-radius: 6px; border: 2px solid {{it.boxBorder}}; background: {{it.boxBg}}; color: {{it.boxFg}}; font-size: 12px; font-weight: 800; cursor: pointer; flex: 0 0 auto; padding: 0">{{it.box}}</button>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto"><span style="font-size: 14px; font-weight: 700; line-height: 1.35">{{it.title}}</span><span style="font-size: 12px; color: #5C5C57">{{it.meta}}</span></span>
+<a href="{{it.href}}" target="_blank" rel="noopener" style="font-size: 12px; font-weight: 700; color: #141414; white-space: nowrap">{{it.linkLabel}} ↗</a>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="display: flex; gap: 14px; flex-wrap: wrap"><sc-if value="{{pk.rl.hasLink}}"><a href="{{pk.rl.link}}" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 700; color: #141414">Open the full list on {{uni.short}}’s site ↗</a></sc-if><button onClick="{{pk.rl.refresh}}" style="font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; padding: 0; color: #141414; text-decoration: underline; cursor: pointer">Check for updates</button></div>
+</sc-if>
+</sc-if>
+</section>
+</sc-if>
+
 <section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 14px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
 <h2 style="margin: 0; font-size: 18px; font-weight: 700">Study resources for {{activeMod.name}}</h2>
@@ -613,6 +760,7 @@ body{margin:0}
 </sc-if>
 
 <sc-if value="{{tNotes}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 16px; margin-bottom: 14px; border-radius: 14px; background: {{theme.tint}}; border: 1.5px solid {{theme.c1}}"><span style="flex: 1 1 260px; font-size: 14px; line-height: 1.5"><b>Got the lecture slides?</b> Turn them into notes with slide references, flashcards and practice questions for {{activeMod.name}}.</span><button onClick="{{pk.lp.openPanel}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 9px 15px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Build a lecture pack</button></div>
 <div style="display: flex; flex-direction: column; gap: 14px">
 <sc-if value="{{nt.hasMsg}}" hint-placeholder-val="{{ false }}">
 <span style="font-size: 14px; line-height: 1.5; padding: 10px 14px; border-radius: 10px; background: {{nt.msgBg}}">{{nt.msg}}</span>
@@ -1764,7 +1912,7 @@ Notes file
 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px; border-radius: 14px; border: 1px solid #E4E4DE">
 <span style="font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 8px; background: {{theme.tint}}">{{fd.source}}</span>
 <span style="flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 700">{{fd.name}}</span><span style="font-size: 12px; color: {{fd.metaColor}}; line-height: 1.4">{{fd.meta}}</span></span>
-<button onClick="{{fd.sync}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fd.syncLabel}}</button>
+<sc-if value="{{fd.canSync}}"><button onClick="{{fd.sync}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{fd.syncLabel}}</button></sc-if>
 <button onClick="{{fd.remove}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #3F3F3B; cursor: pointer">Disconnect</button>
 </div>
 </sc-for>
@@ -1779,6 +1927,7 @@ Notes file
 </div></label>
 </sc-if>
 <sc-if value="{{cx.feeds.hasMsg}}"><div role="status" style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 12px; background: {{cx.feeds.msgBg}}">{{cx.feeds.msg}}</div></sc-if>
+<label style="position: relative; display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; border: 2px dashed #BDBDB6; background: #FAFAF7; cursor: pointer"><input type="file" accept=".ics,text/calendar" onChange="{{cx.feeds.onIcs}}" style="position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" style="stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"></path></svg><span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 800">Or upload a calendar file (.ics)</span><span style="font-size: 12px; color: #5C5C57">Downloaded from your online timetable, Outlook or Google Calendar. It’s a one-off import: upload a new file if your timetable changes.</span></span></label>
 <button onClick="{{cx.feeds.toggleHow}}" style="font: inherit; font-size: 14px; font-weight: 700; text-align: left; align-self: flex-start; border: none; background: none; padding: 4px 0; color: #141414; text-decoration: underline; cursor: pointer">Where do I find my calendar link?</button>
 <sc-if value="{{cx.feeds.howOpen}}">
 <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: #FAFAF7; border: 1px solid #EFEFEA">
@@ -2629,6 +2778,272 @@ Notes file
 </div>
 </sc-if>
 
+<sc-if value="{{tRooms}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<sc-if value="{{rm.hasMsg}}"><div role="status" style="display: flex; gap: 10px; align-items: center; font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 12px; background: {{rm.msgBg}}"><span style="flex: 1 1 auto">{{rm.msg}}</span><button onClick="{{rm.clearMsg}}" aria-label="Dismiss" style="font: inherit; font-size: 18px; border: none; background: none; cursor: pointer">×</button></div></sc-if>
+
+<sc-if value="{{rm.notInRoom}}">
+<section style="background: #141414; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #C6F432">Study rooms · {{uni.short}} students only</span>
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">{{activeMod.name}}</h2>
+<span style="font-size: 14px; line-height: 1.55; opacity: 0.9">{{rm.list.intro}}</span>
+</section>
+<sc-if value="{{cx.ver.signedOut}}">
+<div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 16px; border-radius: 16px; background: #141414; color: #FFFFFF"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: #C6F432; color: #141414; padding: 5px 9px; border-radius: 999px">Campus only</span><span style="flex: 1 1 260px; font-size: 14px; line-height: 1.5">Module hubs, the marketplace and shared focus rooms are for verified {{uni.short}} students. Log in or sign up free to join.</span><button onClick="{{cx.ver.login}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1.5px solid #FFFFFF; background: none; color: #FFFFFF; cursor: pointer">Log in</button><button onClick="{{cx.ver.signup}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: #C6F432; color: #141414; cursor: pointer">Sign up free</button></div>
+</sc-if>
+<sc-if value="{{cx.ver.notVerified}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 22px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 12px; box-sizing: border-box">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57">Campus only</span>
+<h2 style="margin: 0; font-size: 21px; font-weight: 800; line-height: 1.25">{{cx.ver.title}}</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #3F3F3B">{{cx.ver.text}}</p>
+<sc-if value="{{cx.ver.notPending}}">
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<input data-cx-vemail type="email" autocomplete="email" value="{{cx.ver.email}}" onChange="{{cx.ver.onEmail}}" onKeyDown="{{cx.ver.onEmailKey}}" placeholder="{{cx.ver.emailPh}}" aria-label="Uni email" style="font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; flex: 1 1 220px; min-width: 0">
+<button onClick="{{cx.ver.send}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 18px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{cx.ver.sendLabel}}</button>
+</div>
+</sc-if>
+<sc-if value="{{cx.ver.pending}}">
+<span style="font-size: 14px; font-weight: 600">{{cx.ver.pendingText}}</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<input data-cx-vcode type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{cx.ver.code}}" onChange="{{cx.ver.onCode}}" onKeyDown="{{cx.ver.onCodeKey}}" placeholder="6-digit code" aria-label="6-digit code" style="font: inherit; font-size: 20px; font-weight: 800; letter-spacing: 0.2em; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; width: 190px; max-width: 100%">
+<button onClick="{{cx.ver.check}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{cx.ver.checkLabel}}</button>
+</div>
+<div style="display: flex; gap: 14px; flex-wrap: wrap"><button onClick="{{cx.ver.send}}" style="font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; padding: 4px 0; color: #141414; text-decoration: underline; cursor: pointer">{{cx.ver.sendLabel}}</button><button onClick="{{cx.ver.restart}}" style="font: inherit; font-size: 13px; font-weight: 700; border: none; background: none; padding: 4px 0; color: #141414; text-decoration: underline; cursor: pointer">Use a different email</button></div>
+</sc-if>
+<sc-if value="{{cx.ver.hasMsg}}"><div role="status" style="font-size: 14px; line-height: 1.5; padding: 10px 12px; border-radius: 12px; background: {{cx.ver.msgBg}}">{{cx.ver.msg}}</div></sc-if>
+<span style="font-size: 12px; line-height: 1.5; color: #5C5C57">{{cx.ver.privacy}}</span>
+</section>
+</sc-if>
+<sc-if value="{{cx.ver.otherUni}}"><div style="font-size: 14px; line-height: 1.5; padding: 12px 14px; border-radius: 12px; background: #FFF4D6; color: #3D2E00">{{cx.ver.otherUniText}}</div></sc-if>
+<sc-if value="{{rm.list.loading}}"><div style="padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E4E4DE; font-size: 15px; color: #3F3F3B">Loading your study rooms…</div></sc-if>
+<sc-if value="{{rm.list.verified}}">
+<sc-if value="{{rm.list.hasMine}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 4px">
+<h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 800">Your rooms</h3>
+<sc-for list="{{rm.list.mine}}" as="r" hint-placeholder-count="2">
+<button onClick="{{r.open}}" style="font: inherit; text-align: left; display: flex; gap: 12px; align-items: center; padding: 12px 4px; border: none; border-top: 1px solid #EFEFEA; background: none; color: #141414; cursor: pointer">
+<span style="width: 10px; height: 10px; border-radius: 999px; background: {{r.dot}}; flex: 0 0 auto"></span>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto"><span style="font-size: 15px; font-weight: 800">{{r.name}}</span><span style="font-size: 12px; color: #5C5C57">{{r.meta}}</span></span>
+<sc-if value="{{r.live}}"><span style="font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: #C8102E; color: #FFFFFF">Live quiz</span></sc-if>
+<span style="font-size: 13px; font-weight: 800">Open →</span>
+</button>
+</sc-for>
+</section>
+</sc-if>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+<section style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 2px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box">
+<h3 style="margin: 0; font-size: 17px; font-weight: 800">Make a room</h3>
+<input data-rm-name type="text" maxlength="60" value="{{rm.list.name}}" onChange="{{rm.list.onName}}" placeholder="{{rm.list.namePh}}" aria-label="Room name" style="font: inherit; font-size: 15px; padding: 11px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; width: 100%">
+<button onClick="{{rm.list.toggleOpen}}" style="font: inherit; font-size: 13px; font-weight: 700; text-align: left; padding: 9px 12px; border-radius: 10px; border: 2px solid {{rm.list.openBorder}}; background: {{rm.list.openBg}}; color: #141414; cursor: pointer">{{rm.list.openLabel}}</button>
+<button onClick="{{rm.list.create}}" style="font: inherit; font-size: 15px; font-weight: 700; align-self: flex-start; padding: 11px 20px; min-height: 46px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{rm.list.createLabel}}</button>
+</section>
+<section style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border-radius: 18px; padding: 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box">
+<h3 style="margin: 0; font-size: 17px; font-weight: 800">Join with a code</h3>
+<span style="font-size: 13px; color: #5C5C57">Someone in your group can copy it from their room.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<input data-rm-code type="text" maxlength="12" value="{{rm.list.code}}" onChange="{{rm.list.onCode}}" onKeyDown="{{rm.list.onCodeKey}}" placeholder="e.g. 7H52KQ" aria-label="Room code" style="font: inherit; font-size: 17px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #CFCFC8; min-height: 46px; box-sizing: border-box; flex: 1 1 140px; min-width: 0">
+<button onClick="{{rm.list.join}}" style="font: inherit; font-size: 15px; font-weight: 700; padding: 11px 18px; min-height: 46px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Join</button>
+</div>
+</section>
+</div>
+<sc-if value="{{rm.list.hasOpen}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 4px">
+<h3 style="margin: 0 0 6px; font-size: 17px; font-weight: 800">{{rm.list.openTitle}}</h3>
+<sc-for list="{{rm.list.open}}" as="r" hint-placeholder-count="2">
+<div style="display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #EFEFEA; flex-wrap: wrap">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 200px"><span style="font-size: 15px; font-weight: 800">{{r.name}}</span><span style="font-size: 12px; color: #5C5C57">{{r.meta}}</span></span>
+<button onClick="{{r.join}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Join</button>
+</div>
+</sc-for>
+</section>
+</sc-if>
+<sc-if value="{{rm.list.bench.show}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 10px">
+<h3 style="margin: 0; font-size: 17px; font-weight: 800">{{rm.list.bench.title}}</h3>
+<sc-if value="{{rm.list.bench.enough}}">
+<div style="display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap">
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 34px; font-weight: 800">{{rm.list.bench.mine}}</span><span style="font-size: 13px; font-weight: 700">{{rm.list.bench.pctText}}</span><span style="font-size: 12px; color: #5C5C57">{{rm.list.bench.avg}}</span></span>
+<div style="display: flex; gap: 4px; align-items: flex-end; height: 70px; flex: 1 1 220px; min-width: 0">
+<sc-for list="{{rm.list.bench.bars}}" as="bb" hint-placeholder-count="10"><span title="{{bb.label}}%+" style="flex: 1 1 0; height: {{bb.h}}; background: {{bb.bg}}; border-radius: 4px 4px 2px 2px"></span></sc-for>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{rm.list.bench.notEnough}}"><span style="font-size: 14px; line-height: 1.5; color: #3F3F3B">{{rm.list.bench.waitText}}</span></sc-if>
+<span style="font-size: 12px; line-height: 1.5; color: #5C5C57">{{rm.list.bench.sub}}</span>
+</section>
+</sc-if>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{rm.inRoom}}">
+<sc-if value="{{rm.room.loading}}"><div style="padding: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E4E4DE; font-size: 15px; color: #3F3F3B">Opening the room…</div></sc-if>
+<sc-if value="{{rm.room.ready}}">
+<section style="background: #141414; color: #FFFFFF; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+<button onClick="{{rm.room.back}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; border: none; background: none; color: #C6F432; padding: 0; cursor: pointer">← All rooms</button>
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 24px; font-weight: 800; line-height: 1.15">{{rm.room.name}}</h2>
+<span style="font-size: 13px; opacity: 0.85">{{rm.room.module}} · {{rm.room.onlineText}}</span>
+</div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<button onClick="{{rm.room.copyCode}}" style="font: inherit; font-size: 13px; font-weight: 800; padding: 8px 12px; border-radius: 999px; border: none; background: #C6F432; color: #141414; cursor: pointer; letter-spacing: 0.06em">Code {{rm.room.code}} · Copy invite</button>
+<sc-if value="{{rm.room.isOwner}}"><button onClick="{{rm.room.toggleOpen}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 7px 11px; border-radius: 999px; border: 1.5px solid #FFFFFF; background: none; color: #FFFFFF; cursor: pointer">{{rm.room.openText}}</button></sc-if>
+<button onClick="{{rm.room.leave}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 7px 11px; border-radius: 999px; border: none; background: none; color: #FFB4B4; cursor: pointer">{{rm.room.leaveLabel}}</button>
+</div>
+</div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-for list="{{rm.room.members}}" as="mb" hint-placeholder-count="3"><span title="{{mb.title}}" style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 4px 9px 4px 4px; border-radius: 999px; background: rgba(255,255,255,0.1)"><span style="width: 22px; height: 22px; border-radius: 999px; background: #FFFFFF; color: #141414; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; position: relative">{{mb.initial}}<span style="position: absolute; right: -2px; bottom: -2px; width: 8px; height: 8px; border-radius: 999px; background: {{mb.dot}}; border: 2px solid #141414"></span></span>{{mb.name}}</span></sc-for>
+</div>
+</section>
+<sc-if value="{{rm.room.liveBanner}}"><button onClick="{{rm.room.goQuiz}}" style="font: inherit; text-align: left; font-size: 15px; font-weight: 800; padding: 12px 16px; border-radius: 14px; border: none; background: #C8102E; color: #FFFFFF; cursor: pointer">● {{rm.room.liveText}}. Join the live quiz →</button></sc-if>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{rm.room.subs}}" as="sb" hint-placeholder-count="4"><button onClick="{{sb.pick}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: 2px solid {{sb.border}}; background: {{sb.bg}}; color: {{sb.fg}}; cursor: pointer">{{sb.label}}</button></sc-for></div>
+
+<sc-if value="{{rm.room.isNotes}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; line-height: 1.5; color: #5C5C57">{{rm.room.notesHelp}}</span>
+<sc-for list="{{rm.room.blocks}}" as="bl" hint-placeholder-count="3">
+<div style="border-radius: 12px; border: 2px solid {{bl.border}}; background: {{bl.bg}}; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px">
+<sc-if value="{{bl.viewing}}">
+<button onClick="{{bl.edit}}" style="font: inherit; text-align: left; border: none; background: none; padding: 0; color: #141414; cursor: text; display: flex; flex-direction: column; gap: 3px">
+<sc-if value="{{bl.isH}}"><span style="font-size: 19px; font-weight: 800; line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere">{{bl.body}}</span></sc-if>
+<sc-if value="{{bl.isP}}"><span style="font-size: 15px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; color: #262624">{{bl.body}}</span></sc-if>
+</button>
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 11px; font-weight: 600; color: #6B6B66; flex: 1 1 auto">{{bl.meta}}</span>
+<sc-if value="{{bl.free}}"><button onClick="{{bl.addBelow}}" style="font: inherit; font-size: 11px; font-weight: 700; border: none; background: none; color: #3F3F3B; cursor: pointer; padding: 0">+ Section below</button><button onClick="{{bl.remove}}" style="font: inherit; font-size: 11px; font-weight: 700; border: none; background: none; color: #9A1B12; cursor: pointer; padding: 0">Remove</button></sc-if>
+</div>
+</sc-if>
+<sc-if value="{{bl.editing}}">
+<textarea data-rm-block="{{bl.attr}}" rows="4" value="{{bl.text}}" onChange="{{bl.onInput}}" aria-label="Section text" style="font: inherit; font-size: 15px; line-height: 1.55; padding: 8px 10px; border-radius: 10px; border: 1.5px solid #CFCFC8; box-sizing: border-box; width: 100%; resize: vertical"></textarea>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+<button onClick="{{bl.done}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 7px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Done</button>
+<button onClick="{{bl.toggleKind}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer">{{bl.kindLabel}}</button>
+<span style="font-size: 11px; color: #6B6B66">Saves as you type. Others see “you’re writing”.</span>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px">
+<button onClick="{{rm.room.addSection}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">+ Section</button>
+<button onClick="{{rm.room.addHeading}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer">+ Heading</button>
+<button onClick="{{rm.room.copyNotes}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 13px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Save a copy to my notes</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{rm.room.isVault}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline"><h3 style="margin: 0; font-size: 17px; font-weight: 800">Pooled flashcards</h3><span style="font-size: 13px; color: #5C5C57">{{rm.room.vaultCount}}</span></div>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{rm.room.topics}}" as="tp" hint-placeholder-count="3"><button onClick="{{tp.pick}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1.5px solid {{tp.border}}; background: {{tp.bg}}; color: {{tp.fg}}; cursor: pointer">{{tp.label}}</button></sc-for></div>
+<sc-if value="{{rm.room.studying}}">
+<div style="display: flex; flex-direction: column; gap: 10px; align-items: stretch">
+<button onClick="{{rm.room.flip}}" style="font: inherit; text-align: center; min-height: 160px; padding: 22px; border-radius: 16px; border: 2px solid {{theme.c1}}; background: {{theme.tint}}; color: #141414; cursor: pointer; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #5C5C57">{{rm.room.sc.num}}</span>
+<sc-if value="{{rm.room.sc.front}}"><span style="font-size: 19px; font-weight: 800; line-height: 1.35">{{rm.room.sc.f}}</span><span style="font-size: 12px; color: #5C5C57">Tap to flip</span></sc-if>
+<sc-if value="{{rm.room.sc.flipped}}"><span style="font-size: 16px; line-height: 1.55; white-space: pre-wrap">{{rm.room.sc.b}}</span></sc-if>
+</button>
+<div style="display: flex; gap: 8px"><button onClick="{{rm.room.nextCard}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 18px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Next card</button><button onClick="{{rm.room.stopStudy}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 10px 18px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Stop</button></div>
+</div>
+</sc-if>
+<sc-if value="{{rm.room.notStudying}}">
+<sc-if value="{{rm.room.hasCards}}"><div style="display: flex; gap: 8px; flex-wrap: wrap"><button onClick="{{rm.room.study}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Study these</button><button onClick="{{rm.room.saveAll}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">{{rm.room.saveAllLabel}}</button></div></sc-if>
+<sc-if value="{{rm.room.noCards}}"><span style="font-size: 14px; color: #3F3F3B">The vault is empty. Add a set of your cards below, tagged with the seminar or topic, so everyone can use them.</span></sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px">
+<sc-for list="{{rm.room.cards}}" as="cd" hint-placeholder-count="3"><div style="border: 1.5px solid #E4E4DE; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; background: #FAFAF7"><span style="font-size: 14px; font-weight: 700">{{cd.f}}</span><span style="font-size: 13px; line-height: 1.45; color: #3F3F3B">{{cd.b}}</span><span style="display: flex; gap: 8px; align-items: center"><span style="font-size: 11px; color: #6B6B66; flex: 1 1 auto">{{cd.meta}}</span><sc-if value="{{cd.mine}}"><button onClick="{{cd.remove}}" aria-label="Remove card" style="font: inherit; font-size: 14px; border: none; background: none; color: #6B6B66; cursor: pointer">×</button></sc-if></span></div></sc-for>
+</div>
+<span style="font-size: 12px; color: #5C5C57">{{rm.room.moreCards}}</span>
+</sc-if>
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #FAFAF7; border: 1px solid #EFEFEA">
+<span style="font-size: 14px; font-weight: 800">Add your cards</span>
+<sc-if value="{{rm.room.hasSets}}"><div style="display: flex; gap: 6px; flex-wrap: wrap; max-height: 140px; overflow-y: auto"><sc-for list="{{rm.room.sets}}" as="cs" hint-placeholder-count="3"><button onClick="{{cs.pick}}" style="font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 10px; border: 2px solid {{cs.border}}; background: {{cs.bg}}; color: #141414; cursor: pointer">{{cs.label}}</button></sc-for></div></sc-if>
+<sc-if value="{{rm.room.noSets}}"><span style="font-size: 13px; color: #5C5C57">You don’t have flashcards for this module yet. Make some in Revise first, or build a lecture pack in Learn.</span></sc-if>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><input data-rm-topic type="text" maxlength="80" value="{{rm.room.newTopic}}" onChange="{{rm.room.onNewTopic}}" placeholder="Seminar or topic, e.g. Seminar 5: Game theory" aria-label="Seminar or topic" style="font: inherit; font-size: 14px; padding: 9px 11px; border-radius: 10px; border: 1.5px solid #CFCFC8; flex: 1 1 220px; min-width: 0"><button onClick="{{rm.room.addCards}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add to vault</button></div>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{rm.room.isReading}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-size: 17px; font-weight: 800">Split the reading</h3>
+<span style="font-size: 13px; line-height: 1.5; color: #5C5C57">Add the readings, take one each, then write a short summary for the group.</span>
+<sc-if value="{{rm.room.noReadings}}"><span style="font-size: 14px; color: #3F3F3B">No readings yet.</span></sc-if>
+<sc-for list="{{rm.room.weeks}}" as="wk" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57; padding: 6px 0">{{wk.name}}</span>
+<sc-for list="{{wk.items}}" as="rd" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 0; border-top: 1px solid #EFEFEA">
+<div style="display: flex; gap: 10px; align-items: flex-start">
+<button onClick="{{rd.toggleDone}}" aria-label="Mark read" style="width: 24px; height: 24px; border-radius: 6px; border: 2px solid {{rd.boxBorder}}; background: {{rd.boxBg}}; color: {{rd.boxFg}}; font-size: 13px; font-weight: 800; cursor: pointer; flex: 0 0 auto; padding: 0">{{rd.box}}</button>
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 auto"><span style="font-size: 14px; font-weight: 700; line-height: 1.35">{{rd.title}}</span><sc-if value="{{rd.hasDetail}}"><span style="font-size: 12px; color: #5C5C57">{{rd.detail}}</span></sc-if><span style="font-size: 12px; font-weight: 700; color: #3F3F3B">{{rd.who}}</span></span>
+<button onClick="{{rd.claim}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer; white-space: nowrap">{{rd.claimLabel}}</button>
+</div>
+<div style="display: flex; gap: 10px; padding-left: 34px; flex-wrap: wrap"><button onClick="{{rd.toggleSum}}" style="font: inherit; font-size: 12px; font-weight: 700; border: none; background: none; padding: 0; color: #141414; text-decoration: underline; cursor: pointer">{{rd.sumLabel}}</button><sc-if value="{{rd.canRemove}}"><button onClick="{{rd.remove}}" style="font: inherit; font-size: 12px; font-weight: 700; border: none; background: none; padding: 0; color: #9A1B12; cursor: pointer">Remove</button></sc-if></div>
+<sc-if value="{{rd.open}}"><div style="padding-left: 34px; display: flex; flex-direction: column; gap: 6px"><textarea data-rm-sum="{{rd.attr}}" rows="4" value="{{rd.draft}}" onChange="{{rd.onSum}}" aria-label="Summary" placeholder="Key argument, evidence, and what it means for the seminar question" style="font: inherit; font-size: 14px; line-height: 1.5; padding: 8px 10px; border-radius: 10px; border: 1.5px solid #CFCFC8; box-sizing: border-box; width: 100%; resize: vertical"></textarea><button onClick="{{rd.saveSum}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; padding: 7px 14px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Share summary</button></div></sc-if>
+<sc-if value="{{rd.closed}}"><sc-if value="{{rd.hasSummary}}"><span style="padding-left: 34px; font-size: 13px; line-height: 1.5; color: #3F3F3B; white-space: pre-wrap">{{rd.summary}}</span></sc-if></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; border-radius: 14px; background: #FAFAF7; border: 1px solid #EFEFEA">
+<input data-rm-rtitle type="text" maxlength="300" value="{{rm.room.rdTitle}}" onChange="{{rm.room.onRdTitle}}" placeholder="Reading, e.g. Varian ch. 5" aria-label="Reading" style="font: inherit; font-size: 14px; padding: 9px 11px; border-radius: 10px; border: 1.5px solid #CFCFC8; flex: 2 1 220px; min-width: 0">
+<input data-rm-rweek type="text" maxlength="80" value="{{rm.room.rdWeek}}" onChange="{{rm.room.onRdWeek}}" placeholder="Week or seminar" aria-label="Week" style="font: inherit; font-size: 14px; padding: 9px 11px; border-radius: 10px; border: 1.5px solid #CFCFC8; flex: 1 1 120px; min-width: 0">
+<button onClick="{{rm.room.addReading}}" style="font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add</button>
+</div>
+<sc-if value="{{rm.room.canImport}}">
+<button onClick="{{rm.room.startImport}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Import from the {{activeMod.code}} reading list</button>
+<sc-if value="{{rm.room.importing}}">
+<sc-if value="{{rm.room.hasRl}}"><span style="font-size: 13px; color: #3F3F3B">Pick a section to add its readings:</span><div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{rm.room.rlSections}}" as="rs" hint-placeholder-count="3"><button onClick="{{rs.pick}}" style="font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 10px; border: 1.5px solid #DADAD4; background: #FFFFFF; color: #141414; cursor: pointer">{{rs.label}} ({{rs.n}})</button></sc-for></div></sc-if>
+<sc-if value="{{rm.room.rlEmpty}}"><span style="font-size: 13px; color: #3F3F3B">No reading list is published for {{activeMod.code}} yet.</span></sc-if>
+</sc-if>
+</sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{rm.room.isQuiz}}">
+<section style="background: #FFFFFF; border-radius: 18px; padding: 18px 20px; border: 1px solid #E4E4DE; display: flex; flex-direction: column; gap: 12px">
+<sc-if value="{{rm.room.noQuiz}}">
+<h3 style="margin: 0; font-size: 17px; font-weight: 800">Run a live quiz</h3>
+<span style="font-size: 13px; line-height: 1.5; color: #5C5C57">Everyone in the room answers the same question at the same time. Faster right answers score more, and scores count towards the {{activeMod.code}} benchmark.</span>
+<sc-if value="{{rm.room.quizDone}}">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: {{theme.tint}}"><span style="font-size: 14px; font-weight: 800">Results: {{rm.room.q.title}}</span><sc-for list="{{rm.room.q.board}}" as="lb" hint-placeholder-count="3"><div style="display: flex; gap: 10px; font-size: 14px; font-weight: {{lb.weight}}"><span style="width: 20px">{{lb.rank}}</span><span style="flex: 1 1 auto">{{lb.name}}</span><span>{{lb.correct}}</span><span style="width: 70px; text-align: right">{{lb.points}}</span></div></sc-for><span style="font-size: 12px; color: #5C5C57">{{rm.room.q.doneNote}}</span></div>
+</sc-if>
+<sc-if value="{{rm.room.hasQTopics}}"><span style="font-size: 13px; font-weight: 700">Topic</span><div style="display: flex; gap: 6px; flex-wrap: wrap; max-height: 150px; overflow-y: auto"><sc-for list="{{rm.room.qTopics}}" as="qt" hint-placeholder-count="3"><button onClick="{{qt.pick}}" style="font: inherit; font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 10px; border: 2px solid {{qt.border}}; background: {{qt.bg}}; color: #141414; cursor: pointer">{{qt.label}}</button></sc-for></div></sc-if>
+<sc-if value="{{rm.room.noQTopics}}"><span style="font-size: 13px; color: #5C5C57">There aren’t multiple-choice questions for this module yet. Build a lecture pack in Learn or take a topic test first.</span></sc-if>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{rm.room.qSizes}}" as="qn" hint-placeholder-count="3"><button onClick="{{qn.pick}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1.5px solid {{qn.border}}; background: {{qn.bg}}; color: {{qn.fg}}; cursor: pointer">{{qn.label}}</button></sc-for><sc-for list="{{rm.room.qTimes}}" as="qs" hint-placeholder-count="3"><button onClick="{{qs.pick}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1.5px solid {{qs.border}}; background: {{qs.bg}}; color: {{qs.fg}}; cursor: pointer">{{qs.label}}</button></sc-for></div>
+<button onClick="{{rm.room.startQuiz}}" style="font: inherit; font-size: 15px; font-weight: 800; align-self: flex-start; padding: 12px 22px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Set up the quiz</button>
+</sc-if>
+<sc-if value="{{rm.room.hasQuiz}}">
+<div style="display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline"><h3 style="margin: 0; font-size: 17px; font-weight: 800">{{rm.room.q.title}}</h3><sc-if value="{{rm.room.q.host}}"><button onClick="{{rm.room.q.end}}" style="font: inherit; font-size: 12px; font-weight: 700; border: none; background: none; color: #9A1B12; cursor: pointer">End quiz</button></sc-if></div>
+<sc-if value="{{rm.room.q.isLobby}}">
+<span style="font-size: 14px; color: #3F3F3B">Waiting in the lobby. Everyone here now will play:</span>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{rm.room.q.players}}" as="pl" hint-placeholder-count="3"><span style="font-size: 13px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: {{theme.tint}}">{{pl.name}}</span></sc-for></div>
+<sc-if value="{{rm.room.q.host}}"><button onClick="{{rm.room.q.start}}" style="font: inherit; font-size: 16px; font-weight: 800; align-self: flex-start; padding: 12px 24px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Start now</button></sc-if>
+<sc-if value="{{rm.room.q.notHost}}"><span style="font-size: 13px; color: #5C5C57">{{rm.room.q.hostName}} will start it.</span></sc-if>
+</sc-if>
+<sc-if value="{{rm.room.q.isQuestion}}">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57">{{rm.room.q.num}}</span><span style="font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums"><span data-rm-clock>{{rm.room.q.secs}}</span>s</span></div>
+<span style="height: 6px; border-radius: 999px; background: #EFEFEA; overflow: hidden; display: block"><span data-rm-bar style="display: block; height: 100%; width: {{rm.room.q.bar}}; background: {{theme.btn}}; transition: width 0.25s linear"></span></span>
+</sc-if>
+<sc-if value="{{rm.room.q.isReveal}}"><span style="font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #5C5C57">{{rm.room.q.num}} · answer</span></sc-if>
+<sc-if value="{{rm.room.q.q}}">
+<p style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.45">{{rm.room.q.q}}</p>
+<div style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{rm.room.q.options}}" as="op" hint-placeholder-count="4"><button onClick="{{op.pick}}" style="font: inherit; text-align: left; font-size: 15px; font-weight: {{op.weight}}; padding: 12px 14px; min-height: 48px; border-radius: 12px; border: 2px solid {{op.border}}; background: {{op.bg}}; color: #141414; cursor: pointer">{{op.label}}</button></sc-for></div>
+</sc-if>
+<sc-if value="{{rm.room.q.isQuestion}}"><span style="font-size: 13px; color: #5C5C57">{{rm.room.q.answeredText}}. {{rm.room.q.waitText}}</span><sc-if value="{{rm.room.q.host}}"><button onClick="{{rm.room.q.reveal}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; padding: 8px 14px; border-radius: 999px; border: 1.5px solid #141414; background: #FFFFFF; color: #141414; cursor: pointer">Show the answer now</button></sc-if></sc-if>
+<sc-if value="{{rm.room.q.isReveal}}">
+<sc-if value="{{rm.room.q.hasWhy}}"><span style="font-size: 14px; line-height: 1.55; padding: 10px 12px; border-radius: 12px; background: #F3F3EF">{{rm.room.q.why}}</span></sc-if>
+<sc-if value="{{rm.room.q.hasBoard}}"><div style="display: flex; flex-direction: column; gap: 4px"><sc-for list="{{rm.room.q.board}}" as="lb" hint-placeholder-count="3"><div style="display: flex; gap: 10px; font-size: 14px; font-weight: {{lb.weight}}"><span style="width: 20px">{{lb.rank}}</span><span style="flex: 1 1 auto">{{lb.name}}</span><span>{{lb.correct}}</span><span style="width: 70px; text-align: right">{{lb.points}}</span></div></sc-for></div></sc-if>
+<sc-if value="{{rm.room.q.host}}"><button onClick="{{rm.room.q.next}}" style="font: inherit; font-size: 15px; font-weight: 800; align-self: flex-start; padding: 11px 20px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">{{rm.room.q.nextLabel}}</button></sc-if>
+<sc-if value="{{rm.room.q.notHost}}"><span style="font-size: 13px; color: #5C5C57">Waiting for {{rm.room.q.hostName}} to move on…</span></sc-if>
+</sc-if>
+</sc-if>
+</section>
+</sc-if>
+</sc-if>
+</sc-if>
+</div>
+</sc-if>
+
 <sc-if value="{{tHub}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-direction: column; gap: 16px">
 <section style="background: #141414; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: flex-end">
@@ -3029,7 +3444,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=13"></script><script src="/assets/web.js?v=13"></script><script src="/assets/social.js?v=13"></script><script src="/assets/campus.js?v=13"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=14"></script><script src="/assets/web.js?v=14"></script><script src="/assets/social.js?v=14"></script><script src="/assets/campus.js?v=14"></script><script src="/assets/rooms.js?v=14"></script><script src="/assets/packs.js?v=14"></script><script>
 // Unizy medical diagrams and ECG strips. Pure functions returning SVG data URIs.
 // Pasted into app.html's Component class as static methods (keep in sync with the copy there).
 // UZDIAG:BEGIN (generated from coverage/diagrams.js by coverage/sync_diagrams.py; edit that file, not this copy)
@@ -3512,18 +3927,22 @@ class Component extends DCLogic {
     if (!pack || Date.now() - pack.at > 25 * 60 * 1000) { pack = { at: Date.now(), text: ctx.kn ? ctx.kn(text, { notes: 16000, qs: 3000 }) : self.ctxText(ctx) }; self._tPack[ctx.mk] = pack; }
     else pack.at = Date.now();
     const extra = ctx.kn && turns.length > 1 ? ctx.kn(text, { notes: 3500, qs: 0 }) : '';
+    const slidesP = window.UnizyPacks && window.UnizyPacks.search ? window.UnizyPacks.search(ctx.mod, text) : Promise.resolve([]);
+    slidesP.then((hits) => {
+    const slides = (hits || []).slice(0, 5).map((h) => '[Your slides: ' + h.title + (h.page ? ', p.' + h.page : '') + ']\n' + h.text).join('\n\n');
     const rules = [
       'You are ' + ctx.tutorName + ', the Unizy AI tutor for ' + ctx.mod.name + ' on ' + ctx.degName + ' at ' + ctx.uniFull + '. You are a friendly cat in ' + ctx.uniShort + ' colours ' + (ctx.isMed ? 'wearing a stethoscope' : 'wearing a professor’s mortarboard') + ', but you answer as a rigorous, patient university ' + (ctx.isMed ? 'clinical teacher' : 'tutor') + ': explain clearly, use examples from this course, check understanding, and point the student to the right topic. Keep cat jokes to a rare light touch.',
       'Ground every answer in the COURSE KNOWLEDGE below, which is this module’s official outline and the checked Unizy library notes and mark schemes for it. Teach it the way ' + ctx.uniShort + ' teaches it at Year ' + ctx.year + ' level. If the question goes beyond the knowledge, answer from established knowledge and say so.',
       '=== COURSE KNOWLEDGE ===', pack.text, '=== END ===',
       'Stay accurate and current. Never invent cases, statutes, studies, statistics or quotations; say when you are unsure. Plain Unicode for maths. No drug doses. Keep answers focused (usually under 250 words) unless asked for more.',
-      'SOURCES. Students must be able to check where your answer comes from. In the answer, put “(general knowledge)” straight after any claim that is not supported by the COURSE KNOWLEDGE. Then end with one final line that starts with “SOURCES:” and lists, separated by semicolons, only what you actually used: “Outline” for the official module outline or topic list; “Library: ” followed by the exact note title after ## for each Unizy library note; “Your notes: ” followed by the title for the student’s own notes; and “General knowledge” if anything went beyond the COURSE KNOWLEDGE. Never list a source you did not use.'
+      'SOURCES. Students must be able to check where your answer comes from. In the answer, put “(general knowledge)” straight after any claim that is not supported by the COURSE KNOWLEDGE. Then end with one final line that starts with “SOURCES:” and lists, separated by semicolons, only what you actually used: “Outline” for the official module outline or topic list; “Library: ” followed by the exact note title after ## for each Unizy library note; “Your notes: ” followed by the title for the student’s own notes; “Your slides: ” followed by the lecture title and page (e.g. “Your slides: Lecture 3, p.12”) for passages from the student’s own lecture slides; and “General knowledge” if anything went beyond the COURSE KNOWLEDGE. Never list a source you did not use.'
     ].join('\n');
     const sent = turns.slice(-12).map((t) => ({ role: t.role, content: String(t.content).slice(0, 4000) }));
     if (extra && sent.length) sent[sent.length - 1] = { role: 'user', content: sent[sent.length - 1].content + '\n\n(More course notes relevant to this question:\n' + extra.slice(0, 6000) + ')' };
-    fn([{ role: 'user', content: rules }].concat(sent), { cache: true, onText: (u) => self.setState({ tStream: u.text }) })
-      .then((r) => { const a = Object.assign({}, (self.state || {}).tchat); a[ctx.mk] = (a[ctx.mk] || []).concat([{ role: 'assistant', content: r.text }]); self.setState({ tchat: a, tBusy: false, tStream: '' }); })
-      .catch((e) => self.setState({ tBusy: false, tStream: '', tErr: Component.errText(e) }));
+    if (slides && sent.length) sent[sent.length - 1] = { role: 'user', content: sent[sent.length - 1].content + '\n\n(Passages from the student’s own lecture slides that may be relevant; use them where they fit and cite them as “Your slides”:\n' + slides.slice(0, 7000) + ')' };
+    return fn([{ role: 'user', content: rules }].concat(sent), { cache: true, onText: (u) => self.setState({ tStream: u.text }) })
+      .then((r) => { const a = Object.assign({}, (self.state || {}).tchat); a[ctx.mk] = (a[ctx.mk] || []).concat([{ role: 'assistant', content: r.text }]); self.setState({ tchat: a, tBusy: false, tStream: '' }); });
+    }).catch((e) => self.setState({ tBusy: false, tStream: '', tErr: Component.errText(e) }));
   }
 
   assessWork(ctx) {
@@ -3618,7 +4037,8 @@ class Component extends DCLogic {
       campus: 'M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6M3 10l9-7 9 7',
       hub: 'M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2zM8 9h9M8 13h6',
       market: 'M3 9l1.5-5h15L21 9M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0zM5 13v8h14v-8M10 21v-5h4v5',
-      focus: 'M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8v5l3 2M9 2h6'
+      focus: 'M12 22a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8v5l3 2M9 2h6',
+      rooms: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'
     };
 
     // ---- core selections ----
@@ -4195,6 +4615,7 @@ class Component extends DCLogic {
       const label = (st === 'all' ? 'All topics' : String(st).indexOf('bt:') === 0 ? bTopics(st.split(':')[1])[+st.split(':')[2]] : bTitle(String(st).slice(2))) + ' · ' + (test.settings.tLevel ? LEVELS[test.settings.tLevel - 1] : 'Mixed') + ' · ' + test.qs.length + ' Qs';
       self.save(progKey, { best, last, first, n: tries, history: [{ label: test.settings.queue ? 'Practice queue · ' + test.qs.length + ' Qs' : label, score: pct + '%', at: Date.now() }].concat(prog.history || []).slice(0, 8) });
       set({ test: Object.assign({}, test, { done: true }) });
+      if (window.UnizyRooms && !test.settings.queue) window.UnizyRooms.benchSubmit(activeMod, pct, test.qs.length);
     };
     const levelOpts = [1, 2, 3, 4, 5].map((n) => ({ aria: 'Difficulty ' + n + ': ' + LEVELS[n - 1], bg: tLevel && n <= tLevel ? theme.btn : '#E6E6E0', pick: () => set({ tLevel: n }) }));
     let availText;
@@ -5056,7 +5477,7 @@ class Component extends DCLogic {
       { id: 'revise', label: 'Revise', sub: 'Flashcards', icon: ICONS.flash, tabs: [['flash', 'Flashcards']] },
       { id: 'plan', label: 'Plan', sub: 'Week & deadlines', icon: ICONS.time, tabs: [['time', 'Plan']] },
       { id: 'ask', label: 'Ask', sub: tutorName + ' & groups', icon: ICONS.tutor, tabs: [['tutor', tutorName], ['friends', 'Friend groups']] },
-      { id: 'campus', label: 'Campus', sub: 'Hubs, market, focus', icon: ICONS.campus, tabs: [['hub', 'Module hub'], ['market', 'Marketplace'], ['focus', 'Study Mode']] }
+      { id: 'campus', label: 'Campus', sub: 'Rooms, hubs, market', icon: ICONS.campus, tabs: [['rooms', 'Study rooms'], ['hub', 'Module hub'], ['market', 'Marketplace'], ['focus', 'Study Mode']] }
     ];
     const curGroup = NAV.find((g) => g.tabs.some((t) => t[0] === tab)) || NAV[0];
     const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
@@ -5081,10 +5502,13 @@ class Component extends DCLogic {
     // ---- campus features (assets/campus.js): setup import, calendar sync, hubs, marketplace, Study Mode ----
     const campusKit = {
       screen, tab, theme, strong, onStrong,
-      uni: uni ? { id: uni.id, short: uni.short, full: uni.full } : null, degree: degree ? { id: degree.id, name: degree.name } : null, year: year || 1,
+      uni: uni ? { id: uni.id, short: uni.short, full: uni.full, nowWeek: uni.nowWeek } : null, degree: degree ? { id: degree.id, name: degree.name } : null, year: year || 1,
       mods: mods.map((m) => ({ key: m.key, code: m.code || '', name: m.name, term: m.term || '', locked: m.locked, notRunning: m.notRunning })),
       selKeys: selKeys.slice(), selMods: selMods.map((m) => ({ key: m.key, code: m.code || '', name: m.name })),
-      active: { key: activeMod.key, code: activeMod.code || '', name: activeMod.key ? activeMod.name : '' },
+      active: { key: activeMod.key, code: activeMod.code || '', name: activeMod.key ? activeMod.name : '', summary: activeMod.summary || '', topics: activeMod.topics || [] },
+      mk, normQ: Component.normQ, tutorName, weakCoverage: !activeMod.P && !(activeMod.L && activeMod.L.length && !activeMod.Lf),
+      startSetup: (u) => set({ uni: u, screen: 'degree', degree: null, year: null, mods: null, active: null, editing: false }),
+      openModule: (key) => set({ mods: selKeys.indexOf(key) === -1 ? selKeys.concat([key]) : selKeys, active: key, tab: 'overview' }),
       store, getStore: () => ((self.state || {}).store || {}), save: (k, v) => self.save(k, v),
       getPlan: () => ((((self.state || {}).store || {})[planKey] || {}).items || []), savePlan,
       setSelection: (keys) => set({ mods: keys }),
@@ -5137,7 +5561,7 @@ class Component extends DCLogic {
       activeChips, hasModUrl: !!activeMod.url, catalogueLabel: 'Open ' + (activeMod.code || activeMod.name) + ' on ' + (uni ? uni.short : 'the university') + '’s course pages',
       selCount: selMods.length, selCredits,
       goModules: () => startEdit('modules'), goUni: () => startEdit('uni'),
-      tOverview: tab === 'overview' || (tab === 'path' && !mp.has), tNotes: tab === 'notes', tPath: tab === 'path' && mp.has, mp, tQuiz: tab === 'quiz', tFlash: tab === 'flash', tTime: tab === 'time', tFriends: tab === 'friends', tTutor: tab === 'tutor', tHub: tab === 'hub', tMarket: tab === 'market', tFocus: tab === 'focus',
+      tOverview: tab === 'overview' || (tab === 'path' && !mp.has), tNotes: tab === 'notes', tPath: tab === 'path' && mp.has, mp, tQuiz: tab === 'quiz', tFlash: tab === 'flash', tTime: tab === 'time', tFriends: tab === 'friends', tTutor: tab === 'tutor', tHub: tab === 'hub', tMarket: tab === 'market', tFocus: tab === 'focus', tRooms: tab === 'rooms',
       terms, weeks: weeksX, weeksNote, hasTeaching, showTeaching: hasTeaching && !(degData && degData.profile && degData.profile.length), teaching: hasTeaching ? degData.teaching : '',
 
       nt, res, profile: profile.map((x) => ({ h: x.h, body: x.body })), hasProfile: profile.length > 0,

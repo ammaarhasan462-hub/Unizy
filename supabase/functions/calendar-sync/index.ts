@@ -54,6 +54,15 @@ Deno.serve(async (req) => {
 
   let body: any;
   try { body = await req.json(); } catch { return json(400, { ok: false, message: "Bad request." }); }
+  const now0 = Date.now();
+  // an .ics file the student uploaded (exported from their timetable or calendar)
+  if (typeof body?.ics === "string") {
+    const raw = body.ics as string;
+    if (raw.length > MAX_BYTES) return json(413, { ok: false, message: "That calendar file is too big. Export a shorter date range if you can." });
+    if (!/BEGIN:VCALENDAR/i.test(raw)) return json(400, { ok: false, message: "That isn’t a calendar file. Choose the .ics file you downloaded from your timetable or calendar." });
+    const parsed = parseIcs(raw, { fromMs: now0 - 14 * 86400000, toMs: now0 + 300 * 86400000, max: 1200 });
+    return json(200, { ok: true, source: "File", name: parsed.name, count: parsed.events.length, events: parsed.events });
+  }
   let url = safeUrl(body?.url);
   if (!url) return json(400, { ok: false, message: "That doesn’t look like a calendar link. Copy the full https:// or webcal:// address from your uni’s calendar export page." });
   const source = lmsOf(url);

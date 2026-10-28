@@ -1,0 +1,89 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unizy for universities · Moodle, Canvas and Blackboard</title><meta name="description" content="Add Unizy to your university's Moodle, Canvas or Blackboard with LTI 1.3, so students open it from their course page already signed in."><meta name="theme-color" content="#141414"><meta name="robots" content="noindex"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0;background:#F3F3EF;color:#141414;font-family:Inter,system-ui,sans-serif}
+main{max-width:780px;margin:0 auto;padding:36px 20px 80px;font-size:16px;line-height:1.65}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-size:38px;letter-spacing:-.03em;line-height:1.1;margin:0 0 10px}
+h2{font-size:21px;margin:34px 0 8px}
+code,.u{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:#fff;border:1px solid #E2E2DC;border-radius:8px;padding:2px 6px;word-break:break-all}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #E2E2DC;font-size:14px}
+td{padding:10px 12px;border-top:1px solid #EFEFEA;vertical-align:top}td:first-child{font-weight:700;width:34%}
+tr:first-child td{border-top:none}
+.card{background:#fff;border:1px solid #E2E2DC;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px}
+.btn{display:inline-block;background:#141414;color:#fff;text-decoration:none;font-weight:700;padding:14px 24px;border-radius:999px;font-size:16px}
+.go{max-width:520px;margin:12vh auto 0;text-align:center}
+.err{background:#FBEDEF;border:1.5px solid #F2C9D0}
+.copy{font:inherit;font-size:12px;font-weight:700;border:1px solid #DADAD4;background:#fff;border-radius:999px;padding:3px 9px;cursor:pointer;margin-left:6px}
+@media (max-width:600px){h1{font-size:30px}td:first-child{width:40%}}
+</style></head>
+<body><header style="padding:18px 20px;border-bottom:1px solid #E2E2DC"><a href="/" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:25px;letter-spacing:-.03em;color:#141414;text-decoration:none">unizy</a></header>
+<main>
+<div id="handoff" hidden></div>
+<div id="info">
+<h1>Unizy in your Moodle, Canvas or Blackboard</h1>
+<p>Unizy is a study companion for UK university students: notes, flashcards, practice questions and study rooms built around each student’s exact modules. With this LTI 1.3 connection, students open Unizy from a link in their course page and arrive <b>already signed in</b> with their university account, <b>verified</b> as students at your university, with <b>that course’s module</b> open.</p>
+
+<h2>What Unizy receives</h2>
+<p>Only what a standard LTI 1.3 resource-link launch carries: the student’s name and university email (needed to sign them in), their course’s title and short code (to open the right module) and their role. Unizy doesn’t use grade passback, roster or deep-linking services, and never writes anything to your LMS. See the <a href="/privacy.html">privacy policy</a>.</p>
+
+<h2>Tool details</h2>
+<table>
+<tr><td>LTI version</td><td>LTI 1.3 (LTI Advantage), resource link launches</td></tr>
+<tr><td>Login initiation URL</td><td><span class="u" data-u="login"></span></td></tr>
+<tr><td>Redirect / launch URL (tool URL, target link URI)</td><td><span class="u" data-u="launch"></span></td></tr>
+<tr><td>Public keyset (JWKS) URL</td><td><span class="u" data-u="jwks"></span></td></tr>
+<tr><td>JSON configuration (Canvas: “Enter URL”)</td><td><span class="u" data-u="config"></span></td></tr>
+<tr><td>Privacy</td><td>Share the user’s <b>name</b> and <b>email</b> (required)</td></tr>
+<tr><td>Open in</td><td>A new window (recommended)</td></tr>
+</table>
+
+<h2>Setting it up</h2>
+<p><b>Moodle</b> (Site administration → Plugins → Activity modules → External tool → Manage tools → configure a tool manually): enter the URLs above, set Public key type to “Keyset URL”, set “Share launcher’s name” and “Share launcher’s email” to Always, and default launch container to “New window”. Save, then open “View configuration details” and send us the Platform ID (issuer), Client ID, Deployment ID, Authentication request URL and Public keyset URL.</p>
+<p><b>Canvas</b> (Admin → Developer keys → + LTI key): choose “Enter URL” and paste the JSON configuration URL, then turn the key on and add the app to your account or sub-account with its Client ID. Send us the Client ID and Deployment ID. The issuer is usually <code>https://canvas.instructure.com</code>.</p>
+<p><b>Blackboard Learn</b> (via the Anthology Developer Portal): register an LTI 1.3 tool with the URLs above, then add it under LTI Tool Providers → Register LTI 1.3/Advantage Tool with its Client ID. Send us the Issuer, Client ID, Deployment ID, OIDC auth request endpoint and JWKS URL.</p>
+<p>Email the details to <a href="mailto:hello@unizy.uk?subject=Unizy%20LTI%20setup">hello@unizy.uk</a> and we’ll switch your university on, usually within a day.</p>
+
+<h2>For students</h2>
+<p>If your course page doesn’t have a Unizy link yet, you can still sign up at <a href="/signup">unizy.uk</a>, verify your uni email, connect your Moodle, Canvas or Blackboard calendar and upload your timetable from the Plan page.</p>
+</div>
+</main>
+<script>
+(function () {
+  var BASE = 'https://aayelwhshiboqyjdhnst.supabase.co/functions/v1/lti';
+  var U = { login: BASE + '/login', launch: BASE + '/launch', jwks: BASE + '/jwks', config: BASE + '/config' };
+  Array.prototype.forEach.call(document.querySelectorAll('[data-u]'), function (el) {
+    var v = U[el.getAttribute('data-u')]; el.textContent = v;
+    var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'Copy';
+    b.onclick = function () { try { navigator.clipboard.writeText(v).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); }); } catch (e) { window.prompt('Copy:', v); } };
+    el.parentNode.appendChild(b);
+  });
+  var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  var go = h.get('go'), err = h.get('error');
+  if (!go && !err) return;
+  history.replaceState(null, '', location.pathname);
+  var box = document.getElementById('handoff'), info = document.getElementById('info');
+  info.hidden = true; box.hidden = false; box.className = 'go';
+  function el(tag, attrs, text) { var e = document.createElement(tag); Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); }); if (text) e.textContent = text; return e; }
+  var card = el('div', { 'class': 'card' + (err ? ' err' : '') });
+  box.appendChild(card);
+  if (err) {
+    card.appendChild(el('h1', { style: 'font-size:28px' }, 'Couldn’t open Unizy'));
+    card.appendChild(el('p', { style: 'margin:0' }, err));
+    var a = el('a', { href: '/login', 'class': 'btn', target: '_top' }, 'Sign in at unizy.uk'); card.appendChild(a);
+    return;
+  }
+  // only follow our own sign-in links
+  var ok = false; try { var u = new URL(go); ok = u.protocol === 'https:' && /(^|\.)supabase\.co$/.test(u.hostname); } catch (e) { ok = false; }
+  if (!ok) { card.appendChild(el('p', {}, 'That sign-in link isn’t valid. Open Unizy from your course page again.')); return; }
+  var uni = h.get('uni'), course = h.get('course');
+  card.appendChild(el('h1', { style: 'font-size:28px' }, 'Opening Unizy…'));
+  card.appendChild(el('p', { style: 'margin:0' }, 'Signed in with your ' + (uni || 'university') + ' account' + (course ? ' from ' + course : '') + '.'));
+  var inFrame = false; try { inFrame = window.self !== window.top; } catch (e) { inFrame = true; }
+  if (inFrame) {
+    card.appendChild(el('p', { style: 'margin:0;font-size:14px;color:#55554F' }, 'Unizy opens in its own tab.'));
+    card.appendChild(el('a', { href: go, target: '_blank', rel: 'noopener', 'class': 'btn' }, 'Open Unizy'));
+  } else {
+    location.replace(go);
+  }
+})();
+</script>
+</body></html>

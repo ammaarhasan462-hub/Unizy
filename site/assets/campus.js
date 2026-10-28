@@ -234,6 +234,7 @@
     var out = {
       open: I.open, closed: !I.open,
       show: function () { I.open = true; I.done = ''; redraw(); },
+      showInPlan: function () { I.open = true; I.done = ''; k.go('time'); redraw(); },
       hide: function () { if (I.busy) return; I.open = false; I.step = 'pick'; I.res = null; I.files = []; I.err = ''; redraw(); },
       signedOut: !signedIn(), signedIn: signedIn(),
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
@@ -299,7 +300,17 @@
     F.busy[feed.id] = true; if (!quiet) redraw();
     return callFn('calendar-sync', { url: feed.url }).then(function (r) {
       F.busy[feed.id] = false;
+      applyFeed(S.kit || k, feed, r, quiet);
+    }).catch(function (e) {
+      F.busy[feed.id] = false;
       k = S.kit || k;
+      saveFeeds(k, feedsOf(k).map(function (f) { return f.id === feed.id ? Object.assign({}, f, { lastTry: Date.now(), error: e.message }) : f; }));
+      if (!quiet) { F.msg = e.message; F.kind = 'err'; }
+      redraw();
+    });
+  }
+  function applyFeed(k, feed, r, quiet) {
+      var F = S.feeds;
       var items = k.getPlan();
       var prefix = 'f:' + feed.id + ':';
       var doneBefore = {}; items.forEach(function (x) { if (String(x.id).indexOf(prefix) === 0 && x.done) doneBefore[x.id] = true; });
@@ -315,21 +326,28 @@
       k.savePlan(kept.concat(add));
       var list = feedsOf(k).map(function (f) { return f.id === feed.id ? Object.assign({}, f, { source: r.source || f.source, name: r.name || f.name, last: Date.now(), count: add.length, deadlines: add.filter(function (x) { return x.kind === 'deadline'; }).length, error: '' }) : f; });
       saveFeeds(k, list);
-      if (!quiet) { F.msg = 'Synced ' + (r.name || r.source || 'your calendar') + ': ' + add.length + (add.length === 1 ? ' event' : ' events') + ' in your plan.'; F.kind = 'ok'; }
+      if (!quiet) { F.msg = (feed.kind === 'file' ? 'Imported ' : 'Synced ') + (r.name || feed.name || r.source || 'your calendar') + ': ' + add.length + (add.length === 1 ? ' event' : ' events') + ' in your plan.'; F.kind = 'ok'; }
       redraw();
-    }).catch(function (e) {
+  }
+  function importIcs(k, file) {
+    var F = S.feeds;
+    if (!file) return;
+    if (!/\.(ics|ical|ifb|icalendar)$/i.test(file.name) && !/calendar/i.test(file.type)) { F.msg = 'Choose the .ics calendar file you downloaded from your timetable or calendar.'; F.kind = 'err'; redraw(); return; }
+    if (file.size > 4000000) { F.msg = 'That calendar file is too big. Export a shorter date range if you can.'; F.kind = 'err'; redraw(); return; }
+    var feed = { id: hash(file.name + Date.now()).slice(0, 8), kind: 'file', name: file.name.replace(/\.[^.]+$/, '').slice(0, 60), added: Date.now() };
+    F.busy[feed.id] = true; F.msg = ''; redraw();
+    file.text().then(function (text) { return callFn('calendar-sync', { ics: text }); }).then(function (r) {
       F.busy[feed.id] = false;
-      k = S.kit || k;
-      saveFeeds(k, feedsOf(k).map(function (f) { return f.id === feed.id ? Object.assign({}, f, { lastTry: Date.now(), error: e.message }) : f; }));
-      if (!quiet) { F.msg = e.message; F.kind = 'err'; }
-      redraw();
-    });
+      var kk = S.kit || k;
+      saveFeeds(kk, feedsOf(kk).concat([feed]));
+      applyFeed(kk, feed, r, false);
+    }).catch(function (e) { F.busy[feed.id] = false; F.msg = e.message; F.kind = 'err'; redraw(); });
   }
   function hash(s) { var h = 2166136261; s = String(s); for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); }
   function autoSync(k) {
     var F = S.feeds;
     if (!signedIn() || k.screen !== 'app' || Date.now() - F.autoAt < 10 * 60000) return;
-    var due = feedsOf(k).filter(function (f) { return Date.now() - (f.last || 0) > 60 * 60000 && Date.now() - (f.lastTry || 0) > 30 * 60000; });
+    var due = feedsOf(k).filter(function (f) { return f.kind !== 'file' && Date.now() - (f.last || 0) > 60 * 60000 && Date.now() - (f.lastTry || 0) > 30 * 60000; });
     F.autoAt = Date.now();
     if (!due.length) return;
     // one at a time, each with fresh plan data
@@ -355,6 +373,7 @@
     return {
       open: F.open, closed: !F.open,
       show: function () { F.open = true; F.msg = ''; redraw(); }, hide: function () { F.open = false; F.msg = ''; redraw(); },
+      showInPlan: function () { F.open = true; F.msg = ''; k.go('time'); redraw(); },
       signedOut: !signedIn(), signedIn: signedIn(),
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
       count: list.length, has: list.length > 0, none: !list.length,
@@ -363,8 +382,8 @@
       list: list.map(function (f) {
         var busy = !!F.busy[f.id];
         return {
-          name: f.name || f.source || 'Calendar', source: f.source || 'Calendar',
-          meta: busy ? 'Syncing…' : f.error ? 'Problem: ' + f.error : (f.count || 0) + (f.count === 1 ? ' event' : ' events') + (f.deadlines ? ', ' + f.deadlines + (f.deadlines === 1 ? ' deadline' : ' deadlines') : '') + ' · synced ' + fmtAgo(f.last),
+          name: f.name || f.source || 'Calendar', source: f.kind === 'file' ? 'File' : f.source || 'Calendar', canSync: f.kind !== 'file',
+          meta: busy ? 'Syncing…' : f.error ? 'Problem: ' + f.error : f.kind === 'file' ? (f.count || 0) + (f.count === 1 ? ' event' : ' events') + ' imported ' + fmtAgo(f.last) : (f.count || 0) + (f.count === 1 ? ' event' : ' events') + (f.deadlines ? ', ' + f.deadlines + (f.deadlines === 1 ? ' deadline' : ' deadlines') : '') + ' · synced ' + fmtAgo(f.last),
           metaColor: f.error && !busy ? '#9A1B12' : '#5C5C57',
           sync: function () { syncFeed(S.kit || k, f, false); }, syncLabel: busy ? 'Syncing…' : 'Sync now',
           remove: function () {
@@ -379,6 +398,7 @@
       startAdd: function () { F.adding = true; redraw(); },
       url: F.url, onUrl: function (e) { F.url = e && e.target ? e.target.value : ''; },
       onUrlKey: function (e) { if (e && e.key === 'Enter') { e.preventDefault(); addFeed(); } },
+      onIcs: function (e) { var f = e && e.target && e.target.files && e.target.files[0]; try { e.target.value = ''; } catch (x) { /* ignore */ } importIcs(k, f); },
       add: addFeed, addLabel: Object.keys(F.busy).some(function (x) { return F.busy[x]; }) ? 'Connecting…' : 'Connect calendar',
       hasMsg: !!F.msg, msg: F.msg, msgBg: F.kind === 'err' ? '#FBEDEF' : '#EEF6E4',
       howOpen: F.howOpen, toggleHow: function () { F.howOpen = !F.howOpen; redraw(); },
@@ -872,5 +892,5 @@
   }
   // keep connected calendars fresh while Unizy stays open
   setInterval(function () { if (S.kit && !document.hidden) autoSync(S.kit); }, 15 * 60000);
-  window.UnizyCampus = { vals: vals, _state: S };
+  window.UnizyCampus = { vals: vals, hubKey: hubKey, _state: S };
 })();
