@@ -1,0 +1,562 @@
+[
+ {
+  "id": "words-001",
+  "cat": "words",
+  "q": "What is a word that reads the same backwards as forwards, like 'level', called?",
+  "options": [
+   "A homophone",
+   "An anagram",
+   "A palindrome",
+   "An acronym"
+  ],
+  "answer": 2,
+  "fact": "James Joyce's 'tattarrattat', a knock at the door in Ulysses, is the longest palindrome in the Oxford English Dictionary.",
+  "diff": 1
+ },
+ {
+  "id": "words-002",
+  "cat": "words",
+  "q": "What does the French phrase 'déjà vu' literally mean?",
+  "options": [
+   "Never again",
+   "Already seen",
+   "Lived twice",
+   "Seen before dawn"
+  ],
+  "answer": 1,
+  "fact": "The term was first used in 1876 by the French philosopher Émile Boirac.",
+  "diff": 1
+ },
+ {
+  "id": "words-003",
+  "cat": "words",
+  "q": "The word 'hygge', meaning cosy contentment, is most associated with which country?",
+  "options": [
+   "Netherlands",
+   "Denmark",
+   "Finland",
+   "Austria"
+  ],
+  "answer": 1,
+  "fact": "It became so popular in Britain that it was shortlisted for Oxford Dictionaries' Word of the Year in 2016.",
+  "diff": 1
+ },
+ {
+  "id": "words-004",
+  "cat": "words",
+  "q": "What does the Latin phrase 'carpe diem' mean?",
+  "options": [
+   "Carry the day",
+   "Day of rest",
+   "Seize the day",
+   "Count the days"
+  ],
+  "answer": 2,
+  "fact": "The phrase comes from an ode by the Roman poet Horace, written over 2,000 years ago.",
+  "diff": 1
+ },
+ {
+  "id": "words-005",
+  "cat": "words",
+  "q": "What is arachnophobia a fear of?",
+  "options": [
+   "Open spaces",
+   "Spiders",
+   "Heights",
+   "Snakes"
+  ],
+  "answer": 1,
+  "fact": "In Greek myth, Arachne was a weaver who was turned into a spider after challenging the goddess Athena.",
+  "diff": 1
+ },
+ {
+  "id": "words-006",
+  "cat": "words",
+  "q": "Which letter is used most often in written English?",
+  "options": [
+   "A",
+   "E",
+   "S",
+   "T"
+  ],
+  "answer": 1,
+  "fact": "Because it is so common, Morse code gives it the shortest possible signal: a single dot.",
+  "diff": 1
+ },
+ {
+  "id": "words-007",
+  "cat": "words",
+  "q": "What is the collective noun for a group of crows?",
+  "options": [
+   "A murder",
+   "A parliament",
+   "A murmuration",
+   "A flock"
+  ],
+  "answer": 0,
+  "fact": "Many quirky collective nouns come from 15th-century books on hunting and manners, such as the Book of St Albans.",
+  "diff": 1
+ },
+ {
+  "id": "words-008",
+  "cat": "words",
+  "q": "Which of these is spelt correctly?",
+  "options": [
+   "Accomodate",
+   "Acommodate",
+   "Acomodate",
+   "Accommodate"
+  ],
+  "answer": 3,
+  "fact": "It comes from the Latin 'accommodare', meaning to make fit, which already had the double c and double m.",
+  "diff": 1
+ },
+ {
+  "id": "words-009",
+  "cat": "words",
+  "q": "Actors wish each other good luck before a show by saying what?",
+  "options": [
+   "Break a leg",
+   "Hold your horses",
+   "Knock 'em dead",
+   "Bite the bullet"
+  ],
+  "answer": 0,
+  "fact": "Saying 'good luck' in a theatre is traditionally thought to bring bad luck.",
+  "diff": 1
+ },
+ {
+  "id": "words-010",
+  "cat": "words",
+  "q": "The word 'Schadenfreude', pleasure at someone else's misfortune, comes from which language?",
+  "options": [
+   "Dutch",
+   "Danish",
+   "Swedish",
+   "German"
+  ],
+  "answer": 3,
+  "fact": "Literally translated, it means something like 'harm-joy'.",
+  "diff": 1
+ },
+ {
+  "id": "words-011",
+  "cat": "words",
+  "q": "What is the official language of Brazil?",
+  "options": [
+   "Italian",
+   "Spanish",
+   "Portuguese",
+   "French"
+  ],
+  "answer": 2,
+  "fact": "Brazil was a Portuguese colony from 1500 until it declared independence in 1822.",
+  "diff": 1
+ },
+ {
+  "id": "words-012",
+  "cat": "words",
+  "q": "What is the term for a word that imitates the sound it describes, like 'buzz'?",
+  "options": [
+   "Alliteration",
+   "Hyperbole",
+   "Metaphor",
+   "Onomatopoeia"
+  ],
+  "answer": 3,
+  "fact": "Animal noises vary by language: in Japanese, a dog goes 'wan wan'.",
+  "diff": 1
+ },
+ {
+  "id": "words-013",
+  "cat": "words",
+  "q": "The Rosetta Stone was the key to decoding which writing system?",
+  "options": [
+   "Mayan glyphs",
+   "Egyptian hieroglyphs",
+   "Babylonian cuneiform",
+   "Norse runes"
+  ],
+  "answer": 1,
+  "fact": "It carries the same decree in three scripts: hieroglyphic, Demotic and Ancient Greek.",
+  "diff": 1
+ },
+ {
+  "id": "words-014",
+  "cat": "words",
+  "q": "What do you call a word formed from initial letters and said as a word, like NATO?",
+  "options": [
+   "An acronym",
+   "A contraction",
+   "A synonym",
+   "An abbreviation"
+  ],
+  "answer": 0,
+  "fact": "'Scuba' began life as one: self-contained underwater breathing apparatus.",
+  "diff": 1
+ },
+ {
+  "id": "words-015",
+  "cat": "words",
+  "q": "What does the German word 'Kindergarten' literally mean?",
+  "options": [
+   "Little school",
+   "Children's garden",
+   "First class",
+   "Play house"
+  ],
+  "answer": 1,
+  "fact": "It was coined in 1840 by the German educator Friedrich Fröbel.",
+  "diff": 2
+ },
+ {
+  "id": "words-016",
+  "cat": "words",
+  "q": "The word 'shampoo' comes from which language?",
+  "options": [
+   "Turkish",
+   "Persian",
+   "Arabic",
+   "Hindi"
+  ],
+  "answer": 3,
+  "fact": "Sake Dean Mahomed opened 'shampooing' baths in Brighton in 1814, offering a kind of Indian head and body massage.",
+  "diff": 2
+ },
+ {
+  "id": "words-017",
+  "cat": "words",
+  "q": "The word 'bungalow' originally meant a house in the style of which region?",
+  "options": [
+   "Gujarat",
+   "Punjab",
+   "Kashmir",
+   "Bengal"
+  ],
+  "answer": 3,
+  "fact": "Some of the first houses in England to be called bungalows were built at Westgate-on-Sea in Kent around 1870.",
+  "diff": 2
+ },
+ {
+  "id": "words-018",
+  "cat": "words",
+  "q": "The word 'tycoon' comes from which language?",
+  "options": [
+   "Korean",
+   "Hindi",
+   "Chinese",
+   "Japanese"
+  ],
+  "answer": 3,
+  "fact": "Abraham Lincoln's secretaries affectionately called him 'the Tycoon'.",
+  "diff": 2
+ },
+ {
+  "id": "words-019",
+  "cat": "words",
+  "q": "When it was coined in 1688, what did the word 'nostalgia' describe?",
+  "options": [
+   "Homesickness",
+   "Forgetfulness",
+   "Seasickness",
+   "Sleeplessness"
+  ],
+  "answer": 0,
+  "fact": "It was invented by Swiss medical student Johannes Hofer from Greek words for 'homecoming' and 'pain'.",
+  "diff": 2
+ },
+ {
+  "id": "words-020",
+  "cat": "words",
+  "q": "'Karaoke' joins the Japanese for 'empty' with a shortened form of which word?",
+  "options": [
+   "Orchestra",
+   "Microphone",
+   "Chorus",
+   "Okay"
+  ],
+  "answer": 0,
+  "fact": "The first karaoke machines appeared in bars in Japan in the early 1970s.",
+  "diff": 2
+ },
+ {
+  "id": "words-021",
+  "cat": "words",
+  "q": "The name 'ampersand' comes from children reciting the '&' at the end of what?",
+  "options": [
+   "The alphabet",
+   "The days of the week",
+   "Their prayers",
+   "Times tables"
+  ],
+  "answer": 0,
+  "fact": "The symbol itself started out as the letters e and t joined together, spelling the Latin 'et', meaning 'and'.",
+  "diff": 2
+ },
+ {
+  "id": "words-022",
+  "cat": "words",
+  "q": "A sentence that uses every letter of the alphabet is called a what?",
+  "options": [
+   "A pangram",
+   "A tautogram",
+   "A palindrome",
+   "A lipogram"
+  ],
+  "answer": 0,
+  "fact": "'The quick brown fox jumps over the lazy dog' was printed in 1885 as a handwriting practice sentence.",
+  "diff": 2
+ },
+ {
+  "id": "words-023",
+  "cat": "words",
+  "q": "The leotard is named after a 19th-century French performer of what?",
+  "options": [
+   "Juggling",
+   "Ballet",
+   "Tightrope walking",
+   "The flying trapeze"
+  ],
+  "answer": 3,
+  "fact": "Jules Léotard first performed his daring act at the Cirque Napoléon in Paris in November 1859.",
+  "diff": 2
+ },
+ {
+  "id": "words-024",
+  "cat": "words",
+  "q": "How many letters are there in the modern Greek alphabet?",
+  "options": [
+   "20",
+   "22",
+   "24",
+   "26"
+  ],
+  "answer": 2,
+  "fact": "The word 'alphabet' itself comes from the names of the first two Greek letters, alpha and beta.",
+  "diff": 2
+ },
+ {
+  "id": "words-025",
+  "cat": "words",
+  "q": "The word 'robot' first appeared in a 1920 play by which writer?",
+  "options": [
+   "Karel Čapek",
+   "Franz Kafka",
+   "Jules Verne",
+   "H. G. Wells"
+  ],
+  "answer": 0,
+  "fact": "It comes from the Czech 'robota', meaning forced labour, and was suggested by the writer's brother Josef.",
+  "diff": 2
+ },
+ {
+  "id": "words-026",
+  "cat": "words",
+  "q": "Which invented language was launched by L. L. Zamenhof in 1887?",
+  "options": [
+   "Esperanto",
+   "Ido",
+   "Volapük",
+   "Interlingua"
+  ],
+  "answer": 0,
+  "fact": "Its name comes from Zamenhof's pen name, Doktoro Esperanto, meaning 'one who hopes'.",
+  "diff": 2
+ },
+ {
+  "id": "words-027",
+  "cat": "words",
+  "q": "Swapping the first sounds of words, as in 'tease my ears', is named after which Oxford academic?",
+  "options": [
+   "Lewis Carroll",
+   "Thomas Bowdler",
+   "Samuel Johnson",
+   "William Spooner"
+  ],
+  "answer": 3,
+  "fact": "He was Warden of New College, Oxford, and many of the slips credited to him were probably made up by students.",
+  "diff": 2
+ },
+ {
+  "id": "words-028",
+  "cat": "words",
+  "q": "In which year was Samuel Johnson's Dictionary of the English Language published?",
+  "options": [
+   "1655",
+   "1705",
+   "1755",
+   "1805"
+  ],
+  "answer": 2,
+  "fact": "Johnson playfully defined 'lexicographer' as 'a harmless drudge'.",
+  "diff": 2
+ },
+ {
+  "id": "words-029",
+  "cat": "words",
+  "q": "In the NATO phonetic alphabet, which word stands for the letter Q?",
+  "options": [
+   "Quiet",
+   "Quebec",
+   "Quintet",
+   "Queen"
+  ],
+  "answer": 1,
+  "fact": "'Alfa' and 'Juliett' are spelt that way so speakers of other languages pronounce them correctly.",
+  "diff": 2
+ },
+ {
+  "id": "words-030",
+  "cat": "words",
+  "q": "'Klutz', 'schmooze' and 'chutzpah' came into English from which language?",
+  "options": [
+   "Hungarian",
+   "Dutch",
+   "Yiddish",
+   "Polish"
+  ],
+  "answer": 2,
+  "fact": "It is written in the Hebrew alphabet but is mostly Germanic in its grammar and vocabulary.",
+  "diff": 2
+ },
+ {
+  "id": "words-031",
+  "cat": "words",
+  "q": "The word 'boondocks' comes from a Tagalog word meaning what?",
+  "options": [
+   "Jungle",
+   "River",
+   "Mountain",
+   "Village"
+  ],
+  "answer": 2,
+  "fact": "American soldiers serving in the Philippines around 1900 brought the word back into English.",
+  "diff": 3
+ },
+ {
+  "id": "words-032",
+  "cat": "words",
+  "q": "The word 'silhouette' comes from a French finance minister known for what?",
+  "options": [
+   "Inventing scissors",
+   "Lavish parties",
+   "Portrait painting",
+   "Strict cost-cutting"
+  ],
+  "answer": 3,
+  "fact": "Before photography, cut-paper profile portraits were the cheapest way to record what someone looked like.",
+  "diff": 3
+ },
+ {
+  "id": "words-033",
+  "cat": "words",
+  "q": "What does 'sesquipedalian' describe?",
+  "options": [
+   "Writing in verse",
+   "Using long words",
+   "Walking slowly",
+   "Speaking quickly"
+  ],
+  "answer": 1,
+  "fact": "It comes from the Latin for 'a foot and a half long', used jokingly about words by the poet Horace.",
+  "diff": 3
+ },
+ {
+  "id": "words-034",
+  "cat": "words",
+  "q": "'Serendipity' comes from a tale about three princes of Serendip. Serendip is an old name for where?",
+  "options": [
+   "Zanzibar",
+   "Sri Lanka",
+   "Cyprus",
+   "Madagascar"
+  ],
+  "answer": 1,
+  "fact": "The writer Horace Walpole coined the word in a letter to a friend in 1754.",
+  "diff": 3
+ },
+ {
+  "id": "words-035",
+  "cat": "words",
+  "q": "A 'malapropism' is named after Mrs Malaprop, a character in a play by whom?",
+  "options": [
+   "Oscar Wilde",
+   "William Congreve",
+   "Richard Brinsley Sheridan",
+   "Oliver Goldsmith"
+  ],
+  "answer": 2,
+  "fact": "Her name comes from the French 'mal à propos', meaning inappropriate.",
+  "diff": 3
+ },
+ {
+  "id": "words-036",
+  "cat": "words",
+  "q": "The word 'maverick' comes from a Texas rancher who refused to do what?",
+  "options": [
+   "Sell his horses",
+   "Brand his cattle",
+   "Fence his land",
+   "Pay his taxes"
+  ],
+  "answer": 1,
+  "fact": "His grandson Maury Maverick, a congressman, coined the word 'gobbledygook' for confusing official jargon.",
+  "diff": 3
+ },
+ {
+  "id": "words-037",
+  "cat": "words",
+  "q": "The word 'muscle' comes from a Latin word meaning what?",
+  "options": [
+   "Strong rope",
+   "Hidden stone",
+   "Small fish",
+   "Little mouse"
+  ],
+  "answer": 3,
+  "fact": "Romans thought a flexing biceps looked like a mouse moving under the skin.",
+  "diff": 3
+ },
+ {
+  "id": "words-038",
+  "cat": "words",
+  "q": "What is the name for the dot above a lowercase i or j?",
+  "options": [
+   "A jot",
+   "A serif",
+   "A tittle",
+   "A macron"
+  ],
+  "answer": 2,
+  "fact": "The expression 'to a T' may come from the older phrase 'to a tittle'.",
+  "diff": 3
+ },
+ {
+  "id": "words-039",
+  "cat": "words",
+  "q": "'Octothorpe' is another name for which symbol?",
+  "options": [
+   "#",
+   "*",
+   "&",
+   "@"
+  ],
+  "answer": 0,
+  "fact": "Engineers at Bell Labs were using the name by the 1960s for the symbol on new touch-tone telephone keypads.",
+  "diff": 3
+ },
+ {
+  "id": "words-040",
+  "cat": "words",
+  "q": "The interrobang punctuation mark combines which two symbols?",
+  "options": [
+   "! and ;",
+   ", and ?",
+   "? and !",
+   ": and !"
+  ],
+  "answer": 2,
+  "fact": "It was invented in 1962 by Martin Speckter, an American advertising executive.",
+  "diff": 3
+ }
+]

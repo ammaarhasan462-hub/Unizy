@@ -1,0 +1,562 @@
+[
+ {
+  "id": "arts-001",
+  "cat": "arts",
+  "q": "Who painted the Mona Lisa?",
+  "options": [
+   "Leonardo da Vinci",
+   "Michelangelo",
+   "Raphael",
+   "Titian"
+  ],
+  "answer": 0,
+  "fact": "The Mona Lisa was stolen from the Louvre in 1911 and missing for over two years before turning up in Florence.",
+  "diff": 1
+ },
+ {
+  "id": "arts-002",
+  "cat": "arts",
+  "q": "Which Jane Austen novel was originally drafted under the title 'First Impressions'?",
+  "options": [
+   "Emma",
+   "Persuasion",
+   "Sense and Sensibility",
+   "Pride and Prejudice"
+  ],
+  "answer": 3,
+  "fact": "It was first published anonymously in 1813, credited only to 'the Author of Sense and Sensibility'.",
+  "diff": 1
+ },
+ {
+  "id": "arts-003",
+  "cat": "arts",
+  "q": "Which author created the detective Sherlock Holmes?",
+  "options": [
+   "G. K. Chesterton",
+   "Arthur Conan Doyle",
+   "Agatha Christie",
+   "Wilkie Collins"
+  ],
+  "answer": 1,
+  "fact": "Holmes first appeared in A Study in Scarlet in 1887, when Conan Doyle was working as a young doctor.",
+  "diff": 1
+ },
+ {
+  "id": "arts-004",
+  "cat": "arts",
+  "q": "Who wrote the novel Frankenstein?",
+  "options": [
+   "Bram Stoker",
+   "Emily Brontë",
+   "Ann Radcliffe",
+   "Mary Shelley"
+  ],
+  "answer": 3,
+  "fact": "She began it in 1816 at a villa near Lake Geneva, after Lord Byron challenged his guests to write ghost stories.",
+  "diff": 1
+ },
+ {
+  "id": "arts-005",
+  "cat": "arts",
+  "q": "Which artist painted the ceiling of the Sistine Chapel?",
+  "options": [
+   "Michelangelo",
+   "Raphael",
+   "Caravaggio",
+   "Botticelli"
+  ],
+  "answer": 0,
+  "fact": "Despite the popular image, he painted it standing up on a scaffold of his own design, not lying on his back.",
+  "diff": 1
+ },
+ {
+  "id": "arts-006",
+  "cat": "arts",
+  "q": "Which Shakespeare play contains the famous 'balcony scene'?",
+  "options": [
+   "Romeo and Juliet",
+   "Othello",
+   "Much Ado About Nothing",
+   "Twelfth Night"
+  ],
+  "answer": 0,
+  "fact": "The word 'balcony' never appears in the play: Shakespeare's stage direction has Juliet appear 'above' at a window.",
+  "diff": 1
+ },
+ {
+  "id": "arts-007",
+  "cat": "arts",
+  "q": "Which Brontë sister wrote Wuthering Heights?",
+  "options": [
+   "Charlotte",
+   "Anne",
+   "Maria",
+   "Emily"
+  ],
+  "answer": 3,
+  "fact": "It was first published in 1847 under the male pen name Ellis Bell.",
+  "diff": 1
+ },
+ {
+  "id": "arts-008",
+  "cat": "arts",
+  "q": "Which surrealist painted the melting clocks of 'The Persistence of Memory'?",
+  "options": [
+   "Joan Miró",
+   "René Magritte",
+   "Salvador Dalí",
+   "Max Ernst"
+  ],
+  "answer": 2,
+  "fact": "The famous painting is surprisingly small, measuring only about 24 by 33 centimetres.",
+  "diff": 1
+ },
+ {
+  "id": "arts-009",
+  "cat": "arts",
+  "q": "Who painted 'The Starry Night'?",
+  "options": [
+   "Paul Gauguin",
+   "Henri Matisse",
+   "Vincent van Gogh",
+   "Georges Seurat"
+  ],
+  "answer": 2,
+  "fact": "The painting has belonged to the Museum of Modern Art in New York since 1941.",
+  "diff": 1
+ },
+ {
+  "id": "arts-010",
+  "cat": "arts",
+  "q": "Andy Warhol famously made pop art from cans of which brand of soup?",
+  "options": [
+   "Campbell's",
+   "Knorr",
+   "Baxters",
+   "Heinz"
+  ],
+  "answer": 0,
+  "fact": "His 1962 work is made up of 32 separate canvases, one for each variety the company sold at the time.",
+  "diff": 1
+ },
+ {
+  "id": "arts-011",
+  "cat": "arts",
+  "q": "Which composer wrote the set of violin concertos called The Four Seasons?",
+  "options": [
+   "Arcangelo Corelli",
+   "Johann Sebastian Bach",
+   "Joseph Haydn",
+   "Antonio Vivaldi"
+  ],
+  "answer": 3,
+  "fact": "The concertos were published in 1725 alongside four sonnets describing each season, possibly written by the composer himself.",
+  "diff": 1
+ },
+ {
+  "id": "arts-012",
+  "cat": "arts",
+  "q": "Which composer wrote the music for the ballet The Nutcracker?",
+  "options": [
+   "Nikolai Rimsky-Korsakov",
+   "Pyotr Tchaikovsky",
+   "Sergei Prokofiev",
+   "Igor Stravinsky"
+  ],
+  "answer": 1,
+  "fact": "He discovered the celesta in Paris and kept it secret so rivals couldn't use its tinkling sound before him.",
+  "diff": 1
+ },
+ {
+  "id": "arts-013",
+  "cat": "arts",
+  "q": "In Peter Pan, what is the name of Peter's fairy companion?",
+  "options": [
+   "Silvermist",
+   "Tinker Bell",
+   "Moth",
+   "Thumbelina"
+  ],
+  "answer": 1,
+  "fact": "J. M. Barrie gave the rights to Peter Pan to Great Ormond Street Hospital in 1929.",
+  "diff": 1
+ },
+ {
+  "id": "arts-014",
+  "cat": "arts",
+  "q": "Which silent-film star created the character known as 'The Tramp'?",
+  "options": [
+   "Harold Lloyd",
+   "Stan Laurel",
+   "Buster Keaton",
+   "Charlie Chaplin"
+  ],
+  "answer": 3,
+  "fact": "In 1919 Chaplin co-founded the film studio United Artists with Mary Pickford, Douglas Fairbanks and D. W. Griffith.",
+  "diff": 1
+ },
+ {
+  "id": "arts-015",
+  "cat": "arts",
+  "q": "Which American artist painted 'Nighthawks', showing a late-night diner?",
+  "options": [
+   "Andrew Wyeth",
+   "Norman Rockwell",
+   "Edward Hopper",
+   "Grant Wood"
+  ],
+  "answer": 2,
+  "fact": "The Art Institute of Chicago bought it for $3,000 within months of its completion in 1942.",
+  "diff": 2
+ },
+ {
+  "id": "arts-016",
+  "cat": "arts",
+  "q": "Rembrandt's 'The Night Watch' shows a company of which group of people?",
+  "options": [
+   "Merchants",
+   "A city militia",
+   "Sailors",
+   "Night watchmen"
+  ],
+  "answer": 1,
+  "fact": "The canvas was trimmed in 1715 so that it would fit between two columns in Amsterdam's town hall.",
+  "diff": 2
+ },
+ {
+  "id": "arts-017",
+  "cat": "arts",
+  "q": "Winnie-the-Pooh was partly named after a real bear that lived at which zoo?",
+  "options": [
+   "London Zoo",
+   "Bristol Zoo",
+   "Chester Zoo",
+   "Edinburgh Zoo"
+  ],
+  "answer": 0,
+  "fact": "The bear was called Winnipeg, after the Canadian home city of the soldier who brought her to England.",
+  "diff": 2
+ },
+ {
+  "id": "arts-018",
+  "cat": "arts",
+  "q": "Along with Pablo Picasso, which painter pioneered Cubism?",
+  "options": [
+   "Henri Matisse",
+   "Joan Miró",
+   "Georges Braque",
+   "Paul Cézanne"
+  ],
+  "answer": 2,
+  "fact": "The name grew from a 1908 review in which critic Louis Vauxcelles said Braque reduced everything to 'cubes'.",
+  "diff": 2
+ },
+ {
+  "id": "arts-019",
+  "cat": "arts",
+  "q": "Which composer wrote the orchestral suite The Planets?",
+  "options": [
+   "Ralph Vaughan Williams",
+   "Gustav Holst",
+   "Edward Elgar",
+   "Benjamin Britten"
+  ],
+  "answer": 1,
+  "fact": "He was director of music at St Paul's Girls' School in London from 1905 until his death in 1934.",
+  "diff": 2
+ },
+ {
+  "id": "arts-020",
+  "cat": "arts",
+  "q": "Which composer wrote the Water Music for King George I?",
+  "options": [
+   "Johann Sebastian Bach",
+   "Henry Purcell",
+   "Antonio Vivaldi",
+   "George Frideric Handel"
+  ],
+  "answer": 3,
+  "fact": "At its 1717 premiere on the Thames, the king liked it so much he had it played at least three times.",
+  "diff": 2
+ },
+ {
+  "id": "arts-021",
+  "cat": "arts",
+  "q": "According to the stories, which country does Paddington Bear come from?",
+  "options": [
+   "Bolivia",
+   "Peru",
+   "Brazil",
+   "Chile"
+  ],
+  "answer": 1,
+  "fact": "Michael Bond was inspired by a lonely-looking teddy bear he spotted in a London shop on Christmas Eve 1956.",
+  "diff": 2
+ },
+ {
+  "id": "arts-022",
+  "cat": "arts",
+  "q": "Dorothy's magic shoes are silver in the original Oz book. What are they in the 1939 film?",
+  "options": [
+   "Glass slippers",
+   "Gold slippers",
+   "Ruby slippers",
+   "Emerald slippers"
+  ],
+  "answer": 2,
+  "fact": "The change was made to show off the bright colours of the then-new Technicolor process.",
+  "diff": 2
+ },
+ {
+  "id": "arts-023",
+  "cat": "arts",
+  "q": "Which Hitchcock film follows a photographer spying on neighbours from his flat?",
+  "options": [
+   "Rear Window",
+   "Vertigo",
+   "The Birds",
+   "Rope"
+  ],
+  "answer": 0,
+  "fact": "Hitchcock's cameo in the film shows him winding a clock in a neighbouring songwriter's apartment.",
+  "diff": 2
+ },
+ {
+  "id": "arts-024",
+  "cat": "arts",
+  "q": "Which novel's narrator invites readers to 'Call me Ishmael'?",
+  "options": [
+   "Billy Budd",
+   "Robinson Crusoe",
+   "Treasure Island",
+   "Moby-Dick"
+  ],
+  "answer": 3,
+  "fact": "It sold poorly when published in 1851; its reputation as a masterpiece only grew decades after Melville's death.",
+  "diff": 2
+ },
+ {
+  "id": "arts-025",
+  "cat": "arts",
+  "q": "Which Italian composer wrote the opera Aida?",
+  "options": [
+   "Giuseppe Verdi",
+   "Gioachino Rossini",
+   "Vincenzo Bellini",
+   "Giacomo Puccini"
+  ],
+  "answer": 0,
+  "fact": "Translated into English, the composer's name would be the rather less grand 'Joe Green'.",
+  "diff": 2
+ },
+ {
+  "id": "arts-026",
+  "cat": "arts",
+  "q": "Which Japanese artist created the woodblock print 'The Great Wave off Kanagawa'?",
+  "options": [
+   "Kitagawa Utamaro",
+   "Katsushika Hokusai",
+   "Sesshū Tōyō",
+   "Utagawa Hiroshige"
+  ],
+  "answer": 1,
+  "fact": "It is part of his series Thirty-six Views of Mount Fuji, and the mountain sits small in the background.",
+  "diff": 2
+ },
+ {
+  "id": "arts-027",
+  "cat": "arts",
+  "q": "In which Italian city can you see Leonardo da Vinci's The Last Supper?",
+  "options": [
+   "Milan",
+   "Rome",
+   "Venice",
+   "Florence"
+  ],
+  "answer": 0,
+  "fact": "Leonardo painted it on a dry wall rather than as a true fresco, so it began flaking within his lifetime.",
+  "diff": 2
+ },
+ {
+  "id": "arts-028",
+  "cat": "arts",
+  "q": "George Orwell was the pen name of which writer?",
+  "options": [
+   "Edward Blake",
+   "Eric Blair",
+   "Eric Weller",
+   "Arthur Blair"
+  ],
+  "answer": 1,
+  "fact": "Animal Farm was turned down by several publishers before it finally appeared in 1945.",
+  "diff": 2
+ },
+ {
+  "id": "arts-029",
+  "cat": "arts",
+  "q": "Which 1941 film follows newspaper tycoon Charles Foster Kane?",
+  "options": [
+   "The Great Dictator",
+   "How Green Was My Valley",
+   "The Maltese Falcon",
+   "Citizen Kane"
+  ],
+  "answer": 3,
+  "fact": "Orson Welles was just 25 when he co-wrote, directed and starred in it.",
+  "diff": 2
+ },
+ {
+  "id": "arts-030",
+  "cat": "arts",
+  "q": "Which French composer wrote Boléro?",
+  "options": [
+   "Camille Saint-Saëns",
+   "Maurice Ravel",
+   "Gabriel Fauré",
+   "Erik Satie"
+  ],
+  "answer": 1,
+  "fact": "The snare drum plays the same short rhythm over and over from the very start to the very end.",
+  "diff": 2
+ },
+ {
+  "id": "arts-031",
+  "cat": "arts",
+  "q": "Which silent film won Outstanding Picture at the very first Academy Awards in 1929?",
+  "options": [
+   "The Jazz Singer",
+   "Metropolis",
+   "Wings",
+   "Ben-Hur"
+  ],
+  "answer": 2,
+  "fact": "That first ceremony was a private dinner, and the awards part reportedly lasted about 15 minutes.",
+  "diff": 3
+ },
+ {
+  "id": "arts-032",
+  "cat": "arts",
+  "q": "Stanley Kubrick's only Oscar win was for the visual effects of which film?",
+  "options": [
+   "2001: A Space Odyssey",
+   "A Clockwork Orange",
+   "Dr. Strangelove",
+   "The Shining"
+  ],
+  "answer": 0,
+  "fact": "The film contains a famous cut from a bone thrown into the air to a spacecraft orbiting Earth.",
+  "diff": 3
+ },
+ {
+  "id": "arts-033",
+  "cat": "arts",
+  "q": "Who wrote The Adventures of Pinocchio?",
+  "options": [
+   "Alessandro Manzoni",
+   "Gianni Rodari",
+   "Carlo Collodi",
+   "Italo Calvino"
+  ],
+  "answer": 2,
+  "fact": "The author's real name was Carlo Lorenzini; his pen name came from the Tuscan village where his mother was born.",
+  "diff": 3
+ },
+ {
+  "id": "arts-034",
+  "cat": "arts",
+  "q": "In which Thomas Hardy novel does Bathsheba Everdene appear?",
+  "options": [
+   "Jude the Obscure",
+   "Tess of the d'Urbervilles",
+   "Far from the Madding Crowd",
+   "The Mayor of Casterbridge"
+  ],
+  "answer": 2,
+  "fact": "Its title is borrowed from Thomas Gray's famous poem 'Elegy Written in a Country Churchyard'.",
+  "diff": 3
+ },
+ {
+  "id": "arts-035",
+  "cat": "arts",
+  "q": "Who painted 'The Arnolfini Portrait', with its famous convex mirror?",
+  "options": [
+   "Albrecht Dürer",
+   "Jan van Eyck",
+   "Pieter Bruegel",
+   "Hans Holbein"
+  ],
+  "answer": 1,
+  "fact": "Above the mirror the artist wrote in Latin that he 'was here', dated 1434.",
+  "diff": 3
+ },
+ {
+  "id": "arts-036",
+  "cat": "arts",
+  "q": "Which English composer wrote The Lark Ascending?",
+  "options": [
+   "Edward Elgar",
+   "Frederick Delius",
+   "Ralph Vaughan Williams",
+   "Gerald Finzi"
+  ],
+  "answer": 2,
+  "fact": "The piece for violin and orchestra was inspired by a poem of the same name by George Meredith.",
+  "diff": 3
+ },
+ {
+  "id": "arts-037",
+  "cat": "arts",
+  "q": "Which composer wrote 'The Blue Danube' waltz?",
+  "options": [
+   "Johann Strauss II",
+   "Franz Schubert",
+   "Franz Lehár",
+   "Richard Strauss"
+  ],
+  "answer": 0,
+  "fact": "It was first written in 1867 as a piece for male choir, with words, before becoming famous as an orchestral waltz.",
+  "diff": 3
+ },
+ {
+  "id": "arts-038",
+  "cat": "arts",
+  "q": "The name of the art movement Fauvism comes from the French for what?",
+  "options": [
+   "Young rebels",
+   "False painters",
+   "Bright colours",
+   "Wild beasts"
+  ],
+  "answer": 3,
+  "fact": "The label came from a mocking 1905 review by critic Louis Vauxcelles of Henri Matisse and his circle.",
+  "diff": 3
+ },
+ {
+  "id": "arts-039",
+  "cat": "arts",
+  "q": "Which Russian composer of the opera Prince Igor was also a professor of chemistry?",
+  "options": [
+   "César Cui",
+   "Modest Mussorgsky",
+   "Mily Balakirev",
+   "Alexander Borodin"
+  ],
+  "answer": 3,
+  "fact": "He called himself a 'Sunday composer', and a chemical reaction is still sometimes named after him.",
+  "diff": 3
+ },
+ {
+  "id": "arts-040",
+  "cat": "arts",
+  "q": "In Gulliver's Travels, what is the land of giants called?",
+  "options": [
+   "Laputa",
+   "Blefuscu",
+   "Brobdingnag",
+   "Lilliput"
+  ],
+  "answer": 2,
+  "fact": "Jonathan Swift first published the book anonymously in 1726, presented as the real memoir of Lemuel Gulliver.",
+  "diff": 3
+ }
+]
