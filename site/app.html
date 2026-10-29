@@ -12,7 +12,7 @@ body{margin:0}
 <div style="background: {{theme.c1}}; color: {{theme.on1}}; padding: 26px 40px 150px; transition: background 0.45s ease, color 0.45s ease">
 <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px">
 <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap">
-<span style="font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.03em">unizy</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.03em">unizy</span>
 <sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; gap: 8px; align-items: center">
 <sc-for list="{{stepDots}}" as="d" hint-placeholder-count="3">
@@ -37,7 +37,7 @@ body{margin:0}
 </sc-if>
 <div style="display: flex; flex-direction: column; gap: 14px">
 <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: {{theme.eyebrow}}">{{eyebrow}}</span>
-<h1 class="uz-ob-h1" style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 58px; line-height: 1; letter-spacing: -0.035em; max-width: 880px">{{headline}}</h1>
+<h1 class="uz-ob-h1" style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 58px; line-height: 1; letter-spacing: -0.035em; max-width: 880px">{{headline}}</h1>
 </div>
 </div>
 </div>
@@ -422,7 +422,7 @@ body{margin:0}
 <sc-if value="{{showStart}}" hint-placeholder-val="{{ true }}">
 <section style="background: #14283B; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Start here</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em">Start here</h2>
 <span style="display: flex; gap: 12px; align-items: baseline"><span style="font-size: 13px; font-weight: 700; color: #E9893B">{{startCount}}</span><button onClick="{{hideStart}}" style="font: inherit; font-size: 13px; font-weight: 600; border: none; background: none; color: #C5CFD8; text-decoration: underline; cursor: pointer; padding: 0">Hide</button></span>
 </div>
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px">
@@ -516,7 +516,7 @@ body{margin:0}
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px">
 <sc-for list="{{ev.tiles}}" as="et" hint-placeholder-count="3">
 <div style="border-radius: 14px; background: {{theme.tint}}; padding: 14px 16px; display: flex; flex-direction: column; gap: 3px">
-<span style="font-family: 'Fraunces', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05">{{et.v}}</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05">{{et.v}}</span>
 <span style="font-size: 13px; font-weight: 800">{{et.label}}</span>
 <span style="font-size: 12px; line-height: 1.4; color: #33475A">{{et.sub}}</span>
 </div>
@@ -848,7 +848,7 @@ body{margin:0}
 
 <sc-if value="{{nt.uploading}}" hint-placeholder-val="{{ false }}">
 <div style="display: flex; flex-direction: column; gap: 14px">
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Upload your notes</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Upload your notes</h2>
 <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #33475A">Choose a text or Markdown file (.txt, .md), or paste your notes below. Unizy saves them as a page and can turn them into flashcards. Lines like “Term: definition”, “Q: … / A: …” and headings with bullet points each become cards.</p>
 <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: #33475A">
 Notes file
@@ -884,7 +884,7 @@ Notes file
 <sc-if value="{{nt.showLib}}" hint-placeholder-val="{{ true }}">
 <div style="display: flex; flex-direction: column; gap: 14px">
 <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4A5C6E">{{nt.libSource}}</span>
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; line-height: 1.15">{{nt.libHeading}}</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 28px; letter-spacing: -0.02em; line-height: 1.15">{{nt.libHeading}}</h2>
 <div style="font-size: 16px; line-height: 1.7; color: #1B3247; white-space: pre-line; max-width: 760px">{{nt.libBody}}</div>
 <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid #EDF1F4">
 <button onClick="{{nt.studyTopic}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Flashcards on this topic</button>
@@ -905,7 +905,7 @@ Notes file
 </div>
 <label style="display: flex">
 <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Page title</span>
-<input type="text" value="{{nt.pageTitle}}" onChange="{{nt.onPageTitle}}" placeholder="Page title" style="font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em; border: none; outline: none; padding: 4px 0; width: 100%; color: #14283B; background: transparent">
+<input type="text" value="{{nt.pageTitle}}" onChange="{{nt.onPageTitle}}" placeholder="Page title" style="font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em; border: none; outline: none; padding: 4px 0; width: 100%; color: #14283B; background: transparent">
 </label>
 <label style="display: flex">
 <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Page notes</span>
@@ -942,11 +942,11 @@ Notes file
 </sc-for>
 </div>
 <sc-if value="{{mp.hasDue}}" hint-placeholder-val="{{ false }}"><div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-radius: 12px; background: #F5F8FF; border: 1.5px solid #1D3F8F; padding: 10px 12px"><span style="font-size: 14px; font-weight: 600; line-height: 1.5; flex: 1 1 240px">{{mp.dueText}}</span><button onClick="{{mp.goDue}}" style="font: inherit; font-size: 13px; font-weight: 700; padding: 8px 14px; min-height: 40px; border-radius: 999px; border: none; background: #1D3F8F; color: #FFFFFF; cursor: pointer">Start the check</button></div></sc-if>
-<sc-if value="{{mp.hasEv}}" hint-placeholder-val="{{ false }}"><details style="border-top: 1px solid #EDF1F4; padding-top: 8px"><summary style="cursor: pointer; font-size: 13px; font-weight: 800">Your learning evidence</summary><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 8px"><sc-for list="{{mp.ev}}" as="evx" hint-placeholder-count="3"><div style="border: 1px solid #E1E6EB; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', sans-serif; font-size: 24px; font-weight: 800">{{evx.v}}</span><span style="font-size: 13px; font-weight: 700">{{evx.label}}</span><span style="font-size: 12px; color: #5B6C7D">{{evx.sub}}</span></div></sc-for></div><p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #5B6C7D">Only first attempts count. The aim: the second and third numbers should match or beat the first, which shows you can apply ideas to new cases rather than remember particular questions.</p></details></sc-if>
+<sc-if value="{{mp.hasEv}}" hint-placeholder-val="{{ false }}"><details style="border-top: 1px solid #EDF1F4; padding-top: 8px"><summary style="cursor: pointer; font-size: 13px; font-weight: 800">Your learning evidence</summary><div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 8px"><sc-for list="{{mp.ev}}" as="evx" hint-placeholder-count="3"><div style="border: 1px solid #E1E6EB; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 800">{{evx.v}}</span><span style="font-size: 13px; font-weight: 700">{{evx.label}}</span><span style="font-size: 12px; color: #5B6C7D">{{evx.sub}}</span></div></sc-for></div><p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #5B6C7D">Only first attempts count. The aim: the second and third numbers should match or beat the first, which shows you can apply ideas to new cases rather than remember particular questions.</p></details></sc-if>
 </section>
 
 <section style="background: #FFFFFF; border-radius: 18px; padding: 20px 22px; border: 1px solid #E1E6EB; display: flex; flex-direction: column; gap: 14px">
-<div><span style="font-size: 12px; font-weight: 700; color: #5B6C7D">{{mp.topicNo}}</span><h3 style="margin: 2px 0 0; font-family: 'Fraunces', sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.01em">{{mp.topicName}}</h3></div>
+<div><span style="font-size: 12px; font-weight: 700; color: #5B6C7D">{{mp.topicNo}}</span><h3 style="margin: 2px 0 0; font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 800; letter-spacing: -0.01em">{{mp.topicName}}</h3></div>
 <div style="border: 1px solid #E1E6EB; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.5">
 <div style="display: flex; gap: 8px; align-items: flex-start"><span aria-hidden="true" style="flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; background: {{mp.chk.signBg}}; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">{{mp.chk.signMark}}</span><span><strong>Clinician review:</strong> {{mp.chk.signText}}<sc-if value="{{mp.chk.hasGmc}}" hint-placeholder-val="{{ false }}"> <a href="{{mp.chk.gmcUrl}}" target="_blank" rel="noopener" style="color: #14283B">{{mp.chk.gmc}} (check the register)</a></sc-if></span></div>
 <div style="display: flex; gap: 8px; align-items: flex-start"><span aria-hidden="true" style="flex: 0 0 auto; width: 20px; height: 20px; border-radius: 999px; background: #E8F0FB; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px">✓</span><span>{{mp.chk.sourced}} {{mp.chk.guidance}}</span></div>
@@ -1594,7 +1594,7 @@ Notes file
 <sc-if value="{{cq.marked}}" hint-placeholder-val="{{ false }}">
 <div style="border-radius: 14px; padding: 18px; background: {{theme.tint}}; border: 1.5px solid {{theme.c1}}; display: flex; flex-direction: column; gap: 10px">
 <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap">
-<span style="font-family: 'Fraunces', sans-serif; font-size: 30px; font-weight: 800">{{cq.scoreText}}</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-size: 30px; font-weight: 800">{{cq.scoreText}}</span>
 <span style="font-size: 14px; font-weight: 700">{{cq.band}}</span>
 </div>
 <span style="font-size: 15px; line-height: 1.55">{{cq.feedback}}</span>
@@ -1637,7 +1637,7 @@ Notes file
 <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap">
 <div style="display: flex; flex-direction: column; gap: 4px">
 <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #4A5C6E">Test complete</span>
-<span style="font-family: 'Fraunces', sans-serif; font-size: 56px; font-weight: 800; line-height: 1">{{tr.pct}}%</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-size: 56px; font-weight: 800; line-height: 1">{{tr.pct}}%</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end">
 <span style="font-size: 18px; font-weight: 700">{{tr.band}}</span>
@@ -1747,7 +1747,7 @@ Notes file
 </div>
 <button onClick="{{fc.flip}}" style="font: inherit; width: 100%; max-width: 720px; min-height: 340px; border-radius: 24px; border: 1px solid #E1E6EB; background: {{fc.cardBg}}; color: {{fc.cardFg}}; cursor: pointer; padding: 32px 36px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08)">
 <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.8">{{fc.cardSide}} · {{fc.cardTag}}</span>
-<span style="font-family: 'Fraunces', sans-serif; font-weight: 700; font-size: {{fc.cardSize}}px; line-height: 1.3; letter-spacing: -0.01em; white-space: pre-line">{{fc.cardText}}</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: {{fc.cardSize}}px; line-height: 1.3; letter-spacing: -0.01em; white-space: pre-line">{{fc.cardText}}</span>
 <span style="font-size: 13px; opacity: 0.75">Tap to flip</span>
 </button>
 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center">
@@ -2134,7 +2134,7 @@ Notes file
 <sc-if value="{{fg.vFriends}}" hint-placeholder-val="{{ true }}">
 <div style="padding: 22px; display: flex; flex-direction: column; gap: 22px">
 <div style="display: flex; flex-direction: column; gap: 4px">
-<h3 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Friends</h3>
+<h3 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Friends</h3>
 <span style="font-size: 14px; line-height: 1.5; color: #33475A">{{fg.friendsSub}}</span>
 </div>
 
@@ -2202,7 +2202,7 @@ Notes file
 
 <sc-if value="{{fg.vNew}}" hint-placeholder-val="{{ false }}">
 <div style="padding: 22px; display: flex; flex-direction: column; gap: 18px; max-width: 640px">
-<h3 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">New group chat</h3>
+<h3 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">New group chat</h3>
 <label style="display: flex; flex-direction: column; gap: 6px">
 <span style="font-size: 14px; font-weight: 700">Group name</span>
 <input type="text" data-fg-gname="1" value="{{fg.newName}}" onChange="{{fg.onNewName}}" placeholder="{{fg.newNamePlaceholder}}" maxlength="60" style="font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 10px; border: 1.5px solid #C5CFD8">
@@ -2373,12 +2373,12 @@ Notes file
 <section style="background: #FFFFFF; border-radius: 18px; border: 1px solid #E1E6EB; padding: 24px; display: flex; flex-direction: column; gap: 18px">
 <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap">
 <div style="width: 96px; height: 96px; border-radius: 20px; background: {{theme.c1}}; color: {{theme.on1}}; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 0 0 auto">
-<span style="font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 32px; line-height: 1">{{as.r.big}}</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 32px; line-height: 1">{{as.r.big}}</span>
 <span style="font-size: 12px; font-weight: 700; opacity: 0.9">{{as.r.bigSub}}</span>
 </div>
 <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 260px; min-width: 0">
 <span style="font-size: 13px; font-weight: 600; color: #4A5C6E">{{as.r.meta}}</span>
-<h3 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em">{{as.r.band}}</h3>
+<h3 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em">{{as.r.band}}</h3>
 <span style="font-size: 14px; font-weight: 600; color: #33475A">{{as.r.title}}</span>
 </div>
 <button onClick="{{as.newOne}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: 1.5px solid #C5CFD8; background: #FFFFFF; color: #14283B; cursor: pointer">Mark something new</button>
@@ -2517,7 +2517,7 @@ Notes file
 </sc-if>
 </svg>
 <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 260px; min-width: 0">
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Assess practice</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; letter-spacing: -0.02em">Assess practice</h2>
 <span style="font-size: 14px; line-height: 1.5; color: #33475A">{{as.intro}}</span>
 </div>
 <span style="font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; background: {{aiPillBg}}; color: #14283B">{{aiPill}}</span>
@@ -2722,7 +2722,7 @@ Notes file
 </sc-if>
 </svg>
 <div style="display: flex; flex-direction: column; gap: 3px; flex: 1 1 auto; min-width: 0">
-<span style="font-family: 'Fraunces', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em">{{tutorName}}</span>
+<span style="font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em">{{tutorName}}</span>
 <span style="font-size: 14px; color: #33475A">{{tutorSub}}</span>
 </div>
 <span style="font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; background: {{aiPillBg}}; color: #14283B">{{aiPill}}</span>
@@ -2797,7 +2797,7 @@ Notes file
 <sc-if value="{{rm.notInRoom}}">
 <section style="background: #14283B; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
 <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #E9893B">Study rooms · {{uni.short}} students only</span>
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">{{activeMod.name}}</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">{{activeMod.name}}</h2>
 <span style="font-size: 14px; line-height: 1.55; opacity: 0.9">{{rm.list.intro}}</span>
 </section>
 <sc-if value="{{cx.ver.signedOut}}">
@@ -2874,7 +2874,7 @@ Notes file
 <h3 style="margin: 0; font-size: 17px; font-weight: 800">{{rm.list.bench.title}}</h3>
 <sc-if value="{{rm.list.bench.enough}}">
 <div style="display: flex; gap: 18px; align-items: flex-end; flex-wrap: wrap">
-<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', sans-serif; font-size: 34px; font-weight: 800">{{rm.list.bench.mine}}</span><span style="font-size: 13px; font-weight: 700">{{rm.list.bench.pctText}}</span><span style="font-size: 12px; color: #5B6C7D">{{rm.list.bench.avg}}</span></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Fraunces', Georgia, serif; font-size: 34px; font-weight: 800">{{rm.list.bench.mine}}</span><span style="font-size: 13px; font-weight: 700">{{rm.list.bench.pctText}}</span><span style="font-size: 12px; color: #5B6C7D">{{rm.list.bench.avg}}</span></span>
 <div style="display: flex; gap: 4px; align-items: flex-end; height: 70px; flex: 1 1 220px; min-width: 0">
 <sc-for list="{{rm.list.bench.bars}}" as="bb" hint-placeholder-count="10"><span title="{{bb.label}}%+" style="flex: 1 1 0; height: {{bb.h}}; background: {{bb.bg}}; border-radius: 4px 4px 2px 2px"></span></sc-for>
 </div>
@@ -2894,7 +2894,7 @@ Notes file
 <div style="display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap">
 <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
 <button onClick="{{rm.room.back}}" style="font: inherit; font-size: 13px; font-weight: 700; align-self: flex-start; border: none; background: none; color: #E9893B; padding: 0; cursor: pointer">← All rooms</button>
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-size: 24px; font-weight: 800; line-height: 1.15">{{rm.room.name}}</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 800; line-height: 1.15">{{rm.room.name}}</h2>
 <span style="font-size: 13px; opacity: 0.85">{{rm.room.module}} · {{rm.room.onlineText}}</span>
 </div>
 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
@@ -3061,7 +3061,7 @@ Notes file
 <section style="background: #14283B; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: flex-end">
 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 280px">
 <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #E9893B">Module hub · {{uni.short}} students only</span>
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">{{activeMod.name}}</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">{{activeMod.name}}</h2>
 <span style="font-size: 14px; opacity: 0.85">{{cx.hub.stats}}</span>
 </div>
 <div style="display: flex; gap: 8px; flex-wrap: wrap">
@@ -3180,7 +3180,7 @@ Notes file
 <section style="background: #14283B; color: #FFFFFF; border-radius: 18px; padding: 22px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; align-items: flex-end">
 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 260px">
 <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #E9893B">Campus marketplace · {{uni.short}} students only</span>
-<h2 style="margin: 0; font-family: 'Fraunces', sans-serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">Buy and sell on campus</h2>
+<h2 style="margin: 0; font-family: 'Fraunces', Georgia, serif; font-size: 26px; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em">Buy and sell on campus</h2>
 <span style="font-size: 14px; opacity: 0.85">Textbooks, lab kit, course materials and room sub-lets. {{cx.mkt.count}}</span>
 </div>
 <sc-if value="{{cx.mkt.verified}}">
@@ -3355,7 +3355,7 @@ Notes file
 <button onClick="{{cx.fo.toggleBeep}}" style="font: inherit; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 999px; border: 1.5px solid #D5DDE4; background: #FFFFFF; color: #33475A; cursor: pointer">{{cx.fo.beepLabel}}</button>
 </div>
 <div style="width: 220px; height: 220px; max-width: 70vw; max-height: 70vw; border-radius: 999px; border: 10px solid {{cx.fo.ringColor}}; background: {{cx.fo.phaseBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box">
-<span data-cx-clock style="font-family: 'Fraunces', sans-serif; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums">{{cx.fo.clock}}</span>
+<span data-cx-clock style="font-family: 'Fraunces', Georgia, serif; font-size: 54px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums">{{cx.fo.clock}}</span>
 <span style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em">{{cx.fo.phase}}</span>
 </div>
 <span style="font-size: 15px; font-weight: 700; text-align: center">{{cx.fo.modName}}</span>

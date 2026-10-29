@@ -30,7 +30,7 @@
 
   // ---------------- coverage ----------------
   (function () {
-    var s = H.stats; if (!s) return;
+    var s = H.stats; if (!s || !$('stats') || !$('degList')) return;
     var items = [[s.unis, 'universities'], [s.degrees, 'degrees'], [s.modules.toLocaleString('en-GB'), 'modules from official 2026/27 catalogues'], [s.packs, 'module packs written for one specific module and fact-checked'], [s.libraries, 'subject libraries'], [s.cards.toLocaleString('en-GB'), 'library flashcards']];
     $('stats').innerHTML = items.map(function (x) { return '<div class="stat"><b>' + x[0] + '</b><span>' + x[1] + '</span></div>'; }).join('');
     var t = '<table class="covtable"><thead><tr><th>University</th><th>Degrees</th><th>Modules</th><th>Module pack</th><th>Subject library</th><th>Closest library</th><th>Outline only</th></tr></thead><tbody>' +

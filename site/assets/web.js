@@ -300,7 +300,7 @@
     var close = el('button', { 'aria-label': 'Close', style: 'align-self:flex-end;border:none;background:none;font-size:22px;cursor:pointer;width:44px;height:44px;margin:-14px -14px -10px 0', onclick: Account.hide }, ['×']);
     card.appendChild(close);
     if (!s) {
-      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#33475A' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
       var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #C5CFD8' });
       var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
@@ -319,7 +319,7 @@
       setTimeout(function () { input.focus(); }, 30);
     } else {
       var email = (s.user && s.user.email) || 'your account';
-      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:24px" }, ['Your account']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#33475A' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
       card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#14283B' }, ['Set or change your password']));
       card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#14283B' }, ['Leave a review of Unizy']));
