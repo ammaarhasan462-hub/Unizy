@@ -94,7 +94,7 @@
       loadMsgs(gid).then(function () { scrollSoon(true); });
     }).catch(function (e) { S.busy = false; note(e.message, 'err'); });
   }
-  // AI replies end with a "SOURCES:" line; show it as labels instead of text
+  // tutor replies end with a "SOURCES:" line; show it as labels instead of text
   function splitSources(t) {
     t = String(t || ''); var m = /\n*[ \t*_]*SOURCES?:[ \t*_]*([^\n]*)\s*$/i.exec(t);
     if (!m) return { body: t, src: '' };

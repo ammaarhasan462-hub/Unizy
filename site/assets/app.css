@@ -157,3 +157,5 @@ html.ux-leaving .ux-main{opacity:.35;transition:opacity .18s ease}
 .ux-main.ux-enter{animation:uxIn2 .4s var(--ease) both}
 @keyframes uxIn2{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.ux-main.ux-enter{animation:none}}
+a.ux-ghost,.ux-actions .ux-ghost{text-decoration:none;height:40px;min-height:40px;box-sizing:border-box;line-height:1.2}
+@media (max-width:600px){.ux-site{padding:8px 10px}}

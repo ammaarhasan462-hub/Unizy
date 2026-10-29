@@ -1,4 +1,4 @@
-/* Unizy on the web: accounts (Supabase magic-link email), syncing saved work, and the AI (via the Unizy AI function). */
+/* Unizy on the web: accounts (Supabase magic-link email), syncing saved work, and the tutor. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
@@ -129,7 +129,7 @@
     }
   };
 
-  // ---------------- AI client (same call shape as Claude's in-app sampling) ----------------
+  // ---------------- tutor client ----------------
   function aiError(code, message) { return { code: code, message: message, userMessage: message }; }
   function blobToJpegBase64(blob) {
     return new Promise(function (resolve, reject) {
@@ -235,7 +235,7 @@
   };
   sample.limits = function () { return Promise.resolve({ maxPromptBytes: 100000, images: { maxCount: 5, maxInputBytes: 20000000, mediaTypes: ['image/jpeg', 'image/png', 'image/webp'] } }); };
 
-  window.claude = { use: function (name) { return Promise.resolve(name === 'sample' && Auth.session ? sample : null); } };
+  window.unizyTutor = { use: function (name) { return Promise.resolve(name === 'sample' && Auth.session ? sample : null); } };
 
   // ---------------- plan (free / trial / Pro) ----------------
   function fmtDay(iso) { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
