@@ -14,8 +14,9 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const MAX_PER_IP_PER_HOUR = 12;
-const MAX_PER_EMAIL_PER_HOUR = 5;
+// campus wifi puts a whole university behind a few shared IPs, so the per-IP limit is generous
+const MAX_PER_IP_PER_HOUR = 150;
+const MAX_PER_EMAIL_PER_HOUR = 8;
 
 async function sha256(s: string) {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
@@ -79,6 +80,7 @@ Deno.serve(async (req) => {
     if (created.error && !/already/i.test(String(created.error.message))) return json(500, { error: "failed" });
     ({ data, error } = await service.auth.admin.generateLink({ type, email }));
   }
+  if (error && /second|frequen|rate|too many/i.test(String(error.message))) return json(429, { error: "too_soon" });
   if (error || !data?.properties?.email_otp) {
     // for resets, don't reveal whether an account exists
     return purpose === "reset" ? json(200, { ok: true }) : json(500, { error: "failed" });

@@ -36,6 +36,7 @@
       }, function () { var e = new Error('offline'); e.code = 'offline'; throw e; });
   }
   function friendly(e, ctx) {
+    if (e && e.custom) return e.message;
     var c = String(e.code || ''), m = String(e.message || '');
     if (c === 'offline') return 'Couldn’t reach Unizy. Check your internet connection and try again.';
     if (e.status === 429 || /rate_limit|over_/.test(c) || /rate limit|too many/i.test(m)) return 'Too many attempts just now. Wait a few minutes and try again.';
@@ -165,7 +166,7 @@
   }
 
   // ---------- sign-in / reset code (scanner-proof: uni mail systems open links, but can't type codes) ----------
-  function sendCode(email, purpose) { return fn('login-code', { email: email, purpose: purpose }).then(function (r) { if (!r || !r.ok) { var e = new Error(r && r.error === 'invalid_email' ? 'Check that your email address is correct.' : 'Couldn’t send the email just now. Try again in a minute.'); e.code = r && r.error; if (r && r.error === 'rate_limited') e.status = 429; throw e; } return r; }); }
+  function sendCode(email, purpose) { return fn('login-code', { email: email, purpose: purpose }).catch(function () { return { error: 'offline_fn' }; }).then(function (r) { if (!r || !r.ok) { var er = r && r.error; var e = new Error(er === 'invalid_email' ? 'Check that your email address is correct.' : er === 'too_soon' ? 'We’ve just sent you a code. Wait a minute before asking for another.' : er === 'rate_limited' ? 'Too many codes asked for just now. Wait a few minutes and try again.' : 'Couldn’t send the email just now. Try again in a minute.'); e.code = er === 'offline_fn' ? 'offline_fn' : (er || 'send_failed'); if (er === 'offline_fn') e.message = 'Couldn’t reach Unizy. Check your internet connection and try again.'; e.custom = true; throw e; } return r; }); }
   function codeView(email, purpose, digits) {
     var n = digits || 6, box = msgBox();
     var code = field({ name: 'code', label: n + '-digit code', autocomplete: 'one-time-code', placeholder: '', required: true, inputmode: 'numeric' });
@@ -235,9 +236,9 @@
           busy(submit, false, 'Log in');
           var f = friendly(err);
           if (f === 'confirm') {
-            var again = el('button', { type: 'button', class: 'linkish', text: 'Send the confirmation email again' });
-            again.addEventListener('click', function () { api('resend?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { type: 'signup', email: em }).then(function () { inbox(em, 'signup'); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
-            showMsg(box, el('span', {}, ['You need to confirm your email first. Open the link we sent to ', el('strong', { text: em }), '. ', again]));
+            var again = el('button', { type: 'button', class: 'linkish', text: 'Email me a code to finish' });
+            again.addEventListener('click', function () { sendCode(em, 'login').then(function (r) { codeView(em, 'login', r.digits); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
+            showMsg(box, el('span', {}, ['Your email isn’t confirmed yet. ', again]));
           } else showMsg(box, f);
         });
     });
@@ -246,7 +247,12 @@
       if (!EMAIL_RE.test(em)) { showMsg(box, 'Type your email above, then choose “Email me a code instead”.'); email.input.focus(); return; }
       busy(magic, true, 'Sending…');
       sendCode(em, 'login').then(function (r) { codeView(em, 'login', r.digits); })
-        .catch(function (err) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(err)); });
+        .catch(function (err) {
+          if (/^(invalid_email|too_soon|rate_limited)$/.test(err.code)) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(err)); return; }
+          // backup route: Unizy's standard sign-in link email
+          api('otp?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, create_user: true }).then(function () { inbox(em, 'link'); })
+            .catch(function (e2) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(e2)); });
+        });
     });
     render([h1('Welcome back', 'Log in to pick up where you left off.'), form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
       el('p', { class: 'switch' }, ['New to Unizy? ', el('a', { href: link('/signup'), text: 'Create an account' })]), legal()]);
@@ -264,7 +270,11 @@
       if (!EMAIL_RE.test(em)) { showMsg(box, 'Enter a valid email address.'); email.input.focus(); return; }
       busy(submit, true, 'Sending…');
       sendCode(em, 'reset').then(function (r) { codeView(em, 'reset', r.digits); })
-        .catch(function (err) { busy(submit, false, 'Send reset code'); showMsg(box, friendly(err)); });
+        .catch(function (err) {
+          if (/^(invalid_email|too_soon|rate_limited)$/.test(err.code)) { busy(submit, false, 'Send reset code'); showMsg(box, friendly(err)); return; }
+          api('recover?redirect_to=' + encodeURIComponent(location.origin + '/reset.html'), { email: em }).then(function () { inbox(em, 'reset'); })
+            .catch(function (e2) { busy(submit, false, 'Send reset code'); showMsg(box, friendly(e2)); });
+        });
     });
     var back = el('a', { href: link('/login'), text: 'Back to log in' });
     if (MODE === 'login') back.addEventListener('click', function (e) { e.preventDefault(); loginView(email.input.value.trim()); });

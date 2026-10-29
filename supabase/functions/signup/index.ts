@@ -13,7 +13,8 @@ const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const MAX_PER_IP_PER_HOUR = 8;
+// campus wifi puts a whole university behind a few shared IPs, so the per-IP limit is generous
+const MAX_PER_IP_PER_HOUR = 100;
 
 async function sha256(s: string) {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
@@ -34,11 +35,11 @@ Forgotten your password? Reset it at https://unizy.uk/reset.html
 If you didn't sign up, reply to this email or contact hello@unizy.uk.
 
 Unizy`;
-  const html = `<div style="font-family:Inter,Arial,sans-serif;font-size:16px;line-height:1.55;color:#141414;max-width:520px">
+  const html = `<div style="font-family:'DM Sans',Arial,sans-serif;font-size:16px;line-height:1.55;color:#17302A;max-width:520px">
 <p>${esc(hi)}</p>
 <p>You've signed up to Unizy with this email address. You're all set: log in any time with your email and password.</p>
-<p><a href="https://unizy.uk/app.html" style="display:inline-block;background:#141414;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:999px">Open Unizy</a></p>
-<p style="font-size:14px;color:#55554F">Forgotten your password? <a href="https://unizy.uk/reset.html" style="color:#141414">Reset it here</a>.<br>If you didn't sign up, reply to this email or contact hello@unizy.uk.</p>
+<p><a href="https://unizy.uk/app" style="display:inline-block;background:#17302A;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px">Open Unizy</a></p>
+<p style="font-size:14px;color:#5D6D67">Forgotten your password? <a href="https://unizy.uk/reset.html" style="color:#17302A">Reset it here</a>.<br>If you didn't sign up, reply to this email or contact hello@unizy.uk.</p>
 </div>`;
   try {
     await fetch("https://api.resend.com/emails", {
