@@ -1,0 +1,562 @@
+[
+ {
+  "id": "nature-001",
+  "cat": "nature",
+  "q": "Roughly how many spines does an adult hedgehog have?",
+  "options": [
+   "500 to 700",
+   "5,000 to 7,000",
+   "50,000 to 70,000",
+   "Over 500,000"
+  ],
+  "answer": 1,
+  "fact": "Baby hedgehogs, called hoglets, are born with their spines hidden just beneath their skin.",
+  "diff": 2
+ },
+ {
+  "id": "nature-002",
+  "cat": "nature",
+  "q": "Which living animal is known to have the largest eyes?",
+  "options": [
+   "Blue whale",
+   "African elephant",
+   "Colossal squid",
+   "Ostrich"
+  ],
+  "answer": 2,
+  "fact": "The record eye measured about 27 cm across, roughly the size of a dinner plate, with a lens up to 12 cm wide.",
+  "diff": 2
+ },
+ {
+  "id": "nature-003",
+  "cat": "nature",
+  "q": "How often does a three-toed sloth climb down from its tree to go to the toilet?",
+  "options": [
+   "Every hour",
+   "Once a day",
+   "About once a week",
+   "Once a year"
+  ],
+  "answer": 2,
+  "fact": "Green algae grow in sloth fur, giving it a greenish tinge that helps them blend into the treetops.",
+  "diff": 2
+ },
+ {
+  "id": "nature-004",
+  "cat": "nature",
+  "q": "Which animal is thought to be the longest-living vertebrate?",
+  "options": [
+   "Giant tortoise",
+   "Bowhead whale",
+   "Koi carp",
+   "Greenland shark"
+  ],
+  "answer": 3,
+  "fact": "These sharks grow only about 1 cm a year and are thought not to reach adulthood until around 150 years old.",
+  "diff": 3
+ },
+ {
+  "id": "nature-005",
+  "cat": "nature",
+  "q": "What is a huge, swirling flock of starlings called?",
+  "options": [
+   "A murmuration",
+   "A parliament",
+   "A murder",
+   "A charm"
+  ],
+  "answer": 0,
+  "fact": "Each starling keeps track of about seven of its neighbours, which lets the whole flock change shape in an instant.",
+  "diff": 2
+ },
+ {
+  "id": "nature-006",
+  "cat": "nature",
+  "q": "Which Australian bird is famous for mimicking sounds like chainsaws and camera shutters?",
+  "options": [
+   "Kookaburra",
+   "Lyrebird",
+   "Cockatoo",
+   "Emu"
+  ],
+  "answer": 1,
+  "fact": "A male superb lyrebird, with its spectacular tail, appears on the Australian ten-cent coin.",
+  "diff": 2
+ },
+ {
+  "id": "nature-007",
+  "cat": "nature",
+  "q": "Komodo dragons are found in the wild in which country?",
+  "options": [
+   "Indonesia",
+   "Philippines",
+   "Australia",
+   "Madagascar"
+  ],
+  "answer": 0,
+  "fact": "In 2006 a female Komodo dragon at Chester Zoo laid fertile eggs without ever having met a male.",
+  "diff": 1
+ },
+ {
+  "id": "nature-008",
+  "cat": "nature",
+  "q": "What colour is the 'sweat' that hippos produce?",
+  "options": [
+   "Blue",
+   "Green",
+   "Black",
+   "Red"
+  ],
+  "answer": 3,
+  "fact": "The pigments act as a natural sunscreen and also slow the growth of some bacteria on the hippo's skin.",
+  "diff": 2
+ },
+ {
+  "id": "nature-009",
+  "cat": "nature",
+  "q": "Which animal has fingerprints that are almost impossible to tell apart from a human's?",
+  "options": [
+   "Kangaroo",
+   "Koala",
+   "Panda",
+   "Sloth"
+  ],
+  "answer": 1,
+  "fact": "Koalas live almost entirely on eucalyptus leaves, which are toxic to most other animals.",
+  "diff": 2
+ },
+ {
+  "id": "nature-010",
+  "cat": "nature",
+  "q": "Which bird makes the longest known migration of any animal?",
+  "options": [
+   "Albatross",
+   "Swallow",
+   "Arctic tern",
+   "Osprey"
+  ],
+  "answer": 2,
+  "fact": "Over its lifetime an Arctic tern can fly a distance equal to about three return trips to the Moon.",
+  "diff": 2
+ },
+ {
+  "id": "nature-011",
+  "cat": "nature",
+  "q": "What is the largest animal known to have ever lived?",
+  "options": [
+   "Argentinosaurus",
+   "Blue whale",
+   "Megalodon",
+   "Whale shark"
+  ],
+  "answer": 1,
+  "fact": "On a deep dive, a blue whale's heart can slow to just two beats per minute.",
+  "diff": 1
+ },
+ {
+  "id": "nature-012",
+  "cat": "nature",
+  "q": "In the wild, the Venus flytrap grows naturally in only one country. Which?",
+  "options": [
+   "Brazil",
+   "Australia",
+   "South Africa",
+   "United States"
+  ],
+  "answer": 3,
+  "fact": "Its trap normally only snaps shut when a trigger hair is touched twice in quick succession, avoiding false alarms.",
+  "diff": 3
+ },
+ {
+  "id": "nature-013",
+  "cat": "nature",
+  "q": "Which tree gives us conkers?",
+  "options": [
+   "Sweet chestnut",
+   "Oak",
+   "Horse chestnut",
+   "Beech"
+  ],
+  "answer": 2,
+  "fact": "Although it's a British favourite, the horse chestnut is native to the Balkans and arrived in the UK in the late 1500s.",
+  "diff": 1
+ },
+ {
+  "id": "nature-014",
+  "cat": "nature",
+  "q": "Which rare British toad has a yellow stripe down its back?",
+  "options": [
+   "Common toad",
+   "Midwife toad",
+   "Cane toad",
+   "Natterjack toad"
+  ],
+  "answer": 3,
+  "fact": "Natterjacks run rather than hop, and on quiet nights the males' rasping calls can be heard up to 2 km away.",
+  "diff": 3
+ },
+ {
+  "id": "nature-015",
+  "cat": "nature",
+  "q": "How many sides or points does a typical snowflake have?",
+  "options": [
+   "Four",
+   "Five",
+   "Six",
+   "Eight"
+  ],
+  "answer": 2,
+  "fact": "In 1885 Vermont farmer Wilson Bentley took the first known photo of a snowflake, and went on to capture over 5,000.",
+  "diff": 1
+ },
+ {
+  "id": "nature-016",
+  "cat": "nature",
+  "q": "How many hearts does an octopus have?",
+  "options": [
+   "One",
+   "Two",
+   "Three",
+   "Four"
+  ],
+  "answer": 2,
+  "fact": "Octopus blood is blue because it carries oxygen using a copper-based molecule instead of iron.",
+  "diff": 2
+ },
+ {
+  "id": "nature-017",
+  "cat": "nature",
+  "q": "What is the fastest land animal?",
+  "options": [
+   "Cheetah",
+   "Lion",
+   "Pronghorn",
+   "Greyhound"
+  ],
+  "answer": 0,
+  "fact": "Cheetahs can't roar like lions; instead they purr, chirp and make yelping sounds.",
+  "diff": 1
+ },
+ {
+  "id": "nature-018",
+  "cat": "nature",
+  "q": "Which is the only mammal capable of true powered flight?",
+  "options": [
+   "Flying squirrel",
+   "Sugar glider",
+   "Bat",
+   "Colugo"
+  ],
+  "answer": 2,
+  "fact": "Bats aren't actually blind: many see quite well, but they use echolocation to hunt in the dark.",
+  "diff": 1
+ },
+ {
+  "id": "nature-019",
+  "cat": "nature",
+  "q": "Which is the largest living bird?",
+  "options": [
+   "Emu",
+   "Ostrich",
+   "Albatross",
+   "Cassowary"
+  ],
+  "answer": 1,
+  "fact": "An ostrich's eye is bigger than its brain.",
+  "diff": 1
+ },
+ {
+  "id": "nature-020",
+  "cat": "nature",
+  "q": "What is a baby kangaroo called?",
+  "options": [
+   "Kit",
+   "Cub",
+   "Calf",
+   "Joey"
+  ],
+  "answer": 3,
+  "fact": "A newborn kangaroo is only about the size of a jellybean when it crawls into its mother's pouch.",
+  "diff": 1
+ },
+ {
+  "id": "nature-021",
+  "cat": "nature",
+  "q": "How many bones are there in a giraffe's neck?",
+  "options": [
+   "Seven",
+   "Twelve",
+   "Twenty-four",
+   "Forty"
+  ],
+  "answer": 0,
+  "fact": "A giraffe's dark tongue can be around 45 cm long, handy for plucking leaves from between thorns.",
+  "diff": 2
+ },
+ {
+  "id": "nature-022",
+  "cat": "nature",
+  "q": "Which tree's spinning seeds are often called 'helicopters'?",
+  "options": [
+   "Oak",
+   "Sycamore",
+   "Birch",
+   "Holly"
+  ],
+  "answer": 1,
+  "fact": "The spinning slows the seed's fall, giving the wind more time to carry it away from the parent tree.",
+  "diff": 1
+ },
+ {
+  "id": "nature-023",
+  "cat": "nature",
+  "q": "What is the long, coiled mouthpart a butterfly uses to drink nectar?",
+  "options": [
+   "Proboscis",
+   "Antenna",
+   "Mandible",
+   "Thorax"
+  ],
+  "answer": 0,
+  "fact": "Butterflies taste with sensors on their feet, so they can tell if a leaf is good for their eggs just by landing on it.",
+  "diff": 2
+ },
+ {
+  "id": "nature-024",
+  "cat": "nature",
+  "q": "Which scale measures wind strength from 0 for calm to 12 for hurricane force?",
+  "options": [
+   "Richter scale",
+   "Beaufort scale",
+   "Fujita scale",
+   "Mohs scale"
+  ],
+  "answer": 1,
+  "fact": "It is named after Francis Beaufort, a Royal Navy officer who devised it in 1805 to describe conditions at sea.",
+  "diff": 2
+ },
+ {
+  "id": "nature-025",
+  "cat": "nature",
+  "q": "Which type of cloud is the towering thundercloud?",
+  "options": [
+   "Cirrus",
+   "Stratus",
+   "Altostratus",
+   "Cumulonimbus"
+  ],
+  "answer": 3,
+  "fact": "Their tops can climb more than 10 km high, where they often spread out into a flat 'anvil' shape.",
+  "diff": 2
+ },
+ {
+  "id": "nature-026",
+  "cat": "nature",
+  "q": "Which plant is famous for being one of the fastest-growing on Earth?",
+  "options": [
+   "Ivy",
+   "Oak",
+   "Bamboo",
+   "Cactus"
+  ],
+  "answer": 2,
+  "fact": "Bamboo might look like a tree, but it is actually a type of grass.",
+  "diff": 1
+ },
+ {
+  "id": "nature-027",
+  "cat": "nature",
+  "q": "Which is the only continent with no native ants?",
+  "options": [
+   "Australia",
+   "Antarctica",
+   "Europe",
+   "South America"
+  ],
+  "answer": 1,
+  "fact": "The biggest animal living permanently on land in Antarctica is a wingless midge just a few millimetres long.",
+  "diff": 3
+ },
+ {
+  "id": "nature-028",
+  "cat": "nature",
+  "q": "Which native British tree can live for thousands of years and is often found in churchyards?",
+  "options": [
+   "Oak",
+   "Ash",
+   "Beech",
+   "Yew"
+  ],
+  "answer": 3,
+  "fact": "Almost every part of the yew is poisonous, except for the soft red flesh around its seeds.",
+  "diff": 2
+ },
+ {
+  "id": "nature-029",
+  "cat": "nature",
+  "q": "What is a baby swan called?",
+  "options": [
+   "Gosling",
+   "Duckling",
+   "Cygnet",
+   "Eaglet"
+  ],
+  "answer": 2,
+  "fact": "Mute swans aren't really silent: they hiss and snort, and their wings make a loud throbbing sound in flight.",
+  "diff": 1
+ },
+ {
+  "id": "nature-030",
+  "cat": "nature",
+  "q": "What colour is a polar bear's skin under its fur?",
+  "options": [
+   "Black",
+   "White",
+   "Pink",
+   "Grey"
+  ],
+  "answer": 0,
+  "fact": "Polar bear fur isn't truly white either: each hair is transparent and simply scatters light.",
+  "diff": 2
+ },
+ {
+  "id": "nature-031",
+  "cat": "nature",
+  "q": "Which flightless bird is a national symbol of New Zealand?",
+  "options": [
+   "Emu",
+   "Penguin",
+   "Dodo",
+   "Kiwi"
+  ],
+  "answer": 3,
+  "fact": "A kiwi's egg is enormous for its size, weighing up to about a fifth of the mother's body weight.",
+  "diff": 1
+ },
+ {
+  "id": "nature-032",
+  "cat": "nature",
+  "q": "What word describes animals that are mostly active at dawn and dusk?",
+  "options": [
+   "Nocturnal",
+   "Diurnal",
+   "Crepuscular",
+   "Migratory"
+  ],
+  "answer": 2,
+  "fact": "The word comes from the Latin 'crepusculum', meaning twilight.",
+  "diff": 3
+ },
+ {
+  "id": "nature-033",
+  "cat": "nature",
+  "q": "What type of animal is a slow worm?",
+  "options": [
+   "Lizard",
+   "Snake",
+   "Worm",
+   "Eel"
+  ],
+  "answer": 0,
+  "fact": "Unlike snakes, slow worms can blink, and they can shed their tails to escape from predators.",
+  "diff": 3
+ },
+ {
+  "id": "nature-034",
+  "cat": "nature",
+  "q": "Which of these mammals lays eggs?",
+  "options": [
+   "Wombat",
+   "Platypus",
+   "Pangolin",
+   "Armadillo"
+  ],
+  "answer": 1,
+  "fact": "Male platypuses have venomous spurs on their back legs, which is very rare among mammals.",
+  "diff": 1
+ },
+ {
+  "id": "nature-035",
+  "cat": "nature",
+  "q": "What is the largest species of penguin?",
+  "options": [
+   "King penguin",
+   "Emperor penguin",
+   "Adélie penguin",
+   "Gentoo penguin"
+  ],
+  "answer": 1,
+  "fact": "Male emperor penguins keep the egg warm on their feet through the Antarctic winter, going without food for months.",
+  "diff": 2
+ },
+ {
+  "id": "nature-036",
+  "cat": "nature",
+  "q": "What is the name for a baby hare?",
+  "options": [
+   "Leveret",
+   "Kit",
+   "Kid",
+   "Squab"
+  ],
+  "answer": 0,
+  "fact": "Unlike baby rabbits, young hares are born with fur and open eyes, and can move about within hours.",
+  "diff": 3
+ },
+ {
+  "id": "nature-037",
+  "cat": "nature",
+  "q": "Which plant tissue carries water up from the roots to the leaves?",
+  "options": [
+   "Phloem",
+   "Xylem",
+   "Stomata",
+   "Cambium"
+  ],
+  "answer": 1,
+  "fact": "Its partner tissue, phloem, carries the sugars made in the leaves around the rest of the plant.",
+  "diff": 3
+ },
+ {
+  "id": "nature-038",
+  "cat": "nature",
+  "q": "A drey is the nest of which animal?",
+  "options": [
+   "Badger",
+   "Otter",
+   "Squirrel",
+   "Hare"
+  ],
+  "answer": 2,
+  "fact": "Like all rodents, squirrels have front teeth that never stop growing, so gnawing keeps them in shape.",
+  "diff": 3
+ },
+ {
+  "id": "nature-039",
+  "cat": "nature",
+  "q": "The name of which seasonal wind comes from the Arabic word for 'season'?",
+  "options": [
+   "Mistral",
+   "Sirocco",
+   "Chinook",
+   "Monsoon"
+  ],
+  "answer": 3,
+  "fact": "Monsoon reached English via Portuguese and Dutch, from the Arabic 'mawsim', meaning season.",
+  "diff": 3
+ },
+ {
+  "id": "nature-040",
+  "cat": "nature",
+  "q": "What is a group of lions called?",
+  "options": [
+   "A pack",
+   "A herd",
+   "A troop",
+   "A pride"
+  ],
+  "answer": 3,
+  "fact": "In a pride, it's usually the lionesses who do most of the hunting, often working together as a team.",
+  "diff": 1
+ }
+]

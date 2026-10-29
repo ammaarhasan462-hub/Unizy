@@ -1,0 +1,562 @@
+[
+ {
+  "id": "sci-001",
+  "cat": "sci",
+  "q": "What is the chemical symbol for gold?",
+  "options": [
+   "Ag",
+   "Au",
+   "Gd",
+   "Go"
+  ],
+  "answer": 1,
+  "fact": "Gold is so malleable that a single gram can be beaten into a sheet covering about half a square metre.",
+  "diff": 1
+ },
+ {
+  "id": "sci-002",
+  "cat": "sci",
+  "q": "Which gas do plants take in from the air to make their food?",
+  "options": [
+   "Oxygen",
+   "Nitrogen",
+   "Hydrogen",
+   "Carbon dioxide"
+  ],
+  "answer": 3,
+  "fact": "The oxygen plants release during photosynthesis comes from splitting water molecules, not from the carbon dioxide.",
+  "diff": 1
+ },
+ {
+  "id": "sci-003",
+  "cat": "sci",
+  "q": "How many bones are there in an adult human body?",
+  "options": [
+   "186",
+   "206",
+   "226",
+   "256"
+  ],
+  "answer": 1,
+  "fact": "Babies are born with around 300 bones, but many of them fuse together as they grow.",
+  "diff": 1
+ },
+ {
+  "id": "sci-004",
+  "cat": "sci",
+  "q": "In which part of the body is the stapes, the smallest bone?",
+  "options": [
+   "Ear",
+   "Nose",
+   "Toe",
+   "Finger"
+  ],
+  "answer": 0,
+  "fact": "The stapes is roughly the size of a grain of rice, and its name is Latin for 'stirrup', which it resembles.",
+  "diff": 2
+ },
+ {
+  "id": "sci-005",
+  "cat": "sci",
+  "q": "At sea level, at what temperature in Celsius does water boil?",
+  "options": [
+   "90°C",
+   "95°C",
+   "100°C",
+   "110°C"
+  ],
+  "answer": 2,
+  "fact": "At the top of Mount Everest the air pressure is so low that water boils at only around 70°C.",
+  "diff": 1
+ },
+ {
+  "id": "sci-006",
+  "cat": "sci",
+  "q": "Which element has the chemical symbol K?",
+  "options": [
+   "Krypton",
+   "Calcium",
+   "Phosphorus",
+   "Potassium"
+  ],
+  "answer": 3,
+  "fact": "The K comes from 'kalium', a word traced back to the Arabic for plant ashes, where potassium compounds were first found.",
+  "diff": 2
+ },
+ {
+  "id": "sci-007",
+  "cat": "sci",
+  "q": "Which scientist developed the theory of general relativity?",
+  "options": [
+   "Isaac Newton",
+   "Niels Bohr",
+   "Albert Einstein",
+   "Stephen Hawking"
+  ],
+  "answer": 2,
+  "fact": "Satellite navigation has to correct for relativity, or GPS positions would drift by roughly 10 km every day.",
+  "diff": 1
+ },
+ {
+  "id": "sci-008",
+  "cat": "sci",
+  "q": "What is the hardest natural substance on Earth?",
+  "options": [
+   "Diamond",
+   "Quartz",
+   "Granite",
+   "Topaz"
+  ],
+  "answer": 0,
+  "fact": "Diamond and graphite, the 'lead' in pencils, are both made of pure carbon, just with the atoms arranged differently.",
+  "diff": 1
+ },
+ {
+  "id": "sci-009",
+  "cat": "sci",
+  "q": "Which organ in the human body produces insulin?",
+  "options": [
+   "Liver",
+   "Pancreas",
+   "Kidney",
+   "Spleen"
+  ],
+  "answer": 1,
+  "fact": "The first person ever treated with insulin was 14-year-old Leonard Thompson, in Toronto in January 1922.",
+  "diff": 2
+ },
+ {
+  "id": "sci-010",
+  "cat": "sci",
+  "q": "Which part of the brain is only about 10% of its volume but holds over half its neurons?",
+  "options": [
+   "Cerebrum",
+   "Brainstem",
+   "Hypothalamus",
+   "Cerebellum"
+  ],
+  "answer": 3,
+  "fact": "The cerebellum helps coordinate balance and movement, and its name is Latin for 'little brain'.",
+  "diff": 3
+ },
+ {
+  "id": "sci-011",
+  "cat": "sci",
+  "q": "Which temperature scale starts at absolute zero?",
+  "options": [
+   "Celsius",
+   "Kelvin",
+   "Fahrenheit",
+   "Réaumur"
+  ],
+  "answer": 1,
+  "fact": "William Thomson became a Glasgow professor at 22 and later took the title Lord Kelvin from the river beside the university.",
+  "diff": 2
+ },
+ {
+  "id": "sci-012",
+  "cat": "sci",
+  "q": "Which gas makes up most of the Earth's atmosphere?",
+  "options": [
+   "Nitrogen",
+   "Oxygen",
+   "Argon",
+   "Carbon dioxide"
+  ],
+  "answer": 0,
+  "fact": "Argon makes up almost 1% of the air, and its name comes from the Greek for 'lazy' because it barely reacts with anything.",
+  "diff": 2
+ },
+ {
+  "id": "sci-013",
+  "cat": "sci",
+  "q": "Roughly how fast does light travel in a vacuum?",
+  "options": [
+   "3,000 km per second",
+   "30,000 km per second",
+   "300,000 km per second",
+   "3 million km per second"
+  ],
+  "answer": 2,
+  "fact": "Sunlight takes about 8 minutes and 20 seconds to travel from the Sun to the Earth.",
+  "diff": 2
+ },
+ {
+  "id": "sci-014",
+  "cat": "sci",
+  "q": "Who discovered penicillin in 1928?",
+  "options": [
+   "Louis Pasteur",
+   "Joseph Lister",
+   "Edward Jenner",
+   "Alexander Fleming"
+  ],
+  "answer": 3,
+  "fact": "Fleming spotted mould killing bacteria on a culture dish that had been left out while he was away on holiday.",
+  "diff": 1
+ },
+ {
+  "id": "sci-015",
+  "cat": "sci",
+  "q": "Which element did Marie Curie name after her home country?",
+  "options": [
+   "Radium",
+   "Polonium",
+   "Francium",
+   "Curium"
+  ],
+  "answer": 1,
+  "fact": "Her laboratory notebooks are still radioactive and are kept in lead-lined boxes at France's national library in Paris.",
+  "diff": 2
+ },
+ {
+  "id": "sci-016",
+  "cat": "sci",
+  "q": "Which element was detected in the Sun before it was found on Earth?",
+  "options": [
+   "Hydrogen",
+   "Neon",
+   "Oxygen",
+   "Helium"
+  ],
+  "answer": 3,
+  "fact": "It showed up as a mysterious yellow line in sunlight during an 1868 eclipse, but wasn't isolated on Earth until 1895.",
+  "diff": 2
+ },
+ {
+  "id": "sci-017",
+  "cat": "sci",
+  "q": "What is the largest organ of the human body?",
+  "options": [
+   "Liver",
+   "Brain",
+   "Skin",
+   "Lungs"
+  ],
+  "answer": 2,
+  "fact": "As well as protecting you, your skin makes vitamin D when it is exposed to sunlight.",
+  "diff": 1
+ },
+ {
+  "id": "sci-018",
+  "cat": "sci",
+  "q": "In DNA, which base always pairs with adenine?",
+  "options": [
+   "Thymine",
+   "Cytosine",
+   "Guanine",
+   "Uracil"
+  ],
+  "answer": 0,
+  "fact": "If you unravelled the DNA from just one of your cells and laid it end to end, it would stretch about 2 metres.",
+  "diff": 2
+ },
+ {
+  "id": "sci-019",
+  "cat": "sci",
+  "q": "Which blood type is known as the universal donor for red blood cells?",
+  "options": [
+   "A positive",
+   "AB positive",
+   "B negative",
+   "O negative"
+  ],
+  "answer": 3,
+  "fact": "Austrian scientist Karl Landsteiner discovered the ABO blood groups in 1901 and later won a Nobel Prize for it.",
+  "diff": 2
+ },
+ {
+  "id": "sci-020",
+  "cat": "sci",
+  "q": "Scurvy is caused by a lack of which vitamin?",
+  "options": [
+   "Vitamin A",
+   "Vitamin C",
+   "Vitamin D",
+   "Vitamin B12"
+  ],
+  "answer": 1,
+  "fact": "Royal Navy sailors were given lime juice to prevent scurvy, which is how British sailors got the nickname 'limeys'.",
+  "diff": 1
+ },
+ {
+  "id": "sci-021",
+  "cat": "sci",
+  "q": "Which element has the atomic number 1?",
+  "options": [
+   "Hydrogen",
+   "Helium",
+   "Lithium",
+   "Carbon"
+  ],
+  "answer": 0,
+  "fact": "Hydrogen makes up roughly three-quarters of all the ordinary matter in the universe by mass.",
+  "diff": 1
+ },
+ {
+  "id": "sci-022",
+  "cat": "sci",
+  "q": "What is the pH of pure water at 25°C?",
+  "options": [
+   "5",
+   "7",
+   "9",
+   "14"
+  ],
+  "answer": 1,
+  "fact": "The pH scale was introduced in 1909 by Danish chemist Søren Sørensen while working at the Carlsberg brewery's laboratory.",
+  "diff": 2
+ },
+ {
+  "id": "sci-023",
+  "cat": "sci",
+  "q": "Which metal is a liquid at room temperature?",
+  "options": [
+   "Lead",
+   "Tin",
+   "Mercury",
+   "Zinc"
+  ],
+  "answer": 2,
+  "fact": "Another metal, gallium, melts at about 30°C, so a piece of it will turn liquid if you hold it in your hand.",
+  "diff": 1
+ },
+ {
+  "id": "sci-024",
+  "cat": "sci",
+  "q": "How many chambers does the human heart have?",
+  "options": [
+   "Two",
+   "Three",
+   "Four",
+   "Six"
+  ],
+  "answer": 2,
+  "fact": "An adult heart beats roughly 100,000 times a day, pumping blood around the whole body.",
+  "diff": 1
+ },
+ {
+  "id": "sci-025",
+  "cat": "sci",
+  "q": "Which scientist wrote the Principia, setting out the laws of motion?",
+  "options": [
+   "Galileo Galilei",
+   "Johannes Kepler",
+   "Robert Boyle",
+   "Isaac Newton"
+  ],
+  "answer": 3,
+  "fact": "Newton later ran the Royal Mint, where he personally investigated counterfeiters.",
+  "diff": 2
+ },
+ {
+  "id": "sci-026",
+  "cat": "sci",
+  "q": "Lightning can heat the air to roughly five times hotter than what?",
+  "options": [
+   "Boiling water",
+   "A candle flame",
+   "The Sun's surface",
+   "Molten lava"
+  ],
+  "answer": 2,
+  "fact": "Thunder is the sound of air expanding explosively after being heated by a lightning bolt in a fraction of a second.",
+  "diff": 2
+ },
+ {
+  "id": "sci-027",
+  "cat": "sci",
+  "q": "The microwave oven was invented after what melted in an engineer's pocket?",
+  "options": [
+   "A crayon",
+   "A chocolate bar",
+   "A rubber band",
+   "A candle"
+  ],
+  "answer": 1,
+  "fact": "The first food Percy Spencer deliberately cooked with microwaves was popcorn.",
+  "diff": 2
+ },
+ {
+  "id": "sci-028",
+  "cat": "sci",
+  "q": "At roughly what temperature does a popcorn kernel pop?",
+  "options": [
+   "100°C",
+   "140°C",
+   "180°C",
+   "250°C"
+  ],
+  "answer": 2,
+  "fact": "The popping sound isn't the hull splitting: it comes from steam suddenly escaping from inside the kernel.",
+  "diff": 3
+ },
+ {
+  "id": "sci-029",
+  "cat": "sci",
+  "q": "Which subatomic particle carries a negative electric charge?",
+  "options": [
+   "Proton",
+   "Neutron",
+   "Photon",
+   "Electron"
+  ],
+  "answer": 3,
+  "fact": "J.J. Thomson discovered the electron in 1897 at the Cavendish Laboratory in Cambridge.",
+  "diff": 1
+ },
+ {
+  "id": "sci-030",
+  "cat": "sci",
+  "q": "Which part of the eye controls how much light gets in?",
+  "options": [
+   "Iris",
+   "Retina",
+   "Cornea",
+   "Lens"
+  ],
+  "answer": 0,
+  "fact": "The word 'iris' comes from the Greek for rainbow, a nod to the many different eye colours.",
+  "diff": 2
+ },
+ {
+  "id": "sci-031",
+  "cat": "sci",
+  "q": "Who created the periodic table of elements in 1869?",
+  "options": [
+   "John Dalton",
+   "Dmitri Mendeleev",
+   "Antoine Lavoisier",
+   "Ernest Rutherford"
+  ],
+  "answer": 1,
+  "fact": "He left gaps for elements not yet discovered and correctly predicted the properties of gallium and germanium.",
+  "diff": 2
+ },
+ {
+  "id": "sci-032",
+  "cat": "sci",
+  "q": "Which is the most abundant element in the Earth's crust?",
+  "options": [
+   "Silicon",
+   "Iron",
+   "Aluminium",
+   "Oxygen"
+  ],
+  "answer": 3,
+  "fact": "Taking the whole planet into account, iron is the most abundant element by mass, mostly locked away in the core.",
+  "diff": 3
+ },
+ {
+  "id": "sci-033",
+  "cat": "sci",
+  "q": "Which vitamin is essential for helping blood to clot?",
+  "options": [
+   "Vitamin K",
+   "Vitamin A",
+   "Vitamin C",
+   "Vitamin E"
+  ],
+  "answer": 0,
+  "fact": "Its letter comes from 'Koagulation', the German and Danish spelling, after its discovery by Danish scientist Henrik Dam.",
+  "diff": 3
+ },
+ {
+  "id": "sci-034",
+  "cat": "sci",
+  "q": "Which metal is the best conductor of electricity?",
+  "options": [
+   "Copper",
+   "Gold",
+   "Silver",
+   "Aluminium"
+  ],
+  "answer": 2,
+  "fact": "Copper is used for most wiring because it conducts almost as well but costs far less.",
+  "diff": 3
+ },
+ {
+  "id": "sci-035",
+  "cat": "sci",
+  "q": "Which part of a cell is often called its 'powerhouse'?",
+  "options": [
+   "Nucleus",
+   "Mitochondrion",
+   "Ribosome",
+   "Cell wall"
+  ],
+  "answer": 1,
+  "fact": "Mitochondria have their own DNA, which is almost always inherited from your mother.",
+  "diff": 1
+ },
+ {
+  "id": "sci-036",
+  "cat": "sci",
+  "q": "Who coined the word 'cell' after looking at cork under a microscope?",
+  "options": [
+   "Robert Hooke",
+   "Charles Darwin",
+   "Louis Pasteur",
+   "Gregor Mendel"
+  ],
+  "answer": 0,
+  "fact": "He chose the word because the tiny boxes reminded him of the small rooms, or cells, that monks lived in.",
+  "diff": 3
+ },
+ {
+  "id": "sci-037",
+  "cat": "sci",
+  "q": "What is the chemical symbol for tungsten?",
+  "options": [
+   "Tu",
+   "Tn",
+   "Tg",
+   "W"
+  ],
+  "answer": 3,
+  "fact": "The W comes from its other name, wolfram, and tungsten has the highest melting point of any metal, about 3,422°C.",
+  "diff": 3
+ },
+ {
+  "id": "sci-038",
+  "cat": "sci",
+  "q": "Which is the strongest of the four fundamental forces of nature?",
+  "options": [
+   "Gravity",
+   "Strong nuclear force",
+   "Electromagnetism",
+   "Weak nuclear force"
+  ],
+  "answer": 1,
+  "fact": "Gravity is by far the weakest: a small fridge magnet can hold a paperclip up against the pull of the entire Earth.",
+  "diff": 3
+ },
+ {
+  "id": "sci-039",
+  "cat": "sci",
+  "q": "Which scientist discovered electromagnetic induction in 1831?",
+  "options": [
+   "Alessandro Volta",
+   "Thomas Edison",
+   "Michael Faraday",
+   "Nikola Tesla"
+  ],
+  "answer": 2,
+  "fact": "Faraday also started the Royal Institution's famous Christmas Lectures for young people, first held in 1825.",
+  "diff": 3
+ },
+ {
+  "id": "sci-040",
+  "cat": "sci",
+  "q": "Which scientist discovered the neutron in 1932?",
+  "options": [
+   "James Chadwick",
+   "Niels Bohr",
+   "J.J. Thomson",
+   "Marie Curie"
+  ],
+  "answer": 0,
+  "fact": "Chadwick had worked under Ernest Rutherford, who had predicted the existence of the neutron back in 1920.",
+  "diff": 3
+ }
+]
