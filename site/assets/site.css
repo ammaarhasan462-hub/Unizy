@@ -77,3 +77,4 @@ body.sx a:focus-visible,body.sx button:focus-visible,body.sx summary:focus-visib
 .sx-nav a{font-weight:500}
 .sx-nav a[aria-current=page]{font-weight:600}
 body.sx details summary{font-family:var(--serif);font-weight:600}
+.code-input{font-family:var(--mono)!important;font-size:28px!important;letter-spacing:.45em!important;text-align:center;padding-left:.45em!important}
