@@ -134,7 +134,7 @@
       if (!st.made && !st.making) h += '<div><button class="btn acc" id="mk">✨ Make flashcards from these notes</button></div>';
       else if (st.making) h += '<div class="cards"><div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div></div>';
       else h += '<p class="st-p"><b>Tap a card to flip it.</b></p><div class="cards">' + m.cards.map(function (c, i) { return '<button class="fcard" aria-pressed="false" style="animation-delay:' + (i * 0.08) + 's"><span class="inner"><span class="side front"><small>Question</small><b>' + esc(c.f) + '</b></span><span class="side back"><small>Answer</small>' + esc(c.b) + '</span></span></button>'; }).join('') + '</div>' +
-        '<p class="note">In this demo the cards come from ' + (m.pack ? 'the Unizy module pack for ' + esc(m.name) : 'the Unizy library for this subject') + '. In the app you can also upload your own lecture notes and have AI turn them into cards.</p>';
+        '<p class="note">In this demo the cards come from ' + (m.pack ? 'the Unizy module pack for ' + esc(m.name) : 'the Unizy library for this subject') + '. In the app you can also upload your own lecture notes and have your tutor turn them into cards.</p>';
       h += '<div class="row-end"><span></span>' + nextBtn('Test myself', 2, !st.made) + '</div>';
     } else if (st.step === 2) {
       var q = m.qs[st.qi], pick = st.picks[st.qi], answered = pick !== undefined, last = st.qi === m.qs.length - 1;

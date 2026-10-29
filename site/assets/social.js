@@ -98,7 +98,7 @@
   function splitSources(t) {
     t = String(t || ''); var m = /\n*[ \t*_]*SOURCES?:[ \t*_]*([^\n]*)\s*$/i.exec(t);
     if (!m) return { body: t, src: '' };
-    var labels = m[1].split(/\s*;\s*/).map(function (x) { x = x.replace(/[*_]/g, '').trim(); return /^outline/i.test(x) ? 'Official module outline' : /^general/i.test(x) ? 'General AI knowledge (check this)' : x; }).filter(Boolean);
+    var labels = m[1].split(/\s*;\s*/).map(function (x) { x = x.replace(/[*_]/g, '').trim(); return /^outline/i.test(x) ? 'Official module outline' : /^general/i.test(x) ? 'General knowledge (check this)' : x; }).filter(Boolean);
     return { body: t.slice(0, m.index).trim(), src: labels.join(' · ') };
   }
   function schedule() {
@@ -377,7 +377,7 @@
       newChoices: (d.friends || []).map(function (f) { var on = !!S.newPick[f.id]; return Object.assign({ label: (on ? '✓ ' : '') + f.name, toggle: function () { S.newPick[f.id] = !S.newPick[f.id]; redraw(); } }, chip(on)); }),
       newPickedCount: Object.keys(S.newPick).filter(function (k) { return S.newPick[k]; }).length,
       noFriendsForGroup: !(d.friends || []).length,
-      tutorNote: tutorNames[0] + ' and ' + tutorNames[1] + ' are in every group. Tag either one in a message to ask a question; it uses the asker’s AI allowance.',
+      tutorNote: tutorNames[0] + ' and ' + tutorNames[1] + ' are in every group. Tag either one in a message to ask a question; it uses the asker’s tutor allowance.',
       createLabel: S.busy && S.view === 'new' ? 'Creating…' : 'Create group chat',
       createGroup: function () {
         var name = String(S.newName || '').trim(); var el = document.querySelector('[data-fg-gname]'); if (el && el.value.trim()) name = el.value.trim();

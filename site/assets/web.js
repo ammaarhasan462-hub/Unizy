@@ -74,6 +74,7 @@
       var s = Auth.session;
       if (s) fetch(CFG.supabaseUrl + '/auth/v1/logout', { method: 'POST', headers: Auth.headers(true) }).catch(function () {});
       Auth.store(null);
+      try { Routes.forget(); } catch (e) { /* ignore */ }
     }
   };
 
@@ -161,12 +162,12 @@
     if (m) { try { return JSON.parse(m[1]); } catch (e) {} }
     var a = s.search(/[\[{]/), b = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
     if (a >= 0 && b > a) { try { return JSON.parse(s.slice(a, b + 1)); } catch (e) {} }
-    throw { code: 'invalid_json', message: 'The AI reply wasn’t readable. Try again.', userMessage: 'The AI reply wasn’t readable. Try again.', text: s };
+    throw { code: 'invalid_json', message: 'That reply wasn’t readable. Try again.', userMessage: 'That reply wasn’t readable. Try again.', text: s };
   }
   function call(input, opts, asJson) {
     opts = opts || {};
     return Auth.fresh().then(function (s) {
-      if (!s) throw aiError('not_granted', 'Sign in to use the AI tutor and marking.');
+      if (!s) throw aiError('not_granted', 'Log in to use your tutor and marking.');
       var imgs = opts.images ? Array.prototype.slice.call(opts.images.length !== undefined ? opts.images : [opts.images]) : [];
       return Promise.all(imgs.map(blobToJpegBase64)).then(function (b64) {
         var body = { input: input, json: !!asJson, kind: guessKind(input), tier: opts.modelTier || 'default', cache: !!opts.cache, stream: typeof opts.onText === 'function', images: b64.map(function (d) { return { media_type: 'image/jpeg', data: d }; }) };
@@ -181,7 +182,7 @@
           if (code === 'session_expired') Auth.refresh();
           if (b.upgrade) showUpgrade(b.message);
           else if (code === 'ai_paused') toast(b.message, null, null, 8000);
-          throw aiError(code, b.message || 'The AI had a problem. Try again.');
+          throw aiError(code, b.message || 'Your tutor had a problem. Try again.');
         });
       }
       if (!opts.onText || !r.body || !r.body.getReader) {
@@ -202,7 +203,7 @@
               var d = JSON.parse(line);
               if (d.type === 'content_block_delta' && d.delta && d.delta.type === 'text_delta') { text += d.delta.text; opts.onText({ text: text, delta: d.delta.text }); }
               if (d.type === 'message_delta' && d.delta && d.delta.stop_reason === 'max_tokens') truncated = true;
-              if (d.type === 'error') throw aiError('upstream_error', 'The AI stopped part-way. Try again.');
+              if (d.type === 'error') throw aiError('upstream_error', 'The reply stopped part-way. Try again.');
             } catch (e) { if (e && e.code) throw e; }
           });
           return pump();
@@ -210,12 +211,12 @@
       }
       return pump();
     }).then(function (res) {
-      if (!res.text) throw aiError('empty_completion', 'The AI didn’t reply. Try again.');
+      if (!res.text) throw aiError('empty_completion', 'No reply came back. Try again.');
       return res;
     }).catch(function (e) {
       if (e && e.name === 'AbortError') throw { code: 'cancelled', message: 'Stopped.' };
       if (e && e.code) throw e;
-      throw aiError('upstream_error', 'Couldn’t reach the AI. Check your connection and try again.');
+      throw aiError('upstream_error', 'Couldn’t reach your tutor. Check your connection and try again.');
     });
   }
   function sseText(raw) {
@@ -252,7 +253,7 @@
       var d = Plan.data; if (!d) return '';
       if (d.tier === 'pro') return 'Unizy Pro' + (d.plan === 'monthly' ? (d.renews ? ', renews ' : ', ends ') + fmtDay(d.until) : ' (' + (d.plan === 'year' ? 'year pass' : 'exam pass') + '), until ' + fmtDay(d.until));
       if (d.tier === 'trial') return 'Free Pro trial, ends ' + fmtDay(d.until);
-      return 'Free plan: ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerWeek + ' AI actions and ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerWeek + ' Assess marking left this week';
+      return 'Free plan: ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerWeek + ' tutor actions and ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerWeek + ' Assess marking left this week';
     }
   };
   var toastEl = null;
@@ -275,7 +276,7 @@
       var s = Auth.session, email = s && s.user && s.user.email;
       return {
         signedIn: !!s, label: s ? ((s.user && s.user.name) ? s.user.name.charAt(0).toUpperCase() : email ? email.charAt(0).toUpperCase() : 'Me') : 'Log in',
-        title: s ? 'Your account' : 'Sign in to save your work and use the AI',
+        title: s ? 'Your account' : 'Log in to save your work and use your tutor',
         open: function () { Account.show(); }
       };
     },
@@ -301,7 +302,7 @@
     card.appendChild(close);
     if (!s) {
       card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#34463F' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#34463F' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your tutor and essay marking.']));
       var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #C8D1CB' });
       var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
       var submit = function () {
@@ -332,7 +333,7 @@
           el('span', { style: 'font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4B5C56' }, ['Your plan']),
           el('span', { style: 'font-size:15px;font-weight:700;line-height:1.4' }, [Plan.label()])
         ]);
-        if (pd.tier !== 'free' && pd.unitsLeft != null) planBox.appendChild(el('span', { style: 'font-size:13px;color:#34463F' }, ['AI allowance left today: ' + Math.max(0, pd.unitsLeft) + '.']));
+        if (pd.tier !== 'free' && pd.unitsLeft != null) planBox.appendChild(el('span', { style: 'font-size:13px;color:#34463F' }, ['tutor allowance left today: ' + Math.max(0, pd.unitsLeft) + '.']));
         if (pd.tier !== 'pro') planBox.appendChild(el('a', { href: '/pricing', style: btn + 'text-decoration:none;text-align:center;border:none;background:#17302A;color:#fff;box-shadow:0 3px 0 #B8862F' }, [pd.tier === 'trial' ? 'Keep Pro after your trial' : 'Upgrade to Pro']));
         else if (pd.plan === 'monthly' && CFG.stripe && CFG.stripe.portal) planBox.appendChild(el('a', { href: CFG.stripe.portal + (s.user && s.user.email ? '?prefilled_email=' + encodeURIComponent(s.user.email) : ''), target: '_blank', rel: 'noopener', style: 'font-size:14px;font-weight:600;color:#17302A' }, ['Manage or cancel your subscription']));
         card.appendChild(planBox);
@@ -390,48 +391,90 @@
     if (setup && setup.uni && setup.degree && !(inst.state && inst.state.screen === 'app')) inst.setState(Object.assign({ screen: 'app' }, setup));
   }
 
-  // ---------------- pages: every app section has its own URL and loads as its own page ----------------
+  // ---------------- pages: every app section has its own URL ----------------
+  // Switching section changes the address and shows that page, without reloading, so anything in progress
+  // (a lecture pack being built, a test, a tutor chat, an upload) carries on. Work in progress is also kept on
+  // this device between visits, and only goes when the student removes it (the × buttons) or logs out.
   var Routes = (function () {
     var SLUG = { home: '', overview: 'overview', path: 'pathway', notes: 'notes', packs: 'lecture-packs', quiz: 'tests', assess: 'marking', flash: 'flashcards', time: 'planner', tutor: 'tutor', friends: 'groups', rooms: 'rooms', hub: 'hub', market: 'marketplace', focus: 'study-mode' };
     var BY_SLUG = {}; Object.keys(SLUG).forEach(function (k) { BY_SLUG[SLUG[k]] = k; });
-    var CARRY = 'unizy:carry', SKIP = { store: 1, ai: 1, aiImages: 1, tBusy: 1, tStream: 1, tErr: 1, toastMsg: 1, setupMenu: 1, gBusy: 1 };
-    function href(tab) { var s = SLUG[tab]; return s === undefined ? '/app' : (s ? '/app/' + s : '/app'); }
-    function current() {
-      var m = /^\/app(?:\.html)?(?:\/([\w-]+))?\/?$/.exec(location.pathname);
-      if (!m) return 'home';
-      return m[1] && BY_SLUG[m[1]] ? BY_SLUG[m[1]] : 'home';
+    var KEEP = 'unizy:ui:v1';
+    // setup lives in unizy:setup; these are per-moment or server-owned
+    var SKIP = { store: 1, ai: 1, aiImages: 1, tBusy: 1, tStream: 1, tErr: 1, toastMsg: 1, setupMenu: 1, gBusy: 1, tab: 1, screen: 1, editing: 1, saved: 1, uni: 1, degree: 1, year: 1, mods: 1, active: 1, q: 1, dataErr: 1 };
+    function href(tab) { var s = SLUG[tab]; return s ? '/app/' + s : '/app'; }
+    function tabOf(path) {
+      var m = /^\/app(?:\.html)?(?:\/([\w-]+))?\/?$/.exec(path || '');
+      if (!m) return null;
+      return m[1] ? (BY_SLUG[m[1]] || 'home') : 'home';
     }
-    var here = current(), ready = false, leaving = false;
-    function carryOut(state) {
+    function current() { return tabOf(location.pathname) || 'home'; }
+    var here = current(), ready = false, inst = null, saveT = null;
+    function title(tab) {
+      var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode' };
+      return (names[tab] || 'Unizy') + ' · Unizy';
+    }
+    function arrive() {
+      document.title = title(here);
+      try { window.scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, 0); }
+      var m = document.querySelector('.ux-main');
+      if (m) { m.classList.remove('ux-enter'); void m.offsetWidth; m.classList.add('ux-enter'); }
+    }
+    function snapshot(state) {
       var keep = {};
-      Object.keys(state || {}).forEach(function (k) { if (!SKIP[k] && typeof state[k] !== 'function') keep[k] = state[k]; });
-      try { sessionStorage.setItem(CARRY, JSON.stringify({ at: Date.now(), state: keep })); } catch (e) { /* too big or blocked: the page still opens */ }
+      Object.keys(state || {}).forEach(function (k) { if (!SKIP[k] && !/Busy$/.test(k) && typeof state[k] !== 'function') keep[k] = state[k]; });
+      return keep;
     }
-    function carryIn() {
+    function save() {
+      saveT = null;
+      if (!inst || (inst.state || {}).screen !== 'app') return;
+      try { localStorage.setItem(KEEP, JSON.stringify({ at: Date.now(), state: snapshot(inst.state) })); } catch (e) { /* full or blocked: work still stays while the page is open */ }
+    }
+    function restore() {
       try {
-        var raw = sessionStorage.getItem(CARRY); sessionStorage.removeItem(CARRY);
-        var c = raw ? JSON.parse(raw) : null;
-        return c && Date.now() - c.at < 30000 ? c.state : null;
+        var c = JSON.parse(localStorage.getItem(KEEP) || 'null');
+        return c && c.state ? c.state : null;
       } catch (e) { return null; }
+    }
+    function go(tab, push) {
+      if (!inst || SLUG[tab] === undefined) return;
+      if (tab !== here) {
+        here = tab;
+        if (push !== false) history.pushState({ tab: tab }, '', href(tab));
+        if ((inst.state || {}).tab !== tab) inst.setState({ tab: tab });
+        setTimeout(arrive, 0);
+      }
     }
     return {
       SLUG: SLUG, href: href, current: current,
-      start: function (inst) {
-        var carried = carryIn();
-        if (carried) inst.setState(carried);
+      forget: function () { try { localStorage.removeItem(KEEP); localStorage.removeItem('unizy:lp:v1'); sessionStorage.removeItem('unizy:carry'); } catch (e) { /* ignore */ } },
+      start: function (i) {
+        inst = i;
+        var kept = restore();
+        if (kept) inst.setState(kept);
         inst.setState({ tab: here });
-        if (here !== 'home' && !/\/app\/[\w-]+/.test(location.pathname)) history.replaceState(null, '', href(here) + location.search + location.hash);
+        document.title = title(here);
+        history.replaceState({ tab: here }, '', href(here) + location.search + location.hash);
+        window.addEventListener('popstate', function () { go(current(), false); });
+        // section links (header, sub-pages, footer, Home cards) switch page in place
+        document.addEventListener('click', function (e) {
+          if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          var a = e.target.closest && e.target.closest('a[href]');
+          if (!a || a.target === '_blank' || a.origin !== location.origin) return;
+          var t = tabOf(a.pathname);
+          if (!t || !inst || (inst.state || {}).screen !== 'app') return;
+          e.preventDefault();
+          if (t === here) { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (x) { window.scrollTo(0, 0); } return; }
+          go(t);
+        });
+        window.addEventListener('pagehide', save);
         ready = true;
       },
-      // runs after every render: a change of section anywhere in the app opens that section's page
-      check: function (inst) {
-        var st = inst.state || {};
-        if (!ready || leaving || st.screen !== 'app' || !st.tab || st.tab === here || SLUG[st.tab] === undefined) return;
-        leaving = true;
-        carryOut(st);
-        document.documentElement.classList.add('ux-leaving');
-        try { Sync.flush(); } catch (e) { /* ignore */ }
-        location.assign(href(st.tab));
+      // runs after every render: a change of section anywhere in the app shows that section's page
+      check: function (i) {
+        var st = i.state || {};
+        if (!ready) return;
+        if (st.screen === 'app' && st.tab && st.tab !== here && SLUG[st.tab] !== undefined) go(st.tab);
+        if (!saveT) saveT = setTimeout(save, 500);
       }
     };
   })();
@@ -473,7 +516,7 @@
           if (/[?&]upgraded=1/.test(location.search)) {
             history.replaceState(null, '', location.pathname + location.hash);
             toast('Payment received. Switching on Unizy Pro…');
-            var tries = 0, check = function () { Plan.refresh().then(function (d) { if (d && d.tier === 'pro') toast('You’re on Unizy Pro. Enjoy the full AI tutor and marking!', null, null, 7000); else if (++tries < 20) setTimeout(check, 3000); else toast('Your payment went through, but Pro hasn’t switched on yet. Refresh in a minute, or email ' + CFG.contactEmail + '.'); }); };
+            var tries = 0, check = function () { Plan.refresh().then(function (d) { if (d && d.tier === 'pro') toast('You’re on Unizy Pro. Enjoy the full tutor and marking!', null, null, 7000); else if (++tries < 20) setTimeout(check, 3000); else toast('Your payment went through, but Pro hasn’t switched on yet. Refresh in a minute, or email ' + CFG.contactEmail + '.'); }); };
             setTimeout(check, 1500);
           }
           Sync.pull().then(function (all) {

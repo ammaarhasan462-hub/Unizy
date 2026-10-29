@@ -209,7 +209,7 @@
     var out = el('button', { type: 'button', class: 'btn ghost', text: 'Log out' });
     out.addEventListener('click', function () {
       fetch(CFG.supabaseUrl + '/auth/v1/logout', { method: 'POST', headers: headers(s.access_token) }).catch(function () {});
-      try { localStorage.removeItem(SKEY); } catch (e) {}
+      try { localStorage.removeItem(SKEY); localStorage.removeItem('unizy:ui:v1'); localStorage.removeItem('unizy:lp:v1'); } catch (e) {}
       location.reload();
     });
     render([h1('You’re logged in', 'Signed in as ' + who + '.'), el('div', { class: 'actions' }, [el('a', { class: 'btn primary', href: next, text: 'Go to my dashboard' }), out])]);
@@ -329,7 +329,7 @@
           else showMsg(box, f === 'confirm' ? 'Your account was created. Log in to continue.' : f);
         });
     });
-    render([h1('Create your account', 'Free for students. Save your notes, flashcards and progress, and switch on your AI tutor and essay marking.'), form,
+    render([h1('Create your account', 'Free for students. Save your notes, flashcards and progress, and switch on your tutor and essay marking.'), form,
       el('p', { class: 'switch' }, ['Already have an account? ', el('a', { href: link('/login'), text: 'Log in' })]), legal()]);
   }
 

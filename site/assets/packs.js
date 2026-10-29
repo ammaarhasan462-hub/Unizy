@@ -13,6 +13,10 @@
     rl: { data: {}, loading: {}, at: {}, open: {}, showAll: {} },
     lti: { checked: false }
   };
+  // the finished-pack summary stays (across pages and visits) until the student closes it with ×
+  var LP_KEEP = 'unizy:lp:v1';
+  try { var kept = JSON.parse(localStorage.getItem(LP_KEEP) || 'null'); if (kept && kept.done) { S.lp.done = kept.done; S.lp.doneMod = kept.mod || ''; } } catch (e) { /* ignore */ }
+  function keepDone() { try { if (S.lp.done) localStorage.setItem(LP_KEEP, JSON.stringify({ done: S.lp.done, mod: S.lp.doneMod || '' })); else localStorage.removeItem(LP_KEEP); } catch (e) { /* ignore */ } }
   function X() { return window.UnizyWeb && window.UnizyWeb._internal; }
   function signedIn() { return !!(X() && X().Auth.session); }
   function redraw() { if (S.inst && S.inst.__app) S.inst.__app.schedule(); }
@@ -155,6 +159,7 @@
       var saved = savePack(S.kit || k, r, title);
       L.step = 'pick'; L.file = null; L.title = '';
       L.done = { title: r.title, summary: r.summary, topics: r.topics || [], gaps: r.gaps || [], saved: saved, searchable: r.searchable, secs: Math.round((Date.now() - L.started) / 1000) };
+      L.doneMod = m.key || ''; keepDone();
       L.listAt[hubKey(m)] = 0; loadPacks(S.kit || k, true);
       if (window.UnizyWeb && window.UnizyWeb.plan) window.UnizyWeb.plan.refresh();
       redraw();
@@ -162,7 +167,7 @@
   }
   function lpVals(k) {
     var L = S.lp, key = hubKey(k.active), list = L.list[key] || [];
-    if ((k.tab === 'overview' || k.tab === 'notes') && signedIn() && key) setTimeout(function () { loadPacks(k); }, 0);
+    if ((k.tab === 'packs' || k.tab === 'overview' || k.tab === 'notes' || k.tab === 'tutor') && signedIn() && key) setTimeout(function () { loadPacks(k); }, 0);
     var tutor = k.tutorName || 'Your tutor';
     var d = L.done;
     return {
@@ -170,11 +175,11 @@
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
       weak: !!k.weakCoverage, strong: !k.weakCoverage,
       border: k.weakCoverage ? '2px solid ' + ((k.theme && k.theme.c1) || '#17302A') : '1px solid #E2E7E3',
-      openPanel: function () { k.go('overview'); setTimeout(function () { var el = document.getElementById('lecture-packs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); },
+      openPanel: function () { k.go('packs'); setTimeout(function () { var el = document.getElementById('lecture-packs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); },
       headline: k.weakCoverage ? 'Build ' + k.active.name + '’s study pack from your lecture slides' : 'Turn a lecture into a study pack',
       intro: 'Upload a lecture’s slides or handout (PDF, PowerPoint, Word or text). Unizy writes revision notes with slide references, flashcards and practice questions, matched to the official ' + (k.active.code || k.active.name) + ' outline. ' + tutor + ' can then quote your slides when you ask questions.',
       isPick: L.step === 'pick', isBuilding: L.step === 'building',
-      onFile: function (e) { var f = e && e.target && e.target.files && e.target.files[0]; if (f) { L.file = f; L.err = ''; L.done = null; L.title = f.name.replace(/\.[^.]+$/, '').slice(0, 120); } try { e.target.value = ''; } catch (x) { /* ignore */ } redraw(); },
+      onFile: function (e) { var f = e && e.target && e.target.files && e.target.files[0]; if (f) { L.file = f; L.err = ''; L.title = f.name.replace(/\.[^.]+$/, '').slice(0, 120); } try { e.target.value = ''; } catch (x) { /* ignore */ } redraw(); },
       hasFile: !!L.file, noFile: !L.file, fileName: L.file ? L.file.name : '', fileSize: L.file ? (L.file.size > 1048576 ? (L.file.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(L.file.size / 1024)) + ' KB') : '',
       clearFile: function () { L.file = null; L.err = ''; redraw(); },
       title: L.title, onTitle: function (e) { L.title = e && e.target ? e.target.value : ''; },
@@ -186,8 +191,8 @@
         topics: d.topics.map(function (t) { return { label: t.name + (t.i !== null && t.i !== undefined && k.active.topics && k.active.topics[t.i] ? ' → ' + k.active.topics[t.i] : '') }; }),
         hasTopics: d.topics.length > 0, gaps: d.gaps.map(function (g) { return { text: g }; }), hasGaps: d.gaps.length > 0
       } : {},
-      clearDone: function () { L.done = null; redraw(); },
-      goNotes: function () { L.done = null; k.go('notes'); }, goCards: function () { L.done = null; k.go('flash'); }, goTest: function () { L.done = null; k.go('quiz'); }, goTutor: function () { L.done = null; k.go('tutor'); },
+      clearDone: function () { L.done = null; L.doneMod = ''; keepDone(); redraw(); },
+      goNotes: function () { k.go('notes'); }, goCards: function () { k.go('flash'); }, goTest: function () { k.go('quiz'); }, goTutor: function () { k.go('tutor'); },
       packs: list.map(function (p) {
         var armed = L.delArm === p.id;
         return { title: p.title, meta: [p.pages ? p.pages + (p.source === 'slides' ? ' slides' : ' pages') : '', p.chunks ? p.chunks + ' searchable passages' : '', 'added ' + ago(p.at)].filter(Boolean).join(' · '),

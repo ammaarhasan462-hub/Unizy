@@ -798,7 +798,7 @@
       Array.prototype.forEach.call(document.querySelectorAll('[data-cx-clock]'), function (el) { if (el.textContent !== txt) el.textContent = txt; });
       document.title = txt + (t.phase === 'break' ? ' · Break' : ' · Focus') + ' · Unizy';
     } else if (/· Unizy$/.test(document.title) && /^\d\d:\d\d/.test(document.title)) {
-      document.title = 'Unizy · your uni, your modules, your AI tutor';
+      document.title = 'Unizy · your uni, your modules, your own tutor';
     }
   }
   function ensureTick() { if (!S.fo.tick) S.fo.tick = setInterval(tick, 1000); }

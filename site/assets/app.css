@@ -154,3 +154,6 @@ html.ux-leaving .ux-main{opacity:.35;transition:opacity .18s ease}
 }
 @media (max-width:420px){.ux-uni{display:none}.ux-word{font-size:21px}.ux-stat-v{font-size:30px}.ux-panel{padding:18px}}
 @media (prefers-reduced-motion:reduce){.ux-main{animation:none}.ux-app *{transition:none!important}}
+.ux-main.ux-enter{animation:uxIn2 .4s var(--ease) both}
+@keyframes uxIn2{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ux-main.ux-enter{animation:none}}
