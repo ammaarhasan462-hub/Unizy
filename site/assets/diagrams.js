@@ -3,10 +3,10 @@
 // Pasted into app.html's Component class as static methods (keep in sync with the copy there).
 const UZDIAG = (() => {
   const uri = (svg) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  const F = 'font-family="Inter,Arial,sans-serif"';
-  const mark = (p, i) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="13" fill="#141414" stroke="#FFFFFF" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 5) + '" text-anchor="middle" ' + F + ' font-size="14" font-weight="700" fill="#FFFFFF">' + (i + 1) + '</text>';
+  const F = 'font-family="DM Sans,Arial,sans-serif"';
+  const mark = (p, i) => '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="13" fill="#14283B" stroke="#FFFFFF" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 5) + '" text-anchor="middle" ' + F + ' font-size="14" font-weight="700" fill="#FFFFFF">' + (i + 1) + '</text>';
   const marks = (P, items) => (items || []).map((k, i) => (P[k] ? mark(P[k], i) : '')).join('');
-  const foot = (y, lines) => lines.map((t, i) => '<text x="8" y="' + (y + i * 17) + '" ' + F + ' font-size="12" fill="#3F3F3B">' + t + '</text>').join('');
+  const foot = (y, lines) => lines.map((t, i) => '<text x="8" y="' + (y + i * 17) + '" ' + F + ' font-size="12" fill="#33475A">' + t + '</text>').join('');
   const wrap = (w, h, body) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '"><rect width="100%" height="100%" fill="#FFFFFF"/>' + body + '</svg>';
 
   // ---- heart (unchanged from the original schematic) ----
@@ -23,10 +23,10 @@ const UZDIAG = (() => {
     '<path d="M207 190 L345 190 Q350 260 300 320 Q240 340 207 300 Z" fill="#F2C9C9" stroke="#A33A3A" stroke-width="2"/>' +
     '<rect x="193" y="190" width="14" height="115" fill="#D8C6C6" stroke="#6B4E4E"/>';
   const heart = (items) => uri(wrap(400, 392, heartBase() +
-    '<line x1="72" y1="178" x2="150" y2="178" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
-    '<line x1="252" y1="172" x2="330" y2="172" stroke="#141414" stroke-width="4" stroke-dasharray="10 6"/>' +
-    '<line x1="168" y1="182" x2="194" y2="182" stroke="#141414" stroke-width="4"/>' +
-    '<line x1="207" y1="182" x2="233" y2="182" stroke="#141414" stroke-width="4"/>' + marks(HEART_P, items) +
+    '<line x1="72" y1="178" x2="150" y2="178" stroke="#14283B" stroke-width="4" stroke-dasharray="10 6"/>' +
+    '<line x1="252" y1="172" x2="330" y2="172" stroke="#14283B" stroke-width="4" stroke-dasharray="10 6"/>' +
+    '<line x1="168" y1="182" x2="194" y2="182" stroke="#14283B" stroke-width="4"/>' +
+    '<line x1="207" y1="182" x2="233" y2="182" stroke="#14283B" stroke-width="4"/>' + marks(HEART_P, items) +
     foot(368, ['Schematic, not to scale · viewer’s left = patient’s right', 'Blue = deoxygenated blood, red = oxygenated blood'])));
 
   // ---- cardiac conduction system ----
@@ -102,7 +102,7 @@ const UZDIAG = (() => {
       '<path d="M66 204 C80 190 104 186 120 196" fill="#B9D7A8" stroke="#4E7A3C" stroke-width="1.5" opacity="0.9"/>' +
       '<ellipse cx="268" cy="214" rx="24" ry="12" fill="#E9B7B2" stroke="#9A4A43" stroke-width="1.5"/>' +
       '</g>' +
-      '<path d="' + outline + '" fill="none" stroke="#3F3F3B" stroke-width="2.5"/>' +
+      '<path d="' + outline + '" fill="none" stroke="#33475A" stroke-width="2.5"/>' +
       '<path d="M268 244 C290 236 340 236 360 256 C376 274 360 300 330 304 C300 308 276 296 266 278 Z" fill="#E9DCC8" stroke="#6E5A3A" stroke-width="2"/>' +
       '<path d="M272 250 C300 248 340 252 356 266 M270 264 C300 262 340 270 352 282" fill="none" stroke="#6E5A3A" stroke-width="1"/>' +
       '<path d="M214 258 L222 352 L250 352 L258 270 Z" fill="#E4D9D0" stroke="#6E5A3A" stroke-width="2"/>' +
@@ -191,9 +191,9 @@ const UZDIAG = (() => {
     cs.forEach((t) => { const x = (t * PXS).toFixed(1); calSvg += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + H + '" stroke="#1D4ED8" stroke-width="2"/>'; });
     if (cs.length === 2) { const a = Math.min(cs[0], cs[1]) * PXS, b = Math.max(cs[0], cs[1]) * PXS; calSvg += '<rect x="' + a.toFixed(1) + '" y="0" width="' + (b - a).toFixed(1) + '" height="' + H + '" fill="#1D4ED8" opacity="0.08"/><line x1="' + a.toFixed(1) + '" y1="14" x2="' + b.toFixed(1) + '" y2="14" stroke="#1D4ED8" stroke-width="2"/>'; }
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + (H + 18) + '" width="' + W + '" height="' + (H + 18) + '"><rect width="100%" height="100%" fill="#FFF8F8"/>' + grid +
-      '<path d="M4 ' + base + 'L8 ' + base + 'L8 ' + (base - MV) + 'L28 ' + (base - MV) + 'L28 ' + base + 'L32 ' + base + '" fill="none" stroke="#141414" stroke-width="1.5"/>' +
-      '<path d="' + d + '" fill="none" stroke="#141414" stroke-width="1.6" stroke-linejoin="round"/>' + calSvg +
-      '<text x="6" y="' + (H + 14) + '" ' + F + ' font-size="11" fill="#3F3F3B">Lead II · 25 mm/s · 10 mm/mV · small square 0.04 s · drawn illustration, not a real recording</text></svg>';
+      '<path d="M4 ' + base + 'L8 ' + base + 'L8 ' + (base - MV) + 'L28 ' + (base - MV) + 'L28 ' + base + 'L32 ' + base + '" fill="none" stroke="#14283B" stroke-width="1.5"/>' +
+      '<path d="' + d + '" fill="none" stroke="#14283B" stroke-width="1.6" stroke-linejoin="round"/>' + calSvg +
+      '<text x="6" y="' + (H + 14) + '" ' + F + ' font-size="11" fill="#33475A">Lead II · 25 mm/s · 10 mm/mV · small square 0.04 s · drawn illustration, not a real recording</text></svg>';
     return uri(svg);
   };
 

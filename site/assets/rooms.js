@@ -124,7 +124,7 @@
     var d = S.list || {}, key = hubKey(k.active), un = k.uni ? k.uni.short : 'your uni', b = S.bench[key] || {};
     var mine = (d.mine || []).map(function (r) {
       return { name: r.name, meta: [r.here ? '' : r.module, r.members + (r.members === 1 ? ' member' : ' members'), r.online ? r.online + ' here now' : '', r.open ? 'open to coursemates' : 'invite only'].filter(Boolean).join(' · '),
-        live: r.live, open: function () { openRoom(r.id); }, dot: r.online ? '#2E7D32' : '#BDBDB6' };
+        live: r.live, open: function () { openRoom(r.id); }, dot: r.online ? '#2E7D32' : '#B6C2CD' };
     });
     var open = (d.open || []).map(function (r) {
       return { name: r.name, meta: r.members + (r.members === 1 ? ' member' : ' members') + (r.online ? ' · ' + r.online + ' here now' : '') + ' · active ' + ago(r.lastAt),
@@ -137,7 +137,7 @@
       name: S.form.name, onName: function (e) { S.form.name = e && e.target ? e.target.value : ''; },
       namePh: 'e.g. ' + (k.active.code ? k.active.code + ' ' : '') + 'Seminar group 4',
       openLabel: S.form.open ? '✓ Coursemates on ' + (k.active.code || 'this module') + ' can find and join it' : 'Invite only (share the code)',
-      openBg: S.form.open ? k.tint : '#FFFFFF', openBorder: S.form.open ? k.strong : '#DADAD4',
+      openBg: S.form.open ? k.tint : '#FFFFFF', openBorder: S.form.open ? k.strong : '#D5DDE4',
       toggleOpen: function () { S.form.open = !S.form.open; redraw(); },
       create: function () {
         var name = String((document.querySelector('[data-rm-name]') || {}).value || S.form.name || '').trim();
@@ -174,7 +174,7 @@
     var R = S.room || {}, room = R.room || {}, q = R.quiz;
     var subs = [['notes', 'Shared notes'], ['vault', 'Card vault'], ['reading', 'Reading split'], ['quiz', q && q.state !== 'done' ? 'Live quiz ●' : 'Live quiz']].map(function (t) {
       var on = S.sub === t[0];
-      return { label: t[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#141414', border: on ? k.strong : '#DADAD4', pick: function () { S.sub = t[0]; redraw(); } };
+      return { label: t[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { S.sub = t[0]; redraw(); } };
     });
     // notes
     var blocks = (R.blocks || []).map(function (b) {
@@ -226,7 +226,7 @@
         options: (qq.options || []).map(function (o, i) {
           var right = reveal && i === qq.answer, mine = myC === i, wrong = reveal && mine && !right;
           var n = q.counts && q.counts[String(i)] ? q.counts[String(i)] : 0;
-          return { label: String.fromCharCode(65 + i) + '. ' + o + (reveal ? '  (' + n + ')' : ''), bg: right ? '#EEF6E4' : wrong ? '#FBEDEF' : mine ? k.tint : '#FFFFFF', border: right ? '#2E7D32' : wrong ? '#C8102E' : mine ? k.strong : '#DADAD4', weight: mine ? '800' : '600',
+          return { label: String.fromCharCode(65 + i) + '. ' + o + (reveal ? '  (' + n + ')' : ''), bg: right ? '#EEF6E4' : wrong ? '#FBEDEF' : mine ? k.tint : '#FFFFFF', border: right ? '#2E7D32' : wrong ? '#C8102E' : mine ? k.strong : '#D5DDE4', weight: mine ? '800' : '600',
             pick: function () { if (answered || q.state !== 'question') return; q.myChoice = i; redraw(); rpc('quiz_answer', { p_session: q.id, p_idx: q.idx, p_choice: i }).then(function (r) { if (!r.ok) note(r.message, 'err'); poll(); }).catch(function () {}); } };
         }),
         board: (q.board || []).map(function (p, i) { return { rank: i + 1, name: p.me ? 'You' : p.name, points: p.points, correct: p.correct + ' right', weight: p.me ? '800' : '600' }; }),
@@ -256,7 +256,7 @@
         rpc('room_leave', { p_room: id }).then(function (r) { note(r.message, r.ok ? 'info' : 'err'); S.listAt = 0; redraw(); }).catch(function (e) { note(e.message, 'err'); });
       },
       leaveLabel: S.leaveArm ? 'Tap again to leave' : 'Leave room',
-      members: (R.members || []).map(function (m) { return { name: m.me ? 'You' : m.name, initial: initial(m.name), dot: m.online ? '#2E7D32' : '#BDBDB6', title: (m.owner ? 'Owner · ' : '') + (m.online ? 'here now' : 'away') }; }),
+      members: (R.members || []).map(function (m) { return { name: m.me ? 'You' : m.name, initial: initial(m.name), dot: m.online ? '#2E7D32' : '#B6C2CD', title: (m.owner ? 'Owner · ' : '') + (m.online ? 'here now' : 'away') }; }),
       onlineText: (R.members || []).filter(function (m) { return m.online; }).length + ' here now · ' + (R.members || []).length + ' members',
       liveBanner: !!(q && q.state !== 'done' && S.sub !== 'quiz'), liveText: (q ? q.host + ' started “' + q.title + '”' : ''), goQuiz: function () { S.sub = 'quiz'; redraw(); },
       subs: subs, isNotes: S.sub === 'notes', isVault: S.sub === 'vault', isReading: S.sub === 'reading', isQuiz: S.sub === 'quiz',
@@ -267,9 +267,9 @@
       // vault
       vaultCount: cards.length + (cards.length === 1 ? ' card' : ' cards') + ' from ' + (function () { var w = {}; cards.forEach(function (c) { w[c.who] = 1; }); return Object.keys(w).length; })() + ' people',
       topics: [{ t: null, l: 'All (' + cards.length + ')' }].concat(topics.map(function (t) { return { t: t, l: t + ' (' + cards.filter(function (c) { return c.topic === t; }).length + ')' }; })).map(function (x) {
-        var on = vt === x.t; return { label: x.l, bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#141414', border: on ? k.strong : '#DADAD4', pick: function () { S.vault.topic = x.t; S.vault.study = null; redraw(); } };
+        var on = vt === x.t; return { label: x.l, bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { S.vault.topic = x.t; S.vault.study = null; redraw(); } };
       }),
-      sets: kit ? (kit.cardSets || []).map(function (c) { var on = S.vault.pick === c.id; return { label: c.label + ' (' + Math.min(40, c.n) + ')', bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#DADAD4', pick: function () { S.vault.pick = c.id; redraw(); } }; }) : [],
+      sets: kit ? (kit.cardSets || []).map(function (c) { var on = S.vault.pick === c.id; return { label: c.label + ' (' + Math.min(40, c.n) + ')', bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { S.vault.pick = c.id; redraw(); } }; }) : [],
       hasSets: !!(kit && kit.cardSets && kit.cardSets.length), noSets: !(kit && kit.cardSets && kit.cardSets.length),
       newTopic: S.vault.newTopic, onNewTopic: function (e) { S.vault.newTopic = e && e.target ? e.target.value : ''; },
       addCards: function () {
@@ -293,7 +293,7 @@
         return { name: w, items: byWeek[w].map(function (x) {
           var open = !!S.rd.open[x.id];
           return { title: x.title, detail: x.detail, hasDetail: !!x.detail, who: x.who ? (x.who === 'You' ? 'You’re doing this' : x.who + ' is doing this') : 'Nobody yet',
-            claimLabel: x.mineAssigned ? 'Drop it' : x.who ? 'Take it over' : 'I’ll do it', done: x.done, box: x.done ? '✓' : '', boxBg: x.done ? k.strong : '#FFFFFF', boxBorder: x.done ? k.strong : '#BDBDB6', boxFg: k.onStrong,
+            claimLabel: x.mineAssigned ? 'Drop it' : x.who ? 'Take it over' : 'I’ll do it', done: x.done, box: x.done ? '✓' : '', boxBg: x.done ? k.strong : '#FFFFFF', boxBorder: x.done ? k.strong : '#B6C2CD', boxFg: k.onStrong,
             summary: x.summary, hasSummary: !!x.summary, draft: S.rd.sum[x.id] !== undefined ? S.rd.sum[x.id] : x.summary,
             onSum: function (ev) { S.rd.sum[x.id] = ev && ev.target ? ev.target.value : ''; }, open: open, closed: !open, sumLabel: x.summary ? (open ? 'Hide summary' : 'Read summary') : (open ? 'Cancel' : 'Write a summary for the group'),
             attr: String(x.id), canRemove: x.canRemove || room.owner,
@@ -323,10 +323,10 @@
       startImport: function () { S.rd.importing = !S.rd.importing; if (S.rd.importing && window.UnizyPacks) window.UnizyPacks.loadReading().then(redraw); redraw(); },
       // quiz
       q: qv, hasQuiz: !!q && q.state !== 'done', quizDone: !!q && q.state === 'done', noQuiz: !q || q.state === 'done',
-      qTopics: quizTopics.map(function (t) { var on = S.qz.topic === t.id; return { label: t.label.length > 50 ? t.label.slice(0, 48) + '…' : t.label, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#DADAD4', pick: function () { S.qz.topic = t.id; redraw(); } }; }),
+      qTopics: quizTopics.map(function (t) { var on = S.qz.topic === t.id; return { label: t.label.length > 50 ? t.label.slice(0, 48) + '…' : t.label, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { S.qz.topic = t.id; redraw(); } }; }),
       hasQTopics: quizTopics.length > 0, noQTopics: !quizTopics.length,
-      qSizes: [5, 10, 15].map(function (n) { var on = S.qz.n === n; return { label: n + ' questions', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#141414', border: on ? k.strong : '#DADAD4', pick: function () { S.qz.n = n; redraw(); } }; }),
-      qTimes: [20, 30, 45].map(function (n) { var on = S.qz.secs === n; return { label: n + 's each', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#141414', border: on ? k.strong : '#DADAD4', pick: function () { S.qz.secs = n; redraw(); } }; }),
+      qSizes: [5, 10, 15].map(function (n) { var on = S.qz.n === n; return { label: n + ' questions', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { S.qz.n = n; redraw(); } }; }),
+      qTimes: [20, 30, 45].map(function (n) { var on = S.qz.secs === n; return { label: n + 's each', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { S.qz.secs = n; redraw(); } }; }),
       startQuiz: function () {
         if (!kit) return;
         var qs = kit.quiz(S.qz.topic, S.qz.n); if (qs.length < 2) return note('Not enough multiple-choice questions on that topic yet. Try “Mixed topics”.', 'err');
@@ -339,7 +339,7 @@
     S.inst = inst;
     var k = v.campusKit;
     if (!k || k.screen !== 'app') return {};
-    k.strong = k.strong || '#141414'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F3F3EF';
+    k.strong = k.strong || '#14283B'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F6F4EE';
     S.kit = k;
     var onTab = k.tab === 'rooms';
     if (!onTab && S.rid) { clearTimeout(S.timer); S.timer = setTimeout(poll, 20000); }
@@ -347,7 +347,7 @@
     if (onTab && !S.rid && signedIn()) setTimeout(function () { loadList(k); }, 0);
     var out = {
       inRoom: !!S.rid, notInRoom: !S.rid,
-      hasMsg: !!S.msg, msg: S.msg, msgBg: S.kind === 'err' ? '#FBEDEF' : S.kind === 'ok' ? '#EEF6E4' : '#F3F3EF', clearMsg: function () { note(''); },
+      hasMsg: !!S.msg, msg: S.msg, msgBg: S.kind === 'err' ? '#FBEDEF' : S.kind === 'ok' ? '#EEF6E4' : '#F6F4EE', clearMsg: function () { note(''); },
       live: !!(S.room && S.room.quiz && S.room.quiz.state !== 'done')
     };
     if (onTab) { out.list = listVals(k); if (S.rid) out.room = roomVals(k); else out.room = {}; }

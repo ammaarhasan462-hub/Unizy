@@ -258,9 +258,9 @@
   var toastEl = null;
   function toast(text, linkText, href, ms) {
     if (toastEl) toastEl.remove();
-    toastEl = el('div', { role: 'status', style: 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1100;background:#141414;color:#fff;border-radius:14px;padding:12px 14px 12px 16px;max-width:min(560px,calc(100vw - 32px));box-sizing:border-box;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 12px 40px rgba(0,0,0,.3);font:14px/1.45 Inter,system-ui,sans-serif' }, [
+    toastEl = el('div', { role: 'status', style: 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:1100;background:#14283B;color:#fff;border-radius:14px;padding:12px 14px 12px 16px;max-width:min(560px,calc(100vw - 32px));box-sizing:border-box;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 12px 40px rgba(0,0,0,.3);font:14px/1.45 DM Sans,system-ui,sans-serif' }, [
       el('span', { style: 'flex:1 1 220px' }, [text]),
-      linkText ? el('a', { href: href, style: 'background:#C6F432;color:#141414;font-weight:700;text-decoration:none;padding:8px 14px;border-radius:999px;white-space:nowrap' }, [linkText]) : null,
+      linkText ? el('a', { href: href, style: 'background:#E9893B;color:#14283B;font-weight:700;text-decoration:none;padding:8px 14px;border-radius:999px;white-space:nowrap' }, [linkText]) : null,
       el('button', { 'aria-label': 'Dismiss', style: 'border:none;background:none;color:#fff;font-size:20px;cursor:pointer;padding:0 4px', onclick: function () { if (toastEl) { toastEl.remove(); toastEl = null; } } }, ['×'])
     ]);
     document.body.appendChild(toastEl);
@@ -294,15 +294,15 @@
   function drawModal() {
     if (modal) { modal.remove(); modal = null; }
     if (!Account.open) return;
-    var s = Auth.session, theme = (Account.inst && Account.inst.__theme) || { c1: '#141414', on1: '#FFFFFF' };
+    var s = Auth.session, theme = (Account.inst && Account.inst.__theme) || { c1: '#14283B', on1: '#FFFFFF' };
     var btn = 'font:inherit;font-size:15px;font-weight:600;padding:12px 18px;min-height:44px;border-radius:999px;cursor:pointer;';
-    var card = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': s ? 'Your account' : 'Sign in', style: 'background:#fff;color:#141414;border-radius:20px;max-width:420px;width:100%;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Inter,system-ui,sans-serif' });
+    var card = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': s ? 'Your account' : 'Sign in', style: 'background:#fff;color:#14283B;border-radius:20px;max-width:420px;width:100%;padding:28px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:DM Sans,system-ui,sans-serif' });
     var close = el('button', { 'aria-label': 'Close', style: 'align-self:flex-end;border:none;background:none;font-size:22px;cursor:pointer;width:44px;height:44px;margin:-14px -14px -10px 0', onclick: Account.hide }, ['×']);
     card.appendChild(close);
     if (!s) {
-      card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#3F3F3B' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
-      var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #CFCFC8' });
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#33475A' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your AI tutor and essay marking.']));
+      var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #C5CFD8' });
       var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
       var submit = function () {
         var v = (input.value || '').trim();
@@ -314,31 +314,31 @@
       go.addEventListener('click', submit);
       input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
       card.appendChild(input); card.appendChild(go);
-      if (Account.msg) card.appendChild(el('p', { role: 'status', style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [Account.msg]));
-      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5C5C57' }, ['By signing in you agree to the ', el('a', { href: 'terms.html', style: 'color:#141414' }, ['terms']), ' and ', el('a', { href: 'privacy.html', style: 'color:#141414' }, ['privacy policy']), '.']));
+      if (Account.msg) card.appendChild(el('p', { role: 'status', style: 'margin:0;font-size:14px;line-height:1.5;color:#33475A' }, [Account.msg]));
+      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5B6C7D' }, ['By signing in you agree to the ', el('a', { href: 'terms.html', style: 'color:#14283B' }, ['terms']), ' and ', el('a', { href: 'privacy.html', style: 'color:#14283B' }, ['privacy policy']), '.']));
       setTimeout(function () { input.focus(); }, 30);
     } else {
       var email = (s.user && s.user.email) || 'your account';
-      card.appendChild(el('h2', { style: "margin:0;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#3F3F3B' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
-      card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#141414' }, ['Set or change your password']));
-      card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#141414' }, ['Leave a review of Unizy']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#3F3F3B' }, [
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',sans-serif;font-weight:800;font-size:24px" }, ['Your account']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#33475A' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
+      card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#14283B' }, ['Set or change your password']));
+      card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#14283B' }, ['Leave a review of Unizy']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#33475A' }, [
         Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.'
       ]));
       var pd = Plan.data;
       if (pd) {
-        var planBox = el('div', { style: 'display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:' + (pd.tier === 'free' ? '#F3F3EF' : '#F2FAE1') + ';border:1.5px solid ' + (pd.tier === 'free' ? '#E2E2DC' : '#C6F432') }, [
-          el('span', { style: 'font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4E4E49' }, ['Your plan']),
+        var planBox = el('div', { style: 'display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:14px;background:' + (pd.tier === 'free' ? '#F6F4EE' : '#F2FAE1') + ';border:1.5px solid ' + (pd.tier === 'free' ? '#DCE3E8' : '#E9893B') }, [
+          el('span', { style: 'font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4A5C6E' }, ['Your plan']),
           el('span', { style: 'font-size:15px;font-weight:700;line-height:1.4' }, [Plan.label()])
         ]);
-        if (pd.tier !== 'free' && pd.unitsLeft != null) planBox.appendChild(el('span', { style: 'font-size:13px;color:#3F3F3B' }, ['AI allowance left today: ' + Math.max(0, pd.unitsLeft) + '.']));
-        if (pd.tier !== 'pro') planBox.appendChild(el('a', { href: '/pricing', style: btn + 'text-decoration:none;text-align:center;border:none;background:#141414;color:#fff;box-shadow:0 3px 0 #C6F432' }, [pd.tier === 'trial' ? 'Keep Pro after your trial' : 'Upgrade to Pro']));
-        else if (pd.plan === 'monthly' && CFG.stripe && CFG.stripe.portal) planBox.appendChild(el('a', { href: CFG.stripe.portal + (s.user && s.user.email ? '?prefilled_email=' + encodeURIComponent(s.user.email) : ''), target: '_blank', rel: 'noopener', style: 'font-size:14px;font-weight:600;color:#141414' }, ['Manage or cancel your subscription']));
+        if (pd.tier !== 'free' && pd.unitsLeft != null) planBox.appendChild(el('span', { style: 'font-size:13px;color:#33475A' }, ['AI allowance left today: ' + Math.max(0, pd.unitsLeft) + '.']));
+        if (pd.tier !== 'pro') planBox.appendChild(el('a', { href: '/pricing', style: btn + 'text-decoration:none;text-align:center;border:none;background:#14283B;color:#fff;box-shadow:0 3px 0 #E9893B' }, [pd.tier === 'trial' ? 'Keep Pro after your trial' : 'Upgrade to Pro']));
+        else if (pd.plan === 'monthly' && CFG.stripe && CFG.stripe.portal) planBox.appendChild(el('a', { href: CFG.stripe.portal + (s.user && s.user.email ? '?prefilled_email=' + encodeURIComponent(s.user.email) : ''), target: '_blank', rel: 'noopener', style: 'font-size:14px;font-weight:600;color:#14283B' }, ['Manage or cancel your subscription']));
         card.appendChild(planBox);
       } else Plan.refresh();
-      card.appendChild(el('button', { style: btn + 'border:1.5px solid #CFCFC8;background:#fff;color:#141414', onclick: function () { Sync.flush().then(function () { Auth.signOut(); Account.hide(); location.reload(); }); } }, ['Sign out']));
-      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5C5C57' }, ['To delete your account and everything saved in it, email ', el('a', { href: 'mailto:' + CFG.contactEmail, style: 'color:#141414' }, [CFG.contactEmail]), '.']));
+      card.appendChild(el('button', { style: btn + 'border:1.5px solid #C5CFD8;background:#fff;color:#14283B', onclick: function () { Sync.flush().then(function () { Auth.signOut(); Account.hide(); location.reload(); }); } }, ['Sign out']));
+      card.appendChild(el('p', { style: 'margin:0;font-size:12px;line-height:1.5;color:#5B6C7D' }, ['To delete your account and everything saved in it, email ', el('a', { href: 'mailto:' + CFG.contactEmail, style: 'color:#14283B' }, [CFG.contactEmail]), '.']));
     }
     modal = el('div', { style: 'position:fixed;inset:0;z-index:1000;background:rgba(10,10,10,.5);display:flex;align-items:center;justify-content:center;padding:16px', onclick: function (e) { if (e.target === modal) Account.hide(); } }, [card]);
     document.body.appendChild(modal);
