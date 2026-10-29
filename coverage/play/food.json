@@ -1,0 +1,562 @@
+[
+ {
+  "id": "food-001",
+  "cat": "food",
+  "q": "Which country is the home of paella?",
+  "options": [
+   "Spain",
+   "Portugal",
+   "Italy",
+   "Mexico"
+  ],
+  "answer": 0,
+  "fact": "Traditional Valencian paella is made with chicken, rabbit and green beans rather than seafood.",
+  "diff": 1
+ },
+ {
+  "id": "food-002",
+  "cat": "food",
+  "q": "What is the main ingredient of guacamole?",
+  "options": [
+   "Lime",
+   "Tomato",
+   "Green pepper",
+   "Avocado"
+  ],
+  "answer": 3,
+  "fact": "The word guacamole comes from the Nahuatl (Aztec) word āhuacamōlli, meaning 'avocado sauce'.",
+  "diff": 1
+ },
+ {
+  "id": "food-003",
+  "cat": "food",
+  "q": "Which spice is made from the dried stigmas of a crocus flower?",
+  "options": [
+   "Turmeric",
+   "Paprika",
+   "Saffron",
+   "Cardamom"
+  ],
+  "answer": 2,
+  "fact": "It takes roughly 150 crocus flowers, all picked by hand, to produce a single gram of saffron.",
+  "diff": 2
+ },
+ {
+  "id": "food-004",
+  "cat": "food",
+  "q": "The margherita pizza is famously linked to which Italian city?",
+  "options": [
+   "Rome",
+   "Naples",
+   "Milan",
+   "Florence"
+  ],
+  "answer": 1,
+  "fact": "Its tomato, mozzarella and basil are said to echo the red, white and green of the Italian flag.",
+  "diff": 1
+ },
+ {
+  "id": "food-005",
+  "cat": "food",
+  "q": "Halloumi cheese originally comes from which island?",
+  "options": [
+   "Sicily",
+   "Cyprus",
+   "Crete",
+   "Malta"
+  ],
+  "answer": 1,
+  "fact": "Halloumi has such a high melting point that it can be grilled or fried without turning runny.",
+  "diff": 2
+ },
+ {
+  "id": "food-006",
+  "cat": "food",
+  "q": "Which nut is ground to make marzipan?",
+  "options": [
+   "Almond",
+   "Hazelnut",
+   "Walnut",
+   "Cashew"
+  ],
+  "answer": 0,
+  "fact": "The German city of Lübeck is so famous for marzipan that 'Lübecker Marzipan' has protected status in the EU.",
+  "diff": 1
+ },
+ {
+  "id": "food-007",
+  "cat": "food",
+  "q": "Earl Grey tea gets its distinctive flavour from which citrus fruit?",
+  "options": [
+   "Lemon",
+   "Grapefruit",
+   "Lime",
+   "Bergamot"
+  ],
+  "answer": 3,
+  "fact": "Most of the world's bergamot oranges are grown along a small stretch of coast in Calabria, southern Italy.",
+  "diff": 2
+ },
+ {
+  "id": "food-008",
+  "cat": "food",
+  "q": "Wasabi belongs to the same plant family as which of these?",
+  "options": [
+   "Ginger",
+   "Garlic",
+   "Mustard",
+   "Chilli"
+  ],
+  "answer": 2,
+  "fact": "Much of the 'wasabi' served outside Japan is actually horseradish dyed green, as real wasabi is costly to grow.",
+  "diff": 3
+ },
+ {
+  "id": "food-009",
+  "cat": "food",
+  "q": "Kimchi is a staple of which country's cuisine?",
+  "options": [
+   "Japan",
+   "Vietnam",
+   "Korea",
+   "Thailand"
+  ],
+  "answer": 2,
+  "fact": "Kimjang, the tradition of families gathering to make kimchi for winter, is on UNESCO's cultural heritage list.",
+  "diff": 1
+ },
+ {
+  "id": "food-010",
+  "cat": "food",
+  "q": "Which fruit is the star of a classic tarte Tatin?",
+  "options": [
+   "Pear",
+   "Apple",
+   "Apricot",
+   "Plum"
+  ],
+  "answer": 1,
+  "fact": "The upside-down tart is named after the Tatin sisters, who ran a hotel in Lamotte-Beuvron in France.",
+  "diff": 1
+ },
+ {
+  "id": "food-011",
+  "cat": "food",
+  "q": "Feta cheese comes from which country?",
+  "options": [
+   "Greece",
+   "Turkey",
+   "Italy",
+   "Spain"
+  ],
+  "answer": 0,
+  "fact": "To be called feta in the EU, the cheese must be made from sheep's milk, or sheep's milk with up to 30% goat's milk.",
+  "diff": 1
+ },
+ {
+  "id": "food-012",
+  "cat": "food",
+  "q": "John Lea and William Perrins, creators of Worcestershire sauce, were what by trade?",
+  "options": [
+   "Butchers",
+   "Brewers",
+   "Sea captains",
+   "Chemists"
+  ],
+  "answer": 3,
+  "fact": "Lea and Perrins first sold their sauce in 1837 from their shop on Broad Street in Worcester.",
+  "diff": 3
+ },
+ {
+  "id": "food-013",
+  "cat": "food",
+  "q": "Gianduja is chocolate blended with a paste made from which nut?",
+  "options": [
+   "Almond",
+   "Pistachio",
+   "Pecan",
+   "Hazelnut"
+  ],
+  "answer": 3,
+  "fact": "It is thought to have begun in Turin when Napoleon's blockade made cocoa scarce, so hazelnuts stretched it further.",
+  "diff": 2
+ },
+ {
+  "id": "food-014",
+  "cat": "food",
+  "q": "Tonkatsu, a Japanese breaded cutlet, is traditionally made with which meat?",
+  "options": [
+   "Chicken",
+   "Beef",
+   "Pork",
+   "Duck"
+  ],
+  "answer": 2,
+  "fact": "'Ton' is Japanese for pork, while 'katsu' is a shortened form of katsuretsu, borrowed from the English 'cutlet'.",
+  "diff": 2
+ },
+ {
+  "id": "food-015",
+  "cat": "food",
+  "q": "What is the main ingredient of hummus?",
+  "options": [
+   "Lentils",
+   "Chickpeas",
+   "Broad beans",
+   "Aubergine"
+  ],
+  "answer": 1,
+  "fact": "'Hummus' is simply the Arabic word for chickpea.",
+  "diff": 1
+ },
+ {
+  "id": "food-016",
+  "cat": "food",
+  "q": "The croissant is thought to descend from the kipferl, a pastry from which country?",
+  "options": [
+   "Austria",
+   "Belgium",
+   "Switzerland",
+   "Denmark"
+  ],
+  "answer": 0,
+  "fact": "French bakers still call croissants and other buttery pastries 'viennoiseries', a nod to Vienna.",
+  "diff": 3
+ },
+ {
+  "id": "food-017",
+  "cat": "food",
+  "q": "Haggis is traditionally cooked inside what?",
+  "options": [
+   "A sheep's stomach",
+   "A pastry case",
+   "A clay pot",
+   "A cabbage leaf"
+  ],
+  "answer": 0,
+  "fact": "Haggis takes centre stage at Burns Night suppers on 25 January, served with neeps and tatties.",
+  "diff": 2
+ },
+ {
+  "id": "food-018",
+  "cat": "food",
+  "q": "Borscht gets its deep red colour from which vegetable?",
+  "options": [
+   "Red pepper",
+   "Tomato",
+   "Red cabbage",
+   "Beetroot"
+  ],
+  "answer": 3,
+  "fact": "Beetroot's red pigment, betanin, is also used as a food colouring with the code E162.",
+  "diff": 1
+ },
+ {
+  "id": "food-019",
+  "cat": "food",
+  "q": "Which spirit is made from the blue agave plant?",
+  "options": [
+   "Rum",
+   "Gin",
+   "Tequila",
+   "Vodka"
+  ],
+  "answer": 2,
+  "fact": "Tequila takes its name from the town of Tequila in the Mexican state of Jalisco.",
+  "diff": 1
+ },
+ {
+  "id": "food-020",
+  "cat": "food",
+  "q": "What does the Italian cooking term 'al dente' literally mean?",
+  "options": [
+   "In the pot",
+   "To the tooth",
+   "With butter",
+   "Until golden"
+  ],
+  "answer": 1,
+  "fact": "Pasta cooked al dente has a lower glycaemic index than overcooked pasta, so its sugars are released more slowly.",
+  "diff": 2
+ },
+ {
+  "id": "food-021",
+  "cat": "food",
+  "q": "The mojito cocktail comes from which country?",
+  "options": [
+   "Mexico",
+   "Cuba",
+   "Jamaica",
+   "Brazil"
+  ],
+  "answer": 1,
+  "fact": "The daiquiri, another Cuban classic, is named after a beach and an iron mine near Santiago de Cuba.",
+  "diff": 1
+ },
+ {
+  "id": "food-022",
+  "cat": "food",
+  "q": "What kind of food is Stinking Bishop?",
+  "options": [
+   "Cheese",
+   "Sausage",
+   "Chutney",
+   "Pie"
+  ],
+  "answer": 0,
+  "fact": "Its rind is washed in perry made from a pear variety that is also called Stinking Bishop.",
+  "diff": 2
+ },
+ {
+  "id": "food-023",
+  "cat": "food",
+  "q": "Which spice gives many curries their golden-yellow colour?",
+  "options": [
+   "Cumin",
+   "Coriander",
+   "Cinnamon",
+   "Turmeric"
+  ],
+  "answer": 3,
+  "fact": "Turmeric's colour comes from curcumin, which is also used as a food colouring with the code E100.",
+  "diff": 1
+ },
+ {
+  "id": "food-024",
+  "cat": "food",
+  "q": "Poutine, a dish of chips, cheese curds and gravy, comes from which country?",
+  "options": [
+   "USA",
+   "Belgium",
+   "Canada",
+   "Ireland"
+  ],
+  "answer": 2,
+  "fact": "Poutine first appeared in rural Quebec in the 1950s, and the cheese curds are meant to squeak when you bite them.",
+  "diff": 1
+ },
+ {
+  "id": "food-025",
+  "cat": "food",
+  "q": "The pavlova dessert is named after a famous what?",
+  "options": [
+   "Opera singer",
+   "Queen",
+   "Ballerina",
+   "Painter"
+  ],
+  "answer": 2,
+  "fact": "It honours the Russian dancer Anna Pavlova, and both Australia and New Zealand claim to have invented it.",
+  "diff": 2
+ },
+ {
+  "id": "food-026",
+  "cat": "food",
+  "q": "Which French chef created the Peach Melba dessert?",
+  "options": [
+   "Paul Bocuse",
+   "Auguste Escoffier",
+   "Marie-Antoine Carême",
+   "Joël Robuchon"
+  ],
+  "answer": 1,
+  "fact": "He created it at the Savoy Hotel in London in the 1890s for the Australian soprano Nellie Melba.",
+  "diff": 3
+ },
+ {
+  "id": "food-027",
+  "cat": "food",
+  "q": "Which fruit is used to make the French liqueur crème de cassis?",
+  "options": [
+   "Blackcurrant",
+   "Raspberry",
+   "Cherry",
+   "Blackberry"
+  ],
+  "answer": 0,
+  "fact": "Mix it with white wine and you get a kir, named after Félix Kir, a former mayor of Dijon.",
+  "diff": 2
+ },
+ {
+  "id": "food-028",
+  "cat": "food",
+  "q": "Which noodle soup, pronounced roughly 'fuh', is a Vietnamese classic?",
+  "options": [
+   "Ramen",
+   "Laksa",
+   "Udon",
+   "Pho"
+  ],
+  "answer": 3,
+  "fact": "Pho first appeared in northern Vietnam in the early 20th century, around Hanoi and Nam Định.",
+  "diff": 2
+ },
+ {
+  "id": "food-029",
+  "cat": "food",
+  "q": "The spice mace comes from the same fruit as which other spice?",
+  "options": [
+   "Cinnamon",
+   "Cloves",
+   "Allspice",
+   "Nutmeg"
+  ],
+  "answer": 3,
+  "fact": "Mace is the lacy red covering wrapped around the nutmeg seed, and it turns orange as it dries.",
+  "diff": 3
+ },
+ {
+  "id": "food-030",
+  "cat": "food",
+  "q": "The name of the Italian dessert tiramisu translates as what?",
+  "options": [
+   "Little cloud",
+   "Sweet dream",
+   "Pick me up",
+   "Coffee cake"
+  ],
+  "answer": 2,
+  "fact": "Tiramisu is built from coffee-soaked ladyfinger biscuits layered with mascarpone cream.",
+  "diff": 2
+ },
+ {
+  "id": "food-031",
+  "cat": "food",
+  "q": "The smörgåsbord buffet comes from which country?",
+  "options": [
+   "Denmark",
+   "Sweden",
+   "Norway",
+   "Finland"
+  ],
+  "answer": 1,
+  "fact": "The word combines 'smörgås', meaning open sandwich, and 'bord', meaning table.",
+  "diff": 2
+ },
+ {
+  "id": "food-032",
+  "cat": "food",
+  "q": "Which paprika-spiced stew is a national dish of Hungary?",
+  "options": [
+   "Goulash",
+   "Moussaka",
+   "Ratatouille",
+   "Cassoulet"
+  ],
+  "answer": 0,
+  "fact": "Goulash takes its name from 'gulyás', the Hungarian word for a cattle herdsman.",
+  "diff": 1
+ },
+ {
+  "id": "food-033",
+  "cat": "food",
+  "q": "Authentic mozzarella di bufala is made from the milk of which animal?",
+  "options": [
+   "Water buffalo",
+   "Goat",
+   "Sheep",
+   "Yak"
+  ],
+  "answer": 0,
+  "fact": "The name mozzarella comes from 'mozzare', Italian for 'to cut off', describing how the curd is shaped.",
+  "diff": 2
+ },
+ {
+  "id": "food-034",
+  "cat": "food",
+  "q": "The coffee plant Coffea arabica is originally native to which country?",
+  "options": [
+   "Brazil",
+   "Colombia",
+   "Jamaica",
+   "Ethiopia"
+  ],
+  "answer": 3,
+  "fact": "The Yemeni port of Mocha, once a major coffee-trading hub, gave its name to the mocha drink.",
+  "diff": 3
+ },
+ {
+  "id": "food-035",
+  "cat": "food",
+  "q": "What is the main ingredient of the dip baba ganoush?",
+  "options": [
+   "Chickpeas",
+   "Yoghurt",
+   "Aubergine",
+   "Lentils"
+  ],
+  "answer": 2,
+  "fact": "Botanically speaking, an aubergine is a berry.",
+  "diff": 2
+ },
+ {
+  "id": "food-036",
+  "cat": "food",
+  "q": "Apart from potato, which vegetable is the key ingredient in vichyssoise?",
+  "options": [
+   "Carrot",
+   "Leek",
+   "Pea",
+   "Tomato"
+  ],
+  "answer": 1,
+  "fact": "Despite its French name, the chilled soup was popularised by chef Louis Diat at the Ritz-Carlton in New York.",
+  "diff": 3
+ },
+ {
+  "id": "food-037",
+  "cat": "food",
+  "q": "Which Mexican sauce often combines chillies with chocolate?",
+  "options": [
+   "Salsa verde",
+   "Mole",
+   "Pico de gallo",
+   "Chimichurri"
+  ],
+  "answer": 1,
+  "fact": "Mole poblano, from the city of Puebla, can contain more than 20 ingredients.",
+  "diff": 2
+ },
+ {
+  "id": "food-038",
+  "cat": "food",
+  "q": "Which fish is dried and shaved to make the Japanese stock dashi?",
+  "options": [
+   "Bonito",
+   "Salmon",
+   "Eel",
+   "Cod"
+  ],
+  "answer": 0,
+  "fact": "In 1908 the chemist Kikunae Ikeda studied kombu seaweed dashi and identified the savoury taste umami.",
+  "diff": 3
+ },
+ {
+  "id": "food-039",
+  "cat": "food",
+  "q": "Bobotie, a spiced mince dish with an egg topping, is a classic of which country?",
+  "options": [
+   "Brazil",
+   "Indonesia",
+   "Morocco",
+   "South Africa"
+  ],
+  "answer": 3,
+  "fact": "Bobotie is often served with yellow rice flavoured with turmeric and raisins.",
+  "diff": 3
+ },
+ {
+  "id": "food-040",
+  "cat": "food",
+  "q": "Slivovitz is a brandy made from which fruit?",
+  "options": [
+   "Pear",
+   "Apricot",
+   "Plum",
+   "Cherry"
+  ],
+  "answer": 2,
+  "fact": "Its name comes from 'šljiva', the Slavic word for plum.",
+  "diff": 3
+ }
+]

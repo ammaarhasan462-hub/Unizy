@@ -1,0 +1,562 @@
+[
+ {
+  "id": "sport-001",
+  "cat": "sport",
+  "q": "How many players does each football team have on the pitch?",
+  "options": [
+   "11",
+   "10",
+   "12",
+   "9"
+  ],
+  "answer": 0,
+  "fact": "Football's rules were first written down by the newly formed Football Association in London in 1863.",
+  "diff": 1
+ },
+ {
+  "id": "sport-002",
+  "cat": "sport",
+  "q": "Legend says William Webb Ellis invented which sport by running with the ball in 1823?",
+  "options": [
+   "Cricket",
+   "Hockey",
+   "Lacrosse",
+   "Rugby"
+  ],
+  "answer": 3,
+  "fact": "The trophy for the men's Rugby World Cup is called the Webb Ellis Cup in his honour.",
+  "diff": 1
+ },
+ {
+  "id": "sport-003",
+  "cat": "sport",
+  "q": "The term 'hat-trick' was first used in which sport?",
+  "options": [
+   "Football",
+   "Ice hockey",
+   "Cricket",
+   "Horse racing"
+  ],
+  "answer": 2,
+  "fact": "In 1858 bowler H. H. Stephenson took three wickets in three balls in Sheffield, and fans bought him a hat.",
+  "diff": 2
+ },
+ {
+  "id": "sport-004",
+  "cat": "sport",
+  "q": "In which sport might you perform a Salchow?",
+  "options": [
+   "Gymnastics",
+   "Figure skating",
+   "Diving",
+   "Ski jumping"
+  ],
+  "answer": 1,
+  "fact": "The jump is named after Swedish skater Ulrich Salchow, who first landed it in competition in 1909.",
+  "diff": 2
+ },
+ {
+  "id": "sport-005",
+  "cat": "sport",
+  "q": "At the first modern Olympics in 1896, what did event winners receive?",
+  "options": [
+   "A gold medal",
+   "A silver medal",
+   "A bronze medal",
+   "A cash prize"
+  ],
+  "answer": 1,
+  "fact": "Runners-up got a copper medal and a laurel branch, while third place received nothing at all.",
+  "diff": 3
+ },
+ {
+  "id": "sport-006",
+  "cat": "sport",
+  "q": "Cluedo was invented in the 1940s by a musician from which English city?",
+  "options": [
+   "Birmingham",
+   "Liverpool",
+   "Leeds",
+   "Bristol"
+  ],
+  "answer": 0,
+  "fact": "Waddingtons first published Cluedo in 1949, and in America it was renamed simply Clue.",
+  "diff": 3
+ },
+ {
+  "id": "sport-007",
+  "cat": "sport",
+  "q": "How many holes are in a standard round of golf?",
+  "options": [
+   "9",
+   "12",
+   "20",
+   "18"
+  ],
+  "answer": 3,
+  "fact": "The number was set in 1764, when St Andrews merged some short holes and cut its Old Course from 22 holes to 18.",
+  "diff": 1
+ },
+ {
+  "id": "sport-008",
+  "cat": "sport",
+  "q": "In chess, which piece can only ever move diagonally?",
+  "options": [
+   "Knight",
+   "Rook",
+   "Bishop",
+   "Queen"
+  ],
+  "answer": 2,
+  "fact": "Because it only moves diagonally, a bishop stays on squares of the same colour for the whole game.",
+  "diff": 1
+ },
+ {
+  "id": "sport-009",
+  "cat": "sport",
+  "q": "In tennis, what is a score of zero called?",
+  "options": [
+   "Nil",
+   "Duck",
+   "Love",
+   "Blank"
+  ],
+  "answer": 2,
+  "fact": "One popular theory says the 15, 30, 40 scoring came from quarter-hour marks on a clock face.",
+  "diff": 1
+ },
+ {
+  "id": "sport-010",
+  "cat": "sport",
+  "q": "Which sport is played with a shuttlecock?",
+  "options": [
+   "Squash",
+   "Badminton",
+   "Table tennis",
+   "Lacrosse"
+  ],
+  "answer": 1,
+  "fact": "The sport is named after Badminton House in Gloucestershire, the country seat of the Dukes of Beaufort.",
+  "diff": 1
+ },
+ {
+  "id": "sport-011",
+  "cat": "sport",
+  "q": "In snooker, how many points is the black ball worth?",
+  "options": [
+   "7",
+   "5",
+   "6",
+   "10"
+  ],
+  "answer": 0,
+  "fact": "A maximum break, potting all 15 reds with a black each followed by every colour, scores 147.",
+  "diff": 1
+ },
+ {
+  "id": "sport-012",
+  "cat": "sport",
+  "q": "Cricket's Ashes series is contested between England and which country?",
+  "options": [
+   "India",
+   "South Africa",
+   "New Zealand",
+   "Australia"
+  ],
+  "answer": 3,
+  "fact": "The Ashes began with a mock obituary in 1882 declaring English cricket dead after a defeat at the Oval.",
+  "diff": 1
+ },
+ {
+  "id": "sport-013",
+  "cat": "sport",
+  "q": "Which country hosted the first FIFA World Cup in 1930?",
+  "options": [
+   "Brazil",
+   "Italy",
+   "England",
+   "Uruguay"
+  ],
+  "answer": 3,
+  "fact": "The hosts also won it, beating Argentina 4–2 in the final in Montevideo.",
+  "diff": 2
+ },
+ {
+  "id": "sport-014",
+  "cat": "sport",
+  "q": "What is the official distance of a marathon?",
+  "options": [
+   "40 km",
+   "45 km",
+   "42.195 km",
+   "38.5 km"
+  ],
+  "answer": 2,
+  "fact": "The odd distance comes from the 1908 London Olympics, whose course ran from Windsor Castle to the stadium.",
+  "diff": 2
+ },
+ {
+  "id": "sport-015",
+  "cat": "sport",
+  "q": "The Stanley Cup is the famous trophy of which sport?",
+  "options": [
+   "Baseball",
+   "Ice hockey",
+   "Basketball",
+   "American football"
+  ],
+  "answer": 1,
+  "fact": "It is named after Lord Stanley of Preston, a Governor General of Canada, who donated it in 1892.",
+  "diff": 2
+ },
+ {
+  "id": "sport-016",
+  "cat": "sport",
+  "q": "Which board game has squares marked 'triple word score'?",
+  "options": [
+   "Scrabble",
+   "Boggle",
+   "Monopoly",
+   "Cluedo"
+  ],
+  "answer": 0,
+  "fact": "Inventor Alfred Butts worked out how many of each letter to include partly by counting letters in newspapers.",
+  "diff": 1
+ },
+ {
+  "id": "sport-017",
+  "cat": "sport",
+  "q": "How many interlocking rings are on the Olympic flag?",
+  "options": [
+   "5",
+   "4",
+   "6",
+   "7"
+  ],
+  "answer": 0,
+  "fact": "Pierre de Coubertin designed the rings in 1913; with the white background, their colours covered every nation's flag.",
+  "diff": 1
+ },
+ {
+  "id": "sport-018",
+  "cat": "sport",
+  "q": "What colour jersey does the overall leader wear in the Tour de France?",
+  "options": [
+   "Green",
+   "Red",
+   "Pink",
+   "Yellow"
+  ],
+  "answer": 3,
+  "fact": "Yellow was chosen because L'Auto, the newspaper that organised the first races, was printed on yellow paper.",
+  "diff": 1
+ },
+ {
+  "id": "sport-019",
+  "cat": "sport",
+  "q": "Which is the most expensive property on the classic UK Monopoly board?",
+  "options": [
+   "Park Lane",
+   "Bond Street",
+   "Mayfair",
+   "Strand"
+  ],
+  "answer": 2,
+  "fact": "Monopoly grew out of The Landlord's Game, which Elizabeth Magie patented in 1904.",
+  "diff": 1
+ },
+ {
+  "id": "sport-020",
+  "cat": "sport",
+  "q": "In which sport do players slide stones across ice while teammates sweep?",
+  "options": [
+   "Bowls",
+   "Curling",
+   "Bandy",
+   "Biathlon"
+  ],
+  "answer": 1,
+  "fact": "Many Olympic curling stones are carved from granite quarried on Ailsa Craig, a tiny island off Scotland.",
+  "diff": 1
+ },
+ {
+  "id": "sport-021",
+  "cat": "sport",
+  "q": "Foil, épée and sabre are the three weapons of which sport?",
+  "options": [
+   "Archery",
+   "Fencing",
+   "Kendo",
+   "Modern pentathlon"
+  ],
+  "answer": 1,
+  "fact": "Fencing is one of only a handful of sports to have featured at every modern Olympic Games since 1896.",
+  "diff": 1
+ },
+ {
+  "id": "sport-022",
+  "cat": "sport",
+  "q": "What do all the dots on a standard six-sided dice add up to?",
+  "options": [
+   "21",
+   "18",
+   "24",
+   "36"
+  ],
+  "answer": 0,
+  "fact": "On a standard dice, the numbers on opposite faces always add up to seven.",
+  "diff": 2
+ },
+ {
+  "id": "sport-023",
+  "cat": "sport",
+  "q": "Which martial art's name means 'empty hand'?",
+  "options": [
+   "Judo",
+   "Taekwondo",
+   "Aikido",
+   "Karate"
+  ],
+  "answer": 3,
+  "fact": "Karate developed on the island of Okinawa, in what is now southern Japan.",
+  "diff": 2
+ },
+ {
+  "id": "sport-024",
+  "cat": "sport",
+  "q": "Who was the first person to run a mile in under four minutes?",
+  "options": [
+   "Sebastian Coe",
+   "Steve Ovett",
+   "Roger Bannister",
+   "Chris Chataway"
+  ],
+  "answer": 2,
+  "fact": "He clocked 3 minutes 59.4 seconds at Iffley Road in Oxford on 6 May 1954.",
+  "diff": 2
+ },
+ {
+  "id": "sport-025",
+  "cat": "sport",
+  "q": "In which event did athletes first see the 'Fosbury flop'?",
+  "options": [
+   "Pole vault",
+   "Long jump",
+   "High jump",
+   "Triple jump"
+  ],
+  "answer": 2,
+  "fact": "Dick Fosbury used his backwards technique to win Olympic gold at the 1968 Mexico City Games.",
+  "diff": 2
+ },
+ {
+  "id": "sport-026",
+  "cat": "sport",
+  "q": "How many pieces does each player start with in draughts?",
+  "options": [
+   "10",
+   "12",
+   "15",
+   "16"
+  ],
+  "answer": 1,
+  "fact": "Draughts is played only on the dark squares of the same 8×8 board used for chess.",
+  "diff": 2
+ },
+ {
+  "id": "sport-027",
+  "cat": "sport",
+  "q": "The game Snakes and Ladders originated in which country?",
+  "options": [
+   "India",
+   "China",
+   "Egypt",
+   "Persia"
+  ],
+  "answer": 0,
+  "fact": "In the original Indian game, the ladders stood for virtues and the snakes for vices.",
+  "diff": 2
+ },
+ {
+  "id": "sport-028",
+  "cat": "sport",
+  "q": "The ancient Olympic Games were held in honour of which Greek god?",
+  "options": [
+   "Apollo",
+   "Poseidon",
+   "Ares",
+   "Zeus"
+  ],
+  "answer": 3,
+  "fact": "By tradition the first recorded Games, in 776 BC, had just one event: a sprint of about 190 metres.",
+  "diff": 2
+ },
+ {
+  "id": "sport-029",
+  "cat": "sport",
+  "q": "In table tennis, a game is won by the first player to reach how many points?",
+  "options": [
+   "15",
+   "21",
+   "10",
+   "11"
+  ],
+  "answer": 3,
+  "fact": "Games used to be played to 21 points until the rules were changed in 2001.",
+  "diff": 2
+ },
+ {
+  "id": "sport-030",
+  "cat": "sport",
+  "q": "The fast stick-and-ball sport of hurling is native to which country?",
+  "options": [
+   "Scotland",
+   "Wales",
+   "Ireland",
+   "Canada"
+  ],
+  "answer": 2,
+  "fact": "The women's version of hurling has its own name: camogie.",
+  "diff": 2
+ },
+ {
+  "id": "sport-031",
+  "cat": "sport",
+  "q": "The Rubik's Cube was invented by an architecture lecturer from which country?",
+  "options": [
+   "Poland",
+   "Hungary",
+   "Austria",
+   "Czechoslovakia"
+  ],
+  "answer": 1,
+  "fact": "A standard 3×3 cube can be arranged in more than 43 quintillion different ways.",
+  "diff": 2
+ },
+ {
+  "id": "sport-032",
+  "cat": "sport",
+  "q": "Which sport did astronaut Alan Shepard play on the Moon in 1971?",
+  "options": [
+   "Golf",
+   "Baseball",
+   "Tennis",
+   "Cricket"
+  ],
+  "answer": 0,
+  "fact": "Shepard smuggled up a six-iron head and attached it to the handle of a tool for collecting lunar samples.",
+  "diff": 2
+ },
+ {
+  "id": "sport-033",
+  "cat": "sport",
+  "q": "Volleyball was originally known by what name when it was invented in 1895?",
+  "options": [
+   "Mintonette",
+   "Bat-ball",
+   "Net-catch",
+   "Volley-tennis"
+  ],
+  "answer": 0,
+  "fact": "William G. Morgan invented it at a YMCA in Massachusetts as a gentler alternative to basketball.",
+  "diff": 3
+ },
+ {
+  "id": "sport-034",
+  "cat": "sport",
+  "q": "The Calcutta Cup is contested by England and Scotland in which sport?",
+  "options": [
+   "Cricket",
+   "Football",
+   "Polo",
+   "Rugby union"
+  ],
+  "answer": 3,
+  "fact": "The trophy was made from melted-down silver rupees left over when the Calcutta Football Club closed.",
+  "diff": 3
+ },
+ {
+  "id": "sport-035",
+  "cat": "sport",
+  "q": "What is the name of the circular ring in which sumo wrestlers compete?",
+  "options": [
+   "Dojo",
+   "Tatami",
+   "Dohyō",
+   "Torii"
+  ],
+  "answer": 2,
+  "fact": "Before a bout, sumo wrestlers throw a handful of salt into the ring to purify it.",
+  "diff": 3
+ },
+ {
+  "id": "sport-036",
+  "cat": "sport",
+  "q": "Squash is said to have been invented around 1830 at which English school?",
+  "options": [
+   "Eton",
+   "Harrow",
+   "Rugby",
+   "Winchester"
+  ],
+  "answer": 1,
+  "fact": "Pupils noticed that a punctured ball 'squashed' on hitting the wall, which made for a more varied game.",
+  "diff": 3
+ },
+ {
+  "id": "sport-037",
+  "cat": "sport",
+  "q": "Which card game uses a pegboard to keep score?",
+  "options": [
+   "Whist",
+   "Cribbage",
+   "Rummy",
+   "Canasta"
+  ],
+  "answer": 1,
+  "fact": "Cribbage is credited to the English poet Sir John Suckling, who is said to have devised it in the early 17th century.",
+  "diff": 3
+ },
+ {
+  "id": "sport-038",
+  "cat": "sport",
+  "q": "How long is a cricket pitch from stumps to stumps?",
+  "options": [
+   "22 yards",
+   "20 yards",
+   "25 yards",
+   "18 yards"
+  ],
+  "answer": 0,
+  "fact": "22 yards is exactly one chain, an old unit that land surveyors used for centuries.",
+  "diff": 3
+ },
+ {
+  "id": "sport-039",
+  "cat": "sport",
+  "q": "Which sport was patented in 1874 under the name 'Sphairistikè'?",
+  "options": [
+   "Croquet",
+   "Badminton",
+   "Squash",
+   "Lawn tennis"
+  ],
+  "answer": 3,
+  "fact": "Major Walter Wingfield sold his new game in boxed sets containing rackets, balls and a net.",
+  "diff": 3
+ },
+ {
+  "id": "sport-040",
+  "cat": "sport",
+  "q": "The ancient board game Go is played on a grid of how many lines by how many?",
+  "options": [
+   "8 × 8",
+   "12 × 12",
+   "19 × 19",
+   "15 × 15"
+  ],
+  "answer": 2,
+  "fact": "Go was invented in China more than 2,500 years ago, making it one of the oldest board games still played.",
+  "diff": 3
+ }
+]
