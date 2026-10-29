@@ -65,6 +65,7 @@
   function morph(from, to) {
     if (from.tagName === 'INPUT' && from.type === 'file') { var keep = from.getAttribute('data-dc-ev'); syncAttrs(from, to); return keep; }
     syncAttrs(from, to);
+    if (from.hasAttribute && from.hasAttribute('data-uz-keep')) return; // a widget that draws its own contents
     var active = document.activeElement === from;
     if (from.tagName === 'INPUT') { var v = to.getAttribute('value') || ''; if (!active && from.value !== v) from.value = v; return; }
     if (from.tagName === 'TEXTAREA') { if (!active && from.value !== to.value) from.value = to.value; return; }

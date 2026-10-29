@@ -311,3 +311,19 @@ h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.0
 .final .btn.dark:hover{background:#C99642}
 .final .btn.ghost-dark{border-color:#fff;color:#fff}
 .final .btn.ghost-dark:hover{background:#fff;color:#17302A}
+
+/* play page */
+.play-vis{align-items:flex-end;gap:22px}
+.tower-demo{flex:0 0 150px;display:flex;flex-direction:column-reverse;align-items:center;gap:4px;padding-bottom:0;border-bottom:4px solid #17302A}
+.tower-demo i{display:block;height:20px;width:82%;border-radius:4px;background:#3E6B5C;box-shadow:inset 0 -3px 0 rgba(0,0,0,.18);animation:td .5s cubic-bezier(.2,1.4,.4,1) both}
+.tower-demo i:nth-child(2n){width:90%}
+.tower-demo i.g{background:linear-gradient(180deg,#E2B85A,#B8862F)}
+.tower-demo i:nth-child(1){animation-delay:.05s}.tower-demo i:nth-child(2){animation-delay:.15s}.tower-demo i:nth-child(3){animation-delay:.25s}.tower-demo i:nth-child(4){animation-delay:.35s}.tower-demo i:nth-child(5){animation-delay:.45s}.tower-demo i:nth-child(6){animation-delay:.55s}.tower-demo i:nth-child(7){animation-delay:.65s}.tower-demo i:nth-child(8){animation-delay:.75s}.tower-demo i:nth-child(9){animation-delay:.85s}.tower-demo i:nth-child(10){animation-delay:.95s}
+@keyframes td{from{transform:translateY(-90px);opacity:0}to{transform:none;opacity:1}}
+.board-demo{flex:1 1 auto;background:#fff;border:1px solid #E4DFD3;border-radius:16px;padding:18px;box-shadow:0 24px 60px rgba(23,48,42,.08)}
+.board-demo ol{list-style:none;margin:10px 0 0;padding:0}
+.board-demo li{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:10px;padding:10px 0;border-top:1px solid #ECEDE6}
+.board-demo li b{font-size:15px}.board-demo li span{grid-row:2;font-size:12.5px;color:#5D6D67}
+.board-demo li em{grid-row:1/3;grid-column:2;align-self:center;font-style:normal;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:22px}
+.board-demo li.you{background:#FBF6EA;margin:0 -8px;padding:10px 8px;border-radius:8px}
+@media (prefers-reduced-motion:reduce){.tower-demo i{animation:none}}

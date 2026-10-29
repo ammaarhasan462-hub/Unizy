@@ -366,6 +366,7 @@
         if (v.cx && v.cx.badge && Array.isArray(v.navGroups)) v.navGroups = v.navGroups.map(function (g) { return g.id === 'campus' && !g.hasBadge ? Object.assign({}, g, { badge: v.cx.badge, hasBadge: true }) : g; });
       }
       this.__theme = v.theme;
+      this.__playKit = v.playKit || null;
       // remember the chosen uni, course, year and modules between visits
       var st = this.state || {};
       if (st.screen === 'app' && st.uni && st.degree) {
@@ -396,7 +397,7 @@
   // (a lecture pack being built, a test, a tutor chat, an upload) carries on. Work in progress is also kept on
   // this device between visits, and only goes when the student removes it (the × buttons) or logs out.
   var Routes = (function () {
-    var SLUG = { home: '', overview: 'overview', path: 'pathway', notes: 'notes', packs: 'lecture-packs', quiz: 'tests', assess: 'marking', flash: 'flashcards', time: 'planner', tutor: 'tutor', friends: 'groups', rooms: 'rooms', hub: 'hub', market: 'marketplace', focus: 'study-mode' };
+    var SLUG = { home: '', overview: 'overview', path: 'pathway', notes: 'notes', packs: 'lecture-packs', quiz: 'tests', assess: 'marking', flash: 'flashcards', time: 'planner', tutor: 'tutor', friends: 'groups', rooms: 'rooms', hub: 'hub', market: 'marketplace', focus: 'study-mode', play: 'play' };
     var BY_SLUG = {}; Object.keys(SLUG).forEach(function (k) { BY_SLUG[SLUG[k]] = k; });
     var KEEP = 'unizy:ui:v1';
     // setup lives in unizy:setup; these are per-moment or server-owned
@@ -410,7 +411,7 @@
     function current() { return tabOf(location.pathname) || 'home'; }
     var here = current(), ready = false, inst = null, saveT = null;
     function title(tab) {
-      var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode' };
+      var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode', play: 'Play' };
       return (names[tab] || 'Unizy') + ' · Unizy';
     }
     function arrive() {
@@ -504,7 +505,7 @@
       Account.inst = inst;
       restoreSetup(inst, null);
       Routes.start(inst);
-      inst.__app.afterRender = function (i) { Routes.check(i); };
+      inst.__app.afterRender = function (i) { Routes.check(i); if (window.UnizyPlay) { try { window.UnizyPlay.mount(i, i.__playKit); } catch (e) { console.error('[unizy] play', e); } } };
       if (/signin/.test(location.hash)) { location.replace('/login?next=' + encodeURIComponent('/app.html')); return inst; }
       var after = function () {
         if (!Auth.session) { enableAi(inst); return; }
