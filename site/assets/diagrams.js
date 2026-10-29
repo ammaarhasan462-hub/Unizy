@@ -95,10 +95,10 @@ const UZDIAG = (() => {
       '<path d="M222 20 C214 70 196 120 178 170 L250 196 C300 180 330 160 350 120 L350 0 Z" fill="#F6E2B3"/>' +
       '<path d="M350 120 C330 160 300 180 250 196 L300 260 L420 260 L420 100 Z" fill="#E7D2F0"/>' +
       '<path d="M178 170 L250 196 L300 260 L0 260 L0 200 Z" fill="#F7D2CF"/>' +
-      '<path d="M222 20 C214 70 196 120 178 170" fill="none" stroke="#2F2F2F" stroke-width="3"/>' +
+      '<path d="M222 20 C214 70 196 120 178 170" fill="none" stroke="#22374A" stroke-width="3"/>' +
       '<path d="M205 16 C196 70 178 120 160 166" fill="none" stroke="#6C8F5B" stroke-width="2" stroke-dasharray="3 3"/>' +
       '<path d="M240 24 C232 76 214 126 196 172" fill="none" stroke="#B08A35" stroke-width="2" stroke-dasharray="3 3"/>' +
-      '<path d="M60 200 C110 186 170 178 236 196 C262 202 284 214 300 226" fill="none" stroke="#2F2F2F" stroke-width="3"/>' +
+      '<path d="M60 200 C110 186 170 178 236 196 C262 202 284 214 300 226" fill="none" stroke="#22374A" stroke-width="3"/>' +
       '<path d="M66 204 C80 190 104 186 120 196" fill="#B9D7A8" stroke="#4E7A3C" stroke-width="1.5" opacity="0.9"/>' +
       '<ellipse cx="268" cy="214" rx="24" ry="12" fill="#E9B7B2" stroke="#9A4A43" stroke-width="1.5"/>' +
       '</g>' +

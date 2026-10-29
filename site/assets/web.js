@@ -390,7 +390,54 @@
     if (setup && setup.uni && setup.degree && !(inst.state && inst.state.screen === 'app')) inst.setState(Object.assign({ screen: 'app' }, setup));
   }
 
+  // ---------------- pages: every app section has its own URL and loads as its own page ----------------
+  var Routes = (function () {
+    var SLUG = { home: '', overview: 'overview', path: 'pathway', notes: 'notes', packs: 'lecture-packs', quiz: 'tests', assess: 'marking', flash: 'flashcards', time: 'planner', tutor: 'tutor', friends: 'groups', rooms: 'rooms', hub: 'hub', market: 'marketplace', focus: 'study-mode' };
+    var BY_SLUG = {}; Object.keys(SLUG).forEach(function (k) { BY_SLUG[SLUG[k]] = k; });
+    var CARRY = 'unizy:carry', SKIP = { store: 1, ai: 1, aiImages: 1, tBusy: 1, tStream: 1, tErr: 1, toastMsg: 1, setupMenu: 1, gBusy: 1 };
+    function href(tab) { var s = SLUG[tab]; return s === undefined ? '/app' : (s ? '/app/' + s : '/app'); }
+    function current() {
+      var m = /^\/app(?:\.html)?(?:\/([\w-]+))?\/?$/.exec(location.pathname);
+      if (!m) return 'home';
+      return m[1] && BY_SLUG[m[1]] ? BY_SLUG[m[1]] : 'home';
+    }
+    var here = current(), ready = false, leaving = false;
+    function carryOut(state) {
+      var keep = {};
+      Object.keys(state || {}).forEach(function (k) { if (!SKIP[k] && typeof state[k] !== 'function') keep[k] = state[k]; });
+      try { sessionStorage.setItem(CARRY, JSON.stringify({ at: Date.now(), state: keep })); } catch (e) { /* too big or blocked: the page still opens */ }
+    }
+    function carryIn() {
+      try {
+        var raw = sessionStorage.getItem(CARRY); sessionStorage.removeItem(CARRY);
+        var c = raw ? JSON.parse(raw) : null;
+        return c && Date.now() - c.at < 30000 ? c.state : null;
+      } catch (e) { return null; }
+    }
+    return {
+      SLUG: SLUG, href: href, current: current,
+      start: function (inst) {
+        var carried = carryIn();
+        if (carried) inst.setState(carried);
+        inst.setState({ tab: here });
+        if (here !== 'home' && !/\/app\/[\w-]+/.test(location.pathname)) history.replaceState(null, '', href(here) + location.search + location.hash);
+        ready = true;
+      },
+      // runs after every render: a change of section anywhere in the app opens that section's page
+      check: function (inst) {
+        var st = inst.state || {};
+        if (!ready || leaving || st.screen !== 'app' || !st.tab || st.tab === here || SLUG[st.tab] === undefined) return;
+        leaving = true;
+        carryOut(st);
+        document.documentElement.classList.add('ux-leaving');
+        try { Sync.flush(); } catch (e) { /* ignore */ }
+        location.assign(href(st.tab));
+      }
+    };
+  })();
+
   window.UnizyWeb = {
+    routes: Routes,
     start: function (root, templateHTML, Comp) {
       Auth.load();
       var fromLink = Auth.fromHash();
@@ -413,6 +460,8 @@
       var inst = window.UnizyRuntime.mount(root, templateHTML, Comp, {});
       Account.inst = inst;
       restoreSetup(inst, null);
+      Routes.start(inst);
+      inst.__app.afterRender = function (i) { Routes.check(i); };
       if (/signin/.test(location.hash)) { location.replace('/login?next=' + encodeURIComponent('/app.html')); return inst; }
       var after = function () {
         if (!Auth.session) { enableAi(inst); return; }
