@@ -10,7 +10,7 @@
    "9"
   ],
   "answer": 0,
-  "fact": "Football's rules were first written down by the newly formed Football Association in London in 1863.",
+  "fact": "The Football Association was founded at a London tavern in 1863, and its rules became the basis of the modern game.",
   "diff": 1
  },
  {
@@ -66,7 +66,7 @@
    "A cash prize"
   ],
   "answer": 1,
-  "fact": "Runners-up got a copper medal and a laurel branch, while third place received nothing at all.",
+  "fact": "Runners-up got a copper medal and a laurel branch; gold, silver and bronze were only assigned to these Games later.",
   "diff": 3
  },
  {
@@ -94,7 +94,7 @@
    "18"
   ],
   "answer": 3,
-  "fact": "The number was set in 1764, when St Andrews merged some short holes and cut its Old Course from 22 holes to 18.",
+  "fact": "In 1764 St Andrews cut its Old Course from 22 holes to 18, and 18 holes later became the standard everywhere.",
   "diff": 1
  },
  {
@@ -234,7 +234,7 @@
    "7"
   ],
   "answer": 0,
-  "fact": "Pierre de Coubertin designed the rings in 1913; with the white background, their colours covered every nation's flag.",
+  "fact": "Pierre de Coubertin designed the rings in 1913, saying their colours and white background included a colour from every nation's flag.",
   "diff": 1
  },
  {
@@ -248,7 +248,7 @@
    "Yellow"
   ],
   "answer": 3,
-  "fact": "Yellow was chosen because L'Auto, the newspaper that organised the first races, was printed on yellow paper.",
+  "fact": "Yellow was chosen because L'Auto, the newspaper that founded the race in 1903, was printed on yellow paper.",
   "diff": 1
  },
  {
@@ -338,7 +338,7 @@
  {
   "id": "sport-025",
   "cat": "sport",
-  "q": "In which event did athletes first see the 'Fosbury flop'?",
+  "q": "The 'Fosbury flop' is a technique used in which athletics event?",
   "options": [
    "Pole vault",
    "Long jump",
@@ -394,7 +394,7 @@
  {
   "id": "sport-029",
   "cat": "sport",
-  "q": "In table tennis, a game is won by the first player to reach how many points?",
+  "q": "In table tennis, a game is normally played up to how many points?",
   "options": [
    "15",
    "21",
@@ -444,7 +444,7 @@
    "Cricket"
   ],
   "answer": 0,
-  "fact": "Shepard smuggled up a six-iron head and attached it to the handle of a tool for collecting lunar samples.",
+  "fact": "Shepard's club was a six-iron head fixed to the handle of a tool for collecting lunar samples, folded up to fit on board.",
   "diff": 2
  },
  {
@@ -500,7 +500,7 @@
    "Winchester"
   ],
   "answer": 1,
-  "fact": "Pupils noticed that a punctured ball 'squashed' on hitting the wall, which made for a more varied game.",
+  "fact": "The story goes that pupils found a punctured ball 'squashed' on hitting the wall, which made for a more varied game.",
   "diff": 3
  },
  {
@@ -514,7 +514,7 @@
    "Canasta"
   ],
   "answer": 1,
-  "fact": "Cribbage is credited to the English poet Sir John Suckling, who is said to have devised it in the early 17th century.",
+  "fact": "Cribbage is said to have been devised by the English poet Sir John Suckling in the early 17th century.",
   "diff": 3
  },
  {
