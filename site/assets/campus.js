@@ -255,7 +255,7 @@
         var cat = m.m !== null && m.m !== undefined ? k.mods[m.m] : null, on = !!I.keepMod[i];
         return { text: (m.code ? m.code + ' · ' : '') + (m.name || ''), matched: !!cat, unmatched: !cat,
           sub: cat ? (cat.code && cat.code !== m.code ? 'Matched to ' + cat.code + ' ' + cat.name : 'Matched to your ' + un + ' module list') : 'Not in Unizy’s ' + un + ' Year ' + k.year + ' list, so it won’t get its own page. Its classes and deadlines are still added.',
-          box: on ? '✓' : '', boxBg: on ? (k.strong || '#14283B') : '#FFFFFF', boxFg: k.onStrong || '#FFFFFF', boxBorder: on ? (k.strong || '#14283B') : '#B6C2CD',
+          box: on ? '✓' : '', boxBg: on ? (k.strong || '#17302A') : '#FFFFFF', boxFg: k.onStrong || '#FFFFFF', boxBorder: on ? (k.strong || '#17302A') : '#B9C4BE',
           toggle: function () { if (!cat) return; I.keepMod[i] = !I.keepMod[i]; redraw(); } };
       });
       var classes = (r.classes || []).map(function (c, i) { return row('c' + i, DOW[c.d] + ' ' + c.s + (c.e ? '–' + c.e : '') + ' · ' + c.title, [c.mod, c.loc, c.w ? 'weeks ' + c.w : ''].filter(Boolean).join(' · ')); });
@@ -384,7 +384,7 @@
         return {
           name: f.name || f.source || 'Calendar', source: f.kind === 'file' ? 'File' : f.source || 'Calendar', canSync: f.kind !== 'file',
           meta: busy ? 'Syncing…' : f.error ? 'Problem: ' + f.error : f.kind === 'file' ? (f.count || 0) + (f.count === 1 ? ' event' : ' events') + ' imported ' + fmtAgo(f.last) : (f.count || 0) + (f.count === 1 ? ' event' : ' events') + (f.deadlines ? ', ' + f.deadlines + (f.deadlines === 1 ? ' deadline' : ' deadlines') : '') + ' · synced ' + fmtAgo(f.last),
-          metaColor: f.error && !busy ? '#9A1B12' : '#5B6C7D',
+          metaColor: f.error && !busy ? '#9A1B12' : '#5D6D67',
           sync: function () { syncFeed(S.kit || k, f, false); }, syncLabel: busy ? 'Syncing…' : 'Sync now',
           remove: function () {
             var kk = S.kit || k; var prefix = 'f:' + f.id + ':';
@@ -438,7 +438,7 @@
     var counts = (d && d.counts) || {};
     var chips = [[null, 'All', counts.all], ['question', 'Questions', counts.question], ['advice', 'Advice', counts.advice], ['notes', 'Notes', counts.notes], ['cards', 'Flashcards', counts.cards]].map(function (c) {
       var on = H.kind === c[0];
-      return { label: c[1] + (c[2] ? ' ' + c[2] : ''), bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { H.kind = c[0]; H.at = 0; loadHub(S.kit || k, true); } };
+      return { label: c[1] + (c[2] ? ' ' + c[2] : ''), bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#17302A', border: on ? k.strong : '#D6DDD8', pick: function () { H.kind = c[0]; H.at = 0; loadHub(S.kit || k, true); } };
     });
     var sorts = [['active', 'Active'], ['new', 'Newest'], ['top', 'Most helpful']].map(function (c) {
       var on = H.sort === c[0];
@@ -463,7 +463,7 @@
         cardsPreview: items.slice(0, open ? 40 : 3).map(function (c) { return { f: c.f, b: c.b }; }), cardCount: items.length + ' cards',
         canMore: body.length > 360 || items.length > 3, moreLabel: open ? 'Show less' : (p.kind === 'cards' ? 'Show all ' + items.length + ' cards' : 'Read more'),
         toggleMore: function () { H.open[p.id] = !open; redraw(); },
-        helpful: (p.voted ? '▲ Helpful ' : '△ Helpful ') + (p.score || ''), helpBg: p.voted ? k.tint : '#FFFFFF', helpBorder: p.voted ? k.strong : '#D5DDE4', notMine: !p.mine,
+        helpful: (p.voted ? '▲ Helpful ' : '△ Helpful ') + (p.score || ''), helpBg: p.voted ? k.tint : '#FFFFFF', helpBorder: p.voted ? k.strong : '#D6DDD8', notMine: !p.mine,
         vote: function () {
           p.voted = !p.voted; p.score = Math.max(0, (p.score || 0) + (p.voted ? 1 : -1)); redraw();
           rpc('hub_toggle', { p_post: p.id, p_what: 'vote' }).catch(function (e) { hubNote(e.message, 'err'); H.at = 0; });
@@ -506,11 +506,11 @@
     var cKind = H.cKind;
     var kinds = [['question', 'Ask a question'], ['advice', 'Share advice'], ['notes', 'Share notes'], ['cards', 'Share flashcards']].map(function (c) {
       var on = cKind === c[0];
-      return { label: c[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { H.cKind = c[0]; H.cPick = null; redraw(); } };
+      return { label: c[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#17302A', border: on ? k.strong : '#D6DDD8', pick: function () { H.cKind = c[0]; H.cPick = null; redraw(); } };
     });
     var picks = [];
-    if (kit && cKind === 'cards') picks = (kit.cardSets || []).map(function (c) { var on = H.cPick === c.id; return { label: c.label + ' (' + Math.min(40, c.n) + ')', bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { H.cPick = c.id; if (!H.cTitle) { H.cTitle = c.label; setInput('[data-cx-ctitle]', c.label); } redraw(); } }; });
-    if (kit && cKind === 'notes') picks = (kit.notes || []).map(function (c) { var on = H.cPick === c.id; return { label: c.title, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { H.cPick = c.id; var n = kit.note(c.id); H.cTitle = c.title; setInput('[data-cx-ctitle]', c.title); if (n) { H.cBody = n.body; setInput('[data-cx-cbody]', n.body); } redraw(); } }; });
+    if (kit && cKind === 'cards') picks = (kit.cardSets || []).map(function (c) { var on = H.cPick === c.id; return { label: c.label + ' (' + Math.min(40, c.n) + ')', bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { H.cPick = c.id; if (!H.cTitle) { H.cTitle = c.label; setInput('[data-cx-ctitle]', c.label); } redraw(); } }; });
+    if (kit && cKind === 'notes') picks = (kit.notes || []).map(function (c) { var on = H.cPick === c.id; return { label: c.title, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { H.cPick = c.id; var n = kit.note(c.id); H.cTitle = c.title; setInput('[data-cx-ctitle]', c.title); if (n) { H.cBody = n.body; setInput('[data-cx-cbody]', n.body); } redraw(); } }; });
     var post = function () {
       if (H.busy) return;
       var title = String(inputVal('[data-cx-ctitle]', H.cTitle) || '').trim(), body = String(inputVal('[data-cx-cbody]', H.cBody) || '').trim(), payload = null;
@@ -623,7 +623,7 @@
     if (k.tab === 'market' && signedIn() && M.inbox === null) { M.inbox = []; setTimeout(loadInbox, 0); }
     if (k.tab !== 'market' && signedIn() && !M.data && !M.loading && Date.now() - M.at > 300000) setTimeout(function () { loadMarket(); }, 0);
     var d = M.data, ver = !!(d && d.verified);
-    var cats = [[null, 'All']].concat(CATS).map(function (c) { var on = M.cat === c[0]; return { label: c[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { M.cat = c[0]; M.mine = false; loadMarket(true); } }; });
+    var cats = [[null, 'All']].concat(CATS).map(function (c) { var on = M.cat === c[0]; return { label: c[1], bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#17302A', border: on ? k.strong : '#D6DDD8', pick: function () { M.cat = c[0]; M.mine = false; loadMarket(true); } }; });
     var card = function (l) {
       var who = l.who || {};
       var st = l.status === 'reserved' ? 'Reserved' : l.status === 'sold' ? 'Sold' : '';
@@ -638,9 +638,9 @@
     var cur = M.cur, curWho = cur ? cur.who || {} : {};
     var unread = M.inbox && M.inbox.length ? (M.inbox || []).reduce(function (a, t) { return a + (+t.unread || 0); }, 0) : (d && +d.unread) || 0;
     var F = M.form || blankForm(k);
-    var catForm = CATS.map(function (c) { var on = F.category === c[0]; return { label: c[1], bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { F.category = c[0]; if (c[0] !== 'housing') F.unit = 'total'; M.form = F; redraw(); } }; });
-    var conds = ['New', 'Like new', 'Good', 'Fair', 'Well used'].map(function (c) { var on = F.condition === c; return { label: c, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { F.condition = c; M.form = F; redraw(); } }; });
-    var units = [['total', 'Total'], ['week', 'Per week'], ['month', 'Per month']].map(function (c) { var on = F.unit === c[0]; return { label: c[1], bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { F.unit = c[0]; M.form = F; redraw(); } }; });
+    var catForm = CATS.map(function (c) { var on = F.category === c[0]; return { label: c[1], bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { F.category = c[0]; if (c[0] !== 'housing') F.unit = 'total'; M.form = F; redraw(); } }; });
+    var conds = ['New', 'Like new', 'Good', 'Fair', 'Well used'].map(function (c) { var on = F.condition === c; return { label: c, bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { F.condition = c; M.form = F; redraw(); } }; });
+    var units = [['total', 'Total'], ['week', 'Per week'], ['month', 'Per month']].map(function (c) { var on = F.unit === c[0]; return { label: c[1], bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { F.unit = c[0]; M.form = F; redraw(); } }; });
     var fieldSet = function (name) { return function (e) { F[name] = e && e.target ? e.target.value : ''; M.form = F; }; };
     var submit = function () {
       if (M.busy) return;
@@ -673,7 +673,7 @@
       cats: cats, q: M.q, onQ: function (e) { M.q = e && e.target ? e.target.value : ''; },
       onQKey: function (e) { if (e && e.key === 'Enter') { e.preventDefault(); M.q = e.target.value; loadMarket(true); } },
       search: function () { M.q = inputVal('[data-cx-mq]', M.q); loadMarket(true); },
-      mineOn: M.mine, mineLabel: M.mine ? '✓ My listings' : 'My listings', mineBg: M.mine ? k.tint : '#FFFFFF', mineBorder: M.mine ? k.strong : '#D5DDE4',
+      mineOn: M.mine, mineLabel: M.mine ? '✓ My listings' : 'My listings', mineBg: M.mine ? k.tint : '#FFFFFF', mineBorder: M.mine ? k.strong : '#D6DDD8',
       toggleMine: function () { M.mine = !M.mine; M.cat = null; loadMarket(true); },
       inboxLabel: 'Messages' + (unread ? ' (' + unread + ')' : ''), goInbox: function () { setView('inbox'); },
       sell: function () { M.form = blankForm(k); M.photos = []; setView('sell'); },
@@ -729,7 +729,7 @@
       noThreads: !(M.inbox || []).length,
       threadTitle: (thread && thread.title) || M.threadTitle || 'Conversation',
       threadWith: thread ? ((thread.selling ? 'With buyer ' : 'With seller ') + ((thread.other || {}).name || '')) : '',
-      msgs: M.msgs.map(function (m) { return { body: m.body, time: ago(m.at), align: m.mine ? 'flex-end' : 'flex-start', bg: m.mine ? '#14283B' : '#F6F4EE', fg: m.mine ? '#FFFFFF' : '#14283B' }; }),
+      msgs: M.msgs.map(function (m) { return { body: m.body, time: ago(m.at), align: m.mine ? 'flex-end' : 'flex-start', bg: m.mine ? '#17302A' : '#F4F4EF', fg: m.mine ? '#FFFFFF' : '#17302A' }; }),
       msgText: M.msgText, onMsg: function (e) { M.msgText = e && e.target ? e.target.value : ''; },
       onMsgKey: function (e) { if (e && e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } },
       sendMsg: sendMsg,
@@ -844,15 +844,15 @@
     var room = F.room || {}, ver = !!room.verified;
     var people = (room.room || []).map(function (p) {
       var left = p.endsAt ? Math.max(0, Math.round((new Date(p.endsAt).getTime() - Date.now()) / 60000)) : null;
-      return { name: p.me ? 'You' : p.name, initial: initial(p.name), status: p.phase === 'break' ? 'On a break' : 'Focusing' + (left !== null ? ' · ' + left + ' min left' : ''), bg: p.phase === 'break' ? '#F6F4EE' : k.tint, ring: p.phase === 'break' ? '#C5CFD8' : k.strong };
+      return { name: p.me ? 'You' : p.name, initial: initial(p.name), status: p.phase === 'break' ? 'On a break' : 'Focusing' + (left !== null ? ' · ' + left + ' min left' : ''), bg: p.phase === 'break' ? '#F4F4EF' : k.tint, ring: p.phase === 'break' ? '#C8D1CB' : k.strong };
     });
     var roomName = running || paused ? t.modName : curMod.name;
     return {
       running: running, paused: paused, idle: t.phase === 'idle', notIdle: t.phase !== 'idle',
       clock: clockText(leftMs(t)), phase: t.phase === 'break' ? 'Break' : t.phase === 'focus' ? (paused ? 'Paused' : 'Focus') : 'Ready',
       phaseBg: t.phase === 'break' ? '#EEF6E4' : k.tint, ringColor: t.phase === 'break' ? '#2E7D32' : k.strong,
-      modes: MODES.map(function (x) { var on = (t.mode || '25') === x.id; return { label: x.label, sub: x.f + ' min focus, ' + x.b + ' min break', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#14283B', border: on ? k.strong : '#D5DDE4', pick: function () { if (t.phase !== 'idle') return; var y = T(); y.mode = x.id; saveT(y); redraw(); } }; }),
-      modsList: mods.map(function (x) { var on = hubKey(x) === pickMod; return { label: (x.code ? x.code + ' · ' : '') + (x.name.length > 40 ? x.name.slice(0, 38) + '…' : x.name), bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D5DDE4', pick: function () { if (t.phase !== 'idle') return; F.modPick = hubKey(x); F.roomAt = 0; redraw(); } }; }),
+      modes: MODES.map(function (x) { var on = (t.mode || '25') === x.id; return { label: x.label, sub: x.f + ' min focus, ' + x.b + ' min break', bg: on ? k.strong : '#FFFFFF', fg: on ? k.onStrong : '#17302A', border: on ? k.strong : '#D6DDD8', pick: function () { if (t.phase !== 'idle') return; var y = T(); y.mode = x.id; saveT(y); redraw(); } }; }),
+      modsList: mods.map(function (x) { var on = hubKey(x) === pickMod; return { label: (x.code ? x.code + ' · ' : '') + (x.name.length > 40 ? x.name.slice(0, 38) + '…' : x.name), bg: on ? k.tint : '#FFFFFF', border: on ? k.strong : '#D6DDD8', pick: function () { if (t.phase !== 'idle') return; F.modPick = hubKey(x); F.roomAt = 0; redraw(); } }; }),
       modName: roomName, cycles: t.cycles ? t.cycles + (t.cycles === 1 ? ' block done' : ' blocks done') + ' this session' : '',
       start: start, pause: pause, resume: resume, stop: stop, skip: skip, skipLabel: t.phase === 'break' ? 'Skip break' : 'Finish block now',
       hasMsg: !!F.msg, msg: F.msg, clearMsg: function () { F.msg = ''; redraw(); },
@@ -870,7 +870,7 @@
       // my week
       weekTotal: hrs(total), weekMods: Object.keys(byMod).sort(function (a, b) { return byMod[b] - byMod[a]; }).map(function (mk) { return { name: (log.n || {})[mk] || mk, time: hrs(byMod[mk]), pct: Math.round(byMod[mk] / maxMod * 100) + '%' }; }),
       hasWeek: total > 0, noWeek: total === 0,
-      days: days.map(function (x) { return { label: x.label, h: Math.max(3, Math.round(x.min / maxDay * 64)) + 'px', bg: x.today ? k.strong : x.min ? k.tint : '#EDF1F4', border: x.min ? k.strong : '#E1E6EB', tip: x.min ? hrs(x.min) : '' }; }),
+      days: days.map(function (x) { return { label: x.label, h: Math.max(3, Math.round(x.min / maxDay * 64)) + 'px', bg: x.today ? k.strong : x.min ? k.tint : '#EEF1EE', border: x.min ? k.strong : '#E2E7E3', tip: x.min ? hrs(x.min) : '' }; }),
       // floating mini timer on other tabs
       showPill: (running || paused) && k.screen === 'app' && k.tab !== 'focus',
       pillText: (t.phase === 'break' ? 'Break · ' : '') + t.modName, pillBg: k.strong, pillFg: k.onStrong,
@@ -883,7 +883,7 @@
     S.inst = inst;
     var k = v.campusKit;
     if (!k) return { ver: {}, imp: {}, feeds: {}, hub: {}, mkt: {}, fo: {} };
-    k.strong = k.strong || '#14283B'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F6F4EE';
+    k.strong = k.strong || '#17302A'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F4F4EF';
     S.kit = k;
     var out = { ver: verVals(k), imp: impVals(k), feeds: feedVals(k), fo: foVals(k) };
     if (k.screen === 'app') { out.hub = hubVals(k); out.mkt = mktVals(k); } else { out.hub = {}; out.mkt = {}; }

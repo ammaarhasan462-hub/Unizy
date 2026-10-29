@@ -1,15 +1,15 @@
 /* Unizy app: formal shell (header, section pages, module rail, footer) and type system.
    Serif headings (Fraunces), clean body (DM Sans), mono labels (DM Mono). */
 :root{
-  --ink:#14283B;--blue:#315B7C;--accent:#E9893B;--muted:#5B6C7D;--paper:#F6F4EE;--line:#DCE3E8;--line2:#E7ECF0;--white:#fff;
+  --ink:#17302A;--blue:#3E6B5C;--accent:#B8862F;--muted:#5D6D67;--paper:#F4F4EF;--line:#DDE3DE;--line2:#E8ECE9;--white:#fff;
   --serif:'Fraunces',Georgia,'Times New Roman',serif;--sans:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'DM Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
-  --shadow:0 1px 2px rgba(20,40,59,.05),0 10px 30px rgba(20,40,59,.07);
+  --shadow:0 1px 2px rgba(23,48,42,.05),0 10px 30px rgba(23,48,42,.07);
   --ease:cubic-bezier(.2,.7,.2,1);
 }
 html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 body{background:var(--paper);font-family:var(--sans);color:var(--ink)}
 #root>div{background:var(--paper)!important;font-family:var(--sans)!important}
-::selection{background:#F6D8BC}
+::selection{background:#E8DCC0}
 
 /* ---------- shell ---------- */
 .ux-app{display:flex;flex-direction:column;min-height:100vh;background:var(--paper);flex:1 1 auto}
@@ -22,21 +22,21 @@ body{background:var(--paper);font-family:var(--sans);color:var(--ink)}
 .ux-uni{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:6px;background:var(--uc,var(--ink));color:var(--uon,#fff);flex:0 0 auto;white-space:nowrap}
 .ux-nav{display:flex;align-items:center;gap:2px;margin:0 auto;min-width:0}
 .ux-nav-a{position:relative;display:flex;align-items:center;gap:7px;padding:9px 13px;border-radius:8px;text-decoration:none;color:var(--muted);font-size:15px;font-weight:500;white-space:nowrap;transition:color .2s var(--ease),background-color .2s var(--ease)}
-.ux-nav-a:hover{color:var(--ink);background:#F1F4F7}
+.ux-nav-a:hover{color:var(--ink);background:#F1F4F2}
 .ux-nav-a.on{color:var(--ink);font-weight:600}
 .ux-nav-a.on:after{content:'';position:absolute;left:13px;right:13px;bottom:-13px;height:2px;background:var(--ink);border-radius:2px}
-.ux-badge{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:5px;background:#FBE7D6;color:#8A4211;letter-spacing:.02em}
+.ux-badge{font-family:var(--mono);font-size:10.5px;font-weight:500;padding:2px 6px;border-radius:5px;background:#F1E6CF;color:#7A5418;letter-spacing:.02em}
 .ux-actions{display:flex;align-items:center;gap:8px;position:relative;flex:0 0 auto}
 .ux-ghost{font:inherit;font-size:14px;font-weight:500;display:flex;align-items:center;gap:7px;padding:8px 13px;min-height:40px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;transition:border-color .2s,box-shadow .2s}
-.ux-ghost:hover{border-color:#B9C6D2;box-shadow:0 2px 8px rgba(20,40,59,.06)}
+.ux-ghost:hover{border-color:#BCC7C1;box-shadow:0 2px 8px rgba(23,48,42,.06)}
 .ux-account{font:inherit;font-size:14px;font-weight:600;min-width:40px;height:40px;padding:0 15px;border-radius:9px;border:none;background:var(--ink);color:#fff;cursor:pointer;transition:background-color .2s,transform .15s}
-.ux-account:hover{background:#1E3A54}
+.ux-account:hover{background:#234238}
 .ux-actions>div[style*="position: absolute"]{top:50px!important}
 
-.ux-subbar{border-top:1px solid var(--line2);background:rgba(246,244,238,.85)}
+.ux-subbar{border-top:1px solid var(--line2);background:rgba(244,244,239,.85)}
 .ux-subbar-in{max-width:1320px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:18px;min-height:46px}
 .ux-home{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;padding:6px 12px 6px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;white-space:nowrap;transition:border-color .2s,transform .2s var(--ease)}
-.ux-home:hover{border-color:#B9C6D2;transform:translateX(-2px)}
+.ux-home:hover{border-color:#BCC7C1;transform:translateX(-2px)}
 .ux-sub{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;min-width:0}
 .ux-sub::-webkit-scrollbar{display:none}
 .ux-sub-a{position:relative;font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:13px 12px;white-space:nowrap;transition:color .2s}
@@ -53,15 +53,15 @@ body{background:var(--paper);font-family:var(--sans);color:var(--ink)}
 .ux-mods{display:flex;flex-direction:column;gap:2px}
 .ux-mods .ux-kicker{padding:0 0 8px}
 .ux-mod{font:inherit;text-align:left;background:none;border:none;border-radius:9px;padding:9px 10px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;color:var(--ink);transition:background-color .2s}
-.ux-mod:hover{background:#ECEFF2}
+.ux-mod:hover{background:#EDF0EE}
 .ux-mod[aria-current=true]{background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
-.ux-mod-dot{width:7px;height:7px;border-radius:50%;background:#C5CFD8;flex:0 0 auto;margin-top:7px;transition:background-color .2s}
+.ux-mod-dot{width:7px;height:7px;border-radius:50%;background:#C8D1CB;flex:0 0 auto;margin-top:7px;transition:background-color .2s}
 .ux-mod[aria-current=true] .ux-mod-dot{background:var(--uc,var(--ink))}
 .ux-mod-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ux-mod-name{font-size:14px;line-height:1.3;font-weight:500}
 .ux-mod[aria-current=true] .ux-mod-name{font-weight:600}
 .ux-mod-code{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.02em}
-.ux-mod-add{font:inherit;font-size:13.5px;font-weight:500;text-align:left;color:var(--blue);background:none;border:1px dashed #B9C6D2;border-radius:9px;padding:10px;margin-top:10px;cursor:pointer;transition:border-color .2s,color .2s}
+.ux-mod-add{font:inherit;font-size:13.5px;font-weight:500;text-align:left;color:var(--blue);background:none;border:1px dashed #BCC7C1;border-radius:9px;padding:10px;margin-top:10px;cursor:pointer;transition:border-color .2s,color .2s}
 .ux-mod-add:hover{border-color:var(--ink);color:var(--ink)}
 
 .ux-main{flex:1 1 auto!important;min-width:0;padding:34px 28px 56px 34px!important;box-sizing:border-box;display:flex;flex-direction:column;gap:22px!important;position:relative;animation:uxIn .45s var(--ease) both}
@@ -77,16 +77,16 @@ html.ux-leaving .ux-main{opacity:.35;transition:opacity .18s ease}
 /* home */
 .ux-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .ux-stat{position:relative;display:flex;flex-direction:column;gap:4px;padding:18px 18px 16px;border-radius:14px;background:#fff;border:1px solid var(--line);text-decoration:none;color:var(--ink);transition:border-color .2s,box-shadow .25s var(--ease),transform .25s var(--ease)}
-.ux-stat:hover{border-color:#B9C6D2;box-shadow:var(--shadow);transform:translateY(-2px)}
+.ux-stat:hover{border-color:#BCC7C1;box-shadow:var(--shadow);transform:translateY(-2px)}
 .ux-stat-v{font-family:var(--serif);font-weight:600;font-size:36px;line-height:1;letter-spacing:-.02em}
 .ux-stat-l{font-size:13.5px;color:var(--muted)}
-.ux-stat-go{position:absolute;right:16px;top:16px;color:#B6C2CD;transition:color .2s,transform .2s var(--ease)}
+.ux-stat-go{position:absolute;right:16px;top:16px;color:#B9C4BE;transition:color .2s,transform .2s var(--ease)}
 .ux-stat:hover .ux-stat-go{color:var(--accent);transform:translateX(3px)}
 .ux-panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:16px}
 .ux-panel-h{display:flex;flex-direction:column;gap:6px}
 .ux-h2{margin:0;font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.015em;line-height:1.15}
 .ux-modgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.ux-modcard{font:inherit;text-align:left;display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:12px;border:1px solid var(--line);background:#FBFCFD;color:var(--ink);cursor:pointer;transition:border-color .2s,background-color .2s,transform .25s var(--ease)}
+.ux-modcard{font:inherit;text-align:left;display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:12px;border:1px solid var(--line);background:#FBFCFB;color:var(--ink);cursor:pointer;transition:border-color .2s,background-color .2s,transform .25s var(--ease)}
 .ux-modcard:hover{border-color:var(--ink);background:#fff;transform:translateY(-2px)}
 .ux-modcard-code{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.05em}
 .ux-modcard-name{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.25}
@@ -100,7 +100,7 @@ html.ux-leaving .ux-main{opacity:.35;transition:opacity .18s ease}
 .ux-dir-main:hover .ux-dir-label{color:var(--blue)}
 .ux-dir-sub{font-size:13px;color:var(--muted)}
 .ux-dir-pages{display:flex;flex-wrap:wrap;gap:6px}
-.ux-dir-pages a{font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:7px;border:1px solid var(--line);background:#FBFCFD;transition:border-color .2s,background-color .2s}
+.ux-dir-pages a{font-size:13px;font-weight:500;color:var(--ink);text-decoration:none;padding:6px 10px;border-radius:7px;border:1px solid var(--line);background:#FBFCFB;transition:border-color .2s,background-color .2s}
 .ux-dir-pages a:hover{border-color:var(--ink);background:#fff}
 
 /* footer */
@@ -123,7 +123,7 @@ html.ux-leaving .ux-main{opacity:.35;transition:opacity .18s ease}
 .ux-app button,.ux-app a{transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .2s ease,transform .2s var(--ease)}
 .ux-main button:not(:disabled):active{transform:translateY(1px)}
 .ux-main input,.ux-main textarea,.ux-main select{transition:border-color .2s,box-shadow .2s}
-.ux-main input:focus,.ux-main textarea:focus,.ux-main select:focus{outline:none;border-color:var(--ink)!important;box-shadow:0 0 0 3px rgba(49,91,124,.15)}
+.ux-main input:focus,.ux-main textarea:focus,.ux-main select:focus{outline:none;border-color:var(--ink)!important;box-shadow:0 0 0 3px rgba(62,107,92,.15)}
 .ux-app a:focus-visible,.ux-app button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
 /* ---------- responsive ---------- */

@@ -192,7 +192,7 @@
     var friendMeta = function (f) { return [f.degree, f.year ? 'Year ' + f.year : ''].filter(Boolean).join(' · ') || uniShort; };
     var unreadTotal = 0; (d.groups || []).forEach(function (g) { unreadTotal += +g.unread || 0; });
     var cur = S.view === 'group' ? (d.groups || []).find(function (g) { return g.id === S.group; }) : null;
-    var chip = function (on) { return { border: strong, bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#14283B', pressed: on ? 'true' : 'false' }; };
+    var chip = function (on) { return { border: strong, bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#17302A', pressed: on ? 'true' : 'false' }; };
     var memberIds = {}; if (cur) (cur.members || []).forEach(function (m) { memberIds[m.id] = 1; });
     var addable = (d.friends || []).filter(function (f) { return !memberIds[f.id]; });
     var meId = d.me && d.me.id;
@@ -200,7 +200,7 @@
     if (cur && onTab) setTimeout(function () { refreshMarks(cur.id); }, 0);
     var kit = v.shareKit || null, gidNow = cur ? cur.id : null, sh = S.share || { open: false };
     var shType = sh.type || 'cards';
-    var pill = function (on) { return { bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#14283B', border: on ? strong : '#D5DDE4' }; };
+    var pill = function (on) { return { bg: on ? strong : '#FFFFFF', fg: on ? onStrong : '#17302A', border: on ? strong : '#D6DDD8' }; };
     var tutorNames = ['Professor ' + uniShort, 'Dr ' + uniShort];
     function shareView(m) {
       var p = m.payload || {}, items = Array.isArray(p.items) ? p.items : [], type = p.type, marks = S.marks[m.id] || m.marks || [];
@@ -240,7 +240,7 @@
           o.qNum = 'Question ' + (qz.i + 1) + ' of ' + items.length; o.qText = q.q || '';
           o.qOpts = (q.options || []).map(function (op, i) {
             var right = answered && i === q.answer, wrong = answered && i === pick && pick !== q.answer;
-            return { label: String.fromCharCode(65 + i) + '. ' + op, bg: right ? '#EEF6E4' : wrong ? '#FBEDEF' : '#FFFFFF', border: right ? '#2E7D32' : wrong ? '#C8102E' : '#D5DDE4', pick: function () { if (qz.picks[qz.i] === undefined) { qz.picks[qz.i] = i; redraw(); } } };
+            return { label: String.fromCharCode(65 + i) + '. ' + op, bg: right ? '#EEF6E4' : wrong ? '#FBEDEF' : '#FFFFFF', border: right ? '#2E7D32' : wrong ? '#C8102E' : '#D6DDD8', pick: function () { if (qz.picks[qz.i] === undefined) { qz.picks[qz.i] = i; redraw(); } } };
           });
           o.answered = answered; o.why = answered ? (pick === q.answer ? 'Correct. ' : 'Not quite. ') + (q.why || '') : '';
           o.nextLabel = last ? 'Finish and share my score' : 'Next question';
@@ -257,7 +257,7 @@
         o.points = items.map(function (t, i) {
           var who = marks.filter(function (x) { return x.data && Array.isArray(x.data.done) && x.data.done.indexOf(i) !== -1; }).map(function (x) { return x.name; });
           var on = mineDone.indexOf(i) !== -1;
-          return { text: String(t), on: on, box: on ? '✓' : '', boxBg: on ? strong : '#FFFFFF', boxFg: onStrong, boxBorder: on ? strong : '#B6C2CD', who: who.length ? 'Prepared: ' + who.join(', ') : 'Not prepared yet',
+          return { text: String(t), on: on, box: on ? '✓' : '', boxBg: on ? strong : '#FFFFFF', boxFg: onStrong, boxBorder: on ? strong : '#B9C4BE', who: who.length ? 'Prepared: ' + who.join(', ') : 'Not prepared yet',
             toggle: function () { var d = mineDone.slice(); var k = d.indexOf(i); if (k === -1) d.push(i); else d.splice(k, 1); mark(m.id, { done: d }, gidNow); } };
         });
         o.status = 'Tick the points you’ve prepared so the group can split the work.';
@@ -329,7 +329,7 @@
       noGroups: !(d.groups || []).length && !S.loading,
       newGroup: function () { S.view = 'new'; S.group = null; S.newName = ''; S.newPick = {}; S.notice = ''; redraw(); setTimeout(function () { var el = document.querySelector('[data-fg-gname]'); if (el) el.focus(); }, 50); },
       hasNotice: !!S.notice, notice: S.notice, noticeUpgrade: S.noticeUpgrade,
-      noticeBg: S.noticeKind === 'err' ? '#FBEDEF' : S.noticeKind === 'ok' ? '#EEF6E4' : '#F6F4EE',
+      noticeBg: S.noticeKind === 'err' ? '#FBEDEF' : S.noticeKind === 'ok' ? '#EEF6E4' : '#F4F4EF',
       clearNotice: function () { note(''); },
       loading: S.loading && !S.data,
 
@@ -357,7 +357,7 @@
         return {
           name: f.name, initial: initial(f.name), meta: friendMeta(f),
           chat: function () { S.view = 'new'; S.group = null; S.newPick = {}; S.newPick[f.id] = true; S.newName = ''; S.notice = ''; redraw(); },
-          removeLabel: armed ? 'Tap again to remove' : 'Remove', removeColor: armed ? '#B42318' : '#33475A',
+          removeLabel: armed ? 'Tap again to remove' : 'Remove', removeColor: armed ? '#B42318' : '#34463F',
           remove: function () {
             if (!armed) { S.removeArm = f.id; redraw(); setTimeout(function () { if (S.removeArm === f.id) { S.removeArm = null; redraw(); } }, 4000); return; }
             S.removeArm = null;
@@ -406,7 +406,7 @@
         if (!ids.length || !cur) { note('Pick someone to add.', 'err'); return; }
         rpc('add_group_members', { p_group: cur.id, p_members: ids }).then(function (r) { note(r.message, r.ok ? 'ok' : 'err'); S.adding = false; S.addPick = {}; loadState(); loadMsgs(cur.id, true); }).catch(function (e) { note(e.message, 'err'); });
       },
-      leaveLabel: S.leaveArm ? 'Tap again to leave' : 'Leave', leaveColor: S.leaveArm ? '#B42318' : '#33475A',
+      leaveLabel: S.leaveArm ? 'Tap again to leave' : 'Leave', leaveColor: S.leaveArm ? '#B42318' : '#34463F',
       leave: function () {
         if (!cur) return;
         if (!S.leaveArm) { S.leaveArm = true; redraw(); setTimeout(function () { S.leaveArm = false; redraw(); }, 4000); return; }
@@ -423,9 +423,9 @@
           sys: false, bubble: true, share: false, text: sp.body, hasSrc: !!sp.src, srcText: sp.src, noSrcAi: ai && !sp.src, who: mine ? 'You' : m.who, time: when(m.at),
           dir: mine ? 'row-reverse' : 'row', align: mine ? 'flex-end' : 'flex-start',
           initial: ai ? (/^Dr\b/.test(m.who) ? 'Dr' : 'Prof') : initial(m.who),
-          avBg: ai ? strong : mine ? '#14283B' : '#5B6C7D', avFg: ai ? onStrong : '#FFFFFF',
-          bg: ai ? theme.tint : mine ? '#14283B' : '#F6F4EE', fg: mine ? '#FFFFFF' : '#14283B',
-          border: ai ? strong : mine ? '#14283B' : '#F6F4EE',
+          avBg: ai ? strong : mine ? '#17302A' : '#5D6D67', avFg: ai ? onStrong : '#FFFFFF',
+          bg: ai ? theme.tint : mine ? '#17302A' : '#F4F4EF', fg: mine ? '#FFFFFF' : '#17302A',
+          border: ai ? strong : mine ? '#17302A' : '#F4F4EF',
           radius: mine ? '14px 14px 4px 14px' : '14px 14px 14px 4px'
         };
       }),

@@ -169,7 +169,7 @@
       signedIn: signedIn(), signedOut: !signedIn(),
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
       weak: !!k.weakCoverage, strong: !k.weakCoverage,
-      border: k.weakCoverage ? '2px solid ' + ((k.theme && k.theme.c1) || '#14283B') : '1px solid #E1E6EB',
+      border: k.weakCoverage ? '2px solid ' + ((k.theme && k.theme.c1) || '#17302A') : '1px solid #E2E7E3',
       openPanel: function () { k.go('overview'); setTimeout(function () { var el = document.getElementById('lecture-packs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); },
       headline: k.weakCoverage ? 'Build ' + k.active.name + '’s study pack from your lecture slides' : 'Turn a lecture into a study pack',
       intro: 'Upload a lecture’s slides or handout (PDF, PowerPoint, Word or text). Unizy writes revision notes with slide references, flashcards and practice questions, matched to the official ' + (k.active.code || k.active.name) + ' outline. ' + tutor + ' can then quote your slides when you ask questions.',
@@ -237,7 +237,7 @@
         var id = i + ':' + j, on = !!ticks[id]; total++; if (on) read++;
         var href = it.doi ? 'https://doi.org/' + it.doi : it.url ? it.url : 'https://www.google.com/search?q=' + encodeURIComponent((it.t + ' ' + (it.a || '')).slice(0, 200));
         return { title: it.t, meta: [it.a, it.y, it.k, it.j].filter(Boolean).join(' · '), href: href, linkLabel: it.doi || it.url ? 'Open' : 'Find it',
-          box: on ? '✓' : '', boxBg: on ? k.strong : '#FFFFFF', boxFg: k.onStrong, boxBorder: on ? k.strong : '#B6C2CD', op: on ? 0.6 : 1,
+          box: on ? '✓' : '', boxBg: on ? k.strong : '#FFFFFF', boxFg: k.onStrong, boxBorder: on ? k.strong : '#B9C4BE', op: on ? 0.6 : 1,
           toggle: function () { var all = Object.assign({}, store['unizy:reading'] || {}); var mine = Object.assign({}, all[key] || {}); if (mine[id]) delete mine[id]; else mine[id] = 1; all[key] = mine; k.save('unizy:reading', all); } };
       });
       var done = items.filter(function (x) { return x.box; }).length;
@@ -287,7 +287,7 @@
     S.inst = inst;
     var k = v.campusKit;
     if (!k) return { lp: {}, rl: {} };
-    k.strong = k.strong || '#14283B'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F6F4EE';
+    k.strong = k.strong || '#17302A'; k.onStrong = k.onStrong || '#FFFFFF'; k.tint = (k.theme && k.theme.tint) || '#F4F4EF';
     S.kit = k;
     if (signedIn()) setTimeout(function () { checkLti(k); }, 0);
     pendingMatch(k);

@@ -52,7 +52,7 @@
         box.innerHTML = list.map(function (r) {
           var n = Math.max(0, Math.min(5, +r.rating || 0));
           var who = [r.name, r.course && String(r.course).trim()].filter(Boolean).map(esc).join(' · ') + ' · Verified Unizy account';
-          return '<article class="rv-card"><span class="rv-stars" aria-label="' + n + ' out of 5 stars">' + '★★★★★'.slice(0, n) + '<span style="color:#C5CFD8">' + '★★★★★'.slice(0, 5 - n) + '</span></span>' + (r.title ? '<h3>' + esc(r.title) + '</h3>' : '') + '<p>' + esc(r.body) + '</p><span class="rv-who">' + who + '</span></article>';
+          return '<article class="rv-card"><span class="rv-stars" aria-label="' + n + ' out of 5 stars">' + '★★★★★'.slice(0, n) + '<span style="color:#C8D1CB">' + '★★★★★'.slice(0, 5 - n) + '</span></span>' + (r.title ? '<h3>' + esc(r.title) + '</h3>' : '') + '<p>' + esc(r.body) + '</p><span class="rv-who">' + who + '</span></article>';
         }).join('') + '<div style="grid-column:1/-1"><a class="btn line small" href="/reviews">Read all ' + (+d.count) + ' review' + (+d.count === 1 ? '' : 's') + ' (average ' + esc(d.average) + ' / 5)</a></div>';
       }).catch(empty);
   })();
@@ -91,7 +91,7 @@
   var st = { step: 0, uni: UNIS[0].id, mod: 0, made: false, making: false, qi: 0, picks: {}, planned: false, maxStep: 0 };
   function uni() { return UNIS.filter(function (u) { return u.id === st.uni; })[0]; }
   function mod() { return (D[st.uni] || [])[st.mod]; }
-  function setTheme() { var u = uni(); box.style.setProperty('--accent', u.c); box.style.setProperty('--onaccent', u.light ? '#14283B' : '#fff'); }
+  function setTheme() { var u = uni(); box.style.setProperty('--accent', u.c); box.style.setProperty('--onaccent', u.light ? '#17302A' : '#fff'); }
   function go(n) {
     st.step = n; st.maxStep = Math.max(st.maxStep, n);
     if (n === 1) Track('demo_notes', true);
@@ -125,7 +125,7 @@
     tabs.forEach(function (b) { var n = +b.getAttribute('data-step'); b.setAttribute('aria-selected', n === st.step ? 'true' : 'false'); b.disabled = n > st.maxStep; b.classList.toggle('done', n < st.maxStep && n !== st.step); });
     if (st.step === 0) {
       h = '<h3 class="st-h">Pick your uni and a module</h3><p class="st-p">Unizy recolours to your uni and sets up your modules from the official course pages.</p>' +
-        '<div class="chips" role="group" aria-label="University">' + UNIS.map(function (x) { return '<button class="chip" data-uni="' + x.id + '" aria-pressed="' + (x.id === st.uni) + '" style="--c:' + x.c + ';--cf:' + (x.light ? '#14283B' : '#fff') + '">' + esc(x.name) + '</button>'; }).join('') + '</div>' +
+        '<div class="chips" role="group" aria-label="University">' + UNIS.map(function (x) { return '<button class="chip" data-uni="' + x.id + '" aria-pressed="' + (x.id === st.uni) + '" style="--c:' + x.c + ';--cf:' + (x.light ? '#17302A' : '#fff') + '">' + esc(x.name) + '</button>'; }).join('') + '</div>' +
         '<div class="modlist" role="group" aria-label="Module">' + (D[st.uni] || []).map(function (x, i) { return '<button class="modbtn" data-mod="' + i + '" aria-pressed="' + (i === st.mod) + '"><b>' + esc(x.name) + '</b><span>' + esc([x.code, x.deg, 'Year ' + x.year].filter(Boolean).join(' · ')) + '</span>' + (x.pack ? '<span class="badge b-pack" style="margin-top:4px">Module pack · fact-checked</span>' : '<span class="badge b-full" style="margin-top:4px">Subject library · ' + esc(x.bankTitle) + '</span>') + '</button>'; }).join('') + '</div>' +
         '<div class="row-end"><span class="muted">' + esc(u.name) + ' · ' + (D[st.uni] || []).length + ' sample modules</span>' + nextBtn('Open my notes', 1) + '</div>';
     } else if (st.step === 1) {
