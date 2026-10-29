@@ -4,8 +4,8 @@ export const PRICES: Record<string, { in: number; out: number; cw: number; cr: n
   "claude-sonnet-5-5": { in: 2, out: 10, cw: 2.5, cr: 0.1 },
   "claude-haiku-5-5": { in: 0.1, out: 0.5, cw: 0.125, cr: 0.01 },
 };
-export const PAUSED_MSG = "Unizy’s AI is taking a short break and will be back soon. Your notes, flashcards and topic tests still work.";
-export const BUDGET_MSG = "Unizy’s AI has reached its limit for today and will be back after midnight (UK time). Your notes, flashcards and topic tests still work.";
+export const PAUSED_MSG = "Unizy’s tutor is taking a short break and will be back soon. Your notes, flashcards and topic tests still work.";
+export const BUDGET_MSG = "Unizy’s tutor has reached its limit for today and will be back after midnight (UK time). Your notes, flashcards and topic tests still work.";
 
 export function costUsd(model: string, u: any): number {
   const p = PRICES[model] || PRICES["claude-sonnet-5-5"];
@@ -34,7 +34,7 @@ export async function alertOwner(service: any, kind: "budget" | "credit", subjec
 export async function handleAccountProblem(service: any, status: number, text: string) {
   const why = status === 401 ? "Anthropic rejected the API key (it may have been deleted or changed)." : "Anthropic refused the request because of billing: the credit balance may have run out or the monthly spend limit was reached.";
   await alertOwner(service, "credit", "Unizy AI is paused: action needed",
-    why + "\n\nStudents are seeing a friendly “AI is taking a short break” message; notes, flashcards and tests still work.\n\nTo fix: open console.anthropic.com → Billing, check the credit balance, auto-reload and monthly spend limit.\n\nAnthropic said: " + text.slice(0, 400));
+    why + "\n\nStudents are seeing a friendly “tutor is taking a short break” message; notes, flashcards and tests still work.\n\nTo fix: open console.anthropic.com → Billing, check the credit balance, auto-reload and monthly spend limit.\n\nAnthropic said: " + text.slice(0, 400));
 }
 export async function budgetReached(service: any, budgetText: string) {
   await alertOwner(service, "budget", "Unizy AI hit today’s budget",

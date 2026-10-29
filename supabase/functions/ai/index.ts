@@ -65,17 +65,17 @@ Deno.serve(async (req) => {
   const units = 1 + Math.floor(inputBytes / 30000) + images.length + (kind === "assess" ? 1 : 0);
 
   const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: units, p_kind: kind });
-  if (takeErr || !take) return json(500, { code: "upstream_error", message: "Couldn’t check your AI allowance. Try again." });
+  if (takeErr || !take) return json(500, { code: "upstream_error", message: "Couldn’t check your tutor allowance. Try again." });
   if (!take.ok) {
     if (take.reason === "budget") {
       EdgeRuntime.waitUntil(service.from("ai_settings").select("daily_budget_gbp").eq("id", true).single().then(({ data }: any) => budgetReached(service, "£" + (data?.daily_budget_gbp ?? "?") + " a day")));
       return json(503, { code: "ai_paused", reason: "budget", message: BUDGET_MSG });
     }
     const msg: Record<string, string> = {
-      free_weekly: "You’ve used this week’s 10 free AI actions. Upgrade to Unizy Pro for much more, or your free allowance resets on Monday. Notes, flashcards and tests still work.",
+      free_weekly: "You’ve used this week’s 10 free tutor actions. Upgrade to Unizy Pro for much more, or your free allowance resets on Monday. Notes, flashcards and tests still work.",
       free_assess: "Your free plan includes 1 Assess marking a week, and you’ve used it. Upgrade to Unizy Pro to have more work marked, or try again on Monday.",
-      daily: "You’ve used today’s AI allowance. It resets at midnight (UK time). Notes, flashcards and tests still work.",
-      global: "Unizy’s AI is very busy today and has reached its daily limit. Please try again tomorrow.",
+      daily: "You’ve used today’s tutor allowance. It resets at midnight (UK time). Notes, flashcards and tests still work.",
+      global: "Unizy’s tutor is very busy today and has reached its daily limit. Please try again tomorrow.",
     };
     return json(429, { code: "rate_limited", reason: take.reason, upgrade: take.reason === "free_weekly" || take.reason === "free_assess", message: msg[take.reason] || msg.daily });
   }
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
   while (msgs.length && msgs[0].role !== "user") msgs.shift();
   if (images.length) msgs[msgs.length - 1].content.unshift(...images.map((im: any) => ({ type: "image", source: { type: "base64", media_type: im.media_type, data: im.data } })));
 
-  const system = "You are the AI inside Unizy, a study website for UK university students. Follow the instructions in the user's message exactly. Be accurate; never invent cases, statutes, studies, statistics or quotations; never give drug doses." +
+  const system = "You are the study assistant inside Unizy, a study website for UK university students. Follow the instructions in the user's message exactly. Be accurate; never invent cases, statutes, studies, statistics or quotations; never give drug doses." +
     (body.json ? " Your reply will be machine-parsed: reply with only the JSON value requested — no prose before or after, no code fences." : "");
 
   const stream = !!body.stream;
@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
     });
   } catch {
     await refund();
-    return json(502, { code: "upstream_error", message: "Couldn’t reach the AI. Try again in a moment." });
+    return json(502, { code: "upstream_error", message: "Couldn’t reach your tutor. Try again in a moment." });
   }
   if (!upstream.ok) {
     await refund();
@@ -120,9 +120,9 @@ Deno.serve(async (req) => {
       EdgeRuntime.waitUntil(handleAccountProblem(service, status, text));
       return json(503, { code: "ai_paused", message: PAUSED_MSG });
     }
-    if (status === 429 || status === 529) return json(429, { code: "rate_limited", message: "The AI is busy right now. Try again in a minute." });
-    if (status === 400) return json(400, { code: "invalid_request", message: "The AI couldn’t take that request" + (detail ? " (" + detail + ")" : "") + "." });
-    return json(502, { code: "upstream_error", message: "The AI had a problem. Try again." });
+    if (status === 429 || status === 529) return json(429, { code: "rate_limited", message: "Your tutor is busy right now. Try again in a minute." });
+    if (status === 400) return json(400, { code: "invalid_request", message: "Your tutor couldn’t take that request" + (detail ? " (" + detail + ")" : "") + "." });
+    return json(502, { code: "upstream_error", message: "Your tutor had a problem. Try again." });
   }
 
   const headers = { ...CORS, "X-Unizy-Units-Left": String(left), "X-Unizy-Tier": String(take.tier) };

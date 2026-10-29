@@ -55,14 +55,14 @@ Deno.serve(async (req) => {
   const tutor = (persona === "dr" ? "Dr " : "Professor ") + uni.short;
 
   const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: 1, p_kind: "group" });
-  if (takeErr || !take) return json(500, { message: "Couldn’t check your AI allowance." });
+  if (takeErr || !take) return json(500, { message: "Couldn’t check your tutor allowance." });
   if (!take.ok) {
     if (take.reason === "budget") {
       EdgeRuntime.waitUntil(service.from("ai_settings").select("daily_budget_gbp").eq("id", true).single().then(({ data }: any) => budgetReached(service, "£" + (data?.daily_budget_gbp ?? "?") + " a day")));
       return json(503, { message: BUDGET_MSG });
     }
-    const m = take.reason === "free_weekly" ? "You’ve used this week’s free AI actions, so " + tutor + " can’t answer you right now. Upgrade to Unizy Pro, or try again on Monday."
-      : take.reason === "global" ? "Unizy’s AI is very busy today. Try again tomorrow." : "You’ve used today’s AI allowance. It resets at midnight (UK time).";
+    const m = take.reason === "free_weekly" ? "You’ve used this week’s free tutor actions, so " + tutor + " can’t answer you right now. Upgrade to Unizy Pro, or try again on Monday."
+      : take.reason === "global" ? "Unizy’s tutor is very busy today. Try again tomorrow." : "You’ve used today’s tutor allowance. It resets at midnight (UK time).";
     return json(429, { message: m, upgrade: take.reason === "free_weekly" });
   }
   const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: 1, p_kind: "group", p_tier: take.tier });
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
     topics.length ? "Topics in this module: " + topics.join("; ") : "",
   ].filter(Boolean).join("\n");
 
-  const system = `You are ${tutor}, the Unizy AI tutor (a friendly cat${persona === "dr" ? " with a stethoscope" : " in a professor’s mortarboard"}) for students at ${uni.full}. ` +
+  const system = `You are ${tutor}, the Unizy tutor (a friendly cat${persona === "dr" ? " with a stethoscope" : " in a professor’s mortarboard"}) for students at ${uni.full}. ` +
     `You are replying inside a group chat of ${uni.short} students called “${clip(grp?.name, 60)}”. ` +
     `Answer the latest message that mentions you, using the chat for context. Be accurate, clear and encouraging, at UK university level, ${persona === "dr" ? "with a clinical, medical-school slant where relevant" : "in the style of a supportive lecturer"}. ` +
     `Keep it short for a chat: usually under 150 words, unless they ask for more detail. Use plain text with short paragraphs or simple dashes for lists; no markdown headings, tables or bold. ` +
