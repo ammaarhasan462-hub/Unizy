@@ -411,7 +411,7 @@
     function current() { return tabOf(location.pathname) || 'home'; }
     var here = current(), ready = false, inst = null, saveT = null;
     function title(tab) {
-      var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode', play: 'Play' };
+      var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode', play: 'Unwind' };
       return (names[tab] || 'Unizy') + ' · Unizy';
     }
     function arrive() {
