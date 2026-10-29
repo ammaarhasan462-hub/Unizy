@@ -369,9 +369,10 @@ body{margin:0}
 <button class="ux-account" onClick="{{account.open}}" title="{{account.title}}">{{account.label}}</button>
 </div>
 </div>
+<sc-if value="{{page.notHome}}" hint-placeholder-val="{{ true }}">
 <div class="ux-subbar">
 <div class="ux-subbar-in">
-<sc-if value="{{page.notHome}}" hint-placeholder-val="{{ true }}"><a class="ux-home" href="{{homeR}}"><span aria-hidden="true">←</span> Home</a></sc-if>
+<a class="ux-home" href="{{homeR}}"><span aria-hidden="true">←</span> Home</a>
 <nav class="ux-sub" aria-label="{{page.section}} pages">
 <sc-for list="{{subNav}}" as="sn" hint-placeholder-count="3">
 <a class="{{sn.cls}}" href="{{sn.href}}" aria-current="{{sn.current}}">{{sn.label}}</a>
@@ -379,6 +380,7 @@ body{margin:0}
 </nav>
 </div>
 </div>
+</sc-if>
 </header>
 <div class="ux-body">
 <aside class="uz-side ux-side" aria-label="Your course">
@@ -3464,7 +3466,7 @@ Notes file
 </sc-if>
 
 </div>
-</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=14"></script><script src="/assets/web.js?v=14"></script><script src="/assets/social.js?v=14"></script><script src="/assets/campus.js?v=14"></script><script src="/assets/rooms.js?v=14"></script><script src="/assets/packs.js?v=14"></script><script>
+</script><script>window.UNIZY_CONFIG={"supabaseUrl": "https://aayelwhshiboqyjdhnst.supabase.co", "anonKey": "sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE", "contactEmail": "hello@unizy.uk", "stripe": {"monthly": "https://buy.stripe.com/7sYcN62gF2SW9Hx5HDaZi00", "year": "https://buy.stripe.com/28E7sMg7vgJM3j91rnaZi01", "exam": "https://buy.stripe.com/8x2eVe8F3fFIf1Ree9aZi02", "portal": "https://billing.stripe.com/p/login/7sYcN62gF2SW9Hx5HDaZi00"}};</script><script src="/assets/runtime.js?v=15"></script><script src="/assets/web.js?v=15"></script><script src="/assets/social.js?v=15"></script><script src="/assets/campus.js?v=15"></script><script src="/assets/rooms.js?v=15"></script><script src="/assets/packs.js?v=15"></script><script>
 // Unizy medical diagrams and ECG strips. Pure functions returning SVG data URIs.
 // Pasted into app.html's Component class as static methods (keep in sync with the copy there).
 // UZDIAG:BEGIN (generated from coverage/diagrams.js by coverage/sync_diagrams.py; edit that file, not this copy)
@@ -5504,6 +5506,7 @@ class Component extends DCLogic {
     const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
     const strong = lightTheme ? theme.onBtn : theme.btn, onStrong = lightTheme ? '#FFFFFF' : theme.onBtn;
     const badgeOf = { revise: dueCards.length ? dueCards.length + ' due' : '', practise: queueQs.length ? queueQs.length + ' queued' : (weakList.length ? weakList.length + ' weak' : ''), plan: upcoming.length && daysFrom(planItems.filter((x) => x.kind === 'deadline' && !x.done && daysFrom(x.date) >= 0).sort((a, b) => (a.date < b.date ? -1 : 1))[0].date) <= 7 ? 'Deadline soon' : '' };
+    const R = (window.UnizyWeb && window.UnizyWeb.routes) || { href: (t) => '/app' };
     const navGroups = NAV.map((g) => {
       const on = g === curGroup;
       return {
@@ -5516,14 +5519,13 @@ class Component extends DCLogic {
         href: R.href(g.tabs[0][0]), on, cls: on ? 'ux-nav-a on' : 'ux-nav-a'
       };
     });
-    const R = (window.UnizyWeb && window.UnizyWeb.routes) || { href: (t) => '/app' };
     const subNav = curGroup.tabs.map(([id, label]) => ({ label, href: R.href(id), current: id === tab ? 'page' : 'false', cls: id === tab ? 'ux-sub-a on' : 'ux-sub-a' }));
-    const groupIdx = NAV.indexOf(curGroup);
+    const navIdx = NAV.indexOf(curGroup);
     const curPage = (curGroup.tabs.find((t) => t[0] === tab) || curGroup.tabs[0])[1];
     const hr = new Date().getHours();
     const page = {
-      num: ('0' + (groupIdx + 1)).slice(-2), section: curGroup.label, name: curPage,
-      eyebrow: ('0' + (groupIdx + 1)).slice(-2) + ' / ' + curGroup.label + (curGroup.tabs.length > 1 ? ' · ' + curPage : ''),
+      num: ('0' + (navIdx + 1)).slice(-2), section: curGroup.label, name: curPage,
+      eyebrow: ('0' + (navIdx + 1)).slice(-2) + ' / ' + curGroup.label + (curGroup.tabs.length > 1 ? ' · ' + curPage : ''),
       isHome: tab === 'home', notHome: tab !== 'home',
       title: tab === 'home' ? (hr < 12 ? 'Good morning.' : hr < 18 ? 'Good afternoon.' : 'Good evening.') : (activeMod.name || 'Your modules'),
       lede: tab === 'home' ? (degree ? degree.name + ' · Year ' + (year || 1) + ' · ' + (uni ? uni.full : '') : '') : ''
