@@ -4,7 +4,7 @@
    tie-break. The first run each day goes on the leaderboard; after that it's free play. */
 (function () {
   'use strict';
-  var DATA_URL = '/data/play/unwind.json?v=1';
+  var DATA_URL = '/data/play/unwind.json?v=2';
   var EPOCH = Date.UTC(2026, 9, 29); // day 0 of the question cycle
   var CATS = {
     geo: { label: 'Geography', icon: '🌍' }, hist: { label: 'History', icon: '🏛️' }, sci: { label: 'Science', icon: '🔬' },

@@ -66,7 +66,7 @@
    "Malé"
   ],
   "answer": 2,
-  "fact": "A few traffic lights were tried in the 1990s, but residents found them impersonal, so they were removed and the police returned.",
+  "fact": "Traffic lights were briefly tried in the 1990s, but residents found them impersonal, so they were removed and the police returned.",
   "diff": 3
  },
  {
@@ -136,7 +136,7 @@
    "Southern"
   ],
   "answer": 2,
-  "fact": "Its nearest inhabited neighbour is St Helena, roughly 2,435 km away.",
+  "fact": "Its nearest inhabited neighbour is St Helena, about 2,430 km away.",
   "diff": 2
  },
  {
@@ -150,7 +150,7 @@
    "Zimbabwe"
   ],
   "answer": 1,
-  "fact": "Its floodwater falls as rain in the highlands of Angola and takes around four months to arrive.",
+  "fact": "Its floodwater falls as rain in Angola's highlands months earlier, so the delta is fullest in Botswana's dry winter.",
   "diff": 3
  },
  {
@@ -220,7 +220,7 @@
    "United States"
   ],
   "answer": 0,
-  "fact": "It is so wide that it spans 11 time zones.",
+  "fact": "It covers more than a ninth of all the land on Earth.",
   "diff": 1
  },
  {
@@ -234,7 +234,7 @@
    "Vatican City"
   ],
   "answer": 3,
-  "fact": "At about 44 hectares, it is roughly a third of the size of London's Hyde Park.",
+  "fact": "At under half a square kilometre, it is only about a third of the size of London's Hyde Park.",
   "diff": 1
  },
  {
@@ -262,7 +262,7 @@
    "Ethiopia"
   ],
   "answer": 2,
-  "fact": "Despite lying close to the equator, it has glaciers near its summit.",
+  "fact": "Kilimanjaro is a dormant volcano made up of three volcanic cones: Kibo, Mawenzi and Shira.",
   "diff": 2
  },
  {
@@ -318,7 +318,7 @@
    "Vistula"
   ],
   "answer": 2,
-  "fact": "It flows through or along ten countries, more than any other river in the world.",
+  "fact": "Its basin is shared by 19 countries, making it the most international river basin in the world.",
   "diff": 2
  },
  {
@@ -374,7 +374,7 @@
    "Madagascar"
   ],
   "answer": 3,
-  "fact": "Over 90% of its wildlife, including all its lemurs, is found nowhere else on Earth.",
+  "fact": "Around 90% of its plants and animals, including its famous lemurs, evolved there and are found naturally nowhere else.",
   "diff": 2
  },
  {
@@ -542,7 +542,7 @@
    "Sargasso Sea"
   ],
   "answer": 3,
-  "fact": "European eels travel thousands of kilometres across the Atlantic to spawn there.",
+  "fact": "European eels are thought to travel thousands of kilometres across the Atlantic to spawn there.",
   "diff": 3
  },
  {

@@ -10,7 +10,7 @@
    "Poseidon"
   ],
   "answer": 0,
-  "fact": "Completed around 280 BC, it stood for only about 54 years before an earthquake toppled it in 226 BC.",
+  "fact": "Completed around 280 BC, it stood for little more than 50 years before an earthquake brought it crashing down.",
   "diff": 3
  },
  {
@@ -38,7 +38,7 @@
    "Swim the English Channel"
   ],
   "answer": 3,
-  "fact": "Smeared in porpoise fat to keep warm, he took 21 hours and 45 minutes.",
+  "fact": "Smeared in porpoise oil to keep warm, he took 21 hours and 45 minutes.",
   "diff": 2
  },
  {
@@ -66,7 +66,7 @@
    "Cleopatra"
   ],
   "answer": 2,
-  "fact": "It stayed the world's tallest man-made structure for nearly 4,000 years, until Lincoln Cathedral's spire in the 1300s.",
+  "fact": "It stayed the world's tallest man-made structure for more than 3,800 years, until Lincoln Cathedral's spire in the 1300s.",
   "diff": 2
  },
  {
@@ -178,7 +178,7 @@
    "Czechoslovakia"
   ],
   "answer": 0,
-  "fact": "It took Rubik about a month to solve his own puzzle for the first time.",
+  "fact": "It took Rubik more than a month to solve his own puzzle for the first time.",
   "diff": 2
  },
  {
@@ -248,7 +248,7 @@
    "Abel Tasman"
   ],
   "answer": 2,
-  "fact": "His crew helped ward off scurvy by eating sauerkraut.",
+  "fact": "To get his wary sailors to eat sauerkraut, Cook had it served at the officers' table so the crew would want it too.",
   "diff": 2
  },
  {
@@ -276,7 +276,7 @@
    "Steve Jobs"
   ],
   "answer": 0,
-  "fact": "The world's first website, launched at CERN in 1991, can still be visited today.",
+  "fact": "His boss at CERN scribbled 'vague but exciting' on the original proposal.",
   "diff": 1
  },
  {
@@ -324,7 +324,7 @@
  {
   "id": "hist-024",
   "cat": "hist",
-  "q": "Whose tomb did Howard Carter open in the Valley of the Kings in 1922?",
+  "q": "Whose tomb did Howard Carter discover in the Valley of the Kings in 1922?",
   "options": [
    "Ramesses II",
    "Akhenaten",
@@ -528,7 +528,7 @@
    "The Jade Trail"
   ],
   "answer": 1,
-  "fact": "The name was coined in 1877 by the German geographer Ferdinand von Richthofen.",
+  "fact": "Despite the name, it carried far more than silk, including spices, glass, horses and the secret of paper-making.",
   "diff": 1
  },
  {
