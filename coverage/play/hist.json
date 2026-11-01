@@ -1,0 +1,562 @@
+[
+ {
+  "id": "hist-001",
+  "cat": "hist",
+  "q": "Which sun god did the Colossus of Rhodes depict?",
+  "options": [
+   "Helios",
+   "Hermes",
+   "Zeus",
+   "Poseidon"
+  ],
+  "answer": 0,
+  "fact": "Completed around 280 BC, it stood for only about 54 years before an earthquake toppled it in 226 BC.",
+  "diff": 3
+ },
+ {
+  "id": "hist-002",
+  "cat": "hist",
+  "q": "Which Moroccan traveller covered around 117,000 km on journeys in the 14th century?",
+  "options": [
+   "Marco Polo",
+   "Zheng He",
+   "Ibn Battuta",
+   "Vasco da Gama"
+  ],
+  "answer": 2,
+  "fact": "His account of his travels is known simply as the Rihla, meaning 'journey'.",
+  "diff": 3
+ },
+ {
+  "id": "hist-003",
+  "cat": "hist",
+  "q": "In 1875, Captain Matthew Webb became the first person recorded to do what without artificial aids?",
+  "options": [
+   "Row across the Atlantic",
+   "Climb Ben Nevis in winter",
+   "Sail solo around Britain",
+   "Swim the English Channel"
+  ],
+  "answer": 3,
+  "fact": "Smeared in porpoise fat to keep warm, he took 21 hours and 45 minutes.",
+  "diff": 2
+ },
+ {
+  "id": "hist-004",
+  "cat": "hist",
+  "q": "Christopher Cockerell tested his idea with a cat food tin, a coffee tin and a vacuum cleaner. What did he invent?",
+  "options": [
+   "The hovercraft",
+   "The jet engine",
+   "The hydrofoil",
+   "The vacuum flask"
+  ],
+  "answer": 0,
+  "fact": "The first full-size hovercraft crossed the Channel on 25 July 1959, 50 years to the day after Blériot's flight.",
+  "diff": 2
+ },
+ {
+  "id": "hist-005",
+  "cat": "hist",
+  "q": "The Great Pyramid of Giza was built for which pharaoh?",
+  "options": [
+   "Tutankhamun",
+   "Ramesses II",
+   "Khufu",
+   "Cleopatra"
+  ],
+  "answer": 2,
+  "fact": "It stayed the world's tallest man-made structure for nearly 4,000 years, until Lincoln Cathedral's spire in the 1300s.",
+  "diff": 2
+ },
+ {
+  "id": "hist-006",
+  "cat": "hist",
+  "q": "Which word did Alexander Graham Bell suggest for answering the telephone?",
+  "options": [
+   "Hello",
+   "Greetings",
+   "Ahoy",
+   "Good morning"
+  ],
+  "answer": 2,
+  "fact": "Thomas Edison is credited with popularising 'hello' instead.",
+  "diff": 3
+ },
+ {
+  "id": "hist-007",
+  "cat": "hist",
+  "q": "In 1888, Bertha Benz made the first long-distance journey in what?",
+  "options": [
+   "A motor car",
+   "A hot-air balloon",
+   "A steam train",
+   "A motorcycle"
+  ],
+  "answer": 0,
+  "fact": "She refuelled at a pharmacy in Wiesloch, now celebrated as the world's first filling station.",
+  "diff": 2
+ },
+ {
+  "id": "hist-008",
+  "cat": "hist",
+  "q": "Which locomotive won the Rainhill Trials in 1829?",
+  "options": [
+   "Puffing Billy",
+   "Mallard",
+   "Rocket",
+   "Flying Scotsman"
+  ],
+  "answer": 2,
+  "fact": "Built by George and Robert Stephenson, it reached a top speed of about 30 mph.",
+  "diff": 2
+ },
+ {
+  "id": "hist-009",
+  "cat": "hist",
+  "q": "In which decade did Joshua Slocum become the first person to sail solo around the world?",
+  "options": [
+   "1790s",
+   "1840s",
+   "1930s",
+   "1890s"
+  ],
+  "answer": 3,
+  "fact": "His boat, the Spray, was an old oyster sloop that he rebuilt himself.",
+  "diff": 3
+ },
+ {
+  "id": "hist-010",
+  "cat": "hist",
+  "q": "In which year did the Mayflower sail from Plymouth to North America?",
+  "options": [
+   "1492",
+   "1588",
+   "1776",
+   "1620"
+  ],
+  "answer": 3,
+  "fact": "Before the famous voyage, she was a cargo ship that had spent many years in the wine trade.",
+  "diff": 2
+ },
+ {
+  "id": "hist-011",
+  "cat": "hist",
+  "q": "What food was mixed into the mortar of parts of the Great Wall of China?",
+  "options": [
+   "Egg whites",
+   "Sticky rice",
+   "Honey",
+   "Soya beans"
+  ],
+  "answer": 1,
+  "fact": "The idea that the Wall can be seen from the Moon with the naked eye is a myth.",
+  "diff": 3
+ },
+ {
+  "id": "hist-012",
+  "cat": "hist",
+  "q": "During the Great Fire of London in 1666, what did Samuel Pepys bury in his garden?",
+  "options": [
+   "A Parmesan cheese",
+   "His diary",
+   "His spare wigs",
+   "A chest of tea"
+  ],
+  "answer": 0,
+  "fact": "His diary was written in shorthand and was not deciphered and published until the 1820s.",
+  "diff": 2
+ },
+ {
+  "id": "hist-013",
+  "cat": "hist",
+  "q": "Ernő Rubik invented his famous cube in 1974. Which country was he from?",
+  "options": [
+   "Hungary",
+   "Poland",
+   "Austria",
+   "Czechoslovakia"
+  ],
+  "answer": 0,
+  "fact": "It took Rubik about a month to solve his own puzzle for the first time.",
+  "diff": 2
+ },
+ {
+  "id": "hist-014",
+  "cat": "hist",
+  "q": "The Crystal Palace was built in Hyde Park for which event?",
+  "options": [
+   "Queen Victoria's coronation",
+   "The 1908 Olympics",
+   "The Great Exhibition",
+   "The Festival of Britain"
+  ],
+  "answer": 2,
+  "fact": "Its designer, Joseph Paxton, was inspired by the ribbed leaves of a giant water lily.",
+  "diff": 2
+ },
+ {
+  "id": "hist-015",
+  "cat": "hist",
+  "q": "Which Tudor king had six wives?",
+  "options": [
+   "Henry VII",
+   "Edward VI",
+   "Richard III",
+   "Henry VIII"
+  ],
+  "answer": 3,
+  "fact": "Henry had a courtier called the 'Groom of the Stool', whose job was to help him on the toilet.",
+  "diff": 1
+ },
+ {
+  "id": "hist-016",
+  "cat": "hist",
+  "q": "Who was the first woman to fly solo across the Atlantic, in 1932?",
+  "options": [
+   "Amy Johnson",
+   "Amelia Earhart",
+   "Bessie Coleman",
+   "Jean Batten"
+  ],
+  "answer": 1,
+  "fact": "She landed in a farmer's field in Northern Ireland rather than her planned destination of Paris.",
+  "diff": 2
+ },
+ {
+  "id": "hist-017",
+  "cat": "hist",
+  "q": "Which Wonder of the Ancient World stood at Alexandria in Egypt?",
+  "options": [
+   "The Hanging Gardens",
+   "The Lighthouse",
+   "The Mausoleum",
+   "The Temple of Artemis"
+  ],
+  "answer": 1,
+  "fact": "Known as the Pharos, it gave its name to the word for lighthouse in several languages, such as French 'phare'.",
+  "diff": 3
+ },
+ {
+  "id": "hist-018",
+  "cat": "hist",
+  "q": "Which explorer reached the east coast of Australia aboard HMS Endeavour in 1770?",
+  "options": [
+   "Francis Drake",
+   "Ferdinand Magellan",
+   "James Cook",
+   "Abel Tasman"
+  ],
+  "answer": 2,
+  "fact": "His crew helped ward off scurvy by eating sauerkraut.",
+  "diff": 2
+ },
+ {
+  "id": "hist-019",
+  "cat": "hist",
+  "q": "Ferdinand Magellan's expedition of 1519–1522 was the first to do what?",
+  "options": [
+   "Sail around the world",
+   "Reach the South Pole",
+   "Cross the Pacific by raft",
+   "Find the source of the Nile"
+  ],
+  "answer": 0,
+  "fact": "Of the five ships that set out, only one, the Victoria, made it home.",
+  "diff": 2
+ },
+ {
+  "id": "hist-020",
+  "cat": "hist",
+  "q": "Who invented the World Wide Web in 1989?",
+  "options": [
+   "Tim Berners-Lee",
+   "Bill Gates",
+   "Alan Turing",
+   "Steve Jobs"
+  ],
+  "answer": 0,
+  "fact": "The world's first website, launched at CERN in 1991, can still be visited today.",
+  "diff": 1
+ },
+ {
+  "id": "hist-021",
+  "cat": "hist",
+  "q": "Which civilisation built Machu Picchu?",
+  "options": [
+   "The Aztecs",
+   "The Maya",
+   "The Inca",
+   "The Olmecs"
+  ],
+  "answer": 2,
+  "fact": "Built in the 15th century, it was little known to the outside world until 1911.",
+  "diff": 1
+ },
+ {
+  "id": "hist-022",
+  "cat": "hist",
+  "q": "What did the Romans call London?",
+  "options": [
+   "Eboracum",
+   "Londinium",
+   "Aquae Sulis",
+   "Camulodunum"
+  ],
+  "answer": 1,
+  "fact": "The city was founded around AD 47, just a few years after the Roman invasion of Britain.",
+  "diff": 1
+ },
+ {
+  "id": "hist-023",
+  "cat": "hist",
+  "q": "Which Roman emperor ordered a wall to be built from the River Tyne to the Solway Firth?",
+  "options": [
+   "Nero",
+   "Hadrian",
+   "Augustus",
+   "Caligula"
+  ],
+  "answer": 1,
+  "fact": "The wall stretched about 73 miles (117 km) from coast to coast.",
+  "diff": 1
+ },
+ {
+  "id": "hist-024",
+  "cat": "hist",
+  "q": "Whose tomb did Howard Carter open in the Valley of the Kings in 1922?",
+  "options": [
+   "Ramesses II",
+   "Akhenaten",
+   "Seti I",
+   "Tutankhamun"
+  ],
+  "answer": 3,
+  "fact": "Tutankhamun became pharaoh when he was only about nine years old.",
+  "diff": 1
+ },
+ {
+  "id": "hist-025",
+  "cat": "hist",
+  "q": "Which emperor, the first to rule a unified China, was buried with the Terracotta Army?",
+  "options": [
+   "Kublai Khan",
+   "Qin Shi Huang",
+   "Genghis Khan",
+   "Puyi"
+  ],
+  "answer": 1,
+  "fact": "The Terracotta Army was discovered in 1974 by farmers digging a well.",
+  "diff": 3
+ },
+ {
+  "id": "hist-026",
+  "cat": "hist",
+  "q": "Where did the Wright brothers make their first powered aeroplane flight in 1903?",
+  "options": [
+   "Chicago",
+   "Kitty Hawk",
+   "New York",
+   "San Francisco"
+  ],
+  "answer": 1,
+  "fact": "That first flight lasted just 12 seconds and covered about 120 feet (37 metres).",
+  "diff": 2
+ },
+ {
+  "id": "hist-027",
+  "cat": "hist",
+  "q": "The Rosetta Stone was the key to decoding which writing system?",
+  "options": [
+   "Egyptian hieroglyphs",
+   "Cuneiform",
+   "Linear B",
+   "Norse runes"
+  ],
+  "answer": 0,
+  "fact": "It carries the same decree in three scripts: hieroglyphic, Demotic and Ancient Greek.",
+  "diff": 1
+ },
+ {
+  "id": "hist-028",
+  "cat": "hist",
+  "q": "Who led the first expedition to reach the South Pole, in 1911?",
+  "options": [
+   "Robert Falcon Scott",
+   "Ernest Shackleton",
+   "Robert Peary",
+   "Roald Amundsen"
+  ],
+  "answer": 3,
+  "fact": "His team relied on sled dogs and Inuit-style fur clothing to cope with the cold.",
+  "diff": 2
+ },
+ {
+  "id": "hist-029",
+  "cat": "hist",
+  "q": "Which British monarch reigned for 63 years, a record later passed by Elizabeth II?",
+  "options": [
+   "George III",
+   "Queen Anne",
+   "Queen Victoria",
+   "Edward VII"
+  ],
+  "answer": 2,
+  "fact": "Her children married into royal families across Europe, earning her the nickname 'grandmother of Europe'.",
+  "diff": 2
+ },
+ {
+  "id": "hist-030",
+  "cat": "hist",
+  "q": "What was the name of the ship on which Charles Darwin sailed around the world?",
+  "options": [
+   "HMS Endeavour",
+   "HMS Beagle",
+   "HMS Victory",
+   "HMS Bounty"
+  ],
+  "answer": 1,
+  "fact": "The voyage was planned to last two years but took almost five, from 1831 to 1836.",
+  "diff": 2
+ },
+ {
+  "id": "hist-031",
+  "cat": "hist",
+  "q": "Who introduced printing with movable metal type to Europe around 1440?",
+  "options": [
+   "William Caxton",
+   "Leonardo da Vinci",
+   "Galileo Galilei",
+   "Johannes Gutenberg"
+  ],
+  "answer": 3,
+  "fact": "Fewer than 50 copies of the famous Gutenberg Bible are known to survive today.",
+  "diff": 1
+ },
+ {
+  "id": "hist-032",
+  "cat": "hist",
+  "q": "Which civilisation built the city of Tenochtitlan on an island in a lake?",
+  "options": [
+   "The Inca",
+   "The Maya",
+   "The Aztecs",
+   "The Olmecs"
+  ],
+  "answer": 2,
+  "fact": "Mexico City now stands on the same site, much of it on the drained lake bed.",
+  "diff": 3
+ },
+ {
+  "id": "hist-033",
+  "cat": "hist",
+  "q": "Which Norse explorer reached North America around the year 1000?",
+  "options": [
+   "Erik the Red",
+   "Leif Erikson",
+   "Harald Hardrada",
+   "Ragnar Lodbrok"
+  ],
+  "answer": 1,
+  "fact": "The remains of a Norse settlement at L'Anse aux Meadows in Newfoundland prove the Vikings got there.",
+  "diff": 3
+ },
+ {
+  "id": "hist-034",
+  "cat": "hist",
+  "q": "In which country did the ancient Olympic Games begin?",
+  "options": [
+   "Italy",
+   "Egypt",
+   "Greece",
+   "Turkey"
+  ],
+  "answer": 2,
+  "fact": "According to tradition, the first Games at Olympia were held in 776 BC.",
+  "diff": 1
+ },
+ {
+  "id": "hist-035",
+  "cat": "hist",
+  "q": "Who reached the summit of Everest with Tenzing Norgay in 1953?",
+  "options": [
+   "George Mallory",
+   "Chris Bonington",
+   "Reinhold Messner",
+   "Edmund Hillary"
+  ],
+  "answer": 3,
+  "fact": "News of their success reached London on the morning of Queen Elizabeth II's coronation.",
+  "diff": 1
+ },
+ {
+  "id": "hist-036",
+  "cat": "hist",
+  "q": "Marie Curie was the first woman to win which famous award?",
+  "options": [
+   "An Oscar",
+   "The Victoria Cross",
+   "A Pulitzer Prize",
+   "A Nobel Prize"
+  ],
+  "answer": 3,
+  "fact": "She won Nobel Prizes in two different sciences: physics in 1903 and chemistry in 1911.",
+  "diff": 1
+ },
+ {
+  "id": "hist-037",
+  "cat": "hist",
+  "q": "The world's first underground railway opened in 1863 in which city?",
+  "options": [
+   "London",
+   "Paris",
+   "New York",
+   "Berlin"
+  ],
+  "answer": 0,
+  "fact": "Its first trains were pulled by steam locomotives.",
+  "diff": 1
+ },
+ {
+  "id": "hist-038",
+  "cat": "hist",
+  "q": "What was the name of the ancient network of trade routes linking China with the Mediterranean?",
+  "options": [
+   "The Spice Way",
+   "The Silk Road",
+   "The Amber Road",
+   "The Jade Trail"
+  ],
+  "answer": 1,
+  "fact": "The name was coined in 1877 by the German geographer Ferdinand von Richthofen.",
+  "diff": 1
+ },
+ {
+  "id": "hist-039",
+  "cat": "hist",
+  "q": "The Bayeux Tapestry tells the story of the Norman Conquest of England in which year?",
+  "options": [
+   "1215",
+   "1314",
+   "1485",
+   "1066"
+  ],
+  "answer": 3,
+  "fact": "Despite its name, it is embroidered rather than woven, so it isn't technically a tapestry.",
+  "diff": 1
+ },
+ {
+  "id": "hist-040",
+  "cat": "hist",
+  "q": "Which English king agreed to Magna Carta in 1215?",
+  "options": [
+   "King John",
+   "Richard I",
+   "Henry II",
+   "Edward I"
+  ],
+  "answer": 0,
+  "fact": "It was sealed at Runnymede, a meadow beside the River Thames in Surrey.",
+  "diff": 3
+ }
+]

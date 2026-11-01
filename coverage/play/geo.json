@@ -1,0 +1,562 @@
+[
+ {
+  "id": "geo-001",
+  "cat": "geo",
+  "q": "Which city is the capital of Australia?",
+  "options": [
+   "Sydney",
+   "Melbourne",
+   "Canberra",
+   "Perth"
+  ],
+  "answer": 2,
+  "fact": "Canberra was purpose-built as a compromise between rivals Sydney and Melbourne, to a design by American architects Walter Burley Griffin and Marion Mahony Griffin.",
+  "diff": 1
+ },
+ {
+  "id": "geo-002",
+  "cat": "geo",
+  "q": "Which country is the only independent state that lies entirely above 1,000 metres?",
+  "options": [
+   "Nepal",
+   "Bhutan",
+   "Switzerland",
+   "Lesotho"
+  ],
+  "answer": 3,
+  "fact": "Its lowest point is 1,400 metres above sea level, the highest low point of any country in the world.",
+  "diff": 3
+ },
+ {
+  "id": "geo-003",
+  "cat": "geo",
+  "q": "Which is the coldest capital city in the world by average yearly temperature?",
+  "options": [
+   "Moscow",
+   "Ottawa",
+   "Reykjavík",
+   "Ulaanbaatar"
+  ],
+  "answer": 3,
+  "fact": "The name of Mongolia's capital translates as 'Red Hero'.",
+  "diff": 2
+ },
+ {
+  "id": "geo-004",
+  "cat": "geo",
+  "q": "Which strait separates Spain from Morocco?",
+  "options": [
+   "Strait of Gibraltar",
+   "Bosphorus",
+   "Strait of Hormuz",
+   "Strait of Messina"
+  ],
+  "answer": 0,
+  "fact": "At its narrowest point Europe and Africa are only about 14 km apart, close enough to see across on a clear day.",
+  "diff": 1
+ },
+ {
+  "id": "geo-005",
+  "cat": "geo",
+  "q": "Which Himalayan capital famously has no traffic lights, with police directing traffic by hand?",
+  "options": [
+   "Kathmandu",
+   "Vientiane",
+   "Thimphu",
+   "Malé"
+  ],
+  "answer": 2,
+  "fact": "A few traffic lights were tried in the 1990s, but residents found them impersonal, so they were removed and the police returned.",
+  "diff": 3
+ },
+ {
+  "id": "geo-006",
+  "cat": "geo",
+  "q": "In which country is Angel Falls, the world's highest uninterrupted waterfall?",
+  "options": [
+   "Brazil",
+   "Venezuela",
+   "Colombia",
+   "Guyana"
+  ],
+  "answer": 1,
+  "fact": "It is named after Jimmie Angel, an American pilot who flew over it in 1933.",
+  "diff": 2
+ },
+ {
+  "id": "geo-007",
+  "cat": "geo",
+  "q": "Which capital city is built across 14 islands where Lake Mälaren meets the Baltic Sea?",
+  "options": [
+   "Copenhagen",
+   "Helsinki",
+   "Stockholm",
+   "Oslo"
+  ],
+  "answer": 2,
+  "fact": "Its metro is nicknamed the world's longest art gallery, with artworks decorating about 90 of its 100 stations.",
+  "diff": 2
+ },
+ {
+  "id": "geo-008",
+  "cat": "geo",
+  "q": "What is the name of Norway's longest and deepest fjord?",
+  "options": [
+   "Geirangerfjord",
+   "Hardangerfjord",
+   "Sognefjord",
+   "Oslofjord"
+  ],
+  "answer": 2,
+  "fact": "It reaches about 205 km inland from the sea and plunges to around 1,308 metres below sea level.",
+  "diff": 3
+ },
+ {
+  "id": "geo-009",
+  "cat": "geo",
+  "q": "Which country has more ancient pyramids than Egypt?",
+  "options": [
+   "Sudan",
+   "Ethiopia",
+   "Libya",
+   "Jordan"
+  ],
+  "answer": 0,
+  "fact": "Built by the Kingdom of Kush, its pyramids are smaller and much steeper than Egypt's famous ones.",
+  "diff": 2
+ },
+ {
+  "id": "geo-010",
+  "cat": "geo",
+  "q": "Tristan da Cunha, often called the world's most remote inhabited island, lies in which ocean?",
+  "options": [
+   "Pacific",
+   "Indian",
+   "Atlantic",
+   "Southern"
+  ],
+  "answer": 2,
+  "fact": "Its nearest inhabited neighbour is St Helena, roughly 2,435 km away.",
+  "diff": 2
+ },
+ {
+  "id": "geo-011",
+  "cat": "geo",
+  "q": "The Okavango Delta, which floods in the middle of the dry season, is in which country?",
+  "options": [
+   "Namibia",
+   "Botswana",
+   "Zambia",
+   "Zimbabwe"
+  ],
+  "answer": 1,
+  "fact": "Its floodwater falls as rain in the highlands of Angola and takes around four months to arrive.",
+  "diff": 3
+ },
+ {
+  "id": "geo-012",
+  "cat": "geo",
+  "q": "Which stretch of water separates Russia's Big Diomede island from Alaska's Little Diomede?",
+  "options": [
+   "Davis Strait",
+   "Cook Strait",
+   "Bass Strait",
+   "Bering Strait"
+  ],
+  "answer": 3,
+  "fact": "Though only 3.8 km apart, the islands sit on opposite sides of the International Date Line, nearly a day apart in time.",
+  "diff": 2
+ },
+ {
+  "id": "geo-013",
+  "cat": "geo",
+  "q": "Which great river has no bridges across its main channel?",
+  "options": [
+   "Nile",
+   "Amazon",
+   "Mississippi",
+   "Danube"
+  ],
+  "answer": 1,
+  "fact": "Its mouth is so wide that it holds Marajó, an island roughly the size of Switzerland.",
+  "diff": 2
+ },
+ {
+  "id": "geo-014",
+  "cat": "geo",
+  "q": "Which mountain range is traditionally seen as the boundary between Europe and Asia?",
+  "options": [
+   "Ural Mountains",
+   "Carpathians",
+   "Altai Mountains",
+   "Pyrenees"
+  ],
+  "answer": 0,
+  "fact": "The range runs for about 2,500 km, from the Arctic coast down to Kazakhstan.",
+  "diff": 1
+ },
+ {
+  "id": "geo-015",
+  "cat": "geo",
+  "q": "Which South American country's name is said to mean 'land of many waters'?",
+  "options": [
+   "Paraguay",
+   "Guyana",
+   "Suriname",
+   "Uruguay"
+  ],
+  "answer": 1,
+  "fact": "It is the only country in South America with English as its official language.",
+  "diff": 3
+ },
+ {
+  "id": "geo-016",
+  "cat": "geo",
+  "q": "Which is the largest country in the world by area?",
+  "options": [
+   "Russia",
+   "Canada",
+   "China",
+   "United States"
+  ],
+  "answer": 0,
+  "fact": "It is so wide that it spans 11 time zones.",
+  "diff": 1
+ },
+ {
+  "id": "geo-017",
+  "cat": "geo",
+  "q": "Which is the smallest country in the world by area?",
+  "options": [
+   "Monaco",
+   "San Marino",
+   "Liechtenstein",
+   "Vatican City"
+  ],
+  "answer": 3,
+  "fact": "At about 44 hectares, it is roughly a third of the size of London's Hyde Park.",
+  "diff": 1
+ },
+ {
+  "id": "geo-018",
+  "cat": "geo",
+  "q": "Which city is the capital of Canada?",
+  "options": [
+   "Ottawa",
+   "Toronto",
+   "Montreal",
+   "Vancouver"
+  ],
+  "answer": 0,
+  "fact": "Queen Victoria chose Ottawa as the capital in 1857, partly as a compromise between English- and French-speaking regions.",
+  "diff": 1
+ },
+ {
+  "id": "geo-019",
+  "cat": "geo",
+  "q": "Mount Kilimanjaro, Africa's highest mountain, is in which country?",
+  "options": [
+   "Kenya",
+   "Uganda",
+   "Tanzania",
+   "Ethiopia"
+  ],
+  "answer": 2,
+  "fact": "Despite lying close to the equator, it has glaciers near its summit.",
+  "diff": 2
+ },
+ {
+  "id": "geo-020",
+  "cat": "geo",
+  "q": "Which country has the world's only non-rectangular national flag?",
+  "options": [
+   "Bhutan",
+   "Nepal",
+   "Mongolia",
+   "Sri Lanka"
+  ],
+  "answer": 1,
+  "fact": "Nepal's constitution includes step-by-step geometric instructions for drawing the flag correctly.",
+  "diff": 2
+ },
+ {
+  "id": "geo-021",
+  "cat": "geo",
+  "q": "Which country's flag shows a copper-coloured map of the island above two olive branches?",
+  "options": [
+   "Malta",
+   "Greece",
+   "Lebanon",
+   "Cyprus"
+  ],
+  "answer": 3,
+  "fact": "The colour nods to its ancient copper mines; the Latin word for copper, cuprum, comes from the island's name.",
+  "diff": 3
+ },
+ {
+  "id": "geo-022",
+  "cat": "geo",
+  "q": "Which river flows through the centre of Paris?",
+  "options": [
+   "Loire",
+   "Seine",
+   "Rhône",
+   "Thames"
+  ],
+  "answer": 1,
+  "fact": "The banks of the Seine in Paris are a UNESCO World Heritage Site.",
+  "diff": 1
+ },
+ {
+  "id": "geo-023",
+  "cat": "geo",
+  "q": "Which river flows through Vienna, Bratislava, Budapest and Belgrade?",
+  "options": [
+   "Rhine",
+   "Elbe",
+   "Danube",
+   "Vistula"
+  ],
+  "answer": 2,
+  "fact": "It flows through or along ten countries, more than any other river in the world.",
+  "diff": 2
+ },
+ {
+  "id": "geo-024",
+  "cat": "geo",
+  "q": "Which is the northernmost capital city of a sovereign state?",
+  "options": [
+   "Reykjavík",
+   "Oslo",
+   "Helsinki",
+   "Tallinn"
+  ],
+  "answer": 0,
+  "fact": "Most of its homes are heated with natural hot water from geothermal sources.",
+  "diff": 2
+ },
+ {
+  "id": "geo-025",
+  "cat": "geo",
+  "q": "Which is the largest hot desert in the world?",
+  "options": [
+   "Gobi",
+   "Sahara",
+   "Kalahari",
+   "Arabian"
+  ],
+  "answer": 1,
+  "fact": "Covering around 9 million square km, it is almost as big as the United States.",
+  "diff": 1
+ },
+ {
+  "id": "geo-026",
+  "cat": "geo",
+  "q": "Most of the Atacama, the driest non-polar desert on Earth, lies in which country?",
+  "options": [
+   "Peru",
+   "Argentina",
+   "Chile",
+   "Bolivia"
+  ],
+  "answer": 2,
+  "fact": "NASA has tested Mars rovers there because its dry soil is so similar to the Martian surface.",
+  "diff": 2
+ },
+ {
+  "id": "geo-027",
+  "cat": "geo",
+  "q": "Which country is the world's fourth-largest island?",
+  "options": [
+   "Sri Lanka",
+   "Iceland",
+   "Cuba",
+   "Madagascar"
+  ],
+  "answer": 3,
+  "fact": "Over 90% of its wildlife, including all its lemurs, is found nowhere else on Earth.",
+  "diff": 2
+ },
+ {
+  "id": "geo-028",
+  "cat": "geo",
+  "q": "Which is the deepest lake in the world?",
+  "options": [
+   "Lake Superior",
+   "Lake Baikal",
+   "Lake Tanganyika",
+   "Lake Victoria"
+  ],
+  "answer": 1,
+  "fact": "It holds around a fifth of all the unfrozen fresh surface water on the planet.",
+  "diff": 2
+ },
+ {
+  "id": "geo-029",
+  "cat": "geo",
+  "q": "Which city is the capital of Turkey?",
+  "options": [
+   "Istanbul",
+   "Ankara",
+   "Izmir",
+   "Antalya"
+  ],
+  "answer": 1,
+  "fact": "Ankara became the capital in 1923, even though Istanbul is far larger and straddles Europe and Asia.",
+  "diff": 2
+ },
+ {
+  "id": "geo-030",
+  "cat": "geo",
+  "q": "The Panama Canal links the Pacific Ocean with which other ocean?",
+  "options": [
+   "Indian",
+   "Arctic",
+   "Southern",
+   "Atlantic"
+  ],
+  "answer": 3,
+  "fact": "Thanks to Panama's S-shape, the canal's Pacific entrance actually lies further east than its Atlantic one.",
+  "diff": 2
+ },
+ {
+  "id": "geo-031",
+  "cat": "geo",
+  "q": "Mount Everest sits on the border between Nepal and which other country?",
+  "options": [
+   "China",
+   "India",
+   "Bhutan",
+   "Pakistan"
+  ],
+  "answer": 0,
+  "fact": "It was named after surveyor George Everest, who reportedly objected to the honour.",
+  "diff": 1
+ },
+ {
+  "id": "geo-032",
+  "cat": "geo",
+  "q": "Which European country is famously shaped like a boot?",
+  "options": [
+   "Greece",
+   "Portugal",
+   "Italy",
+   "Croatia"
+  ],
+  "answer": 2,
+  "fact": "Italy completely surrounds two independent countries: San Marino and Vatican City.",
+  "diff": 1
+ },
+ {
+  "id": "geo-033",
+  "cat": "geo",
+  "q": "Which is the largest country in Africa by area?",
+  "options": [
+   "DR Congo",
+   "Sudan",
+   "Algeria",
+   "Libya"
+  ],
+  "answer": 2,
+  "fact": "Algeria took the title in 2011, when South Sudan became independent and Sudan's area shrank.",
+  "diff": 3
+ },
+ {
+  "id": "geo-034",
+  "cat": "geo",
+  "q": "Which city is the capital of New Zealand?",
+  "options": [
+   "Auckland",
+   "Christchurch",
+   "Hamilton",
+   "Wellington"
+  ],
+  "answer": 3,
+  "fact": "Wellington is the southernmost capital city of any sovereign state.",
+  "diff": 1
+ },
+ {
+  "id": "geo-035",
+  "cat": "geo",
+  "q": "Which city is the capital of Brazil?",
+  "options": [
+   "Brasília",
+   "Rio de Janeiro",
+   "São Paulo",
+   "Salvador"
+  ],
+  "answer": 0,
+  "fact": "Built from scratch and opened in 1960, its city plan resembles an aeroplane or bird when seen from above.",
+  "diff": 1
+ },
+ {
+  "id": "geo-036",
+  "cat": "geo",
+  "q": "In which US state is the Grand Canyon?",
+  "options": [
+   "Arizona",
+   "Nevada",
+   "Utah",
+   "New Mexico"
+  ],
+  "answer": 0,
+  "fact": "The canyon was carved over millions of years by the Colorado River.",
+  "diff": 1
+ },
+ {
+  "id": "geo-037",
+  "cat": "geo",
+  "q": "Which South American country is named after the imaginary line that runs through it?",
+  "options": [
+   "Colombia",
+   "Peru",
+   "Bolivia",
+   "Ecuador"
+  ],
+  "answer": 3,
+  "fact": "Thanks to Earth's bulge, the summit of its Chimborazo volcano is the point farthest from Earth's centre.",
+  "diff": 1
+ },
+ {
+  "id": "geo-038",
+  "cat": "geo",
+  "q": "Lake Titicaca lies on the border between Peru and which country?",
+  "options": [
+   "Chile",
+   "Bolivia",
+   "Ecuador",
+   "Argentina"
+  ],
+  "answer": 1,
+  "fact": "The Uros people live on floating islands they build from totora reeds.",
+  "diff": 3
+ },
+ {
+  "id": "geo-039",
+  "cat": "geo",
+  "q": "Which sea is the only one with no land coastline, being bounded by ocean currents?",
+  "options": [
+   "Caspian Sea",
+   "Coral Sea",
+   "Aral Sea",
+   "Sargasso Sea"
+  ],
+  "answer": 3,
+  "fact": "European eels travel thousands of kilometres across the Atlantic to spawn there.",
+  "diff": 3
+ },
+ {
+  "id": "geo-040",
+  "cat": "geo",
+  "q": "Which tiny Pyrenean country is ruled jointly by two co-princes?",
+  "options": [
+   "Andorra",
+   "Liechtenstein",
+   "Monaco",
+   "San Marino"
+  ],
+  "answer": 0,
+  "fact": "Its official language is Catalan, rather than Spanish or French.",
+  "diff": 3
+ }
+]
