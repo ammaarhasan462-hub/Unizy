@@ -1,5 +1,5 @@
 // Home page "try it" box: a signed-out visitor pastes a piece of lecture notes and gets flashcards and practice
-// questions back. No account needed. Capped per network (daily-salted hash, no IP stored), site-wide per day and by
+// questions back. No account needed. 3 a day per browser (in the page), capped per network (daily-salted hash, no IP stored), site-wide per day and by
 // Unizy's daily £ budget (shared with the tutor). Deploy with verify_jwt = false.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
@@ -12,7 +12,8 @@ async function recordSpend(service: any, usage: any) {
   const usd = ((+usage?.input_tokens || 0) * PRICE.in + (+usage?.output_tokens || 0) * PRICE.out) / 1e6;
   try { await service.rpc("ai_add_spend", { p_usd: usd }); } catch { /* ignore */ }
 }
-const PER_NET = 3;      // tries per network per day (campus wifi shares IPs, so not 1)
+const PER_NET = 60;     // tries per network per day: generous, because campus wifi puts a whole university behind a few IPs
+                        // (the page itself allows 3 a day per browser; DAILY and the £ budget are the real cost caps)
 const DAILY = 300;      // tries site-wide per day
 const MIN_CHARS = 120, MAX_CHARS = 8000;
 

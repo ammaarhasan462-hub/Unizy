@@ -1,6 +1,6 @@
 /* Unizy home page "try it" box.
-   1. Paste your notes: signed-out visitors get flashcards and practice questions from their own notes (edge function try-cards,
-      3 goes a day per network). The result can be carried into the app: it is kept in localStorage "unizy-pending" and the app
+   1. Paste your notes: signed-out visitors get flashcards and practice questions from their own notes (edge function try-cards;
+      3 goes a day per browser, a higher cap per network). The result can be carried into the app: it is kept in localStorage "unizy-pending" and the app
       offers to add it to a module's Flashcards.
    2. Find your module: real cards and questions from the fact-checked module packs (site/data/try-index.json, built by
       tools/build_try_index.py). */
@@ -80,6 +80,9 @@
     var notes = ta.value.trim();
     if (notes.length < MIN) { say('Paste a little more: at least a paragraph (about ' + MIN + ' characters). Or press one of the samples.', true); ta.focus(); return; }
     if (notes.length > MAX) { say('That’s more than 8,000 characters. Paste one lecture section at a time.', true); return; }
+    var day = new Date().toISOString().slice(0, 10), used = { d: day, n: 0 };
+    try { var u = JSON.parse(localStorage.getItem('unizy-tries') || 'null'); if (u && u.d === day) used = u; } catch (e) { /* ignore */ }
+    if (used.n >= 3) { say('You’ve used today’s 3 free goes. <a href="/signup?next=%2Fapp.html" data-ev="try_save">Sign up free</a> to keep turning your notes into cards: it takes 30 seconds and no card.', true); return; }
     busy = true; go.disabled = true; go.textContent = 'Reading your notes…'; T('try_start');
     out.innerHTML = '<div class="try-wait"><div class="shimmer"></div><p class="note">Writing flashcards and practice questions from your notes. This usually takes 10 to 20 seconds.</p></div>';
     var steps = ['Writing flashcards…', 'Writing practice questions…', 'Checking them against your notes…'], si = 0;
@@ -88,10 +91,11 @@
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { b.status = r.status; return b; }); }, function () { return { error: 'offline' }; })
       .then(function (d) {
         clearInterval(tick); busy = false; go.disabled = false; go.textContent = 'Make my flashcards';
+        if (d && (d.cards || d.error === 'not_notes')) { used.n++; try { localStorage.setItem('unizy-tries', JSON.stringify(used)); } catch (e) { /* ignore */ } }
         if (d && d.cards && d.cards.length) { T('try_done'); return result(d); }
         T('try_fail');
         var e = d && d.error;
-        if (e === 'limit') say('You’ve used today’s 3 free goes on this network. <a href="/signup?next=%2Fapp.html" data-ev="try_save">Sign up free</a> to keep turning your notes into cards: it takes 30 seconds and no card.', true);
+        if (e === 'limit') say('Lots of people on your network have tried Unizy today. <a href="/signup?next=%2Fapp.html" data-ev="try_save">Sign up free</a> to keep turning your notes into cards: it takes 30 seconds and no card.', true);
         else if (e === 'not_notes') say('That doesn’t look like study notes. Paste a piece of lecture notes, a handout or your own summary, or press one of the samples.', true);
         else if (e === 'too_short') say('Paste a little more: at least a paragraph.', true);
         else if (e === 'offline') say('You seem to be offline. Check your connection and try again.', true);
