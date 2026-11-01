@@ -242,12 +242,12 @@
   "cat": "nature",
   "q": "Which is the only mammal capable of true powered flight?",
   "options": [
+   "Bat",
    "Flying squirrel",
    "Sugar glider",
-   "Bat",
    "Colugo"
   ],
-  "answer": 2,
+  "answer": 0,
   "fact": "Bats aren't actually blind: many see quite well, but they use echolocation to hunt in the dark.",
   "diff": 1
  },
@@ -480,12 +480,12 @@
   "cat": "nature",
   "q": "What is the largest species of penguin?",
   "options": [
-   "King penguin",
    "Emperor penguin",
+   "King penguin",
    "Adélie penguin",
    "Gentoo penguin"
   ],
-  "answer": 1,
+  "answer": 0,
   "fact": "Male emperor penguins keep the egg warm on their feet through the Antarctic winter, going without food for months.",
   "diff": 2
  },
@@ -542,7 +542,7 @@
    "Monsoon"
   ],
   "answer": 3,
-  "fact": "Monsoon reached English via Portuguese and Dutch, from the Arabic 'mawsim', meaning season.",
+  "fact": "The summer monsoon brings India around three-quarters of its yearly rainfall, all within about four months from June to September.",
   "diff": 3
  },
  {
