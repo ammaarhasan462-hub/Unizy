@@ -80,7 +80,7 @@
    "Twelfth Night"
   ],
   "answer": 0,
-  "fact": "The word 'balcony' never appears in the play: Shakespeare's stage direction has Juliet appear 'above' at a window.",
+  "fact": "The word 'balcony' never appears in Shakespeare's text: Romeo simply sees Juliet at a window above the orchard.",
   "diff": 1
  },
  {
@@ -276,7 +276,7 @@
    "George Frideric Handel"
   ],
   "answer": 3,
-  "fact": "At its 1717 premiere on the Thames, the king liked it so much he had it played at least three times.",
+  "fact": "At its 1717 premiere on the Thames, the king reportedly liked it so much that he had it played three times.",
   "diff": 2
  },
  {
@@ -385,7 +385,7 @@
    "Edward Blake",
    "Eric Blair",
    "Eric Weller",
-   "Arthur Blair"
+   "Ernest Blair"
   ],
   "answer": 1,
   "fact": "Animal Farm was turned down by several publishers before it finally appeared in 1945.",
@@ -416,7 +416,7 @@
    "Erik Satie"
   ],
   "answer": 1,
-  "fact": "The snare drum plays the same short rhythm over and over from the very start to the very end.",
+  "fact": "The snare drum repeats the same short rhythm over and over for almost the entire piece, growing steadily louder.",
   "diff": 2
  },
  {
