@@ -164,7 +164,7 @@
    "Easter Monday"
   ],
   "answer": 2,
-  "fact": "By tradition the pancake race dates back to 1445, and runners wear an apron and headscarf.",
+  "fact": "By tradition the pancake race dates back to 1445, and runners must wear an apron and a head covering.",
   "diff": 2
  },
  {
@@ -192,7 +192,7 @@
    "Westminster Cathedral"
   ],
   "answer": 0,
-  "fact": "The UK's oldest furniture still used for its original purpose, it bears graffiti carved by Westminster schoolboys.",
+  "fact": "Made for Edward I in 1300-1301, its back is covered in names carved by Westminster schoolboys and visitors in the 1700s and 1800s.",
   "diff": 1
  },
  {
@@ -234,7 +234,7 @@
    "Bristol"
   ],
   "answer": 2,
-  "fact": "Playwright Robert Kemp coined the name in 1948, writing of shows popping up 'round the fringe' of the official festival.",
+  "fact": "Playwright Robert Kemp coined the name in 1948, writing that 'round the fringe of official Festival drama' there was more private enterprise.",
   "diff": 2
  },
  {
@@ -262,7 +262,7 @@
    "The River Thames"
   ],
   "answer": 0,
-  "fact": "Beck was an engineering draughtsman, and he is thought to have been paid just five guineas for his design.",
+  "fact": "Beck ignored real distances, spacing stations evenly and drawing lines only horizontally, vertically or at 45 degrees.",
   "diff": 1
  },
  {
@@ -366,7 +366,7 @@
  {
   "id": "uk-027",
   "cat": "uk",
-  "q": "Which is the only body of water in the Lake District with 'Lake' in its name?",
+  "q": "Which of the Lake District's main lakes is the only one with the word 'Lake' in its name?",
   "options": [
    "Bassenthwaite Lake",
    "Windermere",
@@ -458,7 +458,7 @@
    "Devon"
   ],
   "answer": 2,
-  "fact": "Its smaller 'bluestones' were hauled all the way from the Preseli Hills in west Wales.",
+  "fact": "Many of its smaller 'bluestones' were brought about 150 miles from the Preseli Hills in west Wales.",
   "diff": 1
  },
  {
