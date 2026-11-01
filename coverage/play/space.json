@@ -1,0 +1,562 @@
+[
+ {
+  "id": "space-001",
+  "cat": "space",
+  "q": "Which planet is known as the Red Planet?",
+  "options": [
+   "Mars",
+   "Venus",
+   "Mercury",
+   "Jupiter"
+  ],
+  "answer": 0,
+  "fact": "Mars is home to Olympus Mons, a volcano about two and a half times the height of Mount Everest.",
+  "diff": 1
+ },
+ {
+  "id": "space-002",
+  "cat": "space",
+  "q": "What is the largest planet in our Solar System?",
+  "options": [
+   "Saturn",
+   "Jupiter",
+   "Neptune",
+   "Uranus"
+  ],
+  "answer": 1,
+  "fact": "Jupiter is more than twice as massive as all the other planets in the Solar System put together.",
+  "diff": 1
+ },
+ {
+  "id": "space-003",
+  "cat": "space",
+  "q": "Which planet is closest to the Sun?",
+  "options": [
+   "Venus",
+   "Mars",
+   "Mercury",
+   "Earth"
+  ],
+  "answer": 2,
+  "fact": "With almost no atmosphere to hold heat, Mercury swings from about 430°C by day to around -180°C at night.",
+  "diff": 1
+ },
+ {
+  "id": "space-004",
+  "cat": "space",
+  "q": "Which is the hottest planet in our Solar System?",
+  "options": [
+   "Mercury",
+   "Mars",
+   "Jupiter",
+   "Venus"
+  ],
+  "answer": 3,
+  "fact": "Its thick carbon dioxide atmosphere traps so much heat that the surface is hot enough to melt lead.",
+  "diff": 2
+ },
+ {
+  "id": "space-005",
+  "cat": "space",
+  "q": "Who was the first person to walk on the Moon?",
+  "options": [
+   "Neil Armstrong",
+   "Buzz Aldrin",
+   "Michael Collins",
+   "John Glenn"
+  ],
+  "answer": 0,
+  "fact": "Apollo 11's lunar module was called Eagle, while its command module was named Columbia.",
+  "diff": 1
+ },
+ {
+  "id": "space-006",
+  "cat": "space",
+  "q": "Who was the first woman to travel into space, in 1963?",
+  "options": [
+   "Sally Ride",
+   "Valentina Tereshkova",
+   "Helen Sharman",
+   "Svetlana Savitskaya"
+  ],
+  "answer": 1,
+  "fact": "On her Vostok 6 flight she orbited Earth 48 times in just under three days.",
+  "diff": 2
+ },
+ {
+  "id": "space-007",
+  "cat": "space",
+  "q": "Who became the first human in space in 1961?",
+  "options": [
+   "Alexei Leonov",
+   "Alan Shepard",
+   "Yuri Gagarin",
+   "John Glenn"
+  ],
+  "answer": 2,
+  "fact": "His Vostok 1 flight made a single orbit of Earth and lasted about 108 minutes.",
+  "diff": 1
+ },
+ {
+  "id": "space-008",
+  "cat": "space",
+  "q": "What is the name of the galaxy that contains our Solar System?",
+  "options": [
+   "Andromeda",
+   "Triangulum",
+   "The Whirlpool Galaxy",
+   "The Milky Way"
+  ],
+  "answer": 3,
+  "fact": "The Sun takes roughly 230 million years to complete one orbit around the centre of our galaxy.",
+  "diff": 1
+ },
+ {
+  "id": "space-009",
+  "cat": "space",
+  "q": "Which planet is best known for its spectacular rings?",
+  "options": [
+   "Saturn",
+   "Mars",
+   "Venus",
+   "Mercury"
+  ],
+  "answer": 0,
+  "fact": "Saturn's main rings are about 270,000 km across, yet in most places they are only around 10 metres thick.",
+  "diff": 1
+ },
+ {
+  "id": "space-010",
+  "cat": "space",
+  "q": "Which element makes up most of the Sun?",
+  "options": [
+   "Helium",
+   "Hydrogen",
+   "Oxygen",
+   "Carbon"
+  ],
+  "answer": 1,
+  "fact": "Sunlight takes about eight minutes to travel the 150 million km from the Sun to Earth.",
+  "diff": 2
+ },
+ {
+  "id": "space-011",
+  "cat": "space",
+  "q": "Which world was named in 1930 after a suggestion from an 11-year-old Oxford schoolgirl?",
+  "options": [
+   "Ceres",
+   "Eris",
+   "Pluto",
+   "Charon"
+  ],
+  "answer": 2,
+  "fact": "Venetia Burney's grandfather, a librarian at Oxford's Bodleian Library, passed her idea on to astronomers.",
+  "diff": 2
+ },
+ {
+  "id": "space-012",
+  "cat": "space",
+  "q": "Which planet did William Herschel discover from his garden in Bath in 1781?",
+  "options": [
+   "Neptune",
+   "Saturn",
+   "Mars",
+   "Uranus"
+  ],
+  "answer": 3,
+  "fact": "Herschel wanted to call it Georgium Sidus, meaning 'George's Star', in honour of King George III.",
+  "diff": 2
+ },
+ {
+  "id": "space-013",
+  "cat": "space",
+  "q": "What is the largest moon in the Solar System?",
+  "options": [
+   "Ganymede",
+   "Titan",
+   "Callisto",
+   "Io"
+  ],
+  "answer": 0,
+  "fact": "Jupiter's moon Ganymede is bigger than the planet Mercury and is the only moon known to have its own magnetic field.",
+  "diff": 2
+ },
+ {
+  "id": "space-014",
+  "cat": "space",
+  "q": "Which space telescope, launched in 1990, is named after an American astronomer?",
+  "options": [
+   "Kepler",
+   "Hubble",
+   "James Webb",
+   "Herschel"
+  ],
+  "answer": 1,
+  "fact": "Soon after launch its main mirror was found to be slightly flawed; astronauts fitted corrective optics in 1993.",
+  "diff": 1
+ },
+ {
+  "id": "space-015",
+  "cat": "space",
+  "q": "In 2014, the Philae lander made the first soft landing on which comet?",
+  "options": [
+   "Halley's Comet",
+   "Hale-Bopp",
+   "67P/Churyumov-Gerasimenko",
+   "Shoemaker-Levy 9"
+  ],
+  "answer": 2,
+  "fact": "Philae's harpoons failed to fire, so it bounced twice across the comet before finally coming to rest.",
+  "diff": 3
+ },
+ {
+  "id": "space-016",
+  "cat": "space",
+  "q": "Who became the first Briton in space, in 1991?",
+  "options": [
+   "Tim Peake",
+   "Michael Foale",
+   "Piers Sellers",
+   "Helen Sharman"
+  ],
+  "answer": 3,
+  "fact": "She applied after hearing a radio advert that said: 'Astronaut wanted. No experience necessary.'",
+  "diff": 2
+ },
+ {
+  "id": "space-017",
+  "cat": "space",
+  "q": "In 2016, astronaut Tim Peake ran which city's marathon on a treadmill aboard the ISS?",
+  "options": [
+   "London",
+   "New York",
+   "Boston",
+   "Berlin"
+  ],
+  "answer": 0,
+  "fact": "Strapped to the treadmill by a harness, he finished in 3 hours, 35 minutes and 21 seconds.",
+  "diff": 2
+ },
+ {
+  "id": "space-018",
+  "cat": "space",
+  "q": "Which NASA Mars rover was planned to last 90 days but kept working for almost 15 years?",
+  "options": [
+   "Curiosity",
+   "Opportunity",
+   "Sojourner",
+   "Perseverance"
+  ],
+  "answer": 1,
+  "fact": "By the end of its mission it had driven 45.16 km across Mars, further than a marathon.",
+  "diff": 2
+ },
+ {
+  "id": "space-019",
+  "cat": "space",
+  "q": "Which UK-led Mars lander went silent in 2003 and was finally spotted on the surface in 2015?",
+  "options": [
+   "Schiaparelli",
+   "Phoenix",
+   "Beagle 2",
+   "Mars Polar Lander"
+  ],
+  "answer": 2,
+  "fact": "Orbiter images showed it had landed intact, but not all of its solar panels unfolded, blocking its radio antenna.",
+  "diff": 3
+ },
+ {
+  "id": "space-020",
+  "cat": "space",
+  "q": "Which Cheshire observatory's giant dish tracked the rocket that launched Sputnik in 1957?",
+  "options": [
+   "Royal Observatory Greenwich",
+   "Armagh Observatory",
+   "Herstmonceux",
+   "Jodrell Bank"
+  ],
+  "answer": 3,
+  "fact": "Its 76-metre (250 ft) dish is now called the Lovell Telescope, after the observatory's founder Bernard Lovell.",
+  "diff": 3
+ },
+ {
+  "id": "space-021",
+  "cat": "space",
+  "q": "Debris from which space station led an Australian town to fine NASA $400 for littering?",
+  "options": [
+   "Skylab",
+   "Mir",
+   "Salyut 7",
+   "Tiangong-1"
+  ],
+  "answer": 0,
+  "fact": "Esperance issued the fine in 1979, and a US radio host finally paid it on NASA's behalf in 2009.",
+  "diff": 3
+ },
+ {
+  "id": "space-022",
+  "cat": "space",
+  "q": "The Voyager Golden Records carry spoken greetings in how many languages?",
+  "options": [
+   "12",
+   "28",
+   "55",
+   "100"
+  ],
+  "answer": 2,
+  "fact": "The greetings include ancient Sumerian, Akkadian and Hittite, as well as Welsh.",
+  "diff": 3
+ },
+ {
+  "id": "space-023",
+  "cat": "space",
+  "q": "Thanks to Earth's slow wobble, which bright star will be the northern pole star in about 12,000 years?",
+  "options": [
+   "Sirius",
+   "Vega",
+   "Rigel",
+   "Arcturus"
+  ],
+  "answer": 1,
+  "fact": "Earth's axis traces a slow circle like a spinning top, taking about 26,000 years to complete one loop.",
+  "diff": 3
+ },
+ {
+  "id": "space-024",
+  "cat": "space",
+  "q": "The Plough, also called the Big Dipper, is part of which constellation?",
+  "options": [
+   "Ursa Minor",
+   "Cassiopeia",
+   "Ursa Major",
+   "Cygnus"
+  ],
+  "answer": 2,
+  "fact": "The two stars at the end of the Plough's 'pan' point the way to Polaris, the North Star.",
+  "diff": 2
+ },
+ {
+  "id": "space-025",
+  "cat": "space",
+  "q": "What is the name for the huge explosion of a massive star at the end of its life?",
+  "options": [
+   "Nebula",
+   "Quasar",
+   "Pulsar",
+   "Supernova"
+  ],
+  "answer": 3,
+  "fact": "The Crab Nebula is the glowing remains of a supernova recorded by Chinese astronomers in 1054.",
+  "diff": 1
+ },
+ {
+  "id": "space-026",
+  "cat": "space",
+  "q": "What is the boundary around a black hole beyond which nothing, not even light, can escape?",
+  "options": [
+   "Event horizon",
+   "Accretion disc",
+   "Singularity",
+   "Corona"
+  ],
+  "answer": 0,
+  "fact": "In 2019 the Event Horizon Telescope revealed the first ever image of a black hole, in the galaxy M87.",
+  "diff": 2
+ },
+ {
+  "id": "space-027",
+  "cat": "space",
+  "q": "What name is often given to a second full moon in the same calendar month?",
+  "options": [
+   "Harvest moon",
+   "Blue moon",
+   "Supermoon",
+   "Blood moon"
+  ],
+  "answer": 1,
+  "fact": "Despite the name it doesn't look blue, and one comes along roughly every two to three years.",
+  "diff": 1
+ },
+ {
+  "id": "space-028",
+  "cat": "space",
+  "q": "Which Apollo mission had to abandon its Moon landing after an oxygen tank burst in 1970?",
+  "options": [
+   "Apollo 11",
+   "Apollo 12",
+   "Apollo 13",
+   "Apollo 15"
+  ],
+  "answer": 2,
+  "fact": "The three astronauts used their lunar module, Aquarius, as a lifeboat to get safely home.",
+  "diff": 2
+ },
+ {
+  "id": "space-029",
+  "cat": "space",
+  "q": "Which is the farthest planet from the Sun?",
+  "options": [
+   "Uranus",
+   "Saturn",
+   "Jupiter",
+   "Neptune"
+  ],
+  "answer": 3,
+  "fact": "In 1846 Neptune became the first planet found by mathematical prediction rather than by scanning the sky.",
+  "diff": 1
+ },
+ {
+  "id": "space-030",
+  "cat": "space",
+  "q": "What term describes the Moon always keeping the same face turned towards Earth?",
+  "options": [
+   "Tidal locking",
+   "Libration",
+   "Precession",
+   "Retrograde motion"
+  ],
+  "answer": 0,
+  "fact": "A slight rocking motion called libration means we can see about 59% of the Moon's surface over time.",
+  "diff": 3
+ },
+ {
+  "id": "space-031",
+  "cat": "space",
+  "q": "Which is the brightest star in the night sky?",
+  "options": [
+   "Polaris",
+   "Sirius",
+   "Betelgeuse",
+   "Vega"
+  ],
+  "answer": 1,
+  "fact": "Sirius is nicknamed the Dog Star because it sits in the constellation Canis Major, the Great Dog.",
+  "diff": 2
+ },
+ {
+  "id": "space-032",
+  "cat": "space",
+  "q": "In which constellation would you find the red supergiant Betelgeuse?",
+  "options": [
+   "Taurus",
+   "Gemini",
+   "Orion",
+   "Scorpius"
+  ],
+  "answer": 2,
+  "fact": "Orion's Belt is made up of three bright stars called Alnitak, Alnilam and Mintaka.",
+  "diff": 2
+ },
+ {
+  "id": "space-033",
+  "cat": "space",
+  "q": "What is the point in a planet's orbit when it is closest to the Sun called?",
+  "options": [
+   "Aphelion",
+   "Apogee",
+   "Zenith",
+   "Perihelion"
+  ],
+  "answer": 3,
+  "fact": "Earth is actually closest to the Sun in early January, in the middle of the northern hemisphere's winter.",
+  "diff": 3
+ },
+ {
+  "id": "space-034",
+  "cat": "space",
+  "q": "Which dwarf planet is the largest object in the asteroid belt?",
+  "options": [
+   "Ceres",
+   "Eris",
+   "Makemake",
+   "Haumea"
+  ],
+  "answer": 0,
+  "fact": "It was first spotted by the astronomer Giuseppe Piazzi in Sicily on New Year's Day, 1801.",
+  "diff": 3
+ },
+ {
+  "id": "space-035",
+  "cat": "space",
+  "q": "Which is the only planet in our Solar System not named after a Greek or Roman god?",
+  "options": [
+   "Mars",
+   "Earth",
+   "Neptune",
+   "Saturn"
+  ],
+  "answer": 1,
+  "fact": "Earth is also the densest planet in the Solar System, thanks largely to its heavy iron core.",
+  "diff": 2
+ },
+ {
+  "id": "space-036",
+  "cat": "space",
+  "q": "What does a light year measure?",
+  "options": [
+   "Time",
+   "Brightness",
+   "Distance",
+   "Speed"
+  ],
+  "answer": 2,
+  "fact": "One light year is about 9.46 trillion kilometres, the distance light travels in a year.",
+  "diff": 1
+ },
+ {
+  "id": "space-037",
+  "cat": "space",
+  "q": "The aurora borealis is better known by which name?",
+  "options": [
+   "The southern lights",
+   "The zodiacal light",
+   "The Milky Way",
+   "The northern lights"
+  ],
+  "answer": 3,
+  "fact": "The common green glow comes from charged particles from the Sun striking oxygen high in our atmosphere.",
+  "diff": 1
+ },
+ {
+  "id": "space-038",
+  "cat": "space",
+  "q": "Which astronomer discovered Jupiter's four largest moons in 1610?",
+  "options": [
+   "Galileo Galilei",
+   "Isaac Newton",
+   "Johannes Kepler",
+   "Nicolaus Copernicus"
+  ],
+  "answer": 0,
+  "fact": "He first named them the Medicean Stars, after his powerful patrons, the Medici family of Florence.",
+  "diff": 2
+ },
+ {
+  "id": "space-039",
+  "cat": "space",
+  "q": "In 2019, China's Chang'e 4 made the first ever soft landing where?",
+  "options": [
+   "Mercury",
+   "The far side of the Moon",
+   "Mars's moon Phobos",
+   "Jupiter's moon Io"
+  ],
+  "answer": 1,
+  "fact": "It carried cotton seeds that briefly sprouted, the first seeds ever to germinate on the Moon.",
+  "diff": 3
+ },
+ {
+  "id": "space-040",
+  "cat": "space",
+  "q": "What do we call a space rock that survives its fall and lands on Earth?",
+  "options": [
+   "Meteor",
+   "Comet",
+   "Nebula",
+   "Meteorite"
+  ],
+  "answer": 3,
+  "fact": "Most shooting stars are caused by specks of space dust about the size of a grain of sand.",
+  "diff": 1
+ }
+]
