@@ -1,1 +1,17 @@
 /app/*  /app  200
+# Short links for bios, posts and posters: the home page counts each source (src_<name>) as an anonymous daily total.
+/tiktok  /?ref=tiktok  302
+/tt  /?ref=tiktok  302
+/ig  /?ref=instagram  302
+/insta  /?ref=instagram  302
+/instagram  /?ref=instagram  302
+/snap  /?ref=snapchat  302
+/wa  /?ref=whatsapp  302
+/whatsapp  /?ref=whatsapp  302
+/yt  /?ref=youtube  302
+/li  /?ref=linkedin  302
+/reddit  /?ref=reddit  302
+/qr  /?ref=poster  302
+/poster  /?ref=poster  302
+/soc  /?ref=society  302
+/friend  /?ref=friend  302

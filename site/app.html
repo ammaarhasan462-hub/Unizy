@@ -1696,6 +1696,13 @@ Notes file
 <sc-if value="{{fc.showNote}}" hint-placeholder-val="{{ false }}">
 <span style="font-size: 14px; line-height: 1.5; padding: 10px 14px; border-radius: 10px; background: {{fc.noteBg}}">{{fc.note}}</span>
 </sc-if>
+<sc-if value="{{fc.pendShow}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: {{theme.tint}}; border: 1.5px solid {{theme.c1}}">
+<span style="flex: 1 1 260px; font-size: 14px; line-height: 1.5">{{fc.pendText}}</span>
+<button onClick="{{fc.pendAdd}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: none; background: {{theme.btn}}; color: {{theme.onBtn}}; cursor: pointer">Add them</button>
+<button onClick="{{fc.pendDrop}}" style="font: inherit; font-size: 14px; font-weight: 600; padding: 10px 16px; min-height: 44px; border-radius: 999px; border: 1.5px solid #17302A; background: #FFFFFF; color: #17302A; cursor: pointer">No thanks</button>
+</div>
+</sc-if>
 
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
 <sc-for list="{{fc.decks}}" as="dk" hint-placeholder-count="5">
@@ -4521,6 +4528,11 @@ class Component extends DCLogic {
       return null;
     };
     let fNote = '', fNoteBg = '#F4F4EF';
+    // cards made in the home page's try box (localStorage "unizy-pending", set by assets/try.js): offer to add them to this module
+    let pend = null;
+    try { pend = JSON.parse(localStorage.getItem('unizy-pending') || 'null'); } catch (e) { pend = null; }
+    if (pend && (!Array.isArray(pend.cards) || !pend.cards.length || Date.now() - (+pend.at || 0) > 30 * 864e5)) pend = null;
+    const dropPend = () => { try { localStorage.removeItem('unizy-pending'); } catch (e) { /* ignore */ } };
     if (s.fErr) { fNote = s.fErr; fNoteBg = '#FCEBEB'; }
     else if (fBusy) { fNote = 'Writing 20 new cards…'; fNoteBg = theme.tint; }
     else if (bankLoading && linkIds.length) fNote = 'Loading the Unizy library decks for this module…';
@@ -4535,6 +4547,17 @@ class Component extends DCLogic {
       canGen: aiReady, genLabel: fBusy ? 'Writing cards…' : (focusOfDeck() ? 'Write 20 more on this' : 'Write 20 more'),
       gen: () => { if (fBusy) return; self.genCards(Object.assign({}, genCtxBase, { focus: focusOfDeck(), existing: allCards.map((c) => c.f) })); },
       showNote: !!fNote, note: fNote, noteBg: fNoteBg,
+      pendShow: !!pend,
+      pendText: pend ? 'You made ' + pend.cards.length + ' flashcards on the Unizy home page' + (pend.title ? ' (' + String(pend.title).slice(0, 60) + ')' : '') + '. Add them to ' + activeMod.name + '?' : '',
+      pendAdd: () => {
+        if (!pend) return;
+        const ts = Date.now();
+        self.save('unizy:' + mk + ':mine', myCards.concat(pend.cards.slice(0, 20).map((c, i) => ({ id: 'm' + ts + '_' + i, t: null, bank: null, f: String(c.f || '').slice(0, 400), b: String(c.b || '').slice(0, 800), d: 1, src: 'mine' }))));
+        dropPend();
+        try { const C = window.UNIZY_CONFIG || {}; if (C.supabaseUrl && localStorage.getItem('unizy:notrack') !== '1') fetch(C.supabaseUrl + '/rest/v1/rpc/track_event', { method: 'POST', keepalive: true, headers: { apikey: C.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_event: 'try_import' }) }).catch(() => {}); } catch (e) { /* ignore */ }
+        set({ fdeck: 'mine', fi: 0, flipped: false });
+      },
+      pendDrop: () => { dropPend(); set({ fPendGone: Date.now() }); },
       decks,
       adding: !!s.fAdding, newF: get('newF', ''), newB: get('newB', ''),
       onNewF: (e) => set({ newF: e && e.target ? e.target.value : '' }), onNewB: (e) => set({ newB: e && e.target ? e.target.value : '' }),
