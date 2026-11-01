@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   var HIDE_KEY = 'unizy:sw:uid';      // remembers (on this device) that this account has a welcome, to avoid a flash of the app
-  var SEEN_KEY = 'unizy:sw:seen:';    // once per browser session (each new visit / tab shows a fresh one)
+  var SEEN_KEY = 'unizy:sw:seen:';    // shown once per sign-in and once per new visit/tab; auth.js clears this on every sign-in
   var hidden = false, hideTimer = null;
 
   function css() {
