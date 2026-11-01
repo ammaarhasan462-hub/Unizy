@@ -320,7 +320,11 @@
             throw e;
           });
         }, function () { var e = new Error('offline'); e.code = 'offline'; throw e; })
-        .then(function () { busy(submit, true, 'Logging you in…'); return api('token?grant_type=password', { email: em, password: p }); })
+        .then(function () {
+          // where this new student first came from (set by the home page from ?ref= / the referrer), as an anonymous daily total
+          try { var sr = JSON.parse(localStorage.getItem('unizy-src') || 'null'); if (sr && sr.s && Date.now() - sr.at < 30 * 864e5) track('join_' + sr.s); } catch (x) { /* ignore */ }
+          busy(submit, true, 'Logging you in…'); return api('token?grant_type=password', { email: em, password: p });
+        })
         .then(function (b) { saveSession(b); go(); })
         .catch(function (err) {
           busy(submit, false, 'Create account');

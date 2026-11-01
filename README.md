@@ -14,3 +14,9 @@ Study website for UK university students: pick your uni, degree and modules, the
 ## Hosting
 - Cloudflare Pages project connected to this repo; every push to `main` redeploys.
 - Supabase project `unizy` (London) for accounts, saved work and the AI function. The Anthropic key is stored as the `ANTHROPIC_API_KEY` function secret.
+
+## Home page try box and traffic sources (Nov 2026)
+- Home page promise: "Any lecture. Exam-ready in a minute." The try box (`site/assets/try.js`) has two tabs. **Paste your notes**: signed-out visitors get 8 flashcards and 3 practice questions from their own notes via the edge function `supabase/functions/try-cards` (deploy with verify_jwt off; cheap model; 3 goes per network a day, 300 site-wide, inside the daily £ budget; counters in `try_runs`, network = daily-salted hash, no IPs). **Find your module**: real cards and questions from the fact-checked module packs listed in `site/data/try-index.json` (rebuild with `python3 tools/build_try_index.py` after changing packs).
+- Cards made in the try box are kept in localStorage `unizy-pending`; the app's Flashcards view offers "Add them" to the open module (saved as the student's own cards).
+- Short links for bios, posts and posters (`site/_redirects`): /tiktok /tt /ig /insta /snap /wa /yt /li /reddit /qr /poster /soc /friend → `/?ref=<source>`. The home page counts `src_<source>` (also from the referrer or in-app browser) and the sign-up page counts `join_<source>`; both are anonymous daily totals in `site_events`. `?notrack=1` on any page stops counting on that device (for the owner's own devices).
+- Link preview image: `site/assets/og.png` (1200×630).

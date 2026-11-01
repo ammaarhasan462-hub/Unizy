@@ -26,6 +26,43 @@
     };
   })();
   Track('home_view', true);
+  window.unizyTrack = Track;
+
+  // ---------------- where visitors come from (anonymous daily totals: src_tiktok etc.) ----------------
+  // Short links (/tiktok, /ig, /wa, /qr …) add ?ref=; otherwise the referrer or the in-app browser tells us.
+  // The first source is kept on this device for 30 days so the sign-up page can count join_<source>.
+  (function () {
+    var ALIAS = { tt: 'tiktok', tiktok: 'tiktok', ig: 'instagram', insta: 'instagram', instagram: 'instagram', snap: 'snapchat', snapchat: 'snapchat',
+      wa: 'whatsapp', whatsapp: 'whatsapp', yt: 'youtube', youtube: 'youtube', li: 'linkedin', linkedin: 'linkedin', reddit: 'reddit', x: 'x', twitter: 'x',
+      fb: 'facebook', facebook: 'facebook', qr: 'poster', poster: 'poster', flyer: 'poster', friend: 'friend', invite: 'friend', soc: 'society', society: 'society',
+      email: 'email', newsletter: 'email', google: 'google', bing: 'bing' };
+    var s = '';
+    try {
+      var p = new URLSearchParams(location.search), q = String(p.get('ref') || p.get('utm_source') || '').toLowerCase().replace(/[^a-z]/g, '');
+      if (q) s = ALIAS[q] || 'other';
+      if (!s) {
+        var ua = navigator.userAgent || '';
+        if (/musical_ly|bytedance|tiktok/i.test(ua)) s = 'tiktok';
+        else if (/Instagram/.test(ua)) s = 'instagram';
+        else if (/Snapchat/i.test(ua)) s = 'snapchat';
+        else if (/FBAN|FBAV/.test(ua)) s = 'facebook';
+        else if (/LinkedInApp/i.test(ua)) s = 'linkedin';
+      }
+      if (!s && document.referrer) {
+        var h = new URL(document.referrer).hostname.replace(/^www\./, '');
+        if (h !== location.hostname.replace(/^www\./, '')) {
+          s = /tiktok/.test(h) ? 'tiktok' : /instagram/.test(h) ? 'instagram' : /snapchat/.test(h) ? 'snapchat' : /whatsapp/.test(h) ? 'whatsapp'
+            : /(^|\.)google\./.test(h) ? 'google' : /bing\.com$/.test(h) ? 'bing' : /youtube|youtu\.be/.test(h) ? 'youtube' : /linkedin|lnkd\.in/.test(h) ? 'linkedin'
+            : /reddit/.test(h) ? 'reddit' : /^(t\.co|x\.com|twitter\.com)$/.test(h) ? 'x' : /facebook|fb\.me/.test(h) ? 'facebook' : 'site';
+        }
+      }
+      if (!s) return;
+      var old = null; try { old = JSON.parse(localStorage.getItem('unizy-src') || 'null'); } catch (e) {}
+      if (!old || Date.now() - old.at > 30 * 864e5) localStorage.setItem('unizy-src', JSON.stringify({ s: s, at: Date.now() }));
+      if (!sessionStorage.getItem('unizy-src-sent')) { sessionStorage.setItem('unizy-src-sent', '1'); Track('src_' + s, true); }
+      if (p.get('ref') || p.get('utm_source')) history.replaceState(null, '', location.pathname + location.hash);
+    } catch (e) { /* ignore */ }
+  })();
   document.addEventListener('click', function (e) { var a = e.target.closest && e.target.closest('[data-ev]'); if (a) Track(a.getAttribute('data-ev'), true); });
 
   // ---------------- coverage ----------------
