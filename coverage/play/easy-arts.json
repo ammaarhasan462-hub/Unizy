@@ -1,0 +1,492 @@
+[
+ {
+  "id": "arts-101",
+  "cat": "arts",
+  "q": "Who wrote the Harry Potter books?",
+  "options": [
+   "J.K. Rowling",
+   "Roald Dahl",
+   "Enid Blyton",
+   "Jacqueline Wilson"
+  ],
+  "answer": 0,
+  "fact": "Rowling first had the idea for Harry Potter on a delayed train from Manchester to London in 1990.",
+  "diff": 1
+ },
+ {
+  "id": "arts-102",
+  "cat": "arts",
+  "q": "Who wrote Charlie and the Chocolate Factory?",
+  "options": [
+   "C.S. Lewis",
+   "David Walliams",
+   "J.K. Rowling",
+   "Roald Dahl"
+  ],
+  "answer": 3,
+  "fact": "As a schoolboy, Roald Dahl helped taste-test new chocolate bars sent to his school by Cadbury.",
+  "diff": 1
+ },
+ {
+  "id": "arts-103",
+  "cat": "arts",
+  "q": "Which Shakespeare play is about a prince of Denmark?",
+  "options": [
+   "King Lear",
+   "The Tempest",
+   "Hamlet",
+   "Othello"
+  ],
+  "answer": 2,
+  "fact": "Hamlet is Shakespeare's longest play, and uncut performances can last around four hours.",
+  "diff": 1
+ },
+ {
+  "id": "arts-104",
+  "cat": "arts",
+  "q": "In Disney's Frozen, what is the name of Elsa's younger sister?",
+  "options": [
+   "Belle",
+   "Anna",
+   "Ariel",
+   "Rapunzel"
+  ],
+  "answer": 1,
+  "fact": "Frozen was loosely inspired by Hans Christian Andersen's fairy tale The Snow Queen.",
+  "diff": 1
+ },
+ {
+  "id": "arts-105",
+  "cat": "arts",
+  "q": "What is the name of the young lion in The Lion King?",
+  "options": [
+   "Simba",
+   "Mufasa",
+   "Rafiki",
+   "Nala"
+  ],
+  "answer": 0,
+  "fact": "'Simba' is the Swahili word for 'lion'.",
+  "diff": 1
+ },
+ {
+  "id": "arts-106",
+  "cat": "arts",
+  "q": "Which superhero is secretly the billionaire Bruce Wayne?",
+  "options": [
+   "Spider-Man",
+   "Iron Man",
+   "Superman",
+   "Batman"
+  ],
+  "answer": 3,
+  "fact": "Batman first appeared in the American comic book Detective Comics in 1939.",
+  "diff": 1
+ },
+ {
+  "id": "arts-107",
+  "cat": "arts",
+  "q": "Which superhero is secretly Peter Parker?",
+  "options": [
+   "Batman",
+   "Superman",
+   "Spider-Man",
+   "Iron Man"
+  ],
+  "answer": 2,
+  "fact": "Spider-Man first swung into comics in 1962, in an issue of Amazing Fantasy.",
+  "diff": 1
+ },
+ {
+  "id": "arts-108",
+  "cat": "arts",
+  "q": "How many dwarfs does Snow White meet in the Disney film?",
+  "options": [
+   "Five",
+   "Seven",
+   "Six",
+   "Nine"
+  ],
+  "answer": 1,
+  "fact": "Snow White and the Seven Dwarfs (1937) was Disney's first full-length animated feature film.",
+  "diff": 1
+ },
+ {
+  "id": "arts-109",
+  "cat": "arts",
+  "q": "In which city is the Louvre museum?",
+  "options": [
+   "Paris",
+   "Rome",
+   "Madrid",
+   "Vienna"
+  ],
+  "answer": 0,
+  "fact": "The Louvre's famous glass pyramid entrance was designed by the architect I. M. Pei and opened in 1989.",
+  "diff": 1
+ },
+ {
+  "id": "arts-110",
+  "cat": "arts",
+  "q": "Which musical instrument usually has 88 black and white keys?",
+  "options": [
+   "Accordion",
+   "Xylophone",
+   "Harp",
+   "Piano"
+  ],
+  "answer": 3,
+  "fact": "The piano's full name, 'pianoforte', means 'soft-loud' in Italian.",
+  "diff": 1
+ },
+ {
+  "id": "arts-111",
+  "cat": "arts",
+  "q": "How many strings does a standard violin have?",
+  "options": [
+   "Six",
+   "Three",
+   "Four",
+   "Five"
+  ],
+  "answer": 2,
+  "fact": "A violin bow is traditionally strung with horsehair.",
+  "diff": 1
+ },
+ {
+  "id": "arts-112",
+  "cat": "arts",
+  "q": "Which band were nicknamed the Fab Four?",
+  "options": [
+   "Take That",
+   "The Beatles",
+   "The Rolling Stones",
+   "Queen"
+  ],
+  "answer": 1,
+  "fact": "The Beatles recorded most of their music at Abbey Road Studios in London.",
+  "diff": 1
+ },
+ {
+  "id": "arts-113",
+  "cat": "arts",
+  "q": "Which author created Peter Rabbit?",
+  "options": [
+   "Beatrix Potter",
+   "Enid Blyton",
+   "A. A. Milne",
+   "Roald Dahl"
+  ],
+  "answer": 0,
+  "fact": "Beatrix Potter loved the Lake District and left much of her land there to the National Trust.",
+  "diff": 1
+ },
+ {
+  "id": "arts-114",
+  "cat": "arts",
+  "q": "Which film features a giant shark menacing the seaside town of Amity?",
+  "options": [
+   "Titanic",
+   "Free Willy",
+   "Finding Nemo",
+   "Jaws"
+  ],
+  "answer": 3,
+  "fact": "The mechanical shark used to film Jaws was nicknamed 'Bruce' by the crew.",
+  "diff": 1
+ },
+ {
+  "id": "arts-115",
+  "cat": "arts",
+  "q": "Which fictional spy is known by the code number 007?",
+  "options": [
+   "Austin Powers",
+   "Jason Bourne",
+   "James Bond",
+   "Johnny English"
+  ],
+  "answer": 2,
+  "fact": "Ian Fleming borrowed the name James Bond from an American expert on birds.",
+  "diff": 1
+ },
+ {
+  "id": "arts-116",
+  "cat": "arts",
+  "q": "Who wrote A Christmas Carol?",
+  "options": [
+   "Jane Austen",
+   "Charles Dickens",
+   "Thomas Hardy",
+   "Lewis Carroll"
+  ],
+  "answer": 1,
+  "fact": "Dickens wrote A Christmas Carol in about six weeks, and it was published in December 1843.",
+  "diff": 1
+ },
+ {
+  "id": "arts-117",
+  "cat": "arts",
+  "q": "What is the name of the cowboy doll in Toy Story?",
+  "options": [
+   "Woody",
+   "Hamm",
+   "Buzz",
+   "Rex"
+  ],
+  "answer": 0,
+  "fact": "Toy Story (1995) was the first feature film made entirely with computer animation.",
+  "diff": 1
+ },
+ {
+  "id": "arts-118",
+  "cat": "arts",
+  "q": "What colour do you get by mixing blue and yellow paint?",
+  "options": [
+   "Purple",
+   "Brown",
+   "Orange",
+   "Green"
+  ],
+  "answer": 3,
+  "fact": "Painters have traditionally been taught that red, yellow and blue are the three primary colours.",
+  "diff": 1
+ },
+ {
+  "id": "arts-119",
+  "cat": "arts",
+  "q": "Which Shakespeare play features three witches and a Scottish nobleman?",
+  "options": [
+   "Twelfth Night",
+   "The Tempest",
+   "Macbeth",
+   "Hamlet"
+  ],
+  "answer": 2,
+  "fact": "Superstitious actors avoid saying this play's name inside a theatre and call it 'the Scottish Play'.",
+  "diff": 1
+ },
+ {
+  "id": "arts-120",
+  "cat": "arts",
+  "q": "In which town was William Shakespeare born?",
+  "options": [
+   "Canterbury",
+   "Stratford-upon-Avon",
+   "Bath",
+   "Oxford"
+  ],
+  "answer": 1,
+  "fact": "You can still visit the house on Henley Street where Shakespeare is believed to have been born.",
+  "diff": 1
+ },
+ {
+  "id": "arts-121",
+  "cat": "arts",
+  "q": "Children reach which magical land through a wardrobe in C.S. Lewis's famous book?",
+  "options": [
+   "Narnia",
+   "Neverland",
+   "Wonderland",
+   "Middle-earth"
+  ],
+  "answer": 0,
+  "fact": "The Lion, the Witch and the Wardrobe was first published in 1950.",
+  "diff": 1
+ },
+ {
+  "id": "arts-122",
+  "cat": "arts",
+  "q": "Which Disney film stars a mermaid called Ariel?",
+  "options": [
+   "Frozen",
+   "Moana",
+   "Tangled",
+   "The Little Mermaid"
+  ],
+  "answer": 3,
+  "fact": "Ariel's best friend in the film is a little fish called Flounder.",
+  "diff": 1
+ },
+ {
+  "id": "arts-123",
+  "cat": "arts",
+  "q": "In The Wizard of Oz, what does the Tin Man hope to get from the Wizard?",
+  "options": [
+   "A brain",
+   "Courage",
+   "A heart",
+   "A new hat"
+  ],
+  "answer": 2,
+  "fact": "His travelling companions are the Scarecrow, who wants a brain, and the Cowardly Lion, who wants courage.",
+  "diff": 1
+ },
+ {
+  "id": "arts-124",
+  "cat": "arts",
+  "q": "Which Dickens orphan famously asks for more food?",
+  "options": [
+   "Tiny Tim",
+   "Oliver Twist",
+   "David Copperfield",
+   "Pip"
+  ],
+  "answer": 1,
+  "fact": "Oliver Twist was turned into the hit stage musical Oliver!, which later became a film.",
+  "diff": 1
+ },
+ {
+  "id": "arts-125",
+  "cat": "arts",
+  "q": "Which author wrote the Famous Five books?",
+  "options": [
+   "Enid Blyton",
+   "J.K. Rowling",
+   "Roald Dahl",
+   "Beatrix Potter"
+  ],
+  "answer": 0,
+  "fact": "Enid Blyton was incredibly productive and wrote hundreds of books during her career.",
+  "diff": 1
+ },
+ {
+  "id": "arts-126",
+  "cat": "arts",
+  "q": "Which green ogre starred in a hit 2001 animated film?",
+  "options": [
+   "Gruffalo",
+   "Grinch",
+   "Hulk",
+   "Shrek"
+  ],
+  "answer": 3,
+  "fact": "Shrek is based on a 1990 picture book by the American author and cartoonist William Steig.",
+  "diff": 1
+ },
+ {
+  "id": "arts-127",
+  "cat": "arts",
+  "q": "Who wrote The Lord of the Rings?",
+  "options": [
+   "Terry Pratchett",
+   "C.S. Lewis",
+   "J.R.R. Tolkien",
+   "Philip Pullman"
+  ],
+  "answer": 2,
+  "fact": "Tolkien was a professor of English language and literature at Oxford University.",
+  "diff": 1
+ },
+ {
+  "id": "arts-128",
+  "cat": "arts",
+  "q": "In Finding Nemo, what kind of fish is Nemo?",
+  "options": [
+   "A pufferfish",
+   "A clownfish",
+   "A swordfish",
+   "A goldfish"
+  ],
+  "answer": 1,
+  "fact": "Real clownfish live among sea anemones, protected from their stings by a special coat of mucus.",
+  "diff": 1
+ },
+ {
+  "id": "arts-129",
+  "cat": "arts",
+  "q": "What is the famous nickname of the Academy Award statuette?",
+  "options": [
+   "Oscar",
+   "Emmy",
+   "Grammy",
+   "Tony"
+  ],
+  "answer": 0,
+  "fact": "Each Oscar statuette is made of bronze and plated in 24-carat gold.",
+  "diff": 1
+ },
+ {
+  "id": "arts-130",
+  "cat": "arts",
+  "q": "Which author wrote Emma and Sense and Sensibility?",
+  "options": [
+   "Agatha Christie",
+   "Charlotte Brontë",
+   "Virginia Woolf",
+   "Jane Austen"
+  ],
+  "answer": 3,
+  "fact": "Austen's first published novel didn't carry her name - it was credited simply to 'A Lady'.",
+  "diff": 1
+ },
+ {
+  "id": "arts-131",
+  "cat": "arts",
+  "q": "Who wrote Alice's Adventures in Wonderland?",
+  "options": [
+   "Roald Dahl",
+   "Kenneth Grahame",
+   "Lewis Carroll",
+   "Charles Dickens"
+  ],
+  "answer": 2,
+  "fact": "Lewis Carroll was a pen name - the author's real name was Charles Lutwidge Dodgson.",
+  "diff": 1
+ },
+ {
+  "id": "arts-132",
+  "cat": "arts",
+  "q": "Which famous Agatha Christie detective is Belgian?",
+  "options": [
+   "Miss Marple",
+   "Hercule Poirot",
+   "Sherlock Holmes",
+   "Inspector Morse"
+  ],
+  "answer": 1,
+  "fact": "Poirot is famous for his neat moustache and for relying on his 'little grey cells'.",
+  "diff": 1
+ },
+ {
+  "id": "arts-133",
+  "cat": "arts",
+  "q": "In The Jungle Book, what kind of animal is Baloo?",
+  "options": [
+   "A bear",
+   "A panther",
+   "A tiger",
+   "A monkey"
+  ],
+  "answer": 0,
+  "fact": "The Jungle Book stories were written by Rudyard Kipling and first published in 1894.",
+  "diff": 1
+ },
+ {
+  "id": "arts-134",
+  "cat": "arts",
+  "q": "Which famous marble statue of a young man did Michelangelo carve?",
+  "options": [
+   "The Discus Thrower",
+   "Venus de Milo",
+   "The Thinker",
+   "David"
+  ],
+  "answer": 3,
+  "fact": "Michelangelo's David was carved from a single huge block of marble and stands in Florence.",
+  "diff": 1
+ },
+ {
+  "id": "arts-135",
+  "cat": "arts",
+  "q": "The musical Mamma Mia! is built around the songs of which band?",
+  "options": [
+   "Queen",
+   "The Beatles",
+   "ABBA",
+   "Spice Girls"
+  ],
+  "answer": 2,
+  "fact": "ABBA's name is made from the first letters of the four band members' first names.",
+  "diff": 1
+ }
+]

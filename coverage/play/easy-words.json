@@ -1,0 +1,492 @@
+[
+ {
+  "id": "words-101",
+  "cat": "words",
+  "q": "What do you call a word that means the same as another word?",
+  "options": [
+   "A homophone",
+   "A synonym",
+   "A pronoun",
+   "An antonym"
+  ],
+  "answer": 1,
+  "fact": "A thesaurus is a book of synonyms, and its name comes from a Greek word for 'treasure house'.",
+  "diff": 1
+ },
+ {
+  "id": "words-102",
+  "cat": "words",
+  "q": "What do you call a word that means the opposite of another word?",
+  "options": [
+   "An antonym",
+   "An anagram",
+   "A synonym",
+   "An acronym"
+  ],
+  "answer": 0,
+  "fact": "'Antonym' comes from the Greek for 'against' and 'name'.",
+  "diff": 1
+ },
+ {
+  "id": "words-103",
+  "cat": "words",
+  "q": "How many letters are in the English alphabet?",
+  "options": [
+   "28",
+   "25",
+   "24",
+   "26"
+  ],
+  "answer": 3,
+  "fact": "Words now spelt with a J, like 'jest', were once often written with an I instead.",
+  "diff": 1
+ },
+ {
+  "id": "words-104",
+  "cat": "words",
+  "q": "Which letter comes first in the Greek alphabet?",
+  "options": [
+   "Omega",
+   "Beta",
+   "Alpha",
+   "Gamma"
+  ],
+  "answer": 2,
+  "fact": "The English word 'alphabet' comes from alpha and beta, the first two Greek letters.",
+  "diff": 1
+ },
+ {
+  "id": "words-105",
+  "cat": "words",
+  "q": "What are the letters A, E, I, O and U known as?",
+  "options": [
+   "Consonants",
+   "Vowels",
+   "Syllables",
+   "Capitals"
+  ],
+  "answer": 1,
+  "fact": "'Strengths' is a nine-letter English word with only one vowel.",
+  "diff": 1
+ },
+ {
+  "id": "words-106",
+  "cat": "words",
+  "q": "In grammar, what is a 'doing' word called?",
+  "options": [
+   "A verb",
+   "An adjective",
+   "A noun",
+   "A pronoun"
+  ],
+  "answer": 0,
+  "fact": "The word 'verb' comes from the Latin 'verbum', which simply means 'word'.",
+  "diff": 1
+ },
+ {
+  "id": "words-107",
+  "cat": "words",
+  "q": "Which type of word describes a noun, like 'tall' or 'blue'?",
+  "options": [
+   "A conjunction",
+   "An adverb",
+   "A verb",
+   "An adjective"
+  ],
+  "answer": 3,
+  "fact": "In English, adjectives usually go before the noun, but in French they often come after it.",
+  "diff": 1
+ },
+ {
+  "id": "words-108",
+  "cat": "words",
+  "q": "In 'The dog barked loudly', which word is an adverb?",
+  "options": [
+   "Barked",
+   "The",
+   "Loudly",
+   "Dog"
+  ],
+  "answer": 2,
+  "fact": "Many English adverbs are made by adding '-ly' to an adjective, like 'quick' becoming 'quickly'.",
+  "diff": 1
+ },
+ {
+  "id": "words-109",
+  "cat": "words",
+  "q": "What does the French word 'bonjour' mean?",
+  "options": [
+   "Goodbye",
+   "Hello",
+   "Please",
+   "Thank you"
+  ],
+  "answer": 1,
+  "fact": "'Bonjour' joins 'bon', meaning good, and 'jour', meaning day.",
+  "diff": 1
+ },
+ {
+  "id": "words-110",
+  "cat": "words",
+  "q": "What does the Spanish word 'gracias' mean?",
+  "options": [
+   "Thank you",
+   "Hello",
+   "Sorry",
+   "Goodnight"
+  ],
+  "answer": 0,
+  "fact": "Spanish is an official language in around 20 countries, from Spain to most of South America.",
+  "diff": 1
+ },
+ {
+  "id": "words-111",
+  "cat": "words",
+  "q": "Which language gave English the words 'pizza' and 'spaghetti'?",
+  "options": [
+   "Spanish",
+   "Greek",
+   "French",
+   "Italian"
+  ],
+  "answer": 3,
+  "fact": "'Spaghetti' comes from the Italian for 'little strings'.",
+  "diff": 1
+ },
+ {
+  "id": "words-112",
+  "cat": "words",
+  "q": "Which punctuation mark goes at the end of a question?",
+  "options": [
+   "A comma",
+   "A full stop",
+   "A question mark",
+   "A colon"
+  ],
+  "answer": 2,
+  "fact": "In Spanish, a written question also starts with an upside-down question mark: ¿",
+  "diff": 1
+ },
+ {
+  "id": "words-113",
+  "cat": "words",
+  "q": "What does BBC stand for?",
+  "options": [
+   "Broadcasting Britain Company",
+   "British Broadcasting Corporation",
+   "British Bureau of Culture",
+   "British Business Council"
+  ],
+  "answer": 1,
+  "fact": "The BBC began life in 1922 as the British Broadcasting Company, before becoming a corporation.",
+  "diff": 1
+ },
+ {
+  "id": "words-114",
+  "cat": "words",
+  "q": "If an invitation says 'RSVP', what are you being asked to do?",
+  "options": [
+   "Reply",
+   "Dress smartly",
+   "Bring a gift",
+   "Arrive early"
+  ],
+  "answer": 0,
+  "fact": "RSVP stands for the French phrase 'répondez s'il vous plaît', meaning 'please reply'.",
+  "diff": 1
+ },
+ {
+  "id": "words-115",
+  "cat": "words",
+  "q": "What does 'e.g.' mean?",
+  "options": [
+   "And so on",
+   "That is",
+   "Note well",
+   "For example"
+  ],
+  "answer": 3,
+  "fact": "'e.g.' is short for the Latin 'exempli gratia', meaning 'for the sake of example'.",
+  "diff": 1
+ },
+ {
+  "id": "words-116",
+  "cat": "words",
+  "q": "What does 'P.S.' at the end of a letter stand for?",
+  "options": [
+   "Private signature",
+   "Personal statement",
+   "Postscript",
+   "Please see"
+  ],
+  "answer": 2,
+  "fact": "'Postscript' comes from the Latin 'post scriptum', meaning 'written after'.",
+  "diff": 1
+ },
+ {
+  "id": "words-117",
+  "cat": "words",
+  "q": "'Listen' and 'silent' use the same letters. What is this called?",
+  "options": [
+   "A rhyme",
+   "An anagram",
+   "A synonym",
+   "A palindrome"
+  ],
+  "answer": 1,
+  "fact": "With a little rearranging, the letters of 'dormitory' spell 'dirty room'.",
+  "diff": 1
+ },
+ {
+  "id": "words-118",
+  "cat": "words",
+  "q": "What is the past tense of 'run'?",
+  "options": [
+   "Ran",
+   "Runner",
+   "Runned",
+   "Ranned"
+  ],
+  "answer": 0,
+  "fact": "The word 'run' has hundreds of different senses listed in the Oxford English Dictionary.",
+  "diff": 1
+ },
+ {
+  "id": "words-119",
+  "cat": "words",
+  "q": "What are words like 'sea' and 'see', which sound the same but mean different things?",
+  "options": [
+   "Antonyms",
+   "Acronyms",
+   "Synonyms",
+   "Homophones"
+  ],
+  "answer": 3,
+  "fact": "'Homophone' comes from the Greek for 'same sound'.",
+  "diff": 1
+ },
+ {
+  "id": "words-120",
+  "cat": "words",
+  "q": "In the word 'unhappy', what is 'un-' called?",
+  "options": [
+   "A pronoun",
+   "A suffix",
+   "A prefix",
+   "A plural"
+  ],
+  "answer": 2,
+  "fact": "Prefixes go at the start of a word, while suffixes such as '-ness' go at the end.",
+  "diff": 1
+ },
+ {
+  "id": "words-121",
+  "cat": "words",
+  "q": "What do you call a word like 'he', 'she' or 'they' that stands in for a noun?",
+  "options": [
+   "A verb",
+   "A pronoun",
+   "A preposition",
+   "An adverb"
+  ],
+  "answer": 1,
+  "fact": "Words like 'and', 'but' and 'or', which join parts of a sentence, are called conjunctions.",
+  "diff": 1
+ },
+ {
+  "id": "words-122",
+  "cat": "words",
+  "q": "Which word means 'very large'?",
+  "options": [
+   "Enormous",
+   "Narrow",
+   "Brief",
+   "Minute"
+  ],
+  "answer": 0,
+  "fact": "'Enormous' comes from Latin meaning 'out of the norm' - something unusually big.",
+  "diff": 1
+ },
+ {
+  "id": "words-123",
+  "cat": "words",
+  "q": "What is the plural of 'goose'?",
+  "options": [
+   "Geeses",
+   "Goosen",
+   "Gooses",
+   "Geese"
+  ],
+  "answer": 3,
+  "fact": "A group of geese on the ground is called a gaggle.",
+  "diff": 1
+ },
+ {
+  "id": "words-124",
+  "cat": "words",
+  "q": "Which of these is spelt correctly?",
+  "options": [
+   "Neccessary",
+   "Necesary",
+   "Necessary",
+   "Neccesary"
+  ],
+  "answer": 2,
+  "fact": "A handy tip: 'necessary' has one collar and two sleeves - one C and two S's.",
+  "diff": 1
+ },
+ {
+  "id": "words-125",
+  "cat": "words",
+  "q": "What do you call a shortened form of a word, like 'Dr' for 'Doctor'?",
+  "options": [
+   "A suffix",
+   "An abbreviation",
+   "A synonym",
+   "An anagram"
+  ],
+  "answer": 1,
+  "fact": "Rather amusingly, 'abbreviation' is itself quite a long word.",
+  "diff": 1
+ },
+ {
+  "id": "words-126",
+  "cat": "words",
+  "q": "What does 'tri-' mean in words like 'tricycle' and 'triangle'?",
+  "options": [
+   "Three",
+   "Many",
+   "Four",
+   "Two"
+  ],
+  "answer": 0,
+  "fact": "A triathlon combines three sports: swimming, cycling and running.",
+  "diff": 1
+ },
+ {
+  "id": "words-127",
+  "cat": "words",
+  "q": "What does 'centi-' mean in the word 'centipede'?",
+  "options": [
+   "Ten",
+   "Thousand",
+   "Half",
+   "Hundred"
+  ],
+  "answer": 3,
+  "fact": "Despite the name, no centipede has exactly 100 legs - they always have an odd number of pairs.",
+  "diff": 1
+ },
+ {
+  "id": "words-128",
+  "cat": "words",
+  "q": "What does 'aqua' mean in words like 'aquarium'?",
+  "options": [
+   "Glass",
+   "Blue",
+   "Water",
+   "Fish"
+  ],
+  "answer": 2,
+  "fact": "The star sign Aquarius is known as the water-bearer.",
+  "diff": 1
+ },
+ {
+  "id": "words-129",
+  "cat": "words",
+  "q": "In text messages, what does 'LOL' usually stand for?",
+  "options": [
+   "Lots of love",
+   "Laugh out loud",
+   "Lots of luck",
+   "Look online"
+  ],
+  "answer": 1,
+  "fact": "'LOL' was added to the Oxford English Dictionary in 2011, along with 'OMG'.",
+  "diff": 1
+ },
+ {
+  "id": "words-130",
+  "cat": "words",
+  "q": "Which language is spoken alongside English in Wales?",
+  "options": [
+   "Welsh",
+   "Gaelic",
+   "Cornish",
+   "Breton"
+  ],
+  "answer": 0,
+  "fact": "Road signs in Wales show place names in both Welsh and English.",
+  "diff": 1
+ },
+ {
+  "id": "words-131",
+  "cat": "words",
+  "q": "A haiku is a short form of poem from which country?",
+  "options": [
+   "India",
+   "Greece",
+   "China",
+   "Japan"
+  ],
+  "answer": 3,
+  "fact": "A traditional haiku has three lines of five, seven and five syllables.",
+  "diff": 1
+ },
+ {
+  "id": "words-132",
+  "cat": "words",
+  "q": "Which letter is silent in the word 'knee'?",
+  "options": [
+   "None",
+   "E",
+   "K",
+   "N"
+  ],
+  "answer": 2,
+  "fact": "The 'k' in words like 'knee' and 'knight' was actually pronounced in Old English.",
+  "diff": 1
+ },
+ {
+  "id": "words-133",
+  "cat": "words",
+  "q": "Which of these is a compound word, made from two smaller words?",
+  "options": [
+   "Quickly",
+   "Sunflower",
+   "Table",
+   "Happy"
+  ],
+  "answer": 1,
+  "fact": "Compound words can be joined like 'football', hyphenated like 'mother-in-law' or open like 'ice cream'.",
+  "diff": 1
+ },
+ {
+  "id": "words-134",
+  "cat": "words",
+  "q": "What do you call the bad character in a story?",
+  "options": [
+   "The villain",
+   "The author",
+   "The narrator",
+   "The hero"
+  ],
+  "answer": 0,
+  "fact": "In medieval times a 'villain' (or villein) was simply a farm worker tied to a lord's land.",
+  "diff": 1
+ },
+ {
+  "id": "words-135",
+  "cat": "words",
+  "q": "What word describes someone who speaks two languages fluently?",
+  "options": [
+   "Biography",
+   "Bicycle",
+   "Biannual",
+   "Bilingual"
+  ],
+  "answer": 3,
+  "fact": "'Bilingual' comes from the Latin 'bi' (two) and 'lingua', meaning tongue.",
+  "diff": 1
+ }
+]

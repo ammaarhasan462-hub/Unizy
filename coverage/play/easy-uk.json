@@ -1,0 +1,492 @@
+[
+ {
+  "id": "uk-101",
+  "cat": "uk",
+  "q": "What is the capital city of Scotland?",
+  "options": [
+   "Glasgow",
+   "Aberdeen",
+   "Dundee",
+   "Edinburgh"
+  ],
+  "answer": 3,
+  "fact": "Edinburgh Castle sits on top of an extinct volcano known as Castle Rock.",
+  "diff": 1
+ },
+ {
+  "id": "uk-102",
+  "cat": "uk",
+  "q": "What is the capital city of Wales?",
+  "options": [
+   "Cardiff",
+   "Swansea",
+   "Newport",
+   "Bangor"
+  ],
+  "answer": 0,
+  "fact": "Cardiff only became a city in 1905 and was named the capital of Wales in 1955.",
+  "diff": 1
+ },
+ {
+  "id": "uk-103",
+  "cat": "uk",
+  "q": "What is the capital city of Northern Ireland?",
+  "options": [
+   "Armagh",
+   "Belfast",
+   "Newry",
+   "Lisburn"
+  ],
+  "answer": 1,
+  "fact": "Belfast's giant yellow shipyard cranes are nicknamed Samson and Goliath.",
+  "diff": 1
+ },
+ {
+  "id": "uk-104",
+  "cat": "uk",
+  "q": "Which river flows through the centre of London?",
+  "options": [
+   "The Severn",
+   "The Mersey",
+   "The Thames",
+   "The Trent"
+  ],
+  "answer": 2,
+  "fact": "The Thames once froze so solidly that 'frost fairs' were held on the ice.",
+  "diff": 1
+ },
+ {
+  "id": "uk-105",
+  "cat": "uk",
+  "q": "The bell known as Big Ben hangs in a tower at which London building?",
+  "options": [
+   "Buckingham Palace",
+   "The Tower of London",
+   "St Paul's Cathedral",
+   "The Houses of Parliament"
+  ],
+  "answer": 3,
+  "fact": "Big Ben weighs more than 13 tonnes and began striking the hours in 1859.",
+  "diff": 1
+ },
+ {
+  "id": "uk-106",
+  "cat": "uk",
+  "q": "Which London palace is the monarch's official London home?",
+  "options": [
+   "Kensington Palace",
+   "Hampton Court Palace",
+   "Buckingham Palace",
+   "Blenheim Palace"
+  ],
+  "answer": 2,
+  "fact": "Buckingham Palace has 775 rooms, including 78 bathrooms.",
+  "diff": 1
+ },
+ {
+  "id": "uk-107",
+  "cat": "uk",
+  "q": "Which vegetable is a national emblem of Wales?",
+  "options": [
+   "The leek",
+   "The carrot",
+   "The potato",
+   "The cabbage"
+  ],
+  "answer": 0,
+  "fact": "Many people in Wales wear a leek or a daffodil on St David's Day, 1 March.",
+  "diff": 1
+ },
+ {
+  "id": "uk-108",
+  "cat": "uk",
+  "q": "Which prickly purple flower is the national emblem of Scotland?",
+  "options": [
+   "The rose",
+   "The tulip",
+   "The thistle",
+   "The daisy"
+  ],
+  "answer": 2,
+  "fact": "A thistle appears on the badge of Scotland's national rugby team.",
+  "diff": 1
+ },
+ {
+  "id": "uk-109",
+  "cat": "uk",
+  "q": "Which flower is the national emblem of England?",
+  "options": [
+   "The rose",
+   "The tulip",
+   "The daffodil",
+   "The sunflower"
+  ],
+  "answer": 0,
+  "fact": "England's rugby team wears a red rose on its shirts.",
+  "diff": 1
+ },
+ {
+  "id": "uk-110",
+  "cat": "uk",
+  "q": "What colour are London's famous double-decker buses?",
+  "options": [
+   "Red",
+   "Blue",
+   "Green",
+   "Yellow"
+  ],
+  "answer": 0,
+  "fact": "The classic Routemaster bus first carried London passengers in 1956.",
+  "diff": 1
+ },
+ {
+  "id": "uk-111",
+  "cat": "uk",
+  "q": "What is the London Underground's famous nickname?",
+  "options": [
+   "The Pipe",
+   "The Tube",
+   "The Burrow",
+   "The Metro"
+  ],
+  "answer": 1,
+  "fact": "Opened in 1863, the London Underground is the world's oldest underground railway.",
+  "diff": 1
+ },
+ {
+  "id": "uk-112",
+  "cat": "uk",
+  "q": "What is the name of the giant observation wheel on London's South Bank?",
+  "options": [
+   "The Thames Wheel",
+   "The Capital Spin",
+   "The Royal Ring",
+   "The London Eye"
+  ],
+  "answer": 3,
+  "fact": "The London Eye was built to celebrate the new millennium and opened to the public in 2000.",
+  "diff": 1
+ },
+ {
+  "id": "uk-113",
+  "cat": "uk",
+  "q": "Which creature appears on the national flag of Wales?",
+  "options": [
+   "A lion",
+   "A red dragon",
+   "A unicorn",
+   "An eagle"
+  ],
+  "answer": 1,
+  "fact": "Wales isn't represented on the Union Flag, as it was already joined to England when the flag was created.",
+  "diff": 1
+ },
+ {
+  "id": "uk-114",
+  "cat": "uk",
+  "q": "Which London stadium hosts England football matches and the FA Cup Final?",
+  "options": [
+   "Old Trafford",
+   "Anfield",
+   "Twickenham",
+   "Wembley"
+  ],
+  "answer": 3,
+  "fact": "The giant arch over the new Wembley Stadium is 133 metres high.",
+  "diff": 1
+ },
+ {
+  "id": "uk-115",
+  "cat": "uk",
+  "q": "What is the UK's flag commonly called?",
+  "options": [
+   "The Royal Banner",
+   "The Saltire",
+   "The Union Jack",
+   "The Tricolour"
+  ],
+  "answer": 2,
+  "fact": "The Union Flag combines the crosses of St George, St Andrew and St Patrick.",
+  "diff": 1
+ },
+ {
+  "id": "uk-116",
+  "cat": "uk",
+  "q": "Which northern English city is home to both United and City football clubs?",
+  "options": [
+   "Liverpool",
+   "Leeds",
+   "Manchester",
+   "Newcastle"
+  ],
+  "answer": 2,
+  "fact": "Manchester's symbol, the worker bee, celebrates the city's busy industrial past.",
+  "diff": 1
+ },
+ {
+  "id": "uk-117",
+  "cat": "uk",
+  "q": "Which stretch of sea separates England from France?",
+  "options": [
+   "The Irish Sea",
+   "The North Sea",
+   "The Bristol Channel",
+   "The English Channel"
+  ],
+  "answer": 3,
+  "fact": "At its narrowest point, the Strait of Dover, the Channel is only about 33 kilometres wide.",
+  "diff": 1
+ },
+ {
+  "id": "uk-118",
+  "cat": "uk",
+  "q": "Which train service runs through the Channel Tunnel from London to Paris?",
+  "options": [
+   "Thameslink",
+   "Eurostar",
+   "Avanti",
+   "Caledonian Sleeper"
+  ],
+  "answer": 1,
+  "fact": "Eurostar trains leave London from St Pancras International station.",
+  "diff": 1
+ },
+ {
+  "id": "uk-119",
+  "cat": "uk",
+  "q": "The famous White Cliffs stand beside which Kent port?",
+  "options": [
+   "Folkestone",
+   "Dover",
+   "Ramsgate",
+   "Margate"
+  ],
+  "answer": 1,
+  "fact": "The White Cliffs are made of chalk, formed from the remains of tiny sea creatures.",
+  "diff": 1
+ },
+ {
+  "id": "uk-120",
+  "cat": "uk",
+  "q": "Which stretch of sea lies between Great Britain and Ireland?",
+  "options": [
+   "The North Sea",
+   "The English Channel",
+   "The Irish Sea",
+   "The Bristol Channel"
+  ],
+  "answer": 2,
+  "fact": "The Isle of Man sits in the middle of the Irish Sea.",
+  "diff": 1
+ },
+ {
+  "id": "uk-121",
+  "cat": "uk",
+  "q": "What is the knee-length tartan garment traditionally worn by Scottish men?",
+  "options": [
+   "A kilt",
+   "A sarong",
+   "A kaftan",
+   "A toga"
+  ],
+  "answer": 0,
+  "fact": "Many tartan patterns are linked to a particular Scottish clan or family.",
+  "diff": 1
+ },
+ {
+  "id": "uk-122",
+  "cat": "uk",
+  "q": "Which musical instrument is most closely linked with Scotland?",
+  "options": [
+   "The banjo",
+   "The bagpipes",
+   "The harp",
+   "The trumpet"
+  ],
+  "answer": 1,
+  "fact": "Bagpipes get their sound from a bag of air squeezed under the player's arm.",
+  "diff": 1
+ },
+ {
+  "id": "uk-123",
+  "cat": "uk",
+  "q": "Which Scottish dish is traditionally eaten on Burns Night?",
+  "options": [
+   "Paella",
+   "Lasagne",
+   "Haggis",
+   "Kebab"
+  ],
+  "answer": 2,
+  "fact": "Burns Night celebrates the poet Robert Burns, who wrote a poem called 'Address to a Haggis'.",
+  "diff": 1
+ },
+ {
+  "id": "uk-124",
+  "cat": "uk",
+  "q": "In which university city can you go punting on the River Cam?",
+  "options": [
+   "Oxford",
+   "Durham",
+   "York",
+   "Cambridge"
+  ],
+  "answer": 3,
+  "fact": "Cambridge's Mathematical Bridge is a famous wooden footbridge over the River Cam.",
+  "diff": 1
+ },
+ {
+  "id": "uk-125",
+  "cat": "uk",
+  "q": "What are the ceremonial guards at the Tower of London popularly called?",
+  "options": [
+   "Redcoats",
+   "Grenadiers",
+   "Beefeaters",
+   "Gamekeepers"
+  ],
+  "answer": 2,
+  "fact": "Officially called Yeoman Warders, Beefeaters live with their families inside the Tower.",
+  "diff": 1
+ },
+ {
+  "id": "uk-126",
+  "cat": "uk",
+  "q": "Which birds are famously kept at the Tower of London?",
+  "options": [
+   "Pigeons",
+   "Parrots",
+   "Swans",
+   "Ravens"
+  ],
+  "answer": 3,
+  "fact": "Legend says the kingdom will fall if the ravens ever leave the Tower.",
+  "diff": 1
+ },
+ {
+  "id": "uk-127",
+  "cat": "uk",
+  "q": "Which London area is famous for its theatres and musicals?",
+  "options": [
+   "The West End",
+   "Canary Wharf",
+   "Docklands",
+   "The City"
+  ],
+  "answer": 0,
+  "fact": "The site of the Theatre Royal, Drury Lane, has had a theatre on it since 1663.",
+  "diff": 1
+ },
+ {
+  "id": "uk-128",
+  "cat": "uk",
+  "q": "Which London museum is famous for its dinosaur skeletons?",
+  "options": [
+   "The British Museum",
+   "The Science Museum",
+   "Tate Modern",
+   "The Natural History Museum"
+  ],
+  "answer": 3,
+  "fact": "A blue whale skeleton nicknamed Hope hangs in the Natural History Museum's main hall.",
+  "diff": 1
+ },
+ {
+  "id": "uk-129",
+  "cat": "uk",
+  "q": "Which ceremony outside Buckingham Palace sees soldiers in bearskin hats swap duty?",
+  "options": [
+   "The Changing of the Guard",
+   "The State Opening",
+   "The Lord Mayor's Show",
+   "The Boat Race"
+  ],
+  "answer": 0,
+  "fact": "The Changing of the Guard is free to watch and draws big crowds of visitors.",
+  "diff": 1
+ },
+ {
+  "id": "uk-130",
+  "cat": "uk",
+  "q": "Which national park in Cumbria is famous for its lakes and fells?",
+  "options": [
+   "The Peak District",
+   "The Lake District",
+   "Dartmoor",
+   "The New Forest"
+  ],
+  "answer": 1,
+  "fact": "England's highest mountain, Scafell Pike, is in the Lake District.",
+  "diff": 1
+ },
+ {
+  "id": "uk-131",
+  "cat": "uk",
+  "q": "What is the highest mountain in Wales?",
+  "options": [
+   "Ben Nevis",
+   "Snowdon (Yr Wyddfa)",
+   "Scafell Pike",
+   "Pen y Fan"
+  ],
+  "answer": 1,
+  "fact": "A mountain railway has carried visitors up Yr Wyddfa since 1896.",
+  "diff": 1
+ },
+ {
+  "id": "uk-132",
+  "cat": "uk",
+  "q": "Which Somerset festival is one of the world's most famous music festivals?",
+  "options": [
+   "Glastonbury",
+   "Reading",
+   "Download",
+   "Isle of Wight"
+  ],
+  "answer": 0,
+  "fact": "Glastonbury Festival takes place on a working dairy farm called Worthy Farm.",
+  "diff": 1
+ },
+ {
+  "id": "uk-133",
+  "cat": "uk",
+  "q": "Which Lancashire seaside town is famous for its tower and illuminations?",
+  "options": [
+   "Brighton",
+   "Scarborough",
+   "Blackpool",
+   "Skegness"
+  ],
+  "answer": 2,
+  "fact": "Blackpool Tower was inspired by the Eiffel Tower and opened in 1894.",
+  "diff": 1
+ },
+ {
+  "id": "uk-134",
+  "cat": "uk",
+  "q": "Which East Sussex seaside city is famous for its pier and Royal Pavilion?",
+  "options": [
+   "Bournemouth",
+   "Brighton",
+   "Skegness",
+   "Weymouth"
+  ],
+  "answer": 1,
+  "fact": "Brighton's Royal Pavilion was built as a seaside palace for the Prince Regent, later King George IV.",
+  "diff": 1
+ },
+ {
+  "id": "uk-135",
+  "cat": "uk",
+  "q": "Which Yorkshire city is famous for its great Minster and old city walls?",
+  "options": [
+   "York",
+   "Leeds",
+   "Sheffield",
+   "Bradford"
+  ],
+  "answer": 0,
+  "fact": "The Shambles in York is a narrow medieval street once lined with butchers' shops.",
+  "diff": 1
+ }
+]

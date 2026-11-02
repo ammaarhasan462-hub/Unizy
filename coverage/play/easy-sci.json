@@ -1,0 +1,492 @@
+[
+ {
+  "id": "sci-101",
+  "cat": "sci",
+  "q": "Which substance has the chemical formula H₂O?",
+  "options": [
+   "Water",
+   "Oxygen",
+   "Sugar",
+   "Salt"
+  ],
+  "answer": 0,
+  "fact": "Water is one of the few substances that expands when it freezes, which is why ice floats.",
+  "diff": 1
+ },
+ {
+  "id": "sci-102",
+  "cat": "sci",
+  "q": "At what temperature in Celsius does water freeze?",
+  "options": [
+   "10°C",
+   "-10°C",
+   "32°C",
+   "0°C"
+  ],
+  "answer": 3,
+  "fact": "Adding salt to water lowers its freezing point, which is why roads are gritted with salt in winter.",
+  "diff": 1
+ },
+ {
+  "id": "sci-103",
+  "cat": "sci",
+  "q": "Which force keeps our feet on the ground?",
+  "options": [
+   "Friction",
+   "Gravity",
+   "Magnetism",
+   "Static"
+  ],
+  "answer": 1,
+  "fact": "On the Moon, gravity is about a sixth as strong, so you'd weigh about a sixth of what you do on Earth.",
+  "diff": 1
+ },
+ {
+  "id": "sci-104",
+  "cat": "sci",
+  "q": "Which organ pumps blood around the body?",
+  "options": [
+   "Lungs",
+   "Heart",
+   "Stomach",
+   "Liver"
+  ],
+  "answer": 1,
+  "fact": "An adult heart beats around 100,000 times every day.",
+  "diff": 1
+ },
+ {
+  "id": "sci-105",
+  "cat": "sci",
+  "q": "Which organs do we use to breathe?",
+  "options": [
+   "Intestines",
+   "Kidneys",
+   "Liver",
+   "Lungs"
+  ],
+  "answer": 3,
+  "fact": "Your left lung is slightly smaller than your right, which leaves room for your heart.",
+  "diff": 1
+ },
+ {
+  "id": "sci-106",
+  "cat": "sci",
+  "q": "Which gas do we need to breathe in to stay alive?",
+  "options": [
+   "Carbon dioxide",
+   "Helium",
+   "Oxygen",
+   "Nitrogen"
+  ],
+  "answer": 2,
+  "fact": "Oxygen makes up about 21% of the air we breathe.",
+  "diff": 1
+ },
+ {
+  "id": "sci-107",
+  "cat": "sci",
+  "q": "What does a thermometer measure?",
+  "options": [
+   "Speed",
+   "Weight",
+   "Temperature",
+   "Rainfall"
+  ],
+  "answer": 2,
+  "fact": "Normal human body temperature is about 37°C.",
+  "diff": 1
+ },
+ {
+  "id": "sci-108",
+  "cat": "sci",
+  "q": "How many colours are traditionally listed in a rainbow?",
+  "options": [
+   "Seven",
+   "Three",
+   "Five",
+   "Nine"
+  ],
+  "answer": 0,
+  "fact": "You can only see a rainbow when the Sun is behind you and the rain is in front of you.",
+  "diff": 1
+ },
+ {
+  "id": "sci-109",
+  "cat": "sci",
+  "q": "Which of these metals does a magnet attract?",
+  "options": [
+   "Iron",
+   "Gold",
+   "Aluminium",
+   "Copper"
+  ],
+  "answer": 0,
+  "fact": "The Earth itself acts like a giant magnet, which is why compasses work.",
+  "diff": 1
+ },
+ {
+  "id": "sci-110",
+  "cat": "sci",
+  "q": "Which bone protects your brain?",
+  "options": [
+   "Spine",
+   "Pelvis",
+   "Ribs",
+   "Skull"
+  ],
+  "answer": 3,
+  "fact": "A newborn baby's skull has soft gaps called fontanelles, which close up as they grow.",
+  "diff": 1
+ },
+ {
+  "id": "sci-111",
+  "cat": "sci",
+  "q": "What would you use to look at tiny things like cells?",
+  "options": [
+   "Telescope",
+   "Microscope",
+   "Periscope",
+   "Stethoscope"
+  ],
+  "answer": 1,
+  "fact": "Antonie van Leeuwenhoek was among the first to see bacteria, using tiny home-made microscopes in the 1670s.",
+  "diff": 1
+ },
+ {
+  "id": "sci-112",
+  "cat": "sci",
+  "q": "Light bulbs are labelled with their power in which unit?",
+  "options": [
+   "Metres",
+   "Watts",
+   "Kilograms",
+   "Litres"
+  ],
+  "answer": 1,
+  "fact": "The watt is named after James Watt, the Scottish engineer who improved the steam engine.",
+  "diff": 1
+ },
+ {
+  "id": "sci-113",
+  "cat": "sci",
+  "q": "Which vitamin does your skin make when it's in sunlight?",
+  "options": [
+   "Vitamin D",
+   "Vitamin A",
+   "Vitamin B12",
+   "Vitamin C"
+  ],
+  "answer": 0,
+  "fact": "Oily fish such as salmon and mackerel are among the few foods naturally rich in vitamin D.",
+  "diff": 1
+ },
+ {
+  "id": "sci-114",
+  "cat": "sci",
+  "q": "What do solar panels turn sunlight into?",
+  "options": [
+   "Oxygen",
+   "Water",
+   "Electricity",
+   "Sound"
+  ],
+  "answer": 2,
+  "fact": "Solar panels still make some electricity on cloudy days, just less than in full sunshine.",
+  "diff": 1
+ },
+ {
+  "id": "sci-115",
+  "cat": "sci",
+  "q": "Which gas makes the bubbles in fizzy drinks?",
+  "options": [
+   "Carbon dioxide",
+   "Hydrogen",
+   "Helium",
+   "Oxygen"
+  ],
+  "answer": 0,
+  "fact": "Carbon dioxide dissolved in water forms a weak acid, giving fizzy drinks their slight tang.",
+  "diff": 1
+ },
+ {
+  "id": "sci-116",
+  "cat": "sci",
+  "q": "Which blood cells carry oxygen around the body?",
+  "options": [
+   "Red blood cells",
+   "White blood cells",
+   "Platelets",
+   "Nerve cells"
+  ],
+  "answer": 0,
+  "fact": "Red blood cells get their colour from haemoglobin, an iron-rich protein.",
+  "diff": 1
+ },
+ {
+  "id": "sci-117",
+  "cat": "sci",
+  "q": "What is the hard, white outer layer of a tooth called?",
+  "options": [
+   "Plaque",
+   "Marrow",
+   "Gum",
+   "Enamel"
+  ],
+  "answer": 3,
+  "fact": "Tooth enamel is the hardest substance in the human body.",
+  "diff": 1
+ },
+ {
+  "id": "sci-118",
+  "cat": "sci",
+  "q": "Which organs clean your blood and make urine?",
+  "options": [
+   "Brain",
+   "Lungs",
+   "Kidneys",
+   "Heart"
+  ],
+  "answer": 2,
+  "fact": "Most people have two kidneys, but you can live a healthy life with just one.",
+  "diff": 1
+ },
+ {
+  "id": "sci-119",
+  "cat": "sci",
+  "q": "Which direction does a compass needle point?",
+  "options": [
+   "West",
+   "East",
+   "South",
+   "North"
+  ],
+  "answer": 3,
+  "fact": "A compass points to magnetic north, which isn't quite the same place as the North Pole.",
+  "diff": 1
+ },
+ {
+  "id": "sci-120",
+  "cat": "sci",
+  "q": "What is an echo?",
+  "options": [
+   "A gust of wind",
+   "A reflected sound",
+   "A tiny earthquake",
+   "A bent beam of light"
+  ],
+  "answer": 1,
+  "fact": "Bats and dolphins use echoes to find their way and hunt, a skill called echolocation.",
+  "diff": 1
+ },
+ {
+  "id": "sci-121",
+  "cat": "sci",
+  "q": "Which of these travels fastest?",
+  "options": [
+   "A jet plane",
+   "A racing car",
+   "Light",
+   "Sound"
+  ],
+  "answer": 2,
+  "fact": "Light travels so much faster than sound that you see lightning before you hear the thunder.",
+  "diff": 1
+ },
+ {
+  "id": "sci-122",
+  "cat": "sci",
+  "q": "Sodium chloride is better known as what?",
+  "options": [
+   "Table salt",
+   "Sugar",
+   "Baking soda",
+   "Chalk"
+  ],
+  "answer": 0,
+  "fact": "Sodium on its own is a soft metal that reacts violently with water.",
+  "diff": 1
+ },
+ {
+  "id": "sci-123",
+  "cat": "sci",
+  "q": "What is a scientist who studies rocks called?",
+  "options": [
+   "Astronomer",
+   "Botanist",
+   "Geologist",
+   "Zoologist"
+  ],
+  "answer": 2,
+  "fact": "The word 'geology' comes from the Greek words for 'Earth' and 'study'.",
+  "diff": 1
+ },
+ {
+  "id": "sci-124",
+  "cat": "sci",
+  "q": "Bread, rice and pasta are rich in which nutrient?",
+  "options": [
+   "Carbohydrates",
+   "Protein",
+   "Vitamin C",
+   "Calcium"
+  ],
+  "answer": 0,
+  "fact": "Your body breaks carbohydrates down into glucose, its main source of quick energy.",
+  "diff": 1
+ },
+ {
+  "id": "sci-125",
+  "cat": "sci",
+  "q": "Which joint connects your hand to your arm?",
+  "options": [
+   "Elbow",
+   "Wrist",
+   "Knee",
+   "Ankle"
+  ],
+  "answer": 1,
+  "fact": "Each wrist contains eight small bones called carpals.",
+  "diff": 1
+ },
+ {
+  "id": "sci-126",
+  "cat": "sci",
+  "q": "Which force slows down an object sliding across a surface?",
+  "options": [
+   "Gravity",
+   "Magnetism",
+   "Friction",
+   "Buoyancy"
+  ],
+  "answer": 2,
+  "fact": "Rubbing your hands together warms them up because friction turns movement into heat.",
+  "diff": 1
+ },
+ {
+  "id": "sci-127",
+  "cat": "sci",
+  "q": "What is a material that lets electricity flow easily called?",
+  "options": [
+   "An insulator",
+   "A magnet",
+   "A filter",
+   "A conductor"
+  ],
+  "answer": 3,
+  "fact": "Plastic is an insulator, which is why electrical wires are wrapped in it.",
+  "diff": 1
+ },
+ {
+  "id": "sci-128",
+  "cat": "sci",
+  "q": "Which metal are most household electrical wires made of?",
+  "options": [
+   "Lead",
+   "Tin",
+   "Gold",
+   "Copper"
+  ],
+  "answer": 3,
+  "fact": "Of all metals, only silver conducts electricity better than copper.",
+  "diff": 1
+ },
+ {
+  "id": "sci-129",
+  "cat": "sci",
+  "q": "Steam, or water vapour, is water in which state?",
+  "options": [
+   "Solid",
+   "Gas",
+   "Crystal",
+   "Liquid"
+  ],
+  "answer": 1,
+  "fact": "True steam is invisible: the white cloud above a kettle is really tiny water droplets.",
+  "diff": 1
+ },
+ {
+  "id": "sci-130",
+  "cat": "sci",
+  "q": "Which scientist is famous for the theory of evolution by natural selection?",
+  "options": [
+   "Albert Einstein",
+   "Isaac Newton",
+   "Charles Darwin",
+   "Stephen Hawking"
+  ],
+  "answer": 2,
+  "fact": "Darwin's ideas were shaped by his voyage on HMS Beagle, including a visit to the Galápagos Islands.",
+  "diff": 1
+ },
+ {
+  "id": "sci-131",
+  "cat": "sci",
+  "q": "What is it called when water slowly turns into vapour, like a drying puddle?",
+  "options": [
+   "Condensation",
+   "Melting",
+   "Evaporation",
+   "Freezing"
+  ],
+  "answer": 2,
+  "fact": "Puddles dry up faster on warm, windy days because evaporation speeds up.",
+  "diff": 1
+ },
+ {
+  "id": "sci-132",
+  "cat": "sci",
+  "q": "In which part of the body would you find the retina?",
+  "options": [
+   "Ear",
+   "Nose",
+   "Heart",
+   "Eye"
+  ],
+  "answer": 3,
+  "fact": "Images land on the retina upside down, and your brain flips them the right way up.",
+  "diff": 1
+ },
+ {
+  "id": "sci-133",
+  "cat": "sci",
+  "q": "In a school science lab, what is a Bunsen burner used for?",
+  "options": [
+   "Measuring liquids",
+   "Heating things",
+   "Cooling things",
+   "Weighing things"
+  ],
+  "answer": 1,
+  "fact": "The Bunsen burner is named after German chemist Robert Bunsen, who helped make it popular in the 1850s.",
+  "diff": 1
+ },
+ {
+  "id": "sci-134",
+  "cat": "sci",
+  "q": "Which gas is used to make party balloons float?",
+  "options": [
+   "Oxygen",
+   "Helium",
+   "Carbon dioxide",
+   "Chlorine"
+  ],
+  "answer": 1,
+  "fact": "Helium is the second most common element in the universe, after hydrogen.",
+  "diff": 1
+ },
+ {
+  "id": "sci-135",
+  "cat": "sci",
+  "q": "Taste buds are mostly found on which part of your body?",
+  "options": [
+   "Tongue",
+   "Nose",
+   "Ears",
+   "Fingertips"
+  ],
+  "answer": 0,
+  "fact": "Your taste buds are constantly renewed, with each one lasting only a week or two.",
+  "diff": 1
+ }
+]

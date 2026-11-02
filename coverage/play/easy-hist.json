@@ -1,0 +1,492 @@
+[
+ {
+  "id": "hist-101",
+  "cat": "hist",
+  "q": "Which famous queen of ancient Egypt was linked with Julius Caesar and Mark Antony?",
+  "options": [
+   "Nefertiti",
+   "Cleopatra",
+   "Boudica",
+   "Victoria"
+  ],
+  "answer": 1,
+  "fact": "Cleopatra lived closer in time to the Moon landing than to the building of the Great Pyramid.",
+  "diff": 1
+ },
+ {
+  "id": "hist-102",
+  "cat": "hist",
+  "q": "Which Tudor queen was known as 'the Virgin Queen'?",
+  "options": [
+   "Elizabeth I",
+   "Mary I",
+   "Anne Boleyn",
+   "Victoria"
+  ],
+  "answer": 0,
+  "fact": "Elizabeth I spoke several languages, including French, Italian, Latin and Greek.",
+  "diff": 1
+ },
+ {
+  "id": "hist-103",
+  "cat": "hist",
+  "q": "Which explorer famously sailed across the Atlantic to the Americas in 1492?",
+  "options": [
+   "Captain Cook",
+   "Marco Polo",
+   "Francis Drake",
+   "Christopher Columbus"
+  ],
+  "answer": 3,
+  "fact": "Columbus was born in Genoa, in what is now Italy, but his famous voyage was paid for by Spain.",
+  "diff": 1
+ },
+ {
+  "id": "hist-104",
+  "cat": "hist",
+  "q": "Gladiators performed in arenas in which ancient civilisation?",
+  "options": [
+   "The Vikings",
+   "The Aztecs",
+   "The Romans",
+   "The Incas"
+  ],
+  "answer": 2,
+  "fact": "Some gladiators were so popular that fans scratched graffiti about them onto walls in Pompeii.",
+  "diff": 1
+ },
+ {
+  "id": "hist-105",
+  "cat": "hist",
+  "q": "Which seafarers from Scandinavia sailed in longships?",
+  "options": [
+   "The Romans",
+   "The Vikings",
+   "The Normans",
+   "The Saxons"
+  ],
+  "answer": 1,
+  "fact": "There's no evidence Vikings wore horned helmets; that idea became popular in the 1800s.",
+  "diff": 1
+ },
+ {
+  "id": "hist-106",
+  "cat": "hist",
+  "q": "What was the main language of the ancient Romans?",
+  "options": [
+   "Latin",
+   "Greek",
+   "Italian",
+   "French"
+  ],
+  "answer": 0,
+  "fact": "Homo sapiens, the scientific name for humans, is Latin for 'wise man'.",
+  "diff": 1
+ },
+ {
+  "id": "hist-107",
+  "cat": "hist",
+  "q": "Which famous nurse was known as 'the Lady with the Lamp'?",
+  "options": [
+   "Mary Seacole",
+   "Edith Cavell",
+   "Grace Darling",
+   "Florence Nightingale"
+  ],
+  "answer": 3,
+  "fact": "Florence Nightingale was also a gifted statistician who used diagrams to present her findings.",
+  "diff": 1
+ },
+ {
+  "id": "hist-108",
+  "cat": "hist",
+  "q": "What were the kings of ancient Egypt called?",
+  "options": [
+   "Emperors",
+   "Sultans",
+   "Pharaohs",
+   "Tsars"
+  ],
+  "answer": 2,
+  "fact": "The word 'pharaoh' comes from an Egyptian term meaning 'great house', first used for the royal palace.",
+  "diff": 1
+ },
+ {
+  "id": "hist-109",
+  "cat": "hist",
+  "q": "Which famous prehistoric stone circle stands on Salisbury Plain?",
+  "options": [
+   "Avebury",
+   "Stonehenge",
+   "Callanish",
+   "Skara Brae"
+  ],
+  "answer": 1,
+  "fact": "Stonehenge's smaller 'bluestones' were brought about 150 miles from the Preseli Hills in Wales.",
+  "diff": 1
+ },
+ {
+  "id": "hist-110",
+  "cat": "hist",
+  "q": "Which scientist is said to have been inspired by a falling apple to think about gravity?",
+  "options": [
+   "Isaac Newton",
+   "Albert Einstein",
+   "Charles Darwin",
+   "Galileo Galilei"
+  ],
+  "answer": 0,
+  "fact": "Newton's famous apple tree still grows at Woolsthorpe Manor, his childhood home in Lincolnshire.",
+  "diff": 1
+ },
+ {
+  "id": "hist-111",
+  "cat": "hist",
+  "q": "In medieval times, what was a large fortified home with a moat and drawbridge?",
+  "options": [
+   "A cathedral",
+   "A cottage",
+   "A barn",
+   "A castle"
+  ],
+  "answer": 3,
+  "fact": "Windsor Castle is said to be the oldest and largest occupied castle in the world.",
+  "diff": 1
+ },
+ {
+  "id": "hist-112",
+  "cat": "hist",
+  "q": "Which Roman leader gave his name to the month of July?",
+  "options": [
+   "Nero",
+   "Hadrian",
+   "Julius Caesar",
+   "Augustus"
+  ],
+  "answer": 2,
+  "fact": "Before it was renamed, July was called Quintilis, meaning 'fifth month'.",
+  "diff": 1
+ },
+ {
+  "id": "hist-113",
+  "cat": "hist",
+  "q": "What did the Romans build to carry fresh water into their towns?",
+  "options": [
+   "Canals",
+   "Aqueducts",
+   "Viaducts",
+   "Lighthouses"
+  ],
+  "answer": 1,
+  "fact": "The Pont du Gard, a Roman aqueduct bridge in southern France, is nearly 50 metres tall.",
+  "diff": 1
+ },
+ {
+  "id": "hist-114",
+  "cat": "hist",
+  "q": "According to legend, which king gathered his knights around a Round Table?",
+  "options": [
+   "King Arthur",
+   "King Alfred",
+   "King John",
+   "King Canute"
+  ],
+  "answer": 0,
+  "fact": "In the legends, Arthur's court was at Camelot and his magical sword was called Excalibur.",
+  "diff": 1
+ },
+ {
+  "id": "hist-115",
+  "cat": "hist",
+  "q": "In which forest is Robin Hood said to have lived?",
+  "options": [
+   "Epping Forest",
+   "Forest of Dean",
+   "New Forest",
+   "Sherwood Forest"
+  ],
+  "answer": 3,
+  "fact": "In the legends, Robin Hood's band of Merry Men included Little John and Friar Tuck.",
+  "diff": 1
+ },
+ {
+  "id": "hist-116",
+  "cat": "hist",
+  "q": "In which country did the Industrial Revolution begin?",
+  "options": [
+   "Japan",
+   "Brazil",
+   "Britain",
+   "Russia"
+  ],
+  "answer": 2,
+  "fact": "Richard Arkwright's Cromford Mill in Derbyshire, begun in 1771, was one of the first modern factories.",
+  "diff": 1
+ },
+ {
+  "id": "hist-117",
+  "cat": "hist",
+  "q": "Ancient Egyptians wrote on a paper-like material made from which plant?",
+  "options": [
+   "Bamboo",
+   "Papyrus",
+   "Cotton",
+   "Oak"
+  ],
+  "answer": 1,
+  "fact": "Our word 'paper' comes from 'papyrus', a reed that grew along the River Nile.",
+  "diff": 1
+ },
+ {
+  "id": "hist-118",
+  "cat": "hist",
+  "q": "Which country gave the Statue of Liberty to the USA as a gift?",
+  "options": [
+   "France",
+   "Britain",
+   "Spain",
+   "Italy"
+  ],
+  "answer": 0,
+  "fact": "The Statue of Liberty was a shiny copper-brown colour at first and slowly turned green as it weathered.",
+  "diff": 1
+ },
+ {
+  "id": "hist-119",
+  "cat": "hist",
+  "q": "The Penny Black was the world's first what?",
+  "options": [
+   "Coin",
+   "Banknote",
+   "Newspaper",
+   "Postage stamp"
+  ],
+  "answer": 3,
+  "fact": "The Penny Black, issued in 1840, showed a side view of the young Queen Victoria.",
+  "diff": 1
+ },
+ {
+  "id": "hist-120",
+  "cat": "hist",
+  "q": "Which ancient people built the Parthenon?",
+  "options": [
+   "The Egyptians",
+   "The Vikings",
+   "The Greeks",
+   "The Aztecs"
+  ],
+  "answer": 2,
+  "fact": "The Parthenon's columns bulge very slightly in the middle so they look perfectly straight from afar.",
+  "diff": 1
+ },
+ {
+  "id": "hist-121",
+  "cat": "hist",
+  "q": "What was the metal suit worn by medieval knights called?",
+  "options": [
+   "Robe",
+   "Armour",
+   "Toga",
+   "Tunic"
+  ],
+  "answer": 1,
+  "fact": "A full suit of plate armour usually weighed about 15 to 25 kg, spread across the whole body.",
+  "diff": 1
+ },
+ {
+  "id": "hist-122",
+  "cat": "hist",
+  "q": "Which garment, a long draped piece of cloth, was worn by men in ancient Rome?",
+  "options": [
+   "Toga",
+   "Kilt",
+   "Kimono",
+   "Sari"
+  ],
+  "answer": 0,
+  "fact": "Togas were usually made of wool and could be several metres long.",
+  "diff": 1
+ },
+ {
+  "id": "hist-123",
+  "cat": "hist",
+  "q": "In Roman numerals, which number does X stand for?",
+  "options": [
+   "5",
+   "50",
+   "100",
+   "10"
+  ],
+  "answer": 3,
+  "fact": "Roman numerals had no symbol for zero.",
+  "diff": 1
+ },
+ {
+  "id": "hist-124",
+  "cat": "hist",
+  "q": "Which British monarch was the first to celebrate a Platinum Jubilee?",
+  "options": [
+   "Victoria",
+   "George III",
+   "Elizabeth II",
+   "Henry VIII"
+  ],
+  "answer": 2,
+  "fact": "A lemon Swiss roll and amaretti trifle won the Platinum Pudding competition for the 2022 Jubilee.",
+  "diff": 1
+ },
+ {
+  "id": "hist-125",
+  "cat": "hist",
+  "q": "Which age came straight after the Stone Age?",
+  "options": [
+   "Iron Age",
+   "Bronze Age",
+   "Ice Age",
+   "Golden Age"
+  ],
+  "answer": 1,
+  "fact": "Bronze is made by mixing copper with a smaller amount of tin.",
+  "diff": 1
+ },
+ {
+  "id": "hist-126",
+  "cat": "hist",
+  "q": "The Great Sphinx of Giza has the body of which animal?",
+  "options": [
+   "A lion",
+   "An eagle",
+   "A horse",
+   "A camel"
+  ],
+  "answer": 0,
+  "fact": "The Great Sphinx was carved out of a single mass of limestone bedrock.",
+  "diff": 1
+ },
+ {
+  "id": "hist-127",
+  "cat": "hist",
+  "q": "The Model T was a famous early car made by which company?",
+  "options": [
+   "Ferrari",
+   "Rolls-Royce",
+   "Volkswagen",
+   "Ford"
+  ],
+  "answer": 3,
+  "fact": "Henry Ford said customers could have a Model T in any colour 'so long as it is black'.",
+  "diff": 1
+ },
+ {
+  "id": "hist-128",
+  "cat": "hist",
+  "q": "What is another name for the Middle Ages?",
+  "options": [
+   "The Space Age",
+   "The Jazz Age",
+   "The medieval period",
+   "The modern era"
+  ],
+  "answer": 2,
+  "fact": "'Medieval' comes from the Latin 'medium aevum', meaning 'middle age'.",
+  "diff": 1
+ },
+ {
+  "id": "hist-129",
+  "cat": "hist",
+  "q": "Which famous Paris landmark was built for the World's Fair of 1889?",
+  "options": [
+   "The Louvre",
+   "The Eiffel Tower",
+   "Notre-Dame",
+   "The Arc de Triomphe"
+  ],
+  "answer": 1,
+  "fact": "The Eiffel Tower was originally only meant to stand for 20 years.",
+  "diff": 1
+ },
+ {
+  "id": "hist-130",
+  "cat": "hist",
+  "q": "Who was Queen Elizabeth II's husband?",
+  "options": [
+   "Prince Philip",
+   "Prince Albert",
+   "Prince Charles",
+   "Prince Edward"
+  ],
+  "answer": 0,
+  "fact": "Elizabeth and Philip married at Westminster Abbey in 1947.",
+  "diff": 1
+ },
+ {
+  "id": "hist-131",
+  "cat": "hist",
+  "q": "Which scientist came up with the theory of relativity?",
+  "options": [
+   "Isaac Newton",
+   "Marie Curie",
+   "Stephen Hawking",
+   "Albert Einstein"
+  ],
+  "answer": 3,
+  "fact": "Einstein's most famous equation, E = mc², shows how energy and mass are linked.",
+  "diff": 1
+ },
+ {
+  "id": "hist-132",
+  "cat": "hist",
+  "q": "Which country was once ruled by tsars?",
+  "options": [
+   "France",
+   "Egypt",
+   "Russia",
+   "Japan"
+  ],
+  "answer": 2,
+  "fact": "The word 'tsar' comes from 'Caesar', the title used by Roman emperors.",
+  "diff": 1
+ },
+ {
+  "id": "hist-133",
+  "cat": "hist",
+  "q": "Samurai were the famous warriors of which country?",
+  "options": [
+   "China",
+   "Japan",
+   "India",
+   "Mongolia"
+  ],
+  "answer": 1,
+  "fact": "Samurai often carried two swords: a long katana and a shorter one called a wakizashi.",
+  "diff": 1
+ },
+ {
+  "id": "hist-134",
+  "cat": "hist",
+  "q": "Which Scottish scientist discovered penicillin?",
+  "options": [
+   "Alexander Fleming",
+   "Isaac Newton",
+   "Charles Darwin",
+   "Louis Pasteur"
+  ],
+  "answer": 0,
+  "fact": "Fleming spotted penicillin in 1928 after mould grew on a dish he had left out in his lab.",
+  "diff": 1
+ },
+ {
+  "id": "hist-135",
+  "cat": "hist",
+  "q": "Which famous playwright lived during the reign of Elizabeth I?",
+  "options": [
+   "Charles Dickens",
+   "Oscar Wilde",
+   "Roald Dahl",
+   "William Shakespeare"
+  ],
+  "answer": 3,
+  "fact": "Many of Shakespeare's plays were performed at the Globe, on the south bank of the Thames.",
+  "diff": 1
+ }
+]

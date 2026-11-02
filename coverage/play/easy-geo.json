@@ -1,0 +1,492 @@
+[
+ {
+  "id": "geo-101",
+  "cat": "geo",
+  "q": "What is the capital of Spain?",
+  "options": [
+   "Barcelona",
+   "Madrid",
+   "Seville",
+   "Valencia"
+  ],
+  "answer": 1,
+  "fact": "Madrid sits near the centre of Spain and is one of Europe's highest capital cities.",
+  "diff": 1
+ },
+ {
+  "id": "geo-102",
+  "cat": "geo",
+  "q": "What is the capital of Germany?",
+  "options": [
+   "Berlin",
+   "Munich",
+   "Hamburg",
+   "Frankfurt"
+  ],
+  "answer": 0,
+  "fact": "Berlin's Brandenburg Gate is topped by a statue of a chariot pulled by four horses.",
+  "diff": 1
+ },
+ {
+  "id": "geo-103",
+  "cat": "geo",
+  "q": "In which city would you find the Colosseum?",
+  "options": [
+   "Athens",
+   "Madrid",
+   "Paris",
+   "Rome"
+  ],
+  "answer": 3,
+  "fact": "The Colosseum could hold an estimated 50,000 or more spectators.",
+  "diff": 1
+ },
+ {
+  "id": "geo-104",
+  "cat": "geo",
+  "q": "Which country's flag is white with a red circle in the middle?",
+  "options": [
+   "China",
+   "Canada",
+   "Japan",
+   "Switzerland"
+  ],
+  "answer": 2,
+  "fact": "Japan is made up of thousands of islands, and the biggest of them, Honshu, is home to Tokyo.",
+  "diff": 1
+ },
+ {
+  "id": "geo-105",
+  "cat": "geo",
+  "q": "Which is the largest ocean in the world?",
+  "options": [
+   "Atlantic",
+   "Pacific",
+   "Indian",
+   "Arctic"
+  ],
+  "answer": 1,
+  "fact": "The Pacific covers more of Earth's surface than all the land on the planet put together.",
+  "diff": 1
+ },
+ {
+  "id": "geo-106",
+  "cat": "geo",
+  "q": "Kenya is in which continent?",
+  "options": [
+   "Africa",
+   "Asia",
+   "South America",
+   "Europe"
+  ],
+  "answer": 0,
+  "fact": "Kenya takes its name from Mount Kenya, the second-highest mountain in Africa.",
+  "diff": 1
+ },
+ {
+  "id": "geo-107",
+  "cat": "geo",
+  "q": "Which country has a red maple leaf on its flag?",
+  "options": [
+   "Australia",
+   "Sweden",
+   "Norway",
+   "Canada"
+  ],
+  "answer": 3,
+  "fact": "Canada has the longest coastline of any country in the world.",
+  "diff": 1
+ },
+ {
+  "id": "geo-108",
+  "cat": "geo",
+  "q": "In which country are the Pyramids of Giza?",
+  "options": [
+   "Mexico",
+   "Greece",
+   "Egypt",
+   "India"
+  ],
+  "answer": 2,
+  "fact": "The Great Pyramid was the tallest human-made structure in the world for over 3,800 years.",
+  "diff": 1
+ },
+ {
+  "id": "geo-109",
+  "cat": "geo",
+  "q": "Which US city is nicknamed 'the Big Apple'?",
+  "options": [
+   "Chicago",
+   "New York",
+   "Boston",
+   "Miami"
+  ],
+  "answer": 1,
+  "fact": "New York's Central Park is larger than the whole of Monaco.",
+  "diff": 1
+ },
+ {
+  "id": "geo-110",
+  "cat": "geo",
+  "q": "Hollywood, the home of the US film industry, is in which city?",
+  "options": [
+   "Los Angeles",
+   "San Francisco",
+   "Las Vegas",
+   "New York"
+  ],
+  "answer": 0,
+  "fact": "The famous Hollywood sign originally read 'Hollywoodland' and advertised new houses.",
+  "diff": 1
+ },
+ {
+  "id": "geo-111",
+  "cat": "geo",
+  "q": "In which country would you find the Great Wall?",
+  "options": [
+   "Japan",
+   "India",
+   "Russia",
+   "China"
+  ],
+  "answer": 3,
+  "fact": "The Great Wall isn't one single wall but a series of walls built over many centuries.",
+  "diff": 1
+ },
+ {
+  "id": "geo-112",
+  "cat": "geo",
+  "q": "In which country is the Taj Mahal?",
+  "options": [
+   "Egypt",
+   "Turkey",
+   "India",
+   "Thailand"
+  ],
+  "answer": 2,
+  "fact": "The Taj Mahal stands on the bank of the Yamuna river in the city of Agra.",
+  "diff": 1
+ },
+ {
+  "id": "geo-113",
+  "cat": "geo",
+  "q": "Lisbon is the capital city of which country?",
+  "options": [
+   "Spain",
+   "Portugal",
+   "Italy",
+   "Brazil"
+  ],
+  "answer": 1,
+  "fact": "Lisbon is famous for its old yellow trams that rattle up and down its steep hills.",
+  "diff": 1
+ },
+ {
+  "id": "geo-114",
+  "cat": "geo",
+  "q": "Which is the largest continent?",
+  "options": [
+   "Asia",
+   "Africa",
+   "Europe",
+   "North America"
+  ],
+  "answer": 0,
+  "fact": "Around six in every ten people in the world live in Asia.",
+  "diff": 1
+ },
+ {
+  "id": "geo-115",
+  "cat": "geo",
+  "q": "Which Italian city is famous for its canals and gondolas?",
+  "options": [
+   "Milan",
+   "Naples",
+   "Florence",
+   "Venice"
+  ],
+  "answer": 3,
+  "fact": "Venice is built on more than 100 small islands in a lagoon.",
+  "diff": 1
+ },
+ {
+  "id": "geo-116",
+  "cat": "geo",
+  "q": "What is the capital of Greece?",
+  "options": [
+   "Sparta",
+   "Corfu",
+   "Athens",
+   "Crete"
+  ],
+  "answer": 2,
+  "fact": "Athens is one of the world's oldest cities, with a recorded history of more than 3,000 years.",
+  "diff": 1
+ },
+ {
+  "id": "geo-117",
+  "cat": "geo",
+  "q": "Which sea lies between southern Europe and North Africa?",
+  "options": [
+   "Caribbean",
+   "Mediterranean",
+   "Baltic",
+   "Red Sea"
+  ],
+  "answer": 1,
+  "fact": "The name 'Mediterranean' comes from Latin words meaning 'in the middle of the land'.",
+  "diff": 1
+ },
+ {
+  "id": "geo-118",
+  "cat": "geo",
+  "q": "Which famous river flows through Egypt?",
+  "options": [
+   "Nile",
+   "Thames",
+   "Amazon",
+   "Danube"
+  ],
+  "answer": 0,
+  "fact": "The Nile flows north and ends in a wide, fan-shaped delta on the Mediterranean coast.",
+  "diff": 1
+ },
+ {
+  "id": "geo-119",
+  "cat": "geo",
+  "q": "Which country borders the USA to the south?",
+  "options": [
+   "Canada",
+   "Brazil",
+   "Cuba",
+   "Mexico"
+  ],
+  "answer": 3,
+  "fact": "Mexico City is built on the bed of an old lake, and parts of it are slowly sinking.",
+  "diff": 1
+ },
+ {
+  "id": "geo-120",
+  "cat": "geo",
+  "q": "Copenhagen is the capital of which country?",
+  "options": [
+   "Norway",
+   "Sweden",
+   "Denmark",
+   "Finland"
+  ],
+  "answer": 2,
+  "fact": "Copenhagen's Little Mermaid statue was inspired by a fairy tale by Hans Christian Andersen.",
+  "diff": 1
+ },
+ {
+  "id": "geo-121",
+  "cat": "geo",
+  "q": "What is the name of the imaginary line around the middle of the Earth?",
+  "options": [
+   "The Meridian",
+   "The Equator",
+   "The Horizon",
+   "The Tropic"
+  ],
+  "answer": 1,
+  "fact": "The Equator passes through Brazil, Kenya and Indonesia, among other countries.",
+  "diff": 1
+ },
+ {
+  "id": "geo-122",
+  "cat": "geo",
+  "q": "The city of Rio de Janeiro is in which country?",
+  "options": [
+   "Brazil",
+   "Argentina",
+   "Mexico",
+   "Spain"
+  ],
+  "answer": 0,
+  "fact": "Rio de Janeiro means 'River of January' in Portuguese.",
+  "diff": 1
+ },
+ {
+  "id": "geo-123",
+  "cat": "geo",
+  "q": "What is the capital city of the USA?",
+  "options": [
+   "New York",
+   "Los Angeles",
+   "Chicago",
+   "Washington, D.C."
+  ],
+  "answer": 3,
+  "fact": "The 'D.C.' in Washington, D.C. stands for District of Columbia.",
+  "diff": 1
+ },
+ {
+  "id": "geo-124",
+  "cat": "geo",
+  "q": "Argentina is in which continent?",
+  "options": [
+   "Africa",
+   "Europe",
+   "South America",
+   "Asia"
+  ],
+  "answer": 2,
+  "fact": "Argentina's name comes from 'argentum', the Latin word for silver.",
+  "diff": 1
+ },
+ {
+  "id": "geo-125",
+  "cat": "geo",
+  "q": "On which continent is the South Pole?",
+  "options": [
+   "Africa",
+   "Antarctica",
+   "South America",
+   "Australia"
+  ],
+  "answer": 1,
+  "fact": "Antarctica is the only continent with no permanent human residents.",
+  "diff": 1
+ },
+ {
+  "id": "geo-126",
+  "cat": "geo",
+  "q": "Which ocean lies between Europe and North America?",
+  "options": [
+   "Atlantic",
+   "Pacific",
+   "Indian",
+   "Arctic"
+  ],
+  "answer": 0,
+  "fact": "The Atlantic Ocean is getting a few centimetres wider every year.",
+  "diff": 1
+ },
+ {
+  "id": "geo-127",
+  "cat": "geo",
+  "q": "Which Scandinavian country is famous for its fjords?",
+  "options": [
+   "Spain",
+   "Greece",
+   "Portugal",
+   "Norway"
+  ],
+  "answer": 3,
+  "fact": "In the far north of Norway, the summer sun doesn't set for weeks, known as the midnight sun.",
+  "diff": 1
+ },
+ {
+  "id": "geo-128",
+  "cat": "geo",
+  "q": "What is the capital of Russia?",
+  "options": [
+   "St Petersburg",
+   "Novosibirsk",
+   "Moscow",
+   "Kazan"
+  ],
+  "answer": 2,
+  "fact": "Moscow's metro is famous for grand stations decorated with chandeliers and mosaics.",
+  "diff": 1
+ },
+ {
+  "id": "geo-129",
+  "cat": "geo",
+  "q": "Amsterdam is the capital of which country?",
+  "options": [
+   "Belgium",
+   "Netherlands",
+   "Germany",
+   "Denmark"
+  ],
+  "answer": 1,
+  "fact": "About a quarter of the Netherlands lies below sea level, protected by dykes and dunes.",
+  "diff": 1
+ },
+ {
+  "id": "geo-130",
+  "cat": "geo",
+  "q": "Which US state is made up entirely of islands?",
+  "options": [
+   "Hawaii",
+   "Florida",
+   "Alaska",
+   "California"
+  ],
+  "answer": 0,
+  "fact": "Hawaii's islands were formed by volcanoes, and some of those volcanoes are still active.",
+  "diff": 1
+ },
+ {
+  "id": "geo-131",
+  "cat": "geo",
+  "q": "What is the capital of China?",
+  "options": [
+   "Shanghai",
+   "Hong Kong",
+   "Tokyo",
+   "Beijing"
+  ],
+  "answer": 3,
+  "fact": "Beijing's Forbidden City was the palace of Chinese emperors for almost 500 years.",
+  "diff": 1
+ },
+ {
+  "id": "geo-132",
+  "cat": "geo",
+  "q": "Mount Everest is in which mountain range?",
+  "options": [
+   "Alps",
+   "Andes",
+   "Himalayas",
+   "Rockies"
+  ],
+  "answer": 2,
+  "fact": "The name Himalaya comes from Sanskrit words meaning 'abode of snow'.",
+  "diff": 1
+ },
+ {
+  "id": "geo-133",
+  "cat": "geo",
+  "q": "What do we call a piece of land completely surrounded by water?",
+  "options": [
+   "A peninsula",
+   "An island",
+   "A valley",
+   "A delta"
+  ],
+  "answer": 1,
+  "fact": "Greenland is the world's largest island that isn't counted as a continent.",
+  "diff": 1
+ },
+ {
+  "id": "geo-134",
+  "cat": "geo",
+  "q": "Brussels is the capital of which country?",
+  "options": [
+   "Belgium",
+   "France",
+   "Austria",
+   "Switzerland"
+  ],
+  "answer": 0,
+  "fact": "Belgium has three official languages: Dutch, French and German.",
+  "diff": 1
+ },
+ {
+  "id": "geo-135",
+  "cat": "geo",
+  "q": "What is the capital of the Republic of Ireland?",
+  "options": [
+   "Cork",
+   "Galway",
+   "Belfast",
+   "Dublin"
+  ],
+  "answer": 3,
+  "fact": "Dublin's name comes from the Irish 'Dubh Linn', meaning 'black pool'.",
+  "diff": 1
+ }
+]

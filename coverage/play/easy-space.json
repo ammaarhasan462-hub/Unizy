@@ -1,0 +1,492 @@
+[
+ {
+  "id": "space-101",
+  "cat": "space",
+  "q": "What do we call a person trained to travel into space?",
+  "options": [
+   "Astronaut",
+   "Aviator",
+   "Navigator",
+   "Astrologer"
+  ],
+  "answer": 0,
+  "fact": "The word astronaut comes from Greek words meaning 'star sailor'.",
+  "diff": 1
+ },
+ {
+  "id": "space-102",
+  "cat": "space",
+  "q": "What type of object is the Sun?",
+  "options": [
+   "A planet",
+   "A comet",
+   "A moon",
+   "A star"
+  ],
+  "answer": 3,
+  "fact": "The Sun is so big that more than a million Earths could fit inside it.",
+  "diff": 1
+ },
+ {
+  "id": "space-103",
+  "cat": "space",
+  "q": "Which planet is third from the Sun?",
+  "options": [
+   "Mars",
+   "Earth",
+   "Venus",
+   "Mercury"
+  ],
+  "answer": 1,
+  "fact": "Earth is the only planet known to have liquid water on its surface.",
+  "diff": 1
+ },
+ {
+  "id": "space-104",
+  "cat": "space",
+  "q": "What is it called when the Moon blocks our view of the Sun during the day?",
+  "options": [
+   "A lunar eclipse",
+   "A solar eclipse",
+   "An equinox",
+   "A solstice"
+  ],
+  "answer": 1,
+  "fact": "The Sun is about 400 times wider than the Moon but also about 400 times farther away, so they look the same size.",
+  "diff": 1
+ },
+ {
+  "id": "space-105",
+  "cat": "space",
+  "q": "What does ISS stand for in space travel?",
+  "options": [
+   "International Satellite System",
+   "Inter-Stellar Ship",
+   "Interplanetary Science Shuttle",
+   "International Space Station"
+  ],
+  "answer": 3,
+  "fact": "The International Space Station zooms all the way around Earth roughly every 90 minutes.",
+  "diff": 1
+ },
+ {
+  "id": "space-106",
+  "cat": "space",
+  "q": "NASA is the space agency of which country?",
+  "options": [
+   "Canada",
+   "Russia",
+   "The United States",
+   "Australia"
+  ],
+  "answer": 2,
+  "fact": "NASA was set up in 1958, more than a decade before the first Moon landing.",
+  "diff": 1
+ },
+ {
+  "id": "space-107",
+  "cat": "space",
+  "q": "What is a 'shooting star' really?",
+  "options": [
+   "A dying star",
+   "A planet",
+   "A meteor",
+   "A satellite"
+  ],
+  "answer": 2,
+  "fact": "Most shooting stars are made by specks of space dust no bigger than a grain of sand.",
+  "diff": 1
+ },
+ {
+  "id": "space-108",
+  "cat": "space",
+  "q": "Which force keeps the planets in orbit around the Sun?",
+  "options": [
+   "Gravity",
+   "Magnetism",
+   "Friction",
+   "Wind"
+  ],
+  "answer": 0,
+  "fact": "Isaac Newton's ideas about gravity are said to have been inspired by a falling apple.",
+  "diff": 1
+ },
+ {
+  "id": "space-109",
+  "cat": "space",
+  "q": "What do we call a group of stars that forms a pattern or picture in the sky?",
+  "options": [
+   "A constellation",
+   "A galaxy",
+   "A nebula",
+   "A comet"
+  ],
+  "answer": 0,
+  "fact": "Astronomers officially recognise 88 constellations covering the whole sky.",
+  "diff": 1
+ },
+ {
+  "id": "space-110",
+  "cat": "space",
+  "q": "Roughly how long does it take Earth to travel once around the Sun?",
+  "options": [
+   "One month",
+   "One day",
+   "One week",
+   "One year"
+  ],
+  "answer": 3,
+  "fact": "A year is about 365 and a quarter days, which is why we add an extra day every leap year.",
+  "diff": 1
+ },
+ {
+  "id": "space-111",
+  "cat": "space",
+  "q": "Roughly how long does it take Earth to spin once on its axis?",
+  "options": [
+   "12 hours",
+   "24 hours",
+   "One week",
+   "One month"
+  ],
+  "answer": 1,
+  "fact": "Earth's spin is very gradually slowing down, so days were shorter when dinosaurs lived.",
+  "diff": 1
+ },
+ {
+  "id": "space-112",
+  "cat": "space",
+  "q": "What is the name for a scientist who studies stars and planets?",
+  "options": [
+   "Astrologer",
+   "Astronomer",
+   "Geologist",
+   "Botanist"
+  ],
+  "answer": 1,
+  "fact": "The Royal Observatory in Greenwich was founded for astronomers in 1675.",
+  "diff": 1
+ },
+ {
+  "id": "space-113",
+  "cat": "space",
+  "q": "What is an icy space object that grows a glowing tail as it nears the Sun?",
+  "options": [
+   "A comet",
+   "An asteroid",
+   "A planet",
+   "A moon"
+  ],
+  "answer": 0,
+  "fact": "A comet's tail always points away from the Sun, pushed back by sunlight and the solar wind.",
+  "diff": 1
+ },
+ {
+  "id": "space-114",
+  "cat": "space",
+  "q": "What are the rocky objects that mostly orbit the Sun between Mars and Jupiter?",
+  "options": [
+   "Comets",
+   "Moons",
+   "Asteroids",
+   "Stars"
+  ],
+  "answer": 2,
+  "fact": "Some asteroids even have their own tiny moons orbiting them.",
+  "diff": 1
+ },
+ {
+  "id": "space-115",
+  "cat": "space",
+  "q": "Which planet is named after the king of the Roman gods?",
+  "options": [
+   "Jupiter",
+   "Saturn",
+   "Mars",
+   "Mercury"
+  ],
+  "answer": 0,
+  "fact": "Jupiter is so big that all the other planets in the Solar System could fit inside it.",
+  "diff": 1
+ },
+ {
+  "id": "space-116",
+  "cat": "space",
+  "q": "In 1969, the Apollo 11 mission landed astronauts where?",
+  "options": [
+   "The Moon",
+   "Mars",
+   "Venus",
+   "The Sun"
+  ],
+  "answer": 0,
+  "fact": "The Apollo 11 crew brought back about 21 kilograms of Moon rock and dust.",
+  "diff": 1
+ },
+ {
+  "id": "space-117",
+  "cat": "space",
+  "q": "What do astronomers use to make distant stars and planets look bigger?",
+  "options": [
+   "A microscope",
+   "A periscope",
+   "A stethoscope",
+   "A telescope"
+  ],
+  "answer": 3,
+  "fact": "Galileo was one of the first people to point a telescope at the night sky, in 1609.",
+  "diff": 1
+ },
+ {
+  "id": "space-118",
+  "cat": "space",
+  "q": "What is the name for the path one object takes around another in space?",
+  "options": [
+   "A spiral",
+   "An axis",
+   "An orbit",
+   "A loop"
+  ],
+  "answer": 2,
+  "fact": "Planets' orbits are not perfect circles but slightly squashed ovals called ellipses.",
+  "diff": 1
+ },
+ {
+  "id": "space-119",
+  "cat": "space",
+  "q": "What do we call the Moon when its whole face is lit up?",
+  "options": [
+   "A new moon",
+   "A half moon",
+   "A crescent moon",
+   "A full moon"
+  ],
+  "answer": 3,
+  "fact": "There is a full moon roughly once every 29 and a half days.",
+  "diff": 1
+ },
+ {
+  "id": "space-120",
+  "cat": "space",
+  "q": "What is the name for an astronaut from Russia?",
+  "options": [
+   "Aquanaut",
+   "Cosmonaut",
+   "Argonaut",
+   "Juggernaut"
+  ],
+  "answer": 1,
+  "fact": "Chinese astronauts are sometimes called taikonauts, from the Chinese word for space.",
+  "diff": 1
+ },
+ {
+  "id": "space-121",
+  "cat": "space",
+  "q": "What is Earth's only natural satellite?",
+  "options": [
+   "Mars",
+   "Venus",
+   "The Moon",
+   "Halley's Comet"
+  ],
+  "answer": 2,
+  "fact": "The Moon is very slowly drifting away from Earth, by about 3.8 centimetres a year.",
+  "diff": 1
+ },
+ {
+  "id": "space-122",
+  "cat": "space",
+  "q": "What are the bowl-shaped dents on the Moon's surface called?",
+  "options": [
+   "Craters",
+   "Volcanoes",
+   "Canyons",
+   "Valleys"
+  ],
+  "answer": 0,
+  "fact": "Most of the Moon's craters were made by asteroids and comets crashing into it.",
+  "diff": 1
+ },
+ {
+  "id": "space-123",
+  "cat": "space",
+  "q": "What causes day and night on Earth?",
+  "options": [
+   "The Sun switching off",
+   "The Moon blocking the Sun",
+   "Earth spinning on its axis",
+   "Earth moving away from the Sun"
+  ],
+  "answer": 2,
+  "fact": "At the equator, Earth's surface spins at more than 1,600 kilometres per hour.",
+  "diff": 1
+ },
+ {
+  "id": "space-124",
+  "cat": "space",
+  "q": "The Moon's gravity is the main cause of what on Earth?",
+  "options": [
+   "Tides",
+   "Earthquakes",
+   "Rainbows",
+   "Wind"
+  ],
+  "answer": 0,
+  "fact": "Most coasts have two high tides and two low tides roughly every day.",
+  "diff": 1
+ },
+ {
+  "id": "space-125",
+  "cat": "space",
+  "q": "What special outfit do astronauts wear to survive outside their spacecraft?",
+  "options": [
+   "A wetsuit",
+   "A spacesuit",
+   "A tracksuit",
+   "A boiler suit"
+  ],
+  "answer": 1,
+  "fact": "A spacesuit is like a mini spacecraft, supplying oxygen and keeping the wearer at a safe temperature.",
+  "diff": 1
+ },
+ {
+  "id": "space-126",
+  "cat": "space",
+  "q": "What is the name for the thin, curved shape the Moon sometimes appears as?",
+  "options": [
+   "Gibbous",
+   "Full",
+   "Crescent",
+   "Quarter"
+  ],
+  "answer": 2,
+  "fact": "Sunlight bounced off Earth, called earthshine, can make the dark part of a crescent moon faintly glow.",
+  "diff": 1
+ },
+ {
+  "id": "space-127",
+  "cat": "space",
+  "q": "What name is given to the Sun and all the planets that travel around it?",
+  "options": [
+   "The Milky Way",
+   "The Universe",
+   "The Galaxy",
+   "The Solar System"
+  ],
+  "answer": 3,
+  "fact": "'Solar' comes from 'sol', the Latin word for the Sun.",
+  "diff": 1
+ },
+ {
+  "id": "space-128",
+  "cat": "space",
+  "q": "What does UFO stand for?",
+  "options": [
+   "Unknown floating orb",
+   "Universal flying observer",
+   "Unusual flight operation",
+   "Unidentified flying object"
+  ],
+  "answer": 3,
+  "fact": "Before the term UFO caught on, mystery objects in the sky were often called 'flying saucers'.",
+  "diff": 1
+ },
+ {
+  "id": "space-129",
+  "cat": "space",
+  "q": "Moonlight is really light reflected from what?",
+  "options": [
+   "Earth",
+   "The Sun",
+   "Other stars",
+   "Jupiter"
+  ],
+  "answer": 1,
+  "fact": "The Moon's surface is actually quite dark, reflecting only about 12% of the sunlight that hits it.",
+  "diff": 1
+ },
+ {
+  "id": "space-130",
+  "cat": "space",
+  "q": "What is the layer of gases surrounding Earth called?",
+  "options": [
+   "The crust",
+   "The orbit",
+   "The atmosphere",
+   "The equator"
+  ],
+  "answer": 2,
+  "fact": "The air we breathe is mostly nitrogen, with oxygen making up about a fifth.",
+  "diff": 1
+ },
+ {
+  "id": "space-131",
+  "cat": "space",
+  "q": "Apollo astronauts planted which country's flag on the Moon?",
+  "options": [
+   "Russia",
+   "The United Kingdom",
+   "The United States",
+   "France"
+  ],
+  "answer": 2,
+  "fact": "With no wind or rain on the Moon, the astronauts' footprints could last for millions of years.",
+  "diff": 1
+ },
+ {
+  "id": "space-132",
+  "cat": "space",
+  "q": "What is the name for a huge group of billions of stars, like the Milky Way?",
+  "options": [
+   "A constellation",
+   "A nebula",
+   "A solar system",
+   "A galaxy"
+  ],
+  "answer": 3,
+  "fact": "The Andromeda Galaxy is so far away that its light takes over two million years to reach us.",
+  "diff": 1
+ },
+ {
+  "id": "space-133",
+  "cat": "space",
+  "q": "What is the Moon mainly made of?",
+  "options": [
+   "Cheese",
+   "Rock",
+   "Ice",
+   "Gas"
+  ],
+  "answer": 1,
+  "fact": "Many scientists think the Moon formed from debris after a Mars-sized object hit the young Earth.",
+  "diff": 1
+ },
+ {
+  "id": "space-134",
+  "cat": "space",
+  "q": "Which of these is classed as a dwarf planet?",
+  "options": [
+   "Venus",
+   "Pluto",
+   "Saturn",
+   "Mars"
+  ],
+  "answer": 1,
+  "fact": "Pluto is smaller than Earth's Moon.",
+  "diff": 1
+ },
+ {
+  "id": "space-135",
+  "cat": "space",
+  "q": "What vehicle is used to launch astronauts into space?",
+  "options": [
+   "A rocket",
+   "A jet plane",
+   "A helicopter",
+   "A hot-air balloon"
+  ],
+  "answer": 0,
+  "fact": "A rocket blasts hot gas out of its back end, which pushes the rocket the opposite way.",
+  "diff": 1
+ }
+]

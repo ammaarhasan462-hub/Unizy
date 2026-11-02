@@ -1,0 +1,492 @@
+[
+ {
+  "id": "nature-101",
+  "cat": "nature",
+  "q": "How many legs does an insect have?",
+  "options": [
+   "Six",
+   "Ten",
+   "Eight",
+   "Four"
+  ],
+  "answer": 0,
+  "fact": "Spiders aren't insects: they have eight legs and belong to a group called arachnids.",
+  "diff": 1
+ },
+ {
+  "id": "nature-102",
+  "cat": "nature",
+  "q": "What does a caterpillar turn into?",
+  "options": [
+   "A butterfly",
+   "A dragonfly",
+   "A bee",
+   "A beetle"
+  ],
+  "answer": 0,
+  "fact": "Inside its chrysalis, a caterpillar breaks down almost completely before rebuilding itself.",
+  "diff": 1
+ },
+ {
+  "id": "nature-103",
+  "cat": "nature",
+  "q": "What is a baby frog called?",
+  "options": [
+   "Duckling",
+   "Kit",
+   "Cygnet",
+   "Tadpole"
+  ],
+  "answer": 3,
+  "fact": "Tadpoles breathe through gills, then develop lungs as they grow into frogs.",
+  "diff": 1
+ },
+ {
+  "id": "nature-104",
+  "cat": "nature",
+  "q": "What is a baby cow called?",
+  "options": [
+   "A kid",
+   "A lamb",
+   "A foal",
+   "A calf"
+  ],
+  "answer": 3,
+  "fact": "Baby elephants, whales and giraffes are also called calves.",
+  "diff": 1
+ },
+ {
+  "id": "nature-105",
+  "cat": "nature",
+  "q": "Which big cat is the male famous for his shaggy mane?",
+  "options": [
+   "Tiger",
+   "Lion",
+   "Cheetah",
+   "Leopard"
+  ],
+  "answer": 1,
+  "fact": "A lion's roar can be heard up to about 8 kilometres away.",
+  "diff": 1
+ },
+ {
+  "id": "nature-106",
+  "cat": "nature",
+  "q": "What do giant pandas mainly eat?",
+  "options": [
+   "Bamboo",
+   "Fish",
+   "Berries",
+   "Insects"
+  ],
+  "answer": 0,
+  "fact": "A giant panda can spend 10 to 16 hours a day eating.",
+  "diff": 1
+ },
+ {
+  "id": "nature-107",
+  "cat": "nature",
+  "q": "Which animal uses its long trunk to drink and grab food?",
+  "options": [
+   "Hippo",
+   "Giraffe",
+   "Elephant",
+   "Rhino"
+  ],
+  "answer": 2,
+  "fact": "An elephant's trunk has tens of thousands of muscles and no bones at all.",
+  "diff": 1
+ },
+ {
+  "id": "nature-108",
+  "cat": "nature",
+  "q": "Which bird is famous for fanning out its colourful tail?",
+  "options": [
+   "Pigeon",
+   "Seagull",
+   "Crow",
+   "Peacock"
+  ],
+  "answer": 3,
+  "fact": "Strictly, only males are peacocks: females are peahens, and together they're peafowl.",
+  "diff": 1
+ },
+ {
+  "id": "nature-109",
+  "cat": "nature",
+  "q": "What colour is a robin's breast?",
+  "options": [
+   "Blue",
+   "Red",
+   "Green",
+   "Yellow"
+  ],
+  "answer": 1,
+  "fact": "Robins are one of the few UK birds that sing all through the winter.",
+  "diff": 1
+ },
+ {
+  "id": "nature-110",
+  "cat": "nature",
+  "q": "Which lizard is famous for changing colour?",
+  "options": [
+   "Komodo dragon",
+   "Iguana",
+   "Gecko",
+   "Chameleon"
+  ],
+  "answer": 3,
+  "fact": "A chameleon's eyes can move separately, so it can look in two directions at once.",
+  "diff": 1
+ },
+ {
+  "id": "nature-111",
+  "cat": "nature",
+  "q": "What is the tallest animal in the world?",
+  "options": [
+   "Elephant",
+   "Ostrich",
+   "Giraffe",
+   "Camel"
+  ],
+  "answer": 2,
+  "fact": "A giraffe's tongue can be around 50 cm long and is dark in colour.",
+  "diff": 1
+ },
+ {
+  "id": "nature-112",
+  "cat": "nature",
+  "q": "What is an animal that eats only plants called?",
+  "options": [
+   "Omnivore",
+   "Herbivore",
+   "Predator",
+   "Carnivore"
+  ],
+  "answer": 1,
+  "fact": "Animals that eat both plants and meat, like bears and humans, are called omnivores.",
+  "diff": 1
+ },
+ {
+  "id": "nature-113",
+  "cat": "nature",
+  "q": "Which sea creature has a hard shell and often walks sideways?",
+  "options": [
+   "Crab",
+   "Starfish",
+   "Seahorse",
+   "Jellyfish"
+  ],
+  "answer": 0,
+  "fact": "A hermit crab doesn't grow its own shell; it moves into empty ones as it gets bigger.",
+  "diff": 1
+ },
+ {
+  "id": "nature-114",
+  "cat": "nature",
+  "q": "Which garden creature carries a shell on its back?",
+  "options": [
+   "Woodlouse",
+   "Snail",
+   "Slug",
+   "Worm"
+  ],
+  "answer": 1,
+  "fact": "Snails make a slimy mucus that helps them glide along, even over sharp edges.",
+  "diff": 1
+ },
+ {
+  "id": "nature-115",
+  "cat": "nature",
+  "q": "In which season do many trees drop their leaves?",
+  "options": [
+   "Midsummer",
+   "Autumn",
+   "Summer",
+   "Spring"
+  ],
+  "answer": 1,
+  "fact": "Leaves change colour as green chlorophyll breaks down, revealing yellow and orange pigments.",
+  "diff": 1
+ },
+ {
+  "id": "nature-116",
+  "cat": "nature",
+  "q": "Which bird hoots and hunts at night?",
+  "options": [
+   "Swan",
+   "Robin",
+   "Owl",
+   "Duck"
+  ],
+  "answer": 2,
+  "fact": "Owls can turn their heads around about 270 degrees.",
+  "diff": 1
+ },
+ {
+  "id": "nature-117",
+  "cat": "nature",
+  "q": "Which African animal has black and white stripes?",
+  "options": [
+   "Zebra",
+   "Buffalo",
+   "Antelope",
+   "Gazelle"
+  ],
+  "answer": 0,
+  "fact": "Every zebra's stripe pattern is unique, a bit like a human fingerprint.",
+  "diff": 1
+ },
+ {
+  "id": "nature-118",
+  "cat": "nature",
+  "q": "What is it called when animals sleep through the winter?",
+  "options": [
+   "Moulting",
+   "Migration",
+   "Hibernation",
+   "Camouflage"
+  ],
+  "answer": 2,
+  "fact": "Hedgehogs, dormice and bats are among the UK animals that hibernate.",
+  "diff": 1
+ },
+ {
+  "id": "nature-119",
+  "cat": "nature",
+  "q": "Which tall yellow flower is named after the Sun?",
+  "options": [
+   "Buttercup",
+   "Daffodil",
+   "Sunflower",
+   "Marigold"
+  ],
+  "answer": 2,
+  "fact": "Young sunflowers follow the Sun across the sky, but most fully grown ones face east.",
+  "diff": 1
+ },
+ {
+  "id": "nature-120",
+  "cat": "nature",
+  "q": "Which sweet liquid do bees collect from flowers?",
+  "options": [
+   "Milk",
+   "Nectar",
+   "Sap",
+   "Dew"
+  ],
+  "answer": 1,
+  "fact": "Many bees carry pollen home in little 'baskets' on their back legs.",
+  "diff": 1
+ },
+ {
+  "id": "nature-121",
+  "cat": "nature",
+  "q": "What is a male chicken called?",
+  "options": [
+   "A gander",
+   "A stag",
+   "A cockerel",
+   "A drake"
+  ],
+  "answer": 2,
+  "fact": "A female chicken is called a hen, and a young female is called a pullet.",
+  "diff": 1
+ },
+ {
+  "id": "nature-122",
+  "cat": "nature",
+  "q": "Which animal is famous for building dams across rivers?",
+  "options": [
+   "Otter",
+   "Badger",
+   "Rabbit",
+   "Beaver"
+  ],
+  "answer": 3,
+  "fact": "Beavers have orange teeth, coloured by iron that makes them extra strong.",
+  "diff": 1
+ },
+ {
+  "id": "nature-123",
+  "cat": "nature",
+  "q": "What is a baby bear called?",
+  "options": [
+   "A chick",
+   "A cub",
+   "A joey",
+   "A pup"
+  ],
+  "answer": 1,
+  "fact": "Lions, tigers and foxes also call their babies cubs.",
+  "diff": 1
+ },
+ {
+  "id": "nature-124",
+  "cat": "nature",
+  "q": "Which part of a plant grows underground and soaks up water?",
+  "options": [
+   "Roots",
+   "Petals",
+   "Stem",
+   "Leaves"
+  ],
+  "answer": 0,
+  "fact": "Carrots, parsnips and beetroot are all roots that we eat.",
+  "diff": 1
+ },
+ {
+  "id": "nature-125",
+  "cat": "nature",
+  "q": "What is a group of wolves called?",
+  "options": [
+   "A pack",
+   "A swarm",
+   "A herd",
+   "A flock"
+  ],
+  "answer": 0,
+  "fact": "Wolves howl to keep in touch with their pack, and a howl can carry for miles.",
+  "diff": 1
+ },
+ {
+  "id": "nature-126",
+  "cat": "nature",
+  "q": "Which African animal is famous for its 'laughing' call?",
+  "options": [
+   "Meerkat",
+   "Warthog",
+   "Zebra",
+   "Hyena"
+  ],
+  "answer": 3,
+  "fact": "Despite looking a bit like dogs, hyenas are more closely related to cats and mongooses.",
+  "diff": 1
+ },
+ {
+  "id": "nature-127",
+  "cat": "nature",
+  "q": "Which playful sea mammal talks using clicks and whistles?",
+  "options": [
+   "Dolphin",
+   "Shark",
+   "Octopus",
+   "Seahorse"
+  ],
+  "answer": 0,
+  "fact": "Dolphins rest one half of their brain at a time, so they can keep surfacing to breathe.",
+  "diff": 1
+ },
+ {
+  "id": "nature-128",
+  "cat": "nature",
+  "q": "What is a female deer called?",
+  "options": [
+   "A mare",
+   "A doe",
+   "A sow",
+   "A ewe"
+  ],
+  "answer": 1,
+  "fact": "A male deer is called a stag or a buck, and a baby deer is a fawn.",
+  "diff": 1
+ },
+ {
+  "id": "nature-129",
+  "cat": "nature",
+  "q": "Which tree do acorns come from?",
+  "options": [
+   "Oak",
+   "Willow",
+   "Birch",
+   "Pine"
+  ],
+  "answer": 0,
+  "fact": "A big oak tree can produce tens of thousands of acorns in a good year.",
+  "diff": 1
+ },
+ {
+  "id": "nature-130",
+  "cat": "nature",
+  "q": "Which spring flower is famously grown in fields across the Netherlands?",
+  "options": [
+   "Orchid",
+   "Lily",
+   "Tulip",
+   "Rose"
+  ],
+  "answer": 2,
+  "fact": "Tulips originally came from Central Asia and Turkey, not the Netherlands.",
+  "diff": 1
+ },
+ {
+  "id": "nature-131",
+  "cat": "nature",
+  "q": "What colour are flamingos?",
+  "options": [
+   "Blue",
+   "Pink",
+   "Yellow",
+   "Green"
+  ],
+  "answer": 1,
+  "fact": "Flamingos get their pink colour from pigments in the shrimp and algae they eat.",
+  "diff": 1
+ },
+ {
+  "id": "nature-132",
+  "cat": "nature",
+  "q": "Which animal is nicknamed 'the ship of the desert'?",
+  "options": [
+   "Llama",
+   "Horse",
+   "Donkey",
+   "Camel"
+  ],
+  "answer": 3,
+  "fact": "A camel's hump stores fat, not water.",
+  "diff": 1
+ },
+ {
+  "id": "nature-133",
+  "cat": "nature",
+  "q": "Which small beetle is usually red with black spots?",
+  "options": [
+   "Wasp",
+   "Bumblebee",
+   "Ant",
+   "Ladybird"
+  ],
+  "answer": 3,
+  "fact": "A ladybird's bright colours warn birds that it tastes nasty.",
+  "diff": 1
+ },
+ {
+  "id": "nature-134",
+  "cat": "nature",
+  "q": "What are small balls of ice that fall from storm clouds called?",
+  "options": [
+   "Drizzle",
+   "Dew",
+   "Hail",
+   "Fog"
+  ],
+  "answer": 2,
+  "fact": "Hailstones grow in layers as they're tossed up and down inside storm clouds.",
+  "diff": 1
+ },
+ {
+  "id": "nature-135",
+  "cat": "nature",
+  "q": "What is a baby goat called?",
+  "options": [
+   "A foal",
+   "A piglet",
+   "A kid",
+   "A cub"
+  ],
+  "answer": 2,
+  "fact": "Goats have rectangular pupils, which give them a very wide field of view.",
+  "diff": 1
+ }
+]

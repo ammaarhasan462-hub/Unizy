@@ -1,0 +1,492 @@
+[
+ {
+  "id": "sport-101",
+  "cat": "sport",
+  "q": "How many players does a netball team have on court?",
+  "options": [
+   "5",
+   "7",
+   "9",
+   "11"
+  ],
+  "answer": 1,
+  "fact": "Each netball position wears a bib with letters, such as GS for Goal Shooter.",
+  "diff": 1
+ },
+ {
+  "id": "sport-102",
+  "cat": "sport",
+  "q": "In which sport would you hit a home run?",
+  "options": [
+   "Baseball",
+   "Cricket",
+   "Golf",
+   "Tennis"
+  ],
+  "answer": 0,
+  "fact": "Rounders, often played in British schools, is a close relative of baseball.",
+  "diff": 1
+ },
+ {
+  "id": "sport-103",
+  "cat": "sport",
+  "q": "In darts, what is the highest score possible with three darts?",
+  "options": [
+   "100",
+   "150",
+   "200",
+   "180"
+  ],
+  "answer": 3,
+  "fact": "A 180 needs all three darts to land in the treble 20, the thin inner ring worth triple points.",
+  "diff": 1
+ },
+ {
+  "id": "sport-104",
+  "cat": "sport",
+  "q": "Which sport is played at Wimbledon?",
+  "options": [
+   "Golf",
+   "Cricket",
+   "Tennis",
+   "Rugby"
+  ],
+  "answer": 2,
+  "fact": "Players at Wimbledon must wear almost entirely white clothing.",
+  "diff": 1
+ },
+ {
+  "id": "sport-105",
+  "cat": "sport",
+  "q": "How many players are in a rugby union team on the pitch?",
+  "options": [
+   "11",
+   "15",
+   "9",
+   "13"
+  ],
+  "answer": 1,
+  "fact": "Rugby league is a little different, with 13 players on each side.",
+  "diff": 1
+ },
+ {
+  "id": "sport-106",
+  "cat": "sport",
+  "q": "In which sport do players use a cue to pot balls?",
+  "options": [
+   "Snooker",
+   "Golf",
+   "Hockey",
+   "Croquet"
+  ],
+  "answer": 0,
+  "fact": "The highest possible break in snooker under normal play is 147.",
+  "diff": 1
+ },
+ {
+  "id": "sport-107",
+  "cat": "sport",
+  "q": "In golf, what is a score of one under par on a hole called?",
+  "options": [
+   "Bogey",
+   "Eagle",
+   "Albatross",
+   "Birdie"
+  ],
+  "answer": 3,
+  "fact": "Finishing a hole two under par is called an eagle.",
+  "diff": 1
+ },
+ {
+  "id": "sport-108",
+  "cat": "sport",
+  "q": "What shape is a rugby ball?",
+  "options": [
+   "Round",
+   "Square",
+   "Oval",
+   "Triangular"
+  ],
+  "answer": 2,
+  "fact": "Early rugby balls were made from pigs' bladders covered in leather.",
+  "diff": 1
+ },
+ {
+  "id": "sport-109",
+  "cat": "sport",
+  "q": "How many players does each basketball team have on court?",
+  "options": [
+   "6",
+   "5",
+   "7",
+   "11"
+  ],
+  "answer": 1,
+  "fact": "Basketball was invented in 1891 using peach baskets as the hoops.",
+  "diff": 1
+ },
+ {
+  "id": "sport-110",
+  "cat": "sport",
+  "q": "The Grand National is a famous event in which sport?",
+  "options": [
+   "Horse racing",
+   "Rowing",
+   "Cycling",
+   "Motor racing"
+  ],
+  "answer": 0,
+  "fact": "The Grand National is held at Aintree Racecourse, near Liverpool.",
+  "diff": 1
+ },
+ {
+  "id": "sport-111",
+  "cat": "sport",
+  "q": "In chess, which piece must you protect to avoid losing the game?",
+  "options": [
+   "Queen",
+   "Rook",
+   "Knight",
+   "King"
+  ],
+  "answer": 3,
+  "fact": "The queen is the most powerful piece, able to move any distance in a straight line in any direction.",
+  "diff": 1
+ },
+ {
+  "id": "sport-112",
+  "cat": "sport",
+  "q": "In which sport do players hit a puck?",
+  "options": [
+   "Polo",
+   "Lacrosse",
+   "Ice hockey",
+   "Cricket"
+  ],
+  "answer": 2,
+  "fact": "Ice hockey pucks are usually frozen before games so that they bounce less.",
+  "diff": 1
+ },
+ {
+  "id": "sport-113",
+  "cat": "sport",
+  "q": "Lord's in London is a world-famous ground for which sport?",
+  "options": [
+   "Tennis",
+   "Cricket",
+   "Rugby",
+   "Football"
+  ],
+  "answer": 1,
+  "fact": "Lord's is often called the 'Home of Cricket'.",
+  "diff": 1
+ },
+ {
+  "id": "sport-114",
+  "cat": "sport",
+  "q": "Which board game features properties, houses and hotels?",
+  "options": [
+   "Monopoly",
+   "Cluedo",
+   "Scrabble",
+   "Risk"
+  ],
+  "answer": 0,
+  "fact": "On a Monopoly board, the Free Parking corner sits diagonally opposite Go.",
+  "diff": 1
+ },
+ {
+  "id": "sport-115",
+  "cat": "sport",
+  "q": "In boxing, what does KO stand for?",
+  "options": [
+   "Kick off",
+   "Keep out",
+   "Knee out",
+   "Knockout"
+  ],
+  "answer": 3,
+  "fact": "Despite being called a ring, a boxing ring is actually square.",
+  "diff": 1
+ },
+ {
+  "id": "sport-116",
+  "cat": "sport",
+  "q": "Which flag is waved to show the end of a Formula 1 race?",
+  "options": [
+   "Red",
+   "Green",
+   "Chequered",
+   "Blue"
+  ],
+  "answer": 2,
+  "fact": "A red flag in Formula 1 means the session has been stopped.",
+  "diff": 1
+ },
+ {
+  "id": "sport-117",
+  "cat": "sport",
+  "q": "How often are the Summer Olympic Games normally held?",
+  "options": [
+   "Every year",
+   "Every 4 years",
+   "Every 2 years",
+   "Every 10 years"
+  ],
+  "answer": 1,
+  "fact": "Since 1994, the Summer and Winter Games have been held two years apart.",
+  "diff": 1
+ },
+ {
+  "id": "sport-118",
+  "cat": "sport",
+  "q": "In which sport do you try to knock down ten pins with a ball?",
+  "options": [
+   "Bowling",
+   "Croquet",
+   "Curling",
+   "Billiards"
+  ],
+  "answer": 0,
+  "fact": "A perfect game in ten-pin bowling scores 300 points.",
+  "diff": 1
+ },
+ {
+  "id": "sport-119",
+  "cat": "sport",
+  "q": "In football, what colour card means a player is sent off?",
+  "options": [
+   "Yellow",
+   "Green",
+   "Blue",
+   "Red"
+  ],
+  "answer": 3,
+  "fact": "Red and yellow cards were introduced at the 1970 World Cup in Mexico.",
+  "diff": 1
+ },
+ {
+  "id": "sport-120",
+  "cat": "sport",
+  "q": "Which water sport involves riding waves while standing on a board?",
+  "options": [
+   "Rowing",
+   "Diving",
+   "Surfing",
+   "Water polo"
+  ],
+  "answer": 2,
+  "fact": "Surfing made its Olympic debut at the Tokyo 2020 Games.",
+  "diff": 1
+ },
+ {
+  "id": "sport-121",
+  "cat": "sport",
+  "q": "Usain Bolt is famous for which sport?",
+  "options": [
+   "Swimming",
+   "Sprinting",
+   "Cycling",
+   "Tennis"
+  ],
+  "answer": 1,
+  "fact": "Usain Bolt comes from Jamaica, and his famous nickname is 'Lightning Bolt'.",
+  "diff": 1
+ },
+ {
+  "id": "sport-122",
+  "cat": "sport",
+  "q": "In tennis, what is a serve called that the opponent fails to touch?",
+  "options": [
+   "Ace",
+   "Let",
+   "Fault",
+   "Volley"
+  ],
+  "answer": 0,
+  "fact": "If a serve clips the net and still lands in, it's called a let and is replayed.",
+  "diff": 1
+ },
+ {
+  "id": "sport-123",
+  "cat": "sport",
+  "q": "In which sport would you race around a velodrome?",
+  "options": [
+   "Swimming",
+   "Skiing",
+   "Rowing",
+   "Cycling"
+  ],
+  "answer": 3,
+  "fact": "Velodrome tracks are steeply banked so riders can take the bends at speed.",
+  "diff": 1
+ },
+ {
+  "id": "sport-124",
+  "cat": "sport",
+  "q": "In cricket, how many balls are bowled in a standard over?",
+  "options": [
+   "4",
+   "8",
+   "6",
+   "10"
+  ],
+  "answer": 2,
+  "fact": "An over in which the bowler gives away no runs is called a maiden.",
+  "diff": 1
+ },
+ {
+  "id": "sport-125",
+  "cat": "sport",
+  "q": "Which sport is played on horseback using long mallets?",
+  "options": [
+   "Croquet",
+   "Polo",
+   "Lacrosse",
+   "Hurling"
+  ],
+  "answer": 1,
+  "fact": "A polo match is divided into periods called chukkas.",
+  "diff": 1
+ },
+ {
+  "id": "sport-126",
+  "cat": "sport",
+  "q": "In which card game do you try to get as close to 21 as possible?",
+  "options": [
+   "Blackjack",
+   "Snap",
+   "Rummy",
+   "Solitaire"
+  ],
+  "answer": 0,
+  "fact": "In the UK, a similar game is often called pontoon.",
+  "diff": 1
+ },
+ {
+  "id": "sport-127",
+  "cat": "sport",
+  "q": "Which swimming stroke is done lying on your back?",
+  "options": [
+   "Breaststroke",
+   "Butterfly",
+   "Front crawl",
+   "Backstroke"
+  ],
+  "answer": 3,
+  "fact": "Backstroke swimmers start their races in the water, holding on to the starting block.",
+  "diff": 1
+ },
+ {
+  "id": "sport-128",
+  "cat": "sport",
+  "q": "Which city hosted the 2012 Summer Olympics?",
+  "options": [
+   "Paris",
+   "Beijing",
+   "London",
+   "Sydney"
+  ],
+  "answer": 2,
+  "fact": "London was the first city to host the Summer Olympics three times: 1908, 1948 and 2012.",
+  "diff": 1
+ },
+ {
+  "id": "sport-129",
+  "cat": "sport",
+  "q": "What is the official in charge of a football match called?",
+  "options": [
+   "Umpire",
+   "Referee",
+   "Judge",
+   "Steward"
+  ],
+  "answer": 1,
+  "fact": "The assistant referees who run the touchlines used to be called linesmen.",
+  "diff": 1
+ },
+ {
+  "id": "sport-130",
+  "cat": "sport",
+  "q": "In which sport would you perform on a balance beam?",
+  "options": [
+   "Gymnastics",
+   "Diving",
+   "Athletics",
+   "Fencing"
+  ],
+  "answer": 0,
+  "fact": "The balance beam used in gymnastics is just 10 centimetres wide.",
+  "diff": 1
+ },
+ {
+  "id": "sport-131",
+  "cat": "sport",
+  "q": "In which sport do teams hit a ball over a high net using their hands?",
+  "options": [
+   "Netball",
+   "Tennis",
+   "Badminton",
+   "Volleyball"
+  ],
+  "answer": 3,
+  "fact": "Beach volleyball is played in teams of just two players.",
+  "diff": 1
+ },
+ {
+  "id": "sport-132",
+  "cat": "sport",
+  "q": "In which kind of race do runners pass a baton to teammates?",
+  "options": [
+   "Hurdles",
+   "Marathon",
+   "Relay",
+   "Steeplechase"
+  ],
+  "answer": 2,
+  "fact": "In a sprint relay, the baton must be passed within a marked exchange zone.",
+  "diff": 1
+ },
+ {
+  "id": "sport-133",
+  "cat": "sport",
+  "q": "In which winter sport do you ride down a slope on a single wide board?",
+  "options": [
+   "Bobsleigh",
+   "Snowboarding",
+   "Skeleton",
+   "Ski jumping"
+  ],
+  "answer": 1,
+  "fact": "Snowboarding first became an Olympic sport at the 1998 Nagano Winter Games.",
+  "diff": 1
+ },
+ {
+  "id": "sport-134",
+  "cat": "sport",
+  "q": "Which garden game involves hitting balls through hoops with a mallet?",
+  "options": [
+   "Croquet",
+   "Bowls",
+   "Rounders",
+   "Quoits"
+  ],
+  "answer": 0,
+  "fact": "Croquet was one of the sports played at the 1900 Paris Olympics.",
+  "diff": 1
+ },
+ {
+  "id": "sport-135",
+  "cat": "sport",
+  "q": "The Ryder Cup is a famous competition in which sport?",
+  "options": [
+   "Tennis",
+   "Sailing",
+   "Cricket",
+   "Golf"
+  ],
+  "answer": 3,
+  "fact": "The Ryder Cup is played between teams from Europe and the United States.",
+  "diff": 1
+ }
+]

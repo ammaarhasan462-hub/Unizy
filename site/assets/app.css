@@ -320,3 +320,29 @@ a.ux-ghost,.ux-actions .ux-ghost{text-decoration:none;height:40px;min-height:40p
 .pl-grid>.uw-hero{grid-column:1/-1}
 .uw-sun{right:-90px;top:-100px;opacity:.55}
 .uw-hero>*:not(.uw-sun){position:relative;z-index:1}
+
+/* ---------- Unwind word game ---------- */
+.uw-tiles{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:6px;max-width:calc(var(--n) * 52px);width:100%;position:relative}
+.uw-tile{aspect-ratio:1/1.12;border-radius:9px;border:2px solid #E2D7BE;background:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:600;font-size:clamp(17px,3.4vw,26px);color:var(--ink);transition:background-color .3s,border-color .3s}
+.uw-tile.now{border-color:#B8862F;box-shadow:0 0 0 3px rgba(184,134,47,.18)}
+.uw-tile.got{background:#4C9A6A;border-color:#4C9A6A;color:#fff}
+.uw-tile.miss{background:#EFEDE6;border-color:#E2DFD4;border-style:dashed}
+.uw-tile.flip{animation:uwFlip .55s var(--ease)}
+@keyframes uwFlip{0%{transform:rotateX(90deg)}100%{transform:none}}
+.uw-end .uw-tile.miss{background:#F6E4E1;border-color:#E3B4AD;border-style:solid;color:#9B4A42}
+.uw-top{align-items:center}
+.uw-top .uw-tiles{flex:1 1 auto}
+.uw-sub{margin:0;font-size:13.5px;color:var(--muted)}
+.uw-hint{margin:0;font-size:15px;color:#34463F;position:relative}
+.uw-intro-tiles{margin-top:4px}
+.uw-guesscard{gap:14px}
+.uw-guess{display:flex;gap:8px;flex-wrap:wrap}
+.uw-guess input{font-family:var(--mono);font-size:22px;letter-spacing:.3em;text-transform:uppercase;flex:1 1 220px;min-width:0;padding:10px 14px;border-radius:10px;border:1.5px solid #C8D1CB}
+.uw-guess input:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 3px rgba(184,134,47,.2)}
+.uw-gmsg{margin:0;font-weight:600;color:#9B4A42}
+.uw-pasts{display:flex;flex-direction:column;gap:5px}
+.uw-past{display:flex;gap:4px}
+.uw-past span{width:30px;height:32px;border-radius:6px;background:#EFEDE6;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:15px;color:#5D6D67}
+.uw-past span.hit{background:#4C9A6A;color:#fff}
+@media (max-width:640px){.uw-tiles{gap:4px}.uw-tile{border-radius:7px}.uw-past span{width:24px;height:28px;font-size:13px}}
+@media (prefers-reduced-motion:reduce){.uw-tile.flip{animation:none}}

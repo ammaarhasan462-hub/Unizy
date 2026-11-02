@@ -1,0 +1,492 @@
+[
+ {
+  "id": "food-101",
+  "cat": "food",
+  "q": "What is the main ingredient of an omelette?",
+  "options": [
+   "Flour",
+   "Eggs",
+   "Rice",
+   "Potatoes"
+  ],
+  "answer": 1,
+  "fact": "A classic French omelette is cooked quickly and rolled so it stays soft inside.",
+  "diff": 1
+ },
+ {
+  "id": "food-102",
+  "cat": "food",
+  "q": "Spaghetti bolognese is named after a city in which country?",
+  "options": [
+   "Italy",
+   "Spain",
+   "France",
+   "Greece"
+  ],
+  "answer": 0,
+  "fact": "In Bologna itself, the traditional meat ragù is usually served with tagliatelle, not spaghetti.",
+  "diff": 1
+ },
+ {
+  "id": "food-103",
+  "cat": "food",
+  "q": "What colour is the flesh of a typical ripe kiwi fruit?",
+  "options": [
+   "Purple",
+   "Red",
+   "Blue",
+   "Green"
+  ],
+  "answer": 3,
+  "fact": "Kiwi fruit were once sold under the name Chinese gooseberries.",
+  "diff": 1
+ },
+ {
+  "id": "food-104",
+  "cat": "food",
+  "q": "Which drink is made from roasted beans and can be served as an espresso?",
+  "options": [
+   "Tea",
+   "Lemonade",
+   "Coffee",
+   "Cola"
+  ],
+  "answer": 2,
+  "fact": "Coffee beans are actually the seeds of a small, cherry-like fruit.",
+  "diff": 1
+ },
+ {
+  "id": "food-105",
+  "cat": "food",
+  "q": "Chips are usually made by cutting up which vegetable?",
+  "options": [
+   "Carrot",
+   "Potato",
+   "Parsnip",
+   "Turnip"
+  ],
+  "answer": 1,
+  "fact": "Potatoes first came to Europe from South America in the 16th century.",
+  "diff": 1
+ },
+ {
+  "id": "food-106",
+  "cat": "food",
+  "q": "Which fruit is dried to make raisins?",
+  "options": [
+   "Grapes",
+   "Plums",
+   "Cherries",
+   "Apricots"
+  ],
+  "answer": 0,
+  "fact": "Sultanas and currants are dried grapes too, just from different varieties.",
+  "diff": 1
+ },
+ {
+  "id": "food-107",
+  "cat": "food",
+  "q": "What is the yellow part of an egg called?",
+  "options": [
+   "White",
+   "Shell",
+   "Crust",
+   "Yolk"
+  ],
+  "answer": 3,
+  "fact": "The colour of an egg yolk depends largely on what the hen has been eating.",
+  "diff": 1
+ },
+ {
+  "id": "food-108",
+  "cat": "food",
+  "q": "Which country is famous for sushi?",
+  "options": [
+   "Italy",
+   "Brazil",
+   "Japan",
+   "India"
+  ],
+  "answer": 2,
+  "fact": "The word sushi refers to the seasoned vinegared rice, not the raw fish.",
+  "diff": 1
+ },
+ {
+  "id": "food-109",
+  "cat": "food",
+  "q": "Which vegetable is traditionally carved into a lantern at Halloween?",
+  "options": [
+   "Cabbage",
+   "Pumpkin",
+   "Cucumber",
+   "Aubergine"
+  ],
+  "answer": 1,
+  "fact": "In Ireland and Scotland, people carved turnips long before pumpkins caught on.",
+  "diff": 1
+ },
+ {
+  "id": "food-110",
+  "cat": "food",
+  "q": "Tofu is made from which kind of bean?",
+  "options": [
+   "Soya beans",
+   "Kidney beans",
+   "Baked beans",
+   "Broad beans"
+  ],
+  "answer": 0,
+  "fact": "Tofu is made by curdling soya milk, a bit like the way cheese is made.",
+  "diff": 1
+ },
+ {
+  "id": "food-111",
+  "cat": "food",
+  "q": "According to the saying, which fruit a day keeps the doctor away?",
+  "options": [
+   "Banana",
+   "Orange",
+   "Pear",
+   "Apple"
+  ],
+  "answer": 3,
+  "fact": "Thousands of different apple varieties are grown around the world.",
+  "diff": 1
+ },
+ {
+  "id": "food-112",
+  "cat": "food",
+  "q": "Which drink is made by fermenting grapes?",
+  "options": [
+   "Beer",
+   "Whisky",
+   "Wine",
+   "Vodka"
+  ],
+  "answer": 2,
+  "fact": "Sparkling wine can only be called Champagne if it comes from the Champagne region of France.",
+  "diff": 1
+ },
+ {
+  "id": "food-113",
+  "cat": "food",
+  "q": "Alongside eggs and milk, what is the main ingredient of Yorkshire pudding batter?",
+  "options": [
+   "Sugar",
+   "Flour",
+   "Cheese",
+   "Oats"
+  ],
+  "answer": 1,
+  "fact": "Yorkshire puddings were often served with gravy before the meat, to fill people up.",
+  "diff": 1
+ },
+ {
+  "id": "food-114",
+  "cat": "food",
+  "q": "What kind of food is cheddar?",
+  "options": [
+   "Cheese",
+   "Bread",
+   "Sausage",
+   "Biscuit"
+  ],
+  "answer": 0,
+  "fact": "Cheddar takes its name from a village in Somerset, near Cheddar Gorge.",
+  "diff": 1
+ },
+ {
+  "id": "food-115",
+  "cat": "food",
+  "q": "Penne, fusilli and farfalle are all types of what?",
+  "options": [
+   "Bread",
+   "Cheese",
+   "Rice",
+   "Pasta"
+  ],
+  "answer": 3,
+  "fact": "Farfalle means 'butterflies' in Italian, after its bow-tie shape.",
+  "diff": 1
+ },
+ {
+  "id": "food-116",
+  "cat": "food",
+  "q": "Tacos and burritos are classic dishes from which country?",
+  "options": [
+   "Thailand",
+   "Italy",
+   "Mexico",
+   "Greece"
+  ],
+  "answer": 2,
+  "fact": "Corn tortillas have been eaten in Mexico for thousands of years.",
+  "diff": 1
+ },
+ {
+  "id": "food-117",
+  "cat": "food",
+  "q": "Which fruit has its seeds on the outside?",
+  "options": [
+   "Banana",
+   "Strawberry",
+   "Orange",
+   "Grape"
+  ],
+  "answer": 1,
+  "fact": "Botanically, strawberries aren't true berries, but bananas are.",
+  "diff": 1
+ },
+ {
+  "id": "food-118",
+  "cat": "food",
+  "q": "Tinned baked beans usually come in a sauce made from what?",
+  "options": [
+   "Tomatoes",
+   "Cheese",
+   "Mustard",
+   "Gravy"
+  ],
+  "answer": 0,
+  "fact": "The beans in a tin of baked beans are usually haricot beans, also called navy beans.",
+  "diff": 1
+ },
+ {
+  "id": "food-119",
+  "cat": "food",
+  "q": "Which hot drink, made from dried leaves, is often served with milk in Britain?",
+  "options": [
+   "Coffee",
+   "Cocoa",
+   "Horlicks",
+   "Tea"
+  ],
+  "answer": 3,
+  "fact": "Black, green and white teas all come from the same plant, Camellia sinensis.",
+  "diff": 1
+ },
+ {
+  "id": "food-120",
+  "cat": "food",
+  "q": "Which long yellow fruit has a skin you peel before eating?",
+  "options": [
+   "Lemon",
+   "Mango",
+   "Banana",
+   "Pineapple"
+  ],
+  "answer": 2,
+  "fact": "A single banana is called a finger, and a bunch of them is called a hand.",
+  "diff": 1
+ },
+ {
+  "id": "food-121",
+  "cat": "food",
+  "q": "Which fish is most commonly used for British fish and chips?",
+  "options": [
+   "Salmon",
+   "Cod",
+   "Tuna",
+   "Trout"
+  ],
+  "answer": 1,
+  "fact": "Haddock is the other big favourite, especially in Scotland and the north of England.",
+  "diff": 1
+ },
+ {
+  "id": "food-122",
+  "cat": "food",
+  "q": "Popcorn is made by heating the kernels of which plant?",
+  "options": [
+   "Corn",
+   "Rice",
+   "Wheat",
+   "Oats"
+  ],
+  "answer": 0,
+  "fact": "Popcorn pops because the water inside each kernel turns to steam and bursts it open.",
+  "diff": 1
+ },
+ {
+  "id": "food-123",
+  "cat": "food",
+  "q": "Which vegetable is famous for making people cry when they chop it?",
+  "options": [
+   "Carrot",
+   "Celery",
+   "Courgette",
+   "Onion"
+  ],
+  "answer": 3,
+  "fact": "Chilling an onion in the fridge before cutting it can help reduce the tears.",
+  "diff": 1
+ },
+ {
+  "id": "food-124",
+  "cat": "food",
+  "q": "Along with sugar, what is the main ingredient of meringue?",
+  "options": [
+   "Egg yolks",
+   "Butter",
+   "Egg whites",
+   "Cream"
+  ],
+  "answer": 2,
+  "fact": "A pinch of cream of tartar helps whisked egg whites hold their shape.",
+  "diff": 1
+ },
+ {
+  "id": "food-125",
+  "cat": "food",
+  "q": "Botanically speaking, is a tomato a fruit or a vegetable?",
+  "options": [
+   "Vegetable",
+   "Fruit",
+   "Nut",
+   "Grain"
+  ],
+  "answer": 1,
+  "fact": "Tomatoes belong to the same plant family as potatoes and aubergines.",
+  "diff": 1
+ },
+ {
+  "id": "food-126",
+  "cat": "food",
+  "q": "Which cheese is traditionally used on a margherita pizza?",
+  "options": [
+   "Mozzarella",
+   "Cheddar",
+   "Stilton",
+   "Brie"
+  ],
+  "answer": 0,
+  "fact": "Mozzarella is stretched and kneaded in hot water, which gives it its stringy texture.",
+  "diff": 1
+ },
+ {
+  "id": "food-127",
+  "cat": "food",
+  "q": "Chocolate is made from which beans?",
+  "options": [
+   "Coffee beans",
+   "Vanilla pods",
+   "Carob seeds",
+   "Cocoa beans"
+  ],
+  "answer": 3,
+  "fact": "Cocoa pods grow straight out of the trunk and branches of the cacao tree.",
+  "diff": 1
+ },
+ {
+  "id": "food-128",
+  "cat": "food",
+  "q": "Which fruit is most often used to make marmalade?",
+  "options": [
+   "Strawberries",
+   "Apples",
+   "Oranges",
+   "Plums"
+  ],
+  "answer": 2,
+  "fact": "Bitter Seville oranges are prized for marmalade because they set so well.",
+  "diff": 1
+ },
+ {
+  "id": "food-129",
+  "cat": "food",
+  "q": "What is the traditional filling of a Cornish pasty?",
+  "options": [
+   "Chicken and leek",
+   "Beef and vegetables",
+   "Cheese and onion",
+   "Fish and peas"
+  ],
+  "answer": 1,
+  "fact": "Genuine Cornish pasties have protected status and must be prepared in Cornwall.",
+  "diff": 1
+ },
+ {
+  "id": "food-130",
+  "cat": "food",
+  "q": "Which meat is traditionally served with mint sauce?",
+  "options": [
+   "Lamb",
+   "Chicken",
+   "Pork",
+   "Duck"
+  ],
+  "answer": 0,
+  "fact": "Mint sauce is usually made from chopped mint, vinegar and a little sugar.",
+  "diff": 1
+ },
+ {
+  "id": "food-131",
+  "cat": "food",
+  "q": "Cider is traditionally made from which fruit?",
+  "options": [
+   "Grapes",
+   "Pears",
+   "Cherries",
+   "Apples"
+  ],
+  "answer": 3,
+  "fact": "Perry is a similar drink made by fermenting pears instead of apples.",
+  "diff": 1
+ },
+ {
+  "id": "food-132",
+  "cat": "food",
+  "q": "Which herb is the main ingredient of classic green pesto?",
+  "options": [
+   "Mint",
+   "Rosemary",
+   "Basil",
+   "Thyme"
+  ],
+  "answer": 2,
+  "fact": "Classic pesto comes from Genoa, in the Liguria region of north-west Italy.",
+  "diff": 1
+ },
+ {
+  "id": "food-133",
+  "cat": "food",
+  "q": "Which large fruit has a hard, hairy shell and watery juice inside?",
+  "options": [
+   "Melon",
+   "Coconut",
+   "Pineapple",
+   "Papaya"
+  ],
+  "answer": 1,
+  "fact": "Despite its name, a coconut is botanically a drupe rather than a true nut.",
+  "diff": 1
+ },
+ {
+  "id": "food-134",
+  "cat": "food",
+  "q": "Which orange vegetable is said to help you see in the dark?",
+  "options": [
+   "Carrot",
+   "Swede",
+   "Pumpkin",
+   "Sweet potato"
+  ],
+  "answer": 0,
+  "fact": "Early cultivated carrots were often purple or yellow rather than orange.",
+  "diff": 1
+ },
+ {
+  "id": "food-135",
+  "cat": "food",
+  "q": "The Victoria sponge cake is named after which British monarch?",
+  "options": [
+   "Elizabeth I",
+   "Queen Anne",
+   "Mary I",
+   "Queen Victoria"
+  ],
+  "answer": 3,
+  "fact": "The Victoria sponge is also called a Victoria sandwich, as the jam is sandwiched between two cakes.",
+  "diff": 1
+ }
+]
