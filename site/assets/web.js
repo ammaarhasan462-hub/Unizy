@@ -484,6 +484,8 @@
     routes: Routes,
     start: function (root, templateHTML, Comp) {
       Auth.load();
+      if (window.UnizyWelcome) { try { window.UnizyWelcome.prehide(Auth.session); } catch (e) { /* ignore */ } }
+      var welcome = function (u) { if (!window.UnizyWelcome) return; try { if (u) window.UnizyWelcome.check(Sync.rest, inst, u.id); else window.UnizyWelcome.release(); } catch (e) { console.error('[unizy] welcome', e); } };
       var fromLink = Auth.fromHash();
       track('app_view');
       // active study time: minutes in which the student actually interacted with the app (tab visible)
@@ -508,9 +510,10 @@
       inst.__app.afterRender = function (i) { Routes.check(i); if (window.UnizyPlay) { try { window.UnizyPlay.mount(i, i.__playKit); } catch (e) { console.error('[unizy] play', e); } } };
       if (/signin/.test(location.hash)) { location.replace('/login?next=' + encodeURIComponent('/app.html')); return inst; }
       var after = function () {
-        if (!Auth.session) { enableAi(inst); return; }
+        if (!Auth.session) { welcome(null); enableAi(inst); return; }
         Auth.fetchUser().then(function (u) {
-          if (!u) { Auth.store(null); enableAi(inst); return; }
+          if (!u) { welcome(null); Auth.store(null); enableAi(inst); return; }
+          welcome(u);
           enableAi(inst);
           Plan.refresh();
           Sync.rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});

@@ -54,6 +54,8 @@
   function saveSession(b) {
     var s = { access_token: b.access_token, refresh_token: b.refresh_token, expires_at: b.expires_at || Math.floor(Date.now() / 1000) + (b.expires_in || 3600), user: b.user ? { id: b.user.id, email: b.user.email, name: (b.user.user_metadata || {}).full_name || '' } : null };
     try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) {}
+    // a fresh sign-in always gets a fresh personal welcome (see welcome.js)
+    try { for (var i = sessionStorage.length - 1; i >= 0; i--) { var k = sessionStorage.key(i); if (k && k.indexOf('unizy:sw:seen:') === 0) sessionStorage.removeItem(k); } } catch (e) {}
     return s;
   }
   function go() { location.href = next; }
