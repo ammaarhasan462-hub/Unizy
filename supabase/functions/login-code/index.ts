@@ -23,11 +23,11 @@ async function sha256(s: string) {
   return Array.from(new Uint8Array(d)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-async function sendCode(email: string, code: string, purpose: "login" | "reset") {
+async function sendCode(email: string, code: string, purpose: "login" | "reset" | "verify") {
   const key = Deno.env.get("RESEND_API_KEY");
   if (!key) throw new Error("no email key");
-  const what = purpose === "reset" ? "reset your password" : "log in";
-  const subject = purpose === "reset" ? `${code} is your SaveMyGrade password reset code` : `${code} is your SaveMyGrade sign-in code`;
+  const what = purpose === "reset" ? "reset your password" : purpose === "verify" ? "verify your email" : "log in";
+  const subject = purpose === "reset" ? `${code} is your SaveMyGrade password reset code` : purpose === "verify" ? `${code} is your SaveMyGrade verification code` : `${code} is your SaveMyGrade sign-in code`;
   const text = `Your SaveMyGrade code is ${code}
 
 Type it on the SaveMyGrade page to ${what}. It works once and expires in an hour.
@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
   let body: any;
   try { body = await req.json(); } catch { return json(400, { error: "bad_request" }); }
   const email = String(body?.email || "").trim().toLowerCase().slice(0, 254);
-  const purpose: "login" | "reset" = body?.purpose === "reset" ? "reset" : "login";
+  const purpose: "login" | "reset" | "verify" = body?.purpose === "reset" ? "reset" : body?.purpose === "verify" ? "verify" : "login";
   if (!EMAIL_RE.test(email)) return json(400, { error: "invalid_email" });
 
   const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
 
   const type = purpose === "reset" ? "recovery" : "magiclink";
   let { data, error } = await service.auth.admin.generateLink({ type, email });
-  if (error && purpose === "login") {
+  if (error && purpose !== "reset") {
     // no account yet: "email me a code" also creates one, like the old sign-in link did
     const created = await service.auth.admin.createUser({ email, email_confirm: true });
     if (created.error && !/already/i.test(String(created.error.message))) return json(500, { error: "failed" });

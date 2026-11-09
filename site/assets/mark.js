@@ -4,6 +4,11 @@
   'use strict';
   var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'SaveMyGrade';
   var SKEY = 'unizy.session', DKEY = 'mark:drafts', root = document.getElementById('mk');
+  if (!root) return;
+  // Base paths: the public marker lives at /mark and /modules/CODE; inside the dashboard it lives under /dashboard/practice.
+  var BASE = root.getAttribute('data-base') || '/mark', MBASE = root.getAttribute('data-modbase') || '/modules/';
+  var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove
+  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4})\\/?$');
   var state = { q: '', ug: true, results: [], mod: null, questions: null, qsBusy: false, cur: null, result: null, attempts: null, busy: false, err: '' };
 
   // ---------- helpers ----------
@@ -64,14 +69,14 @@
     var u = new URL(location.href);
     ['m', 'q', 'v'].forEach(function (k) { u.searchParams.delete(k); });
     Object.keys(params || {}).forEach(function (k) { if (params[k]) u.searchParams.set(k, params[k]); });
-    var path = params && params.m ? '/modules/' + params.m : '/mark';
+    var path = params && params.m ? MBASE + params.m : BASE;
     u.searchParams.delete('m');
     var href = path + (u.search || '');
     if (replace) history.replaceState(null, '', href); else history.pushState(null, '', href);
     route();
   }
   function routeParams() {
-    var p = new URLSearchParams(location.search), m = /^\/modules\/([A-Za-z]{4}[0-9]{4})\/?$/.exec(location.pathname);
+    var p = new URLSearchParams(location.search), m = MODRE.exec(location.pathname);
     return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '' };
   }
   function route() {
@@ -96,6 +101,7 @@
     }).catch(function (e) { state.err = e.message; render(); });
   }
   function setTitle() {
+    if (HOOKS) return;
     var m = state.mod;
     document.title = m && m.title ? m.code + ' ' + m.title + ' · practice questions and marking · ' + BRAND : 'Find your UCL module · ' + BRAND;
   }
@@ -207,9 +213,12 @@
 
   // ---------- views ----------
   function head() {
-    return '<div class="mk-crumbs"><a href="/mark" data-go="home">UCL modules</a>' + (state.mod && state.mod.title ? ' <span>›</span> <a href="/modules/' + state.mod.code + '" data-go="mod">' + esc(state.mod.code) + '</a>' : '') + '</div>';
+    return '<div class="mk-crumbs"><a href="' + BASE + '" data-go="home">' + (HOOKS ? 'Practice' : 'UCL modules') + '</a>' + (state.mod && state.mod.title ? ' <span>›</span> <a href="' + MBASE + state.mod.code + '" data-go="mod">' + esc(state.mod.code) + '</a>' : '') + '</div>';
   }
   function viewSearch() {
+    var mine = HOOKS ? HOOKS.myModules() : [];
+    var picks = mine.length ? '<div class="mk-mine"><p class="mk-lab">Your modules</p><ul class="mk-results">' + mine.map(function (m) { return '<li><a href="' + MBASE + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + '</span></a></li>'; }).join('') + '</ul></div>' : '';
+    if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, answer an exam-style question and get it marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
     return '<section class="mk-hero"><span class="kicker">All ' + '6,682' + ' UCL modules</span><h1>Find your module.</h1>' +
       '<p class="lead">Search by module code, title or department. Pick a practice question, write your answer, and get it marked the way your department marks.</p>' +
       '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules">' +
@@ -226,11 +235,12 @@
   }
   function viewModule() {
     var m = state.mod;
-    if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in UCL’s module catalogue. Check the code and <a href="/mark">search again</a>.</p></section>';
+    if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in UCL’s module catalogue. Check the code and <a href="' + BASE + '" data-go="home">search again</a>.</p></section>';
     if (m.loading) return head() + '<section class="mk-card"><p class="mk-hint">Loading module…</p></section>';
     var qs = state.questions, html = head();
     html += '<section class="mk-modhead"><span class="mk-code big">' + esc(m.code) + '</span><h1>' + esc(m.title) + '</h1>' +
       '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
+      (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
       (m.summary ? '<p class="mk-sum">' + esc(m.summary.replace(/\.\.\.$/, '…')) + ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Full description on UCL’s catalogue</a></p>' : '') + '</section>';
     html += '<section class="mk-card"><div class="mk-row"><h2>Practice questions</h2><button type="button" class="btn line small" data-act="own">Use my own past-paper question</button></div>';
     if (qs === null) html += '<p class="mk-hint">Loading…</p>';
@@ -332,8 +342,11 @@
     else if (act === 'timer') { startTimer(); render(); }
     else if (act === 'submit') submit();
     else if (act === 'clear') { if (confirm('Clear your answer? This can’t be undone.')) { saveDraft(draftKey(), ''); render(); } }
+    else if (act === 'star' && HOOKS) { HOOKS.toggle(state.mod).then(render); }
     else if (act === 'rewrite') { state.err = ''; go({ m: state.mod.code, q: state.cur.id || 'own', v: 'answer' }); }
   });
-  window.addEventListener('popstate', route);
-  route();
+  function inScope() { var p = location.pathname.replace(/\/$/, ''); return p === BASE.replace(/\/$/, '') || MODRE.test(location.pathname); }
+  window.addEventListener('popstate', function () { if (inScope()) route(); });
+  window.Marker = { route: function () { if (inScope()) route(); }, render: render, inScope: inScope };
+  if (inScope()) route();
 })();

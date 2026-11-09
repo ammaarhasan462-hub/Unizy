@@ -17,7 +17,7 @@
   try { session = JSON.parse(localStorage.getItem('unizy.session') || 'null'); } catch (e) { session = null; }
   if (session && session.access_token) {
     var cta = document.querySelector('[data-auth="app"]'), login = document.querySelector('[data-auth="login"]');
-    if (cta) { cta.textContent = 'My dashboard'; cta.href = '/app'; }
+    if (cta) { cta.textContent = 'Dashboard'; cta.href = '/dashboard'; }
     if (login) login.hidden = true;
   }
   // gentle reveal as sections scroll into view
