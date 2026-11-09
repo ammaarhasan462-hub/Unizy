@@ -7,7 +7,9 @@ import * as THREE from 'three';
 export const SUN_DIR = new THREE.Vector3(-0.3, 0.15, 1.0).normalize();
 
 const RE = 6360e3, RA = 6420e3, HR = 7994, HM = 1200;
-const BR = [5.8e-6, 13.5e-6, 33.1e-6], BM = 7e-6;
+const BR = [5.8e-6, 13.5e-6, 33.1e-6], BM = 4.5e-6;
+const BO = [0.65e-6, 1.881e-6, 0.085e-6]; // ozone absorption: keeps twilight skies blue and pink, not green
+const oz = (h) => Math.max(0, 1 - Math.abs(h - 25000) / 15000);
 
 // colour of sunlight after passing through the atmosphere (from 1000 m up), relative to the sun at zenith
 export function sunTransmittance(dir) {
@@ -16,15 +18,16 @@ export function sunTransmittance(dir) {
   const c = o[0] * o[0] + o[1] * o[1] + o[2] * o[2] - RA * RA;
   const t = -b + Math.sqrt(b * b - c);
   const N = 64, ds = t / N;
-  let odR = 0, odM = 0;
+  let odR = 0, odM = 0, odO = 0;
   for (let i = 0; i < N; i++) {
     const s = ds * (i + 0.5);
     const x = o[0] + dir.x * s, y = o[1] + dir.y * s, z = o[2] + dir.z * s;
     const h = Math.hypot(x, y, z) - RE;
     odR += Math.exp(-h / HR) * ds;
     odM += Math.exp(-h / HM) * ds;
+    odO += oz(h) * ds;
   }
-  return new THREE.Color(...BR.map((br) => Math.exp(-(br * odR + BM * 1.1 * odM))));
+  return new THREE.Color(...BR.map((br, k) => Math.exp(-(br * odR + BM * 1.1 * odM + BO[k] * odO))));
 }
 
 const VS = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
@@ -36,6 +39,8 @@ const float PI = 3.14159265;
 const float Re = ${RE.toFixed(1)}, Ra = ${RA.toFixed(1)};
 const vec3 bR = vec3(${BR.map((v) => v.toExponential(3)).join(', ')});
 const float bM = ${BM.toExponential(3)};
+const vec3 bO = vec3(${BO.map((v) => v.toExponential(3)).join(', ')});
+float ozone(float h){ return max(0.0, 1.0 - abs(h - 25000.0) / 15000.0); }
 const float Hr = ${HR.toFixed(1)}, Hm = ${HM.toFixed(1)}, g = 0.78;
 vec2 rsi(vec3 o, vec3 d, float r){ float b = dot(o,d), c = dot(o,o) - r*r, h = b*b - c; if (h < 0.0) return vec2(1e9, -1e9); h = sqrt(h); return vec2(-b-h, -b+h); }
 vec3 atmo(vec3 dir){
@@ -44,7 +49,7 @@ vec3 atmo(vec3 dir){
   float tMax = p.y;
   vec2 pg = rsi(o, dir, Re);
   if (pg.x > 0.0) tMax = min(tMax, pg.x);
-  float ds = tMax / 20.0, t = 0.0, odR = 0.0, odM = 0.0;
+  float ds = tMax / 20.0, t = 0.0, odR = 0.0, odM = 0.0, odO = 0.0;
   vec3 sR = vec3(0.0), sM = vec3(0.0);
   float mu = dot(dir, uSun);
   float pR = 3.0/(16.0*PI)*(1.0 + mu*mu);
@@ -54,20 +59,21 @@ vec3 atmo(vec3 dir){
     vec3 x = o + dir*(t + ds*0.5);
     float h = length(x) - Re;
     float hr = exp(-h/Hr)*ds, hm = exp(-h/Hm)*ds;
-    odR += hr; odM += hm;
+    odR += hr; odM += hm; odO += ozone(h) * ds;
     vec2 ls = rsi(x, uSun, Ra);
-    float dl = ls.y / 10.0, oR = 0.0, oM = 0.0;
+    float dl = ls.y / 10.0, oR = 0.0, oM = 0.0, oO = 0.0;
     bool ok = true;
     for (int j = 0; j < 10; j++) {
       vec3 y = x + uSun*(dl*(float(j)+0.5));
       float hl = length(y) - Re;
       if (hl < 0.0) { ok = false; break; }
-      oR += exp(-hl/Hr)*dl; oM += exp(-hl/Hm)*dl;
+      oR += exp(-hl/Hr)*dl; oM += exp(-hl/Hm)*dl; oO += ozone(hl)*dl;
     }
-    if (ok) { vec3 att = exp(-(bR*(odR+oR) + bM*1.1*(odM+oM))); sR += att*hr; sM += att*hm; }
+    if (ok) { vec3 att = exp(-(bR*(odR+oR) + bM*1.1*(odM+oM) + bO*(odO+oO))); sR += att*hr; sM += att*hm; }
     t += ds;
   }
-  return 13.0 * (sR*bR*pR + sM*bM*pM);
+  // single scattering plus a cheap multiple-scattering fill (lifts the blue overhead and away from the sun)
+  return 13.0 * (sR*bR*pR + sM*bM*pM) + vec3(0.03, 0.06, 0.12) * (0.55 + 0.45 * sqrt(max(dir.y, 0.0)));
 }
 void main(){
   float phi = (vUv.x - 0.5) * 2.0 * PI;

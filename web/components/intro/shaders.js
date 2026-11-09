@@ -141,7 +141,7 @@ void main(){
           a *= 0.45; b *= 0.55; c *= 0.5;
         }
         float powder = 1.0 - exp(-d * 0.06 * st * 2.0);
-        vec3 amb = mix(skyH * 0.55, skyUp * 1.15, hf) * (0.55 + 0.45 * hf);
+        vec3 amb = mix(skyH * 0.25 + skyUp * 0.5, skyUp * 1.3, hf) * (0.5 + 0.5 * hf);
         vec3 L = amb + uSunCol * S * 4.5 * mix(0.55, 1.0, powder);
         float aT = 1.0 - exp(-d * 0.034 * st);
         L = mix(L, hz, 1.0 - exp(-t * uHaze * 0.5));

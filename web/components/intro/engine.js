@@ -86,7 +86,8 @@ const GRADE = {
       col.g = texture2D(tDiffuse, vUv).g;
       col.b = texture2D(tDiffuse, vUv + c * 0.0022).b;
       float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
-      col = mix(vec3(l), col, 1.1);
+      col = mix(vec3(l), col, 1.12);
+      col.g *= 0.985;
       col = (col - 0.5) * 1.05 + 0.5;
       col *= 1.0 - r2 * uVig;
       float n = fract(sin(dot(vUv * uRes + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);
@@ -265,7 +266,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     ATMO.uHaze.value = lerp(lerp(0.00005, 0.00013, ss(0.2, 0.32, p)), 0.0002, ss(0.5, 0.64, p));
     scene.environmentIntensity = lerp(1.5, 0.25, inside);
     sun.intensity = (4.2 * tmax + 1.2) * (1 - inside);
-    renderer.toneMappingExposure = lerp(lerp(0.9, 1.0, ss(0.28, 0.4, p)), 1.75, inside) * lerp(1, 0.8, ss(0.9, 1, p));
+    renderer.toneMappingExposure = lerp(lerp(0.82, 1.0, ss(0.28, 0.4, p)), 1.75, inside) * lerp(1, 0.8, ss(0.9, 1, p));
     grade.uniforms.uTime.value = time;
     grade.uniforms.uVig.value = lerp(0.45, 0.75, inside);
     ucl.int.forEach(([l, i]) => { l.intensity = i * ss(0.62, 0.72, p); });

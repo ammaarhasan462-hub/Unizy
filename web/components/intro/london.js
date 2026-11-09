@@ -159,7 +159,9 @@ export function buildLondon(renderer, { mobile }) {
   const m4 = new THREE.Matrix4();
   const q0 = new THREE.Quaternion();
   const q90 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
-  const clear = (x, z, m = 4) => !inRect(x, z, UCL_RECT, m);
+  // also keep the frontage across Gower Street low and open, so the low morning sun reaches the Quad and Portico
+  const SUNGAP = [-95, 95, 112, 250];
+  const clear = (x, z, m = 4) => !inRect(x, z, UCL_RECT, m) && !inRect(x, z, SUNGAP, 0);
   const R = mobile ? 1000 : H;
 
   const row = (b, edge, style) => {
