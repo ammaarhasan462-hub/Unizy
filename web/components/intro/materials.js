@@ -1,6 +1,7 @@
 // Materials for the intro's London: a facade material that draws windows (frames, sash bars, sky-reflecting
 // glass, the odd lit room) onto plain boxes, plus small canvas textures. Every material gets atmo() haze.
 import * as THREE from 'three';
+import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { atmo } from './atmo';
 
 export function rng(seed) {
@@ -159,15 +160,17 @@ export function leafMaterial(key, color) {
 }
 
 export function treeGeometry(seed, detail = 2) {
-  const g = new THREE.IcosahedronGeometry(1, detail);
+  // welded so the lumpy canopy shades smoothly (no low-poly facets)
+  let g = new THREE.IcosahedronGeometry(1, detail);
+  g.deleteAttribute('normal');
+  g.deleteAttribute('uv');
+  g = mergeVertices(g, 1e-4);
   const p = g.attributes.position;
   const r = rng(seed);
-  const map = new Map();
   for (let i = 0; i < p.count; i++) {
-    const k = `${p.getX(i).toFixed(3)},${p.getY(i).toFixed(3)},${p.getZ(i).toFixed(3)}`;
-    if (!map.has(k)) map.set(k, 0.78 + r() * 0.38);
-    const s = map.get(k);
-    p.setXYZ(i, p.getX(i) * s, p.getY(i) * s * 0.85, p.getZ(i) * s);
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const s = 0.86 + r() * 0.2 + 0.08 * Math.sin(x * 5.1 + z * 3.7) * Math.cos(y * 4.3);
+    p.setXYZ(i, x * s, y * s * 0.86, z * s);
   }
   g.computeVertexNormals();
   return g;
