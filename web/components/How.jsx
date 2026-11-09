@@ -132,7 +132,7 @@ export default function How() {
     <section id="how" className="relative scroll-mt-20">
       {/* desktop: pinned scroll story */}
       <div ref={pin} className="hidden h-screen items-center lg:flex">
-        <div className="wrap grid grid-cols-[0.9fr_1.1fr] items-center gap-16">
+        <div className="wrap grid grid-cols-[0.9fr_1.1fr] items-center gap-16 pt-14">
           <div>
             <Kicker>How it works</Kicker>
             <h2 className="h2 mt-6">

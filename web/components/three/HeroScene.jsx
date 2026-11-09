@@ -84,7 +84,7 @@ function Card({ spec, focusRef, i }) {
     if (!ref.current || !sharp.current || !soft.current) return;
     ref.current.getWorldPosition(v);
     const d = v.distanceTo(camera.position);
-    const x = Math.min(1, Math.max(0, (Math.abs(d - focusRef.current) - 0.35) / 2.1));
+    const x = Math.min(1, Math.max(0, (Math.abs(d - focusRef.current) - 0.9) / 2.2));
     const b = x * x * (3 - 2 * x);
     sharp.current.opacity = 1 - b * 0.92;
     soft.current.opacity = b * 0.95;
@@ -108,7 +108,7 @@ function Card({ spec, focusRef, i }) {
 function Rig({ ctl, scrollRef, focusRef, reduce, children }) {
   const g = useRef();
   const { viewport, camera } = useThree();
-  const base = Math.min(1, viewport.width / 8.7);
+  const base = Math.min(1, viewport.width / (viewport.width < 7.5 ? 7.4 : 8.7));
   const v = useMemo(() => new THREE.Vector3(), []);
   useFrame((_, delta) => {
     const s = ctl.current;
@@ -229,10 +229,9 @@ export default function HeroScene({ spinRef, scrollRef }) {
       <Canvas
         dpr={[1, hi ? 2 : 1.5]}
         camera={{ position: [0, 0, 12], fov: 34, near: 0.1, far: 60 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         frameloop={active ? 'always' : 'never'}
       >
-        <color attach="background" args={['#06060b']} />
         <ambientLight intensity={0.4} />
         <pointLight position={[-6, 4, 5]} intensity={90} color="#8b5cf6" />
         <pointLight position={[6, -3, 4]} intensity={70} color="#3b82f6" />

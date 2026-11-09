@@ -5,9 +5,9 @@ export function fonts() {
   const cs = getComputedStyle(document.documentElement);
   const v = (n, f) => (cs.getPropertyValue(n) || '').trim() || f;
   return {
-    sans: v('--font-inter', 'Inter, system-ui, sans-serif'),
-    display: v('--font-grotesk', 'system-ui, sans-serif'),
-    mono: v('--font-jet', 'ui-monospace, monospace'),
+    sans: v('--font-inter', "'Inter'") + ', system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+    display: v('--font-grotesk', "'Space Grotesk'") + ', system-ui, -apple-system, Segoe UI, Roboto, sans-serif',
+    mono: v('--font-jet', "'JetBrains Mono'") + ', ui-monospace, SFMono-Regular, Menlo, monospace',
   };
 }
 

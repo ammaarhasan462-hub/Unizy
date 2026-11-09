@@ -217,7 +217,7 @@ export default function Features() {
             onPointerLeave={() => { rx.set(0); ry.set(0); setHover(false); }}
             onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHover(true); }}
           >
-            <div className="absolute -inset-10 -z-10 rounded-[60px] bg-[radial-gradient(closest-side,rgba(139,92,246,.35),transparent)] blur-2xl" />
+            <div className="absolute inset-x-0 -inset-y-10 -z-10 rounded-[60px] bg-[radial-gradient(closest-side,rgba(139,92,246,.35),transparent)] blur-2xl" />
             <div className="glass-strong min-h-[520px] rounded-[32px] p-6 shadow-[0_50px_140px_-50px_rgba(59,130,246,.6)] sm:p-9" role="tabpanel">
               <AnimatePresence mode="wait">
                 <motion.div

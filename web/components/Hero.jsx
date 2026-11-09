@@ -90,7 +90,7 @@ export default function Hero() {
             Every UCL module, marked like your department marks
           </motion.span>
 
-          <h1 className="mt-7 font-display text-[clamp(46px,6.3vw,92px)] font-bold leading-[0.95] tracking-[-0.045em]">
+          <h1 className="mt-7 font-display text-[clamp(46px,5.4vw,80px)] font-bold leading-[0.95] tracking-[-0.045em]">
             {LINES.map((l, li) => (
               <span key={li} className="block">
                 {l.words.map((w) => {
