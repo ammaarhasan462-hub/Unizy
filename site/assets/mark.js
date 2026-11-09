@@ -235,7 +235,7 @@
     html += '<section class="mk-card"><div class="mk-row"><h2>Practice questions</h2><button type="button" class="btn line small" data-act="own">Use my own past-paper question</button></div>';
     if (qs === null) html += '<p class="mk-hint">Loading…</p>';
     else if (!qs.length) {
-      html += '<p>No practice questions for this module yet. We’ll write 8 exam-style questions from the module’s official description, in the style your department examines. They’re saved for everyone taking ' + esc(m.code) + '.</p>' +
+      html += '<p>No practice questions for this module yet. We’ll write 6 exam-style questions from the module’s official description, in the style your department examines. They’re saved for everyone taking ' + esc(m.code) + '.</p>' +
         (state.qsBusy ? '<p class="mk-busy"><span class="spin"></span>Writing questions for ' + esc(m.code) + '. This takes about a minute…</p>' : '<button type="button" class="btn primary" data-act="genq">' + (getSession() ? 'Write practice questions' : 'Sign up free to get questions') + '</button>');
     } else {
       html += '<ol class="mk-qs">' + qs.map(function (q) {

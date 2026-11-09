@@ -73,6 +73,12 @@ function parseJson(text: string): any {
   const a = t.indexOf("{"), b = t.lastIndexOf("}"), c = t.indexOf("["), d = t.lastIndexOf("]");
   if (c >= 0 && d > c && (a < 0 || c < a)) { try { return JSON.parse(t.slice(c, d + 1)); } catch { /* ignore */ } }
   if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch { /* ignore */ } }
+  // a cut-off array: keep the complete objects
+  if (c >= 0 && (a < 0 || c < a)) {
+    for (let end = t.lastIndexOf("}"); end > c; end = t.lastIndexOf("}", end - 1)) {
+      try { const v = JSON.parse(t.slice(c, end + 1) + "]"); if (Array.isArray(v) && v.length) return v; } catch { /* keep trying */ }
+    }
+  }
   return null;
 }
 
@@ -127,7 +133,7 @@ Deno.serve(async (req) => {
     if (st && sp && +sp.usd >= +st.daily_budget_gbp * +st.usd_per_gbp) return json(503, { code: "ai_paused", message: BUDGET_MSG });
 
     const details = await moduleDetails(service, mod);
-    const prompt = `Write 8 exam-style practice questions for this UCL module, in the style UCL examiners in this department typically set.
+    const prompt = `Write 6 exam-style practice questions for this UCL module, in the style UCL examiners in this department typically set.
 
 MODULE: ${mod.code} ${mod.title}
 Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${mod.credits ?? "?"} credits · ${mod.term || ""}
@@ -139,12 +145,12 @@ ${details.slice(0, 5000)}
 Rules:
 - Cover different topics from the description, roughly in teaching order. Stay strictly within what the description says the module covers; if it is thin, keep questions to the core of the subject at this level.
 - Match the discipline: essay questions for humanities and social sciences; problem / calculation / "derive and explain" questions for quantitative subjects; short structured questions (with marks in brackets) where that is the norm (e.g. sciences, medicine). For a dissertation, project, language-skills or placement module, write questions that practise the kind of written work it assesses.
-- Each question must be answerable in about 45 minutes in exam conditions, without notes.
+- Each question must be answerable in about 45 minutes in exam conditions, without notes. Keep each question under 110 words (multi-part questions included).
 - Do not copy or claim to reproduce real UCL exam questions.
-- For each question give an indicative marking guide: one or two sentences each on what a First, a 2:1 and a 2:2 answer does for THIS question.
+- For each question give an indicative marking guide: one sentence (under 35 words) each on what a First, a 2:1 and a 2:2 answer does for THIS question.
 
-Return a JSON array of 8 objects: {"topic": short topic name, "kind": "essay" | "problem" | "short", "question": the full question text, "guide": {"first": "...", "two_one": "...", "two_two": "..."}}`;
-    const res = await callClaude(apiKey, SYSTEM, prompt, 9000);
+Return a JSON array of 6 objects: {"topic": short topic name, "kind": "essay" | "problem" | "short", "question": the full question text, "guide": {"first": "...", "two_one": "...", "two_two": "..."}}`;
+    const res = await callClaude(apiKey, SYSTEM, prompt, 8000);
     if (!res.ok) {
       console.error("questions upstream", code, res.status, res.text.slice(0, 300));
       if (isAccountProblem(res.status, res.text)) { EdgeRuntime.waitUntil(handleAccountProblem(service, res.status, res.text)); return json(503, { code: "ai_paused", message: PAUSED_MSG }); }
