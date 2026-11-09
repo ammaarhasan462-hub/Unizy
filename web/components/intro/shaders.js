@@ -70,7 +70,7 @@ vec3 city(vec2 pw, float t, float fw){
   float joints = 1.0 - 0.25 * smoothstep(0.46, 0.5, max(pv.x, pv.y)) * step(fw, 1.5);
   vec2 lp = fract((pw + vec2(0.0, 6.0)) / 14.0) - 0.5;
   float posts = exp(-dot(lp, lp) * 900.0 / (1.0 + f2)) * step(30.0, abs(pw.x));
-  vec3 pave = (vec3(0.03, 0.027, 0.024) + vec3(0.12, 0.08, 0.045) * wash) * joints + vec3(1.6, 1.15, 0.7) * posts;
+  vec3 pave = (vec3(0.010, 0.009, 0.008) + vec3(0.05, 0.032, 0.017) * wash) * joints + vec3(1.4, 1.0, 0.6) * posts;
   col = mix(col, pave, plaza);
   return col;
 }
