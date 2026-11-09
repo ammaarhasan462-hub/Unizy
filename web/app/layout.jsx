@@ -1,9 +1,6 @@
-import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
-const grotesk = Space_Grotesk({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-grotesk', display: 'swap' });
-const mono = JetBrains_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-jet', display: 'swap' });
+const FONTS = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
 
 const TITLE = 'SaveMyGrade · The mark scheme your uni never gave you.';
 const DESC =
@@ -23,7 +20,12 @@ export const viewport = { themeColor: '#06060b', width: 'device-width', initialS
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-GB" className={`${inter.variable} ${grotesk.variable} ${mono.variable}`}>
+    <html lang="en-GB">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="stylesheet" href={FONTS} />
+      </head>
       <body>{children}</body>
     </html>
   );

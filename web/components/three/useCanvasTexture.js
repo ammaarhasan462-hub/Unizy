@@ -46,7 +46,11 @@ export function useCanvasTexture(w, h, draw, opts = {}) {
   useEffect(() => {
     let live = true;
     const again = () => live && res.paint();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(again);
+    if (document.fonts && document.fonts.load) {
+      Promise.all(
+        ["700 40px 'Space Grotesk'", "600 40px 'Space Grotesk'", "400 40px 'Inter'", "500 40px 'Inter'", "500 40px 'JetBrains Mono'"].map((f) => document.fonts.load(f).catch(() => null))
+      ).then(again);
+    }
     const t1 = setTimeout(again, 900);
     const t2 = setTimeout(again, 2500);
     return () => {
