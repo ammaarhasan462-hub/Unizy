@@ -1,5 +1,5 @@
 status: success
-sha: 677c4f1ea266aaac25dbe6f2bdae0c640a4e3e9a
+sha: 6e53f4b3cbc80d2bdf563f9ddd7293e82f98ab21
 --- build
 
 > savemygrade-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: 677c4f1ea266aaac25dbe6f2bdae0c640a4e3e9a
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 10.2s
+ ✓ Compiled successfully in 12.4s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -52,4 +52,4 @@ savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 6s
+added 116 packages in 11s
