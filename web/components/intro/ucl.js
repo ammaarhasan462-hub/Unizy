@@ -420,6 +420,7 @@ export function buildUCL({ mobile }) {
   fp.visible = false;
   const wm = plainMaterial({ map: windowTex(), transparent: true, color: '#ffffff', emissive: '#ffe7c2', emissiveIntensity: 1.6, emissiveMap: null, roughness: 1 }, 'iwin');
   wm.emissiveMap = wm.map;
+  add(new THREE.PlaneGeometry(5.2, 10.4), wm, 0, 12.4, -60.9);
   for (let z = -9; z > -58; z -= 7) for (const s of [-1, 1]) { const w = add(new THREE.PlaneGeometry(2.4, 4.8), wm, s * 17.4, 14.6, z); w.rotation.y = -s * Math.PI / 2; }
   // great lunette window above the door, with morning light streaming down the hall
   const lun = add(new THREE.CircleGeometry(4.2, 48, 0, Math.PI), wm, 0, 12.6, -3.55);

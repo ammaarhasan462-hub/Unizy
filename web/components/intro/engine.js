@@ -105,6 +105,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false; // the sun and the city don't move: render shadows only when the stage changes
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(50, 1, 1, 60000);
@@ -219,6 +220,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const t0 = last;
   let frames = 0, slow = 0, level = 0;
   let shadowZone = -1;
+  let wasBelow = false;
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
@@ -286,7 +288,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
       sun.target.position.copy(cen);
       sun.position.copy(cen).addScaledVector(SUN_DIR, 3000);
       sun.shadow.normalBias = half * 0.0011;
-      sun.shadow.needsUpdate = true;
+      renderer.shadowMap.needsUpdate = true;
       setAO(zone === 2 ? 1.2 : 3, zone === 2 ? 1 : 2);
     }
     if (zone === 2 && inside > 0.5) setAO(0.5, 0.5);
@@ -295,6 +297,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     london.group.visible = below && inside < 1;
     ucl.group.visible = below;
     sun.castShadow = below;
+    if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
     if (p < 0.76) {
       cloudU.uTime.value = time;
