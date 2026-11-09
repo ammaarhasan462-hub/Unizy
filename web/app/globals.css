@@ -25,7 +25,7 @@
 
 html, body { overflow-x: clip; }
 html { --font-inter: 'Inter'; --font-grotesk: 'Space Grotesk'; --font-jet: 'JetBrains Mono'; background: #F4F4EF; color: #17302A; scroll-behavior: smooth; }
-body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
+body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: clip; }
 ::selection { background: #E8DCC0; color: #17302A; }
 :focus-visible { outline: 2px solid #B8862F; outline-offset: 3px; border-radius: 10px; }
 
