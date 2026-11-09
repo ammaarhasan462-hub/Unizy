@@ -22,8 +22,8 @@ const KEYS = [
   [0.655, [0, 6.5, 18], [0, 5.5, -10]],
   [0.71, [0, 4.4, -8], [0, 3.4, -40]],
   [0.8, [0, 3.6, -30], [0, 2.2, -46]],
-  [0.9, [0, 2.75, -43.4], [0, 1.96, -46.05]],
-  [1.0, [0, 2.42, -45.62], [0.01, 1.96, -46.06]],
+  [0.9, [0, 2.7, -43.6], [0, 1.96, -46.05]],
+  [1.0, [0.0, 2.24, -45.74], [0.01, 1.962, -46.07]],
 ];
 
 // monotone cubic (Fritsch–Carlson) per component, keyed on progress: smooth, no overshoot
@@ -67,8 +67,8 @@ const ss = (a, b, x) => {
   return t * t * (3 - 2 * t);
 };
 const lerp = (a, b, t) => a + (b - a) * t;
-const FOG_EXT = new THREE.Color(0.035, 0.042, 0.06);
-const FOG_INT = new THREE.Color(0.022, 0.016, 0.011);
+const FOG_EXT = new THREE.Color(0.02, 0.026, 0.04);
+const FOG_INT = new THREE.Color(0.014, 0.011, 0.008);
 
 export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
@@ -82,7 +82,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const fogCol = new THREE.Color(0.035, 0.042, 0.06);
   scene.fog = new THREE.FogExp2(fogCol.clone(), 0.0002);
   const camera = new THREE.PerspectiveCamera(55, 1, 1, 40000);
-  scene.add(new THREE.HemisphereLight(0x3a4a6a, 0x0b0805, 0.35));
+  scene.add(new THREE.HemisphereLight(0x33405c, 0x0b0805, 0.25));
 
   const shared = {
     uTime: { value: 0 },
@@ -102,7 +102,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     uInvProj: { value: new THREE.Matrix4() },
     uCamWorld: { value: new THREE.Matrix4() },
     uTime: shared.uTime,
-    uSun: { value: new THREE.Vector3(0.15, 0.07, -1).normalize() },
+    uSun: { value: new THREE.Vector3(0.15, 0.03, -1).normalize() },
     uBelow: { value: 0 },
     uSteps: { value: mobile ? 34 : 56 },
     uFog: shared.uFog,
@@ -122,7 +122,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
 
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), mobile ? 0.45 : 0.6, 0.75, 0.88);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), mobile ? 0.38 : 0.48, 0.7, 0.9);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -212,14 +212,14 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     shared.uFogDensity.value = fd;
     shared.uTime.value = time;
     shared.uCamPos.value.copy(camera.position);
-    renderer.toneMappingExposure = lerp(lerp(lerp(1.0, 1.2, ss(0.3, 0.4, p)), 1.45, inside), 1.25, ss(0.9, 1, p));
+    renderer.toneMappingExposure = lerp(lerp(lerp(0.95, 1.05, ss(0.3, 0.4, p)), 1.2, inside), 1.0, ss(0.88, 1, p));
 
     const below = camera.position.y < CLOUD_BOTTOM - 5;
     city.visible = below && p < 0.74;
     land.group.visible = below;
     land.ext.forEach(([l, i]) => { l.intensity = i * (1 - inside); });
     land.int.forEach(([l, i]) => { l.intensity = i * ss(0.5, 0.66, p); });
-    land.doorGlow.material.opacity = 0.55 * ss(0.48, 0.6, p) * (1 - ss(0.64, 0.67, p));
+    land.doorGlow.material.opacity = 0.28 * ss(0.48, 0.6, p) * (1 - ss(0.64, 0.67, p));
     land.dust.uTime.value = time;
     land.dust.uOpacity.value = ss(0.66, 0.74, p);
 

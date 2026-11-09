@@ -86,8 +86,7 @@ export default function Intro() {
       if (!engine || doneRef.current) return;
       const st = engine.state;
       st.target = Math.min(1.06, Math.max(0, st.target + v));
-      if (st.target > 0.004 && hint.current) hint.current.style.opacity = '0';
-    };
+          };
     const onWheel = (e) => {
       e.preventDefault();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
@@ -127,7 +126,10 @@ export default function Intro() {
         el.style.pointerEvents = o > 0.6 ? 'auto' : 'none';
       });
       if (fill.current) fill.current.style.transform = `scaleY(${Math.min(1, p).toFixed(4)})`;
-      dots.current.forEach((el, i) => { if (el) el.dataset.on = p >= CH[i + 1].a - 0.02 ? '1' : '0'; });
+      let cur = -1;
+      CH.slice(1).forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
+      dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
+      if (hint.current) hint.current.style.opacity = (1 - ss(0.002, 0.03, p)).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
       if (target >= 1.04 && p > 0.995) finish('end');
     };
@@ -246,7 +248,7 @@ export default function Intro() {
           <div ref={fill} className="absolute inset-0 origin-top bg-[#d9b46c]/80" style={{ transform: 'scaleY(0)' }} />
           {LABELS.map((l, i) => (
             <span key={l} ref={(el) => (dots.current[i] = el)} data-on="0" className="group absolute -left-[3px] size-[7px] rounded-full border border-white/40 bg-[#05070b] transition-colors data-[on='1']:border-[#d9b46c] data-[on='1']:bg-[#d9b46c]" style={{ top: `${(CH[i + 1].a * 100).toFixed(1)}%` }}>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[.2em] text-[#efe9dd]/45">{l}</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[.2em] text-[#efe9dd]/55 opacity-0 transition-opacity duration-500 group-data-[cur='1']:opacity-100">{l}</span>
             </span>
           ))}
         </div>

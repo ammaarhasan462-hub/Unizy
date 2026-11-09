@@ -189,7 +189,7 @@ function paperTex() {
 // ---------------------------------------------------------------- landmark + library
 export function buildLandmark({ mobile }) {
   const g = new THREE.Group();
-  const stone = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.72, 0.68, 0.6), roughness: 0.82, metalness: 0 });
+  const stone = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.46, 0.44, 0.4), roughness: 0.85, metalness: 0 });
   const stoneDark = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.38, 0.36, 0.33), roughness: 0.9 });
   const add = (geo, mat, x, y, z, parent = g) => { const me = new THREE.Mesh(geo, mat); me.position.set(x, y, z); parent.add(me); return me; };
   const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
@@ -228,7 +228,7 @@ export function buildLandmark({ mobile }) {
   add(new THREE.CylinderGeometry(1.4, 1.4, 3, 16), stone, 0, 35.3, -26);
   add(new THREE.SphereGeometry(1.5, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), stone, 0, 36.8, -26);
   // glowing tall windows along both sides (outside)
-  const winMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 1.35, 0.7), side: THREE.DoubleSide });
+  const winMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.62, 0.32), side: THREE.DoubleSide });
   const winGeo = new THREE.PlaneGeometry(2.2, 6);
   for (let z = -10; z > -58; z -= 7) {
     for (const s of [-1, 1]) {
@@ -261,7 +261,7 @@ export function buildLandmark({ mobile }) {
   }
   // arched windows high on the side walls
   const wt = windowTex();
-  const wm = new THREE.MeshBasicMaterial({ map: wt, transparent: true, color: new THREE.Color(0.55, 0.62, 0.8) });
+  const wm = new THREE.MeshBasicMaterial({ map: wt, transparent: true, color: new THREE.Color(0.3, 0.36, 0.5) });
   for (let z = -9; z > -58; z -= 7) {
     for (const s of [-1, 1]) {
       const w = add(new THREE.PlaneGeometry(2.4, 4.8), wm, s * 17.4, 14.6, z, lib);
@@ -270,7 +270,7 @@ export function buildLandmark({ mobile }) {
   }
 
   // bookshelves: two tiers along both walls (one tier on phones)
-  const wood = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.11, 0.065, 0.035), roughness: 0.6 });
+  const wood = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.055, 0.032, 0.018), roughness: 0.55 });
   const tiers = mobile ? [[1.4, 9]] : [[1.4, 9], [8.2, 7]];
   const r = rng(42);
   const bookM = [];
@@ -311,10 +311,10 @@ export function buildLandmark({ mobile }) {
   lib.add(books);
 
   // reading tables with green lamps
-  const lampShade = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.03, 0.2, 0.1), emissive: new THREE.Color(0.02, 0.22, 0.09), roughness: 0.25, metalness: 0.2 });
-  const bulb = new THREE.MeshBasicMaterial({ color: new THREE.Color(5, 3.4, 1.8) });
+  const lampShade = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.02, 0.12, 0.06), emissive: new THREE.Color(0.004, 0.04, 0.018), roughness: 0.25, metalness: 0.2 });
+  const bulb = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.2, 1.2) });
   const brass = gold;
-  for (const x of [-8.5, 8.5]) {
+  for (const x of [-11.5, -5, 5, 11.5]) {
     for (let z = -11; z > -41; z -= 9.5) {
       add(B(2.0, 0.08, 7.2), wood, x, 1.98, z, lib);
       for (const lx of [-0.55, 0.55]) for (const lz of [-3.2, 3.2]) add(B(0.1, 0.76, 0.1), wood, x + lx * 1.6, 1.6, z + lz, lib);
@@ -328,7 +328,7 @@ export function buildLandmark({ mobile }) {
     }
   }
   // pendant lights down the centre
-  const pend = new THREE.MeshBasicMaterial({ color: new THREE.Color(4.5, 3.0, 1.6) });
+  const pend = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.75, 0.95) });
   const cord = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
   for (let z = -9; z > -44; z -= 7) {
     add(new THREE.SphereGeometry(0.32, 20, 12), pend, 0, 12.5, z, lib);
@@ -357,7 +357,7 @@ export function buildLandmark({ mobile }) {
   add(new THREE.SphereGeometry(0.035, 10, 8), bulb, 0.46, 2.25, -46.22, lib);
 
   // dust in the air
-  const N = mobile ? 900 : 2400;
+  const N = mobile ? 600 : 1400;
   const pos = new Float32Array(N * 3);
   const seed = new Float32Array(N);
   for (let i = 0; i < N; i++) {
@@ -369,7 +369,7 @@ export function buildLandmark({ mobile }) {
   const dg = new THREE.BufferGeometry();
   dg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   dg.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
-  const dustU = { uTime: { value: 0 }, uSize: { value: mobile ? 26 : 36 }, uOpacity: { value: 0 } };
+  const dustU = { uTime: { value: 0 }, uSize: { value: mobile ? 10 : 13 }, uOpacity: { value: 0 } };
   const dust = new THREE.Points(dg, new THREE.ShaderMaterial({ vertexShader: DUST_VS, fragmentShader: DUST_FS, uniforms: dustU, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   dust.frustumCulled = false;
   lib.add(dust);
@@ -377,35 +377,35 @@ export function buildLandmark({ mobile }) {
   // lights
   const ext = [];
   for (const x of [-11, 11]) {
-    const sp = new THREE.SpotLight(0xffc489, 9000, 0, 0.55, 0.75, 2);
+    const sp = new THREE.SpotLight(0xffc489, 1700, 0, 0.55, 0.8, 2);
     sp.position.set(x, 0.5, 34);
     sp.target.position.set(x * 0.4, 12, 6);
     g.add(sp, sp.target);
-    ext.push([sp, 9000]);
+    ext.push([sp, 1700]);
   }
-  const porch = new THREE.PointLight(0xffb873, 900, 0, 2);
+  const porch = new THREE.PointLight(0xffb873, 70, 0, 2);
   porch.position.set(0, 13, 4);
   g.add(porch);
-  ext.push([porch, 900]);
+  ext.push([porch, 70]);
   const int = [];
   for (let z = -9; z > -44; z -= 14) {
-    const pl = new THREE.PointLight(0xffb366, 140, 0, 2);
+    const pl = new THREE.PointLight(0xffb366, 55, 0, 2);
     pl.position.set(0, 11.5, z);
     lib.add(pl);
-    int.push([pl, 140]);
+    int.push([pl, 55]);
   }
-  for (const x of [-8.5, 8.5]) {
+  for (const x of [-8, 8]) {
     for (const z of [-15, -33]) {
-      const pl = new THREE.PointLight(0xffc27a, 24, 0, 2);
+      const pl = new THREE.PointLight(0xffc27a, 9, 0, 2);
       pl.position.set(x, 3.2, z);
       lib.add(pl);
-      int.push([pl, 24]);
+      int.push([pl, 9]);
     }
   }
-  const deskLight = new THREE.PointLight(0xffc483, 3.2, 0, 2);
+  const deskLight = new THREE.PointLight(0xffc483, 0.75, 0, 2);
   deskLight.position.set(0.38, 2.36, -46.2);
   lib.add(deskLight);
-  int.push([deskLight, 3.2]);
+  int.push([deskLight, 0.75]);
 
   return { group: g, lib, ext, int, dust: dustU, doorGlow };
 }

@@ -50,7 +50,7 @@ vec3 city(vec2 p, float t, float fw){
   float sp = step(0.94, h21(qi)) * exp(-dot(qf,qf)*30.0/(1.0+f2*0.05));
   col += vec3(1.0, 0.78, 0.5) * sp * 0.9;
 
-  col *= fall * (1.0 - park*0.85) * (1.0 - river) * (1.0 - plaza);
+  col *= 0.72 * fall * (1.0 - park*0.85) * (1.0 - river) * (1.0 - plaza);
   vec3 base = vec3(0.0035, 0.004, 0.0055);
   col += base;
 
@@ -63,7 +63,7 @@ vec3 city(vec2 p, float t, float fw){
 
   // paved plaza in front of the landmark, washed by floodlights
   float wash = exp(-pow(max(0.0, abs(p.x)-10.0)/45.0, 2.0)) * exp(-pow((p.y-30.0)/70.0, 2.0));
-  col = mix(col, vec3(0.03, 0.024, 0.018) + vec3(0.22, 0.14, 0.07)*wash, plaza);
+  col = mix(col, vec3(0.012, 0.011, 0.01) + vec3(0.07, 0.045, 0.024)*wash, plaza);
   return col;
 }
 `;
@@ -92,22 +92,22 @@ ${COMMON}
 
 vec3 horizonCol(vec3 rd){
   float sd = max(dot(normalize(vec3(rd.x, 0.0, rd.z)), normalize(vec3(uSun.x, 0.0, uSun.z))), 0.0);
-  return uFog + vec3(0.10, 0.045, 0.018) * pow(sd, 5.0);
+  return uFog + vec3(0.05, 0.026, 0.014) * pow(sd, 6.0);
 }
 
 vec3 sky(vec3 rd){
   float h = clamp(rd.y, 0.0, 1.0);
-  vec3 zen = vec3(0.0035, 0.0065, 0.016);
+  vec3 zen = vec3(0.0015, 0.003, 0.009);
   vec3 c = mix(horizonCol(rd), zen, pow(h, 0.42));
   float sd = max(dot(rd, uSun), 0.0);
   float band = exp(-abs(rd.y - 0.015) * 10.0);
-  c += vec3(0.62, 0.25, 0.085) * pow(sd, 5.0) * band;
-  c += vec3(0.95, 0.55, 0.28) * pow(sd, 60.0) * 0.55;
-  c += vec3(2.4, 1.6, 1.0) * pow(sd, 2200.0) * 2.0;
+  c += vec3(0.20, 0.09, 0.04) * pow(sd, 6.0) * band;
+  c += vec3(0.40, 0.24, 0.14) * pow(sd, 90.0) * 0.35;
+  c += vec3(1.2, 0.85, 0.6) * pow(sd, 4000.0) * 0.6;
   if (rd.y > 0.0) {
     vec3 sp = floor(rd * 700.0);
     float s = h31(sp);
-    c += vec3(0.55, 0.6, 0.8) * step(0.9988, s) * smoothstep(0.02, 0.3, rd.y) * (1.0 - pow(sd, 3.0)) * 0.9;
+    c += vec3(0.6, 0.66, 0.85) * step(0.9986, s) * smoothstep(0.02, 0.3, rd.y) * (1.0 - pow(sd, 3.0)) * 0.7;
   }
   return c;
 }
@@ -159,7 +159,7 @@ void main(){
     float t = tn + st * jit;
     float cth = dot(rd, uSun);
     float ph = mix(hg(cth, 0.62), hg(cth, -0.2), 0.35) * 4.0 * 3.14159;
-    vec3 sunc = vec3(1.0, 0.52, 0.25) * 1.35;
+    vec3 sunc = vec3(1.0, 0.64, 0.42) * 0.42;
     for (int i = 0; i < 72; i++) {
       if (float(i) >= N || t > tf || T < 0.012) break;
       vec3 p = ro + rd * t;
@@ -170,8 +170,8 @@ void main(){
         float beer = exp(-ld * 0.03);
         float powder = 1.0 - exp(-ld * 0.06);
         float hf = (p.y - BOT) / (TOP - BOT);
-        vec3 amb = mix(vec3(0.010, 0.013, 0.022), vec3(0.042, 0.05, 0.072), hf);
-        amb += vec3(0.05, 0.026, 0.010) * (1.0 - hf) * (1.0 - hf);
+        vec3 amb = mix(vec3(0.008, 0.011, 0.019), vec3(0.034, 0.042, 0.064), hf);
+        amb += vec3(0.032, 0.017, 0.007) * (1.0 - hf) * (1.0 - hf);
         vec3 L = amb + sunc * beer * mix(1.0, powder * 1.6, 0.55) * ph * 0.55;
         float a = 1.0 - exp(-d * 0.028 * st);
         // aerial perspective on distant cloud tops
@@ -244,14 +244,14 @@ void main(){
     float win = step(0.16, f.x) * step(f.x, 0.84) * step(0.2, f.y) * step(f.y, 0.8);
     float hs = h31(vec3(cell, vId * 1.37 + side * 17.0));
     float floorLit = step(0.35, h31(vec3(cell.y, vId, side)));
-    float lit = step(0.6, hs) * floorLit * step(1.2, vW.y);
+    float lit = step(0.66, hs) * floorLit * step(1.2, vW.y);
     vec3 warm = mix(vec3(1.0, 0.58, 0.26), vec3(0.95, 0.86, 0.72), h31(vec3(cell.yx, vId + 3.0)));
     vec3 facade = vec3(0.006, 0.0075, 0.011);
-    vec3 pat = facade + win * (lit * warm * (1.4 + 2.4 * h31(vec3(cell, vId + 9.0))) + (1.0 - lit) * vec3(0.01, 0.014, 0.022));
-    vec3 avg = facade + warm * 0.16 * 0.95;
+    vec3 pat = facade + win * (lit * warm * (0.9 + 1.7 * h31(vec3(cell, vId + 9.0))) + (1.0 - lit) * vec3(0.01, 0.014, 0.022));
+    vec3 avg = facade + warm * 0.045;
     float aa = clamp(1.0 - max(fwidth(g.x), fwidth(g.y)) * 1.6, 0.0, 1.0);
     col = mix(avg, pat, aa);
-    col += vec3(0.07, 0.04, 0.018) * exp(-vW.y * 0.05);
+    col += vec3(0.035, 0.02, 0.009) * exp(-vW.y * 0.05);
   } else {
     col = vec3(0.005, 0.006, 0.008);
     float red = step(0.86, h31(vec3(vId, 1.0, 2.0))) * pow(0.5 + 0.5 * sin(uTime * 2.2 + vId), 8.0);
@@ -274,8 +274,8 @@ void main(){
   p.x += sin(uTime * 0.3 + aSeed * 20.0) * 0.25;
   p.z += cos(uTime * 0.25 + aSeed * 13.0) * 0.25;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  gl_PointSize = uSize * (0.5 + aSeed) / -mv.z;
-  vA = 0.35 + 0.65 * aSeed;
+  gl_PointSize = uSize * (0.4 + aSeed) / -mv.z;
+  vA = (0.25 + 0.75 * aSeed) * smoothstep(9.0, 3.0, p.y);
   gl_Position = projectionMatrix * mv;
 }
 `;
@@ -287,6 +287,6 @@ varying float vA;
 void main(){
   vec2 c = gl_PointCoord - 0.5;
   float a = smoothstep(0.5, 0.0, length(c));
-  gl_FragColor = vec4(vec3(1.0, 0.78, 0.5) * 1.6, a * vA * uOpacity);
+  gl_FragColor = vec4(vec3(1.0, 0.8, 0.55) * 1.2, a * vA * uOpacity * 0.6);
 }
 `;
