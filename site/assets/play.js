@@ -180,7 +180,7 @@
     return '<div class="uw-tiles" style="--n:' + S.word.length + '" aria-label="Hidden word">' + html + '</div>';
   }
   function boardHtml() {
-    if (!signedIn()) return '<p class="pl-note">Log in to see the leaderboard and put your score on it. <a href="/login?next=%2Fapp%2Fplay">Log in</a> · <a href="/signup?next=%2Fapp%2Fplay">Sign up free</a></p>';
+    if (!signedIn()) return '<p class="pl-note">Log in to see the leaderboard and put your score on it. <a href="/login?next=%2Fdashboard%2Fplay">Log in</a> · <a href="/signup?next=%2Fdashboard%2Fplay">Sign up free</a></p>';
     var tabs = [['today', 'Today'], ['week', 'This week'], ['uni', (S.kit && S.kit.uniShort ? S.kit.uniShort : 'My uni') + ' today']].map(function (t) {
       return '<button type="button" class="pl-tab' + (S.scope === t[0] ? ' on' : '') + '" data-uw-scope="' + t[0] + '">' + esc(t[1]) + '</button>';
     }).join('');
@@ -213,7 +213,7 @@
     if (!ready) cta = S.loadErr ? '<p class="pl-note">' + esc(S.loadErr) + '</p>' : '<p class="pl-note">Getting today’s word…</p>';
     else if (me.played) cta = '<div class="uw-today">Today: <b>' + me.score + ' points</b>' + (me.qn ? ' (' + me.rights + '/' + me.qn + ' letters' + (me.solved ? ', word solved' : '') + ')' : '') + '. A new word tomorrow.</div><button type="button" class="pl-btn ghost" data-uw-start="free">Free play</button>';
     else if (signedIn() && startedToday()) cta = '<div class="uw-today">You’ve already started today’s word on this device. A new one tomorrow.</div><button type="button" class="pl-btn ghost" data-uw-start="free">Free play</button>';
-    else cta = '<button type="button" class="pl-btn" data-uw-start="daily">Start today’s Unwind</button>' + (signedIn() ? '' : '<p class="pl-note">Not logged in, so your score won’t go on the leaderboard. <a href="/login?next=%2Fapp%2Fplay">Log in</a></p>');
+    else cta = '<button type="button" class="pl-btn" data-uw-start="daily">Start today’s Unwind</button>' + (signedIn() ? '' : '<p class="pl-note">Not logged in, so your score won’t go on the leaderboard. <a href="/login?next=%2Fdashboard%2Fplay">Log in</a></p>');
     var stats = signedIn() && me.signed_in && !me.failed ? '<div class="pl-stats"><div><b>' + (me.streak || 0) + '</b><span>day streak</span></div><div><b>' + (me.words || 0) + '</b><span>words solved</span></div><div><b>' + (me.best != null ? me.best : '–') + '</b><span>best score</span></div></div>' : '';
     return '<div class="pl-grid"><section class="pl-card uw-hero" style="--uc:' + t.c + '"><div class="uw-sun" aria-hidden="true"></div><span class="pl-kick">' + esc(prettyDay()) + '</span><h2>Find today’s word.<br><em>One easy question per letter.</em></h2>' +
       '<p class="uw-lede">Each right answer reveals a letter of the hidden word; a wrong one leaves a gap. Then guess the word. Miss two letters or fewer and you get one guess; miss more and you get a guess for each one you missed.</p>' +
@@ -251,7 +251,7 @@
     var t = theme(), res = '', n = rights();
     var line = S.solved ? (wrongs() === 0 ? 'Every letter found. Perfect.' : 'You got the word. Lovely stuff.') : 'So close. The word was ' + S.word + '.';
     if (S.mode === 'daily') {
-      if (!signedIn()) res = '<p class="pl-note">Log in to put scores on the leaderboard and keep a streak. <a href="/login?next=%2Fapp%2Fplay">Log in</a> · <a href="/signup?next=%2Fapp%2Fplay">Sign up free</a></p>';
+      if (!signedIn()) res = '<p class="pl-note">Log in to put scores on the leaderboard and keep a streak. <a href="/login?next=%2Fdashboard%2Fplay">Log in</a> · <a href="/signup?next=%2Fdashboard%2Fplay">Sign up free</a></p>';
       else if (S.submitting) res = '<p class="pl-note">Adding your score to the board…</p>';
       else if (S.result && S.result.failed) res = '<p class="pl-note">Couldn’t save your score. <button type="button" class="pl-link" data-uw-resubmit>Try again</button></p>';
       else if (S.result && S.result.counted === false) res = '<p class="pl-note">You’d already played today, so this one didn’t count.</p>';

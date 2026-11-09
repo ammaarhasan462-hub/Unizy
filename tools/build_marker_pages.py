@@ -20,7 +20,7 @@ CONFIG = cfg.group(1)
 
 
 def head(title, desc, path, extra_css=""):
-    return f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><meta name="description" content="{desc}"><meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}{path}"><meta property="og:url" content="https://{DOMAIN}{path}"><meta property="og:image" content="https://{DOMAIN}/assets/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#17302A"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Fraunces:opsz,wght@9..144,500..700&family=DM+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/home.css?v=16"><link rel="stylesheet" href="/assets/site.css?v=2"><link rel="stylesheet" href="/assets/mark.css?v=2">{extra_css}</head><body class="sx">
+    return f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><meta name="description" content="{desc}"><meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}{path}"><meta property="og:url" content="https://{DOMAIN}{path}"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=3"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#17302A"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Fraunces:opsz,wght@9..144,500..700&family=DM+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/home.css?v=16"><link rel="stylesheet" href="/assets/site.css?v=2"><link rel="stylesheet" href="/assets/mark.css?v=2">{extra_css}</head><body class="sx">
 <a class="skip" href="#main">Skip to content</a>"""
 
 
@@ -55,7 +55,7 @@ MARK_PAGE = head(f"Find your UCL module · practice questions and marking · {BR
 <main id="main" class="mk-wrap"><div id="mk"><noscript>Turn on JavaScript to search UCL modules and get answers marked.</noscript></div></main>
 """ + footer() + scripts("mark.js?v=2") + "</body></html>\n"
 
-HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{BRAND} · {TAGLINE}</title><meta name="description" content="At A-level you had mark schemes. At UCL you don't. Write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class."><meta property="og:title" content="{BRAND} · {TAGLINE}"><meta property="og:description" content="Exam practice and marking for every UCL module."><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}/"><meta property="og:url" content="https://{DOMAIN}/"><meta property="og:image" content="https://{DOMAIN}/assets/og.png"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#06060b"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/landing.css?v=2"></head>
+HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{BRAND} · {TAGLINE}</title><meta name="description" content="At A-level you had mark schemes. At UCL you don't. Write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class."><meta property="og:title" content="{BRAND} · {TAGLINE}"><meta property="og:description" content="Exam practice and marking for every UCL module."><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}/"><meta property="og:url" content="https://{DOMAIN}/"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=3"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#06060b"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/landing.css?v=2"></head>
 <body class="lp">
 <a class="skip" href="#main">Skip to content</a>
 <div class="bg" aria-hidden="true"><div class="grid"></div><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
@@ -195,7 +195,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 </body></html>
 """
 
-DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard") + f"""
+DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard", '<link rel="stylesheet" href="/assets/play.css?v=1">') + f"""
 <div id="root"><div class="db setup" id="db">
 <aside class="db-side">
 <div class="db-bar"><a class="sx-brand db-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><button class="db-menu" id="db-menu" type="button" aria-label="Menu"><span></span><span></span></button></div>
@@ -204,6 +204,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard")
     ("home", "Home", "/dashboard", "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"),
     ("practice", "Practice &amp; marking", "/dashboard/practice", "M4 20h4L19 9l-4-4L4 16zM14 6l4 4"),
     ("tutor", "Tutor", "/dashboard/tutor", "M4 5h16v11H8l-4 4z"),
+    ("play", "Play", "/dashboard/play", "M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3"),
     ("history", "Marked answers", "/dashboard/history", "M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"),
     ("account", "Account", "/dashboard/account", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0")]) + """</nav>
 <div class="db-mods-head"><span>My modules</span><a href="/dashboard/practice">+ Add</a></div>
@@ -215,11 +216,13 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard")
 <section class="db-tab" data-tab="home" id="db-home" hidden></section>
 <section class="db-tab" data-tab="practice" hidden><div id="mk" data-base="/dashboard/practice" data-modbase="/dashboard/practice/"></div></section>
 <section class="db-tab" data-tab="tutor" id="db-tutor" hidden></section>
+<section class="db-tab" data-tab="play" hidden><div id="uz-play" class="uz-play"></div></section>
+<section class="db-tab" data-tab="play" hidden><div id="uz-play" class="uz-play"></div></section>
 <section class="db-tab" data-tab="history" id="db-history" hidden></section>
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/dashboard.js?v=1"></script><script src="/assets/mark.js?v=2"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/dashboard.js?v=2"></script><script src="/assets/mark.js?v=2"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
 
 if __name__ == "__main__":
     (SITE / "dashboard.html").write_text(DASH_PAGE)

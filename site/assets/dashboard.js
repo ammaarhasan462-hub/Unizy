@@ -8,6 +8,7 @@
     { id: 'home', label: 'Home', path: '/dashboard', icon: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z' },
     { id: 'practice', label: 'Practice & marking', path: '/dashboard/practice', icon: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4' },
     { id: 'tutor', label: 'Tutor', path: '/dashboard/tutor', icon: 'M4 5h16v11H8l-4 4z' },
+    { id: 'play', label: 'Play', path: '/dashboard/play', icon: 'M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3' },
     { id: 'history', label: 'Marked answers', path: '/dashboard/history', icon: 'M5 4h14v16H5zM8 9h8M8 13h8M8 17h5' },
     { id: 'account', label: 'Account', path: '/dashboard/account', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0' }
   ];
@@ -110,6 +111,7 @@
     else if (tab === 'tutor') renderTutor();
     else if (tab === 'history') renderHistory();
     else if (tab === 'account') renderAccount();
+    else if (tab === 'play') renderPlay();
     window.scrollTo(0, 0);
   }
 
@@ -302,6 +304,7 @@
       if (a.length) {
         html += '<section class="db-sec"><div class="mk-row"><h2>Recent marked answers</h2><a class="btn line small" href="/dashboard/history">See all</a></div><ul class="mk-hist">' + a.slice(0, 5).map(histRow).join('') + '</ul></section>';
       }
+      html += '<a class="db-play-banner" href="/dashboard/play"><span class="ic" aria-hidden="true">☕</span><span class="tx"><b>Done for today? Unwind.</b><span>Easy questions reveal the letters of today’s hidden word. Can you guess it?</span></span><span class="go">Play →</span></a>';
       html += '<p class="db-more">Looking for notes and flashcards? <a href="/app">Open the study tools</a>.</p>';
       el.innerHTML = html;
     };
@@ -315,6 +318,21 @@
   function histRow(x) {
     var r = x.result || {};
     return '<li><span class="mk-cls ' + clsSlug(r.class) + '">' + esc(r.class || '?') + '</span><a class="mk-hq" href="/dashboard/history?a=' + x.id + '"><b>' + esc(x.code) + '</b> ' + esc(String(x.question).slice(0, 120)) + (String(x.question).length > 120 ? '…' : '') + '</a><span class="mk-hm">' + (r.mark_low != null ? r.mark_low + '–' + r.mark_high : '') + ' · ' + day(x.created_at) + '</span></li>';
+  }
+
+  // ---------- Play (Unwind, the daily word game in play.js) ----------
+  function renderPlay() {
+    if (!window.UnizyWeb) {
+      // play.js talks to the site through this small bridge (the old study app provided the same one)
+      window.UnizyWeb = { _internal: {
+        Auth: {
+          get session() { var s = getSession(); return s && s.access_token ? s : null; },
+          headers: function () { var s = getSession(), h = { apikey: CFG.anonKey, 'Content-Type': 'application/json' }; if (s && s.access_token) h.Authorization = 'Bearer ' + s.access_token; return h; }
+        },
+        Sync: { rest: function (path, opts) { return rawRest(path, opts); } }
+      } };
+    }
+    if (window.UnizyPlay) window.UnizyPlay.mount(null, { uniId: 'ucl', uniShort: 'UCL' });
   }
 
   // ---------- Marked answers (history) ----------
