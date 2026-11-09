@@ -18,7 +18,7 @@ const ICONS = {
 export function Trust() {
   const cards = [
     ['doc', 'Your department’s criteria', 'Every answer is marked against UCL’s grade bands for your year and, where your department publishes them, its own grade descriptors.'],
-    ['shield', 'Practice, not coursework', 'SaveMyGrade is for exam practice. It refuses to mark work you’re going to submit, and it never writes work for you to hand in.'],
+    ['shield', 'Practice, not coursework', 'Unizy is for exam practice. It refuses to mark work you’re going to submit, and it never writes work for you to hand in.'],
     ['pulse', 'Honest ranges', 'You always get a mark range, not a fake-precise number, and you can tell us your real mark so we keep checking the marker’s accuracy.'],
   ];
   return (
@@ -61,7 +61,7 @@ export function Reviews() {
             <Reveal className="md:col-span-2">
               <SpotCard className="glass-strong rounded-[28px] p-8">
                 <span className="text-[22px] tracking-[3px] text-lilac/40">★★★★★</span>
-                <h3 className="mt-4 font-display text-[28px] font-semibold tracking-tight">Be one of the first to review SaveMyGrade.</h3>
+                <h3 className="mt-4 font-display text-[28px] font-semibold tracking-tight">Be one of the first to review Unizy.</h3>
                 <p className="mt-3 max-w-[560px] text-[15.5px] leading-relaxed text-mute">We only show reviews from real, signed-in students. No made-up testimonials, ever.</p>
                 <a href="/reviews" className="btn btn-ghost mt-6 px-5 py-2.5 text-[14.5px]">See reviews</a>
               </SpotCard>
@@ -129,11 +129,11 @@ export function Pricing() {
 }
 
 const QA = [
-  ['Is this cheating?', 'No. SaveMyGrade is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
+  ['Is this cheating?', 'No. Unizy is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
   ['Does it have my exact past papers?', 'We don’t host university exam papers. Paste a question from your own past paper and we’ll mark your answer to it, or use one of our exam-style questions written from the module’s official description.'],
   ['How accurate is the marking?', 'It’s a practice estimate, so you always see a mark range rather than a single number. We test the marker against real marked answers, module by module, and you can tell us your real mark to help keep it accurate.'],
   ['Which modules?', 'All 6,682 modules in UCL’s public module catalogue. Practice questions are written the first time someone opens a module, then saved for everyone.'],
-  ['Is SaveMyGrade part of UCL?', 'No. SaveMyGrade is an independent revision tool built by a UCL student. It isn’t affiliated with or endorsed by UCL.'],
+  ['Is Unizy part of UCL?', 'No. Unizy is an independent revision tool built by a UCL student. It isn’t affiliated with or endorsed by UCL.'],
 ];
 
 export function Faq() {
@@ -210,7 +210,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="mt-8 max-w-[900px] text-[12.5px] leading-relaxed text-dim">
-          SaveMyGrade is an independent revision tool for UCL students. It is not affiliated with or endorsed by UCL. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from UCL exam papers. The dashboard shown above is an illustration. © 2026 SaveMyGrade
+          Unizy is an independent revision tool for UCL students. It is not affiliated with or endorsed by UCL. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from UCL exam papers. The dashboard shown above is an illustration. © 2026 Unizy
         </p>
       </div>
     </footer>

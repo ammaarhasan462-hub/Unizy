@@ -1,4 +1,4 @@
-/* SaveMyGrade home page: interactive demo, coverage figures, live reviews and anonymous visit counts. */
+/* Unizy home page: interactive demo, coverage figures, live reviews and anonymous visit counts. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG || {}, H = window.UNIZY_HOME || {};
@@ -79,7 +79,7 @@
   (function () {
     var box = $('rvBox'); if (!box || !CFG.supabaseUrl) return;
     function empty() {
-      box.innerHTML = '<div class="rv-empty"><p><b>No reviews yet.</b> SaveMyGrade is new, so there aren’t any reviews to show. We won’t fill this space with made-up quotes: it will show real reviews from students with confirmed accounts as they come in.</p><a class="btn line small" href="/reviews">Leave the first review</a></div>';
+      box.innerHTML = '<div class="rv-empty"><p><b>No reviews yet.</b> Unizy is new, so there aren’t any reviews to show. We won’t fill this space with made-up quotes: it will show real reviews from students with confirmed accounts as they come in.</p><a class="btn line small" href="/reviews">Leave the first review</a></div>';
     }
     fetch(CFG.supabaseUrl + '/rest/v1/rpc/public_reviews', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_limit: 3, p_offset: 0, p_sort: 'newest' }) })
       .then(function (r) { return r.ok ? r.json() : null; })
@@ -88,7 +88,7 @@
         if (!d || !+d.count || !list || !list.length) return empty();
         box.innerHTML = list.map(function (r) {
           var n = Math.max(0, Math.min(5, +r.rating || 0));
-          var who = [r.name, r.course && String(r.course).trim()].filter(Boolean).map(esc).join(' · ') + ' · Verified SaveMyGrade account';
+          var who = [r.name, r.course && String(r.course).trim()].filter(Boolean).map(esc).join(' · ') + ' · Verified Unizy account';
           return '<article class="rv-card"><span class="rv-stars" aria-label="' + n + ' out of 5 stars">' + '★★★★★'.slice(0, n) + '<span style="color:#C8D1CB">' + '★★★★★'.slice(0, 5 - n) + '</span></span>' + (r.title ? '<h3>' + esc(r.title) + '</h3>' : '') + '<p>' + esc(r.body) + '</p><span class="rv-who">' + who + '</span></article>';
         }).join('') + '<div style="grid-column:1/-1"><a class="btn line small" href="/reviews">Read all ' + (+d.count) + ' review' + (+d.count === 1 ? '' : 's') + ' (average ' + esc(d.average) + ' / 5)</a></div>';
       }).catch(empty);
@@ -112,12 +112,12 @@
         box.innerHTML =
           tile((Math.round(rt.latest) - Math.round(rt.first) >= 0 ? '+' : '') + (Math.round(rt.latest) - Math.round(rt.first)) + ' pts', 'Score change on retested topics', rtReady ? 'Average first try ' + Math.round(rt.first) + '% → latest ' + Math.round(rt.latest) + '% across ' + rt.topics + ' retested topics (' + rt.students + ' students).' : 'How much scores change when students revise a weak topic and test it again.', rtReady, rt.students || 0, m) +
           tile(Math.round(rc.rate) + '%', 'Still known at spaced review', rcReady ? 'Of ' + rc.reviews + ' scheduled flashcard reviews by ' + rc.students + ' students.' : 'How many learned flashcards students still know when they come back days later.', rcReady, rc.students || 0, m) +
-          tile(yes + '%', 'Say SaveMyGrade saves them time', svReady ? sv.students + ' students answered. ' + (sv.longer ? sv.longer + ' said it takes longer.' : '') : 'From a two-question survey shown in the app after a student’s first week.', svReady, sv.students || 0, m) +
-          tile(Math.round(mn.median) + ' min', 'Typical active study per week', mnReady ? 'Median for ' + mn.students + ' students active in the last 7 days. Only minutes of real use count.' : 'Minutes students actually work in SaveMyGrade each week, not just time with the tab open.', mnReady, mn.students || 0, m) +
+          tile(yes + '%', 'Say Unizy saves them time', svReady ? sv.students + ' students answered. ' + (sv.longer ? sv.longer + ' said it takes longer.' : '') : 'From a two-question survey shown in the app after a student’s first week.', svReady, sv.students || 0, m) +
+          tile(Math.round(mn.median) + ' min', 'Typical active study per week', mnReady ? 'Median for ' + mn.students + ' students active in the last 7 days. Only minutes of real use count.' : 'Minutes students actually work in Unizy each week, not just time with the tab open.', mnReady, mn.students || 0, m) +
           tile(Math.round(wk.rate) + '%', 'Right on new questions a week later', wkReady ? 'Questions on ideas students had got right 7+ days earlier, which they hadn’t seen before (first attempts, ' + wk.items + ' questions by ' + wk.students + ' students).' : 'Unseen questions on ideas a student got right a week earlier, to check learning sticks and transfers.', wkReady, wk.students || 0, m) +
           tile(Math.round(am.rate) + '%', 'Right on a new case after a mistake', amReady ? 'After a wrong answer and its explanation, the share right on a new scenario testing the same idea (' + am.items + ' questions by ' + am.students + ' students).' : 'Whether explanations fix a misunderstanding: after a wrong answer, a new scenario on the same idea.', amReady, am.students || 0, m);
       })
-      .catch(function () { box.innerHTML = '<p class="ev-note">Results will appear here once enough students have used SaveMyGrade.</p>'; });
+      .catch(function () { box.innerHTML = '<p class="ev-note">Results will appear here once enough students have used Unizy.</p>'; });
   })();
 
   // ---------------- interactive demo ----------------
@@ -161,17 +161,17 @@
     var u = uni(), m = mod(), h = '';
     tabs.forEach(function (b) { var n = +b.getAttribute('data-step'); b.setAttribute('aria-selected', n === st.step ? 'true' : 'false'); b.disabled = n > st.maxStep; b.classList.toggle('done', n < st.maxStep && n !== st.step); });
     if (st.step === 0) {
-      h = '<h3 class="st-h">Pick your uni and a module</h3><p class="st-p">SaveMyGrade recolours to your uni and sets up your modules from the official course pages.</p>' +
+      h = '<h3 class="st-h">Pick your uni and a module</h3><p class="st-p">Unizy recolours to your uni and sets up your modules from the official course pages.</p>' +
         '<div class="chips" role="group" aria-label="University">' + UNIS.map(function (x) { return '<button class="chip" data-uni="' + x.id + '" aria-pressed="' + (x.id === st.uni) + '" style="--c:' + x.c + ';--cf:' + (x.light ? '#17302A' : '#fff') + '">' + esc(x.name) + '</button>'; }).join('') + '</div>' +
         '<div class="modlist" role="group" aria-label="Module">' + (D[st.uni] || []).map(function (x, i) { return '<button class="modbtn" data-mod="' + i + '" aria-pressed="' + (i === st.mod) + '"><b>' + esc(x.name) + '</b><span>' + esc([x.code, x.deg, 'Year ' + x.year].filter(Boolean).join(' · ')) + '</span>' + (x.pack ? '<span class="badge b-pack" style="margin-top:4px">Module pack · fact-checked</span>' : '<span class="badge b-full" style="margin-top:4px">Subject library · ' + esc(x.bankTitle) + '</span>') + '</button>'; }).join('') + '</div>' +
         '<div class="row-end"><span class="muted">' + esc(u.name) + ' · ' + (D[st.uni] || []).length + ' sample modules</span>' + nextBtn('Open my notes', 1) + '</div>';
     } else if (st.step === 1) {
-      h = '<h3 class="st-h">Turn notes into flashcards</h3><p class="st-p">Here are notes on <b>' + esc(m.topics[m.note.t]) + '</b> from the SaveMyGrade ' + (m.pack ? 'module pack' : 'library') + ' for ' + esc(m.name) + '.</p>' +
+      h = '<h3 class="st-h">Turn notes into flashcards</h3><p class="st-p">Here are notes on <b>' + esc(m.topics[m.note.t]) + '</b> from the Unizy ' + (m.pack ? 'module pack' : 'library') + ' for ' + esc(m.name) + '.</p>' +
         '<div class="paper"><h4>' + esc(m.note.h) + '</h4>' + esc(m.note.body) + '</div>';
       if (!st.made && !st.making) h += '<div><button class="btn acc" id="mk">✨ Make flashcards from these notes</button></div>';
       else if (st.making) h += '<div class="cards"><div class="shimmer"></div><div class="shimmer"></div><div class="shimmer"></div></div>';
       else h += '<p class="st-p"><b>Tap a card to flip it.</b></p><div class="cards">' + m.cards.map(function (c, i) { return '<button class="fcard" aria-pressed="false" style="animation-delay:' + (i * 0.08) + 's"><span class="inner"><span class="side front"><small>Question</small><b>' + esc(c.f) + '</b></span><span class="side back"><small>Answer</small>' + esc(c.b) + '</span></span></button>'; }).join('') + '</div>' +
-        '<p class="note">In this demo the cards come from ' + (m.pack ? 'the SaveMyGrade module pack for ' + esc(m.name) : 'the SaveMyGrade library for this subject') + '. In the app you can also upload your own lecture notes and have your tutor turn them into cards.</p>';
+        '<p class="note">In this demo the cards come from ' + (m.pack ? 'the Unizy module pack for ' + esc(m.name) : 'the Unizy library for this subject') + '. In the app you can also upload your own lecture notes and have your tutor turn them into cards.</p>';
       h += '<div class="row-end"><span></span>' + nextBtn('Test myself', 2, !st.made) + '</div>';
     } else if (st.step === 2) {
       var q = m.qs[st.qi], pick = st.picks[st.qi], answered = pick !== undefined, last = st.qi === m.qs.length - 1;
@@ -184,7 +184,7 @@
       h += '<div class="row-end"><span class="muted">Real questions from the library, with explanations.</span>' + (answered ? (last ? nextBtn('See what to revise', 3) : '<button class="btn acc" id="qnext">Next question →</button>') : '') + '</div>';
     } else if (st.step === 3) {
       var r = results(), score = r.reduce(function (a, x) { return a + x.right; }, 0), tot = r.reduce(function (a, x) { return a + x.total; }, 0);
-      h = '<h3 class="st-h">You scored ' + score + ' out of ' + tot + '. Here’s what to revise.</h3><p class="st-p">SaveMyGrade tracks your results by topic, so weak spots show up on their own.</p><div class="bars">' +
+      h = '<h3 class="st-h">You scored ' + score + ' out of ' + tot + '. Here’s what to revise.</h3><p class="st-p">Unizy tracks your results by topic, so weak spots show up on their own.</p><div class="bars">' +
         r.map(function (x) { var pc = Math.round(x.right / x.total * 100), wk = x.right < x.total; return '<div class="tbar"><span class="nm">' + esc(x.name) + '</span><span class="tag ' + (wk ? 'weak' : 'ok') + '">' + (wk ? 'Revise this' : 'Looking good') + '</span><span class="track"><i style="width:' + Math.max(pc, 4) + '%;background:' + (wk ? '#C8102E' : '#2E7D32') + '"></i></span></div>'; }).join('') + '</div>' +
         (score === tot ? '<p class="note">Full marks! In the app, harder levels and mixed-topic tests keep finding what’s weakest. For this demo we’ll plan a review of the first topic so it sticks.</p>' : '') +
         '<div class="row-end"><span></span>' + nextBtn('Plan my revision', 4) + '</div>';
@@ -201,7 +201,7 @@
         }).join('') + '</div>' +
         '<p class="note">Sample classes and deadline for the demo. In the app, the Plan tab holds your own classes, deadlines and sessions.</p>';
       if (!st.planned) h += '<div class="row-end"><span></span><button class="btn acc" id="plan">Add ' + (w.length * 3) + ' revision sessions</button></div>';
-      else h += '<div class="done-box"><b>That’s SaveMyGrade.</b><p>Notes → flashcards → practice → what to revise → your plan, all built around your modules. Set it up for your own degree in about two minutes.</p><div class="ctas"><a class="btn lime" href="/app.html?uni=' + st.uni + '" data-ev="cta_explore_demo">Explore SaveMyGrade for ' + esc(u.name) + '</a><a class="btn ghost" style="color:#fff;border-color:#fff" href="/signup" data-ev="cta_signup_demo">Sign up free</a></div></div>';
+      else h += '<div class="done-box"><b>That’s Unizy.</b><p>Notes → flashcards → practice → what to revise → your plan, all built around your modules. Set it up for your own degree in about two minutes.</p><div class="ctas"><a class="btn lime" href="/app.html?uni=' + st.uni + '" data-ev="cta_explore_demo">Explore Unizy for ' + esc(u.name) + '</a><a class="btn ghost" style="color:#fff;border-color:#fff" href="/signup" data-ev="cta_signup_demo">Sign up free</a></div></div>';
     }
     stage.innerHTML = h;
   }

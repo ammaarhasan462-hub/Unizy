@@ -1,20 +1,20 @@
 'use client';
 // Opening screen: a full-screen 3D journey. Scrolling, swiping or the arrow keys move the camera
-// instead of the page; at the end it opens onto the landing page. Shown once per browser session to
-// signed-out visitors (not with reduced motion or without WebGL 2). ?intro=1 forces it, ?intro=0 skips it.
+// instead of the page; at the end it opens onto the landing page. It is the first thing every visitor
+// sees on unizy.uk, signed in or not, once per browser tab (so going back to Home inside the site
+// doesn't replay it). Not shown with reduced motion or without WebGL 2. ?intro=1 forces it, ?intro=0 skips it.
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { track } from '@/lib/site';
+import { hasSession, track } from '@/lib/site';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 export const INTRO_BOOT = `(function(){try{var d=document.documentElement,q=location.search;
 var force=/[?&]intro=1/.test(q),off=/[?&]intro=0/.test(q);
-var s=null;try{s=JSON.parse(localStorage.getItem('unizy.session')||'null')}catch(e){}
 var done=false;try{done=sessionStorage.getItem('smg:intro')==='done'}catch(e){}
 var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(force||(!off&&!done&&!(s&&s.access_token)&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
+if(force||(!off&&!done&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
 setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
 const CH = [
@@ -42,6 +42,7 @@ function vis(c, p) {
 export default function Intro() {
   const [on, setOn] = useState(true);
   const [ready, setReady] = useState(false);
+  const [authed, setAuthed] = useState(false);
   const root = useRef(null);
   const canvas = useRef(null);
   const flash = useRef(null);
@@ -57,6 +58,7 @@ export default function Intro() {
     const d = document.documentElement;
     if (!d.classList.contains('intro')) { setOn(false); return; }
     d.classList.add('intro-live');
+    setAuthed(hasSession());
     const mobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
     let engine = null;
     let cancelled = false;
@@ -170,7 +172,7 @@ export default function Intro() {
   const finish = (m) => window.__smgIntroFinish && window.__smgIntroFinish(m);
 
   return (
-    <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="SaveMyGrade intro">
+    <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="Unizy intro">
       <canvas ref={canvas} className="absolute inset-0 block h-full w-full" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,.55)_100%)]" />
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
@@ -178,11 +180,11 @@ export default function Intro() {
       {/* top bar */}
       <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-9 sm:py-7">
         <span className="flex items-center gap-2.5 font-display text-[17px] font-semibold tracking-tight text-[#efe9dd]">
-          <span className="grid size-7 place-items-center rounded-[9px] border border-[#efe9dd]/25 bg-white/5 text-[13px] backdrop-blur">S</span>
-          SaveMyGrade
+          <span className="grid size-7 place-items-center rounded-[9px] border border-[#efe9dd]/25 bg-white/5 text-[13px] backdrop-blur">U</span>
+          Unizy
         </span>
         <div className="flex items-center gap-2 text-[13.5px]">
-          <a href="/login?next=/dashboard" className="hidden rounded-full px-4 py-2 text-[#efe9dd]/70 transition-colors hover:text-[#efe9dd] sm:inline-block">Log in</a>
+          <a href={authed ? '/dashboard' : '/login?next=/dashboard'} className="hidden rounded-full px-4 py-2 text-[#efe9dd]/70 transition-colors hover:text-[#efe9dd] sm:inline-block">{authed ? 'Dashboard' : 'Log in'}</a>
           <button type="button" onClick={() => finish('skip')} className="rounded-full border border-[#efe9dd]/20 bg-white/[.04] px-4 py-2 text-[#efe9dd]/85 backdrop-blur transition-colors hover:border-[#efe9dd]/40 hover:text-[#efe9dd]" data-testid="intro-skip">
             Skip intro
           </button>
@@ -191,7 +193,7 @@ export default function Intro() {
 
       {/* chapters */}
       <div ref={(el) => (chap.current[0] = el)} className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <p className="font-mono text-[11.5px] uppercase tracking-[.42em] text-[#efe9dd]/55">SaveMyGrade</p>
+        <p className="font-mono text-[11.5px] uppercase tracking-[.42em] text-[#efe9dd]/55">Unizy</p>
         <h1 className="mt-6 max-w-[980px] font-display text-[clamp(40px,6.6vw,96px)] font-semibold leading-[0.98] tracking-[-0.035em] text-[#f3eee4] [text-shadow:0_2px_40px_rgba(0,0,0,.35)]">
           The mark scheme your uni never gave you.
         </h1>
@@ -216,11 +218,11 @@ export default function Intro() {
               Find out what your answer would get.
             </h2>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <a href="/signup" onClick={() => track('intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
-                Get my first answer marked, free
+              <a href={authed ? '/dashboard/practice' : '/signup'} onClick={() => track(authed ? 'intro_dashboard' : 'intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
+                {authed ? 'Practise in my dashboard' : 'Get my first answer marked, free'}
               </a>
               <button type="button" onClick={() => finish('enter')} className="rounded-full border border-[#efe9dd]/25 bg-white/[.05] px-6 py-3.5 text-[15px] font-medium text-[#efe9dd] backdrop-blur hover:border-[#efe9dd]/45" data-testid="intro-enter">
-                Enter SaveMyGrade ↓
+                Enter Unizy ↓
               </button>
             </div>
           </div>
@@ -265,7 +267,7 @@ export default function Intro() {
 
       {/* loader */}
       <div className={`pointer-events-none absolute inset-0 grid place-items-center bg-[#05070b] transition-opacity duration-1000 ${ready ? 'opacity-0' : 'opacity-100'}`}>
-        <span className="font-mono text-[11px] uppercase tracking-[.42em] text-[#efe9dd]/50 [animation:pulse_2s_ease-in-out_infinite]">SaveMyGrade</span>
+        <span className="font-mono text-[11px] uppercase tracking-[.42em] text-[#efe9dd]/50 [animation:pulse_2s_ease-in-out_infinite]">Unizy</span>
       </div>
 
       {/* paper-white hand-over to the landing page */}

@@ -1,4 +1,4 @@
-/* SaveMyGrade Play: "Unwind", the daily word quiz.
+/* Unizy Play: "Unwind", the daily word quiz.
    Each day has a hidden word of 6-10 letters and one easy general-knowledge question per letter. A right answer
    reveals that letter; a wrong one leaves a gap. Then guess the word: one guess if you missed 0-2 letters,
    otherwise one guess per missed letter. Points = right answers + 5 for the word. Same word and questions for
@@ -289,7 +289,7 @@
       rpc('unwind_rename', { p_name: v }).then(function (r) { S.me = Object.assign({}, S.me, { name: r.name }); S.nameMsg = 'Saved.'; loadBoard(); }).catch(function () { S.nameMsg = 'Couldn’t save that name. Use letters and numbers.'; draw(); });
     }
     else if (t.hasAttribute('data-uw-share')) {
-      var txt = 'SaveMyGrade Unwind · ' + prettyDay() + '\n' + points() + ' points · ' + rights() + '/' + S.word.length + ' letters\n' + grid() + '\nunizy.uk/play';
+      var txt = 'Unizy Unwind · ' + prettyDay() + '\n' + points() + ' points · ' + rights() + '/' + S.word.length + ' letters\n' + grid() + '\nunizy.uk/play';
       var done = function () { t.textContent = 'Copied ✓'; setTimeout(function () { t.textContent = 'Copy my result'; }, 1800); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function () { prompt('Copy your result:', txt); });
       else prompt('Copy your result:', txt);

@@ -1,4 +1,4 @@
-/* SaveMyGrade landing page interactions: draggable 3D hero, scroll storytelling, feature showcase, real reviews. */
+/* Unizy landing page interactions: draggable 3D hero, scroll storytelling, feature showcase, real reviews. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG || {};

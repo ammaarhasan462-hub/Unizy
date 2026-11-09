@@ -1,9 +1,9 @@
-/* SaveMyGrade dashboard: the signed-in area. Separate tabs (Home, Practice & marking, Tutor, Marked answers,
+/* Unizy dashboard: the signed-in area. Separate tabs (Home, Practice & marking, Tutor, Marked answers,
    Account), your modules kept in the sidebar, and a first-run "pick your course" set-up.
    The Practice tab runs the marker (mark.js) under /dashboard/practice. */
 (function () {
   'use strict';
-  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'SaveMyGrade', SKEY = 'unizy.session';
+  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'Unizy', SKEY = 'unizy.session';
   var TABS = [
     { id: 'home', label: 'Home', path: '/dashboard', icon: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z' },
     { id: 'practice', label: 'Practice & marking', path: '/dashboard/practice', icon: 'M4 20h4L19 9l-4-4L4 16zM14 6l4 4' },

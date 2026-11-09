@@ -1,4 +1,4 @@
-// SaveMyGrade sign-up: creates an unverified account with email + password, then emails a 6-digit
+// Unizy sign-up: creates an unverified account with email + password, then emails a 6-digit
 // verification code (codes survive uni mail scanners, unlike links). The page verifies the code with
 // /auth/v1/verify, which confirms the email and logs the student in. Unverified accounts can't log in
 // with a password until verified (the log-in page offers a new code).
@@ -29,25 +29,25 @@ async function sendVerify(email: string, name: string, code: string) {
   const hi = name ? `Hi ${name},` : "Hi,";
   const text = `${hi}
 
-Your SaveMyGrade verification code is ${code}
+Your Unizy verification code is ${code}
 
 Type it on the sign-up page to verify your email and finish creating your account. It works once and expires in an hour.
 
 If you didn't sign up, you can ignore this email.
 
-SaveMyGrade · unizy.uk`;
+Unizy · unizy.uk`;
   const spaced = code.split("").join(" ");
   const html = `<div style="font-family:'DM Sans',Arial,sans-serif;font-size:16px;line-height:1.55;color:#17302A;max-width:520px">
 <p style="margin:0 0 6px">${esc(hi)}</p>
 <p style="margin:0 0 6px;font-family:Georgia,serif;font-size:22px">Verify your email</p>
-<p style="margin:0 0 18px;color:#5D6D67">Type this code on the SaveMyGrade sign-up page to finish creating your account.</p>
+<p style="margin:0 0 18px;color:#5D6D67">Type this code on the Unizy sign-up page to finish creating your account.</p>
 <p style="margin:0 0 18px;font-family:'Courier New',monospace;font-size:34px;letter-spacing:6px;font-weight:700;background:#F4F4EF;border:1px solid #DDE3DE;border-radius:10px;padding:14px 18px;display:inline-block">${spaced}</p>
 <p style="margin:0;font-size:14px;color:#5D6D67">It works once and expires in an hour. If you didn't sign up, ignore this email.</p>
 </div>`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "SaveMyGrade <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: `${code} is your SaveMyGrade verification code`, text, html }),
+    body: JSON.stringify({ from: "Unizy <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: `${code} is your Unizy verification code`, text, html }),
   });
   if (!r.ok) throw new Error("send failed " + r.status);
 }

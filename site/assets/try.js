@@ -1,4 +1,4 @@
-/* SaveMyGrade home page "try it" box.
+/* Unizy home page "try it" box.
    1. Paste your notes: signed-out visitors get flashcards and practice questions from their own notes (edge function try-cards;
       3 goes a day per browser, a higher cap per network). The result can be carried into the app: it is kept in localStorage "unizy-pending" and the app
       offers to add it to a module's Flashcards.
@@ -95,11 +95,11 @@
         if (d && d.cards && d.cards.length) { T('try_done'); return result(d); }
         T('try_fail');
         var e = d && d.error;
-        if (e === 'limit') say('Lots of people on your network have tried SaveMyGrade today. <a href="/signup?next=%2Fapp.html" data-ev="try_save">Sign up free</a> to keep turning your notes into cards: it takes 30 seconds and no card.', true);
+        if (e === 'limit') say('Lots of people on your network have tried Unizy today. <a href="/signup?next=%2Fapp.html" data-ev="try_save">Sign up free</a> to keep turning your notes into cards: it takes 30 seconds and no card.', true);
         else if (e === 'not_notes') say('That doesn’t look like study notes. Paste a piece of lecture notes, a handout or your own summary, or press one of the samples.', true);
         else if (e === 'too_short') say('Paste a little more: at least a paragraph.', true);
         else if (e === 'offline') say('You seem to be offline. Check your connection and try again.', true);
-        else say('SaveMyGrade is busy right now. Try again in a minute.', true);
+        else say('Unizy is busy right now. Try again in a minute.', true);
       });
   });
 
@@ -145,7 +145,7 @@
     list.innerHTML = head + (hits.length ? '<div class="try-mods">' + hits.slice(0, 6).map(function (m) {
       return '<button type="button" class="modbtn" data-id="' + esc(m.id) + '"><b>' + esc(m.n) + '</b><span>' + (m.c ? esc(m.c) + ' · ' : '') + m.k + ' flashcards · ' + m.q + ' questions</span></button>';
     }).join('') + '</div>' + (hits.length > 6 ? '<p class="try-meta">' + (hits.length - 6) + ' more: type to narrow it down.</p>' : '')
-      : '<p class="try-msg">No ready-made pack matches that yet. Paste your own notes in the other tab and SaveMyGrade makes the cards for you.</p>');
+      : '<p class="try-msg">No ready-made pack matches that yet. Paste your own notes in the other tab and Unizy makes the cards for you.</p>');
   }
   list.addEventListener('click', function (e) {
     var b = e.target.closest('[data-id]'); if (!b) return;

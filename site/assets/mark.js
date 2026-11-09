@@ -2,7 +2,7 @@
    and the department's criteria, compare with a First-class answer, rewrite and track your class over time. */
 (function () {
   'use strict';
-  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'SaveMyGrade';
+  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'Unizy';
   var SKEY = 'unizy.session', DKEY = 'mark:drafts', root = document.getElementById('mk');
   if (!root) return;
   // Base paths: the public marker lives at /mark and /modules/CODE; inside the dashboard it lives under /dashboard/practice.

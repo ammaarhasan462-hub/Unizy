@@ -79,9 +79,9 @@ export function Chip({ cls }) {
 
 export function Logo({ className = '' }) {
   return (
-    <a href="/" className={`flex items-center gap-2.5 font-display text-[19px] font-semibold tracking-tight text-ink ${className}`} aria-label="SaveMyGrade home">
-      <span className="grid size-8 place-items-center rounded-[10px] bg-linear-to-br from-vio to-blue text-[15px] font-bold text-white shadow-[0_0_24px_-4px_rgba(62,107,92,0.41)]">S</span>
-      SaveMyGrade
+    <a href="/" className={`flex items-center gap-2.5 font-display text-[19px] font-semibold tracking-tight text-ink ${className}`} aria-label="Unizy home">
+      <span className="grid size-8 place-items-center rounded-[10px] bg-linear-to-br from-vio to-blue text-[15px] font-bold text-white shadow-[0_0_24px_-4px_rgba(62,107,92,0.41)]">U</span>
+      Unizy
     </a>
   );
 }

@@ -1,4 +1,4 @@
-/* SaveMyGrade reviews page: public list + one review per account that has started its free trial. */
+/* Unizy reviews page: public list + one review per account that has started its free trial. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG, SKEY = 'unizy.session';
@@ -48,21 +48,21 @@
       var n = +d.count || 0;
       $('avg').textContent = n ? String(d.average) : '–';
       var as = $('avg-stars'); as.innerHTML = ''; if (n) as.appendChild(stars(+d.average, 'big'));
-      $('count').textContent = n ? n + (n === 1 ? ' review' : ' reviews') + ' from SaveMyGrade students' : 'No reviews yet. Be the first.';
+      $('count').textContent = n ? n + (n === 1 ? ' review' : ' reviews') + ' from Unizy students' : 'No reviews yet. Be the first.';
       var bars = $('bars'); bars.innerHTML = '';
       [5, 4, 3, 2, 1].forEach(function (s) {
         var c = (d.stars && +d.stars[s]) || 0, pct = n ? Math.round(c * 100 / n) : 0;
         bars.appendChild(el('div', { class: 'rv-bar' }, [el('span', { text: s + ' ★' }), el('span', { class: 'rv-track' }, [el('i', { style: 'width:' + pct + '%' })]), el('span', { class: 'rv-n', text: String(c) })]));
       });
       var list = $('list');
-      if (!n && reset) list.appendChild(el('div', { class: 'rv-empty' }, [el('strong', { text: 'No reviews yet.' }), ' SaveMyGrade has only just launched. If you’ve used it, your review will be the first one students see.']));
+      if (!n && reset) list.appendChild(el('div', { class: 'rv-empty' }, [el('strong', { text: 'No reviews yet.' }), ' Unizy has only just launched. If you’ve used it, your review will be the first one students see.']));
       (d.reviews || []).forEach(function (r) {
         var course = r.course && String(r.course).trim();
         list.appendChild(el('article', { class: 'rv-card' }, [
           el('div', { class: 'rv-card-top' }, [stars(r.rating), el('span', { class: 'rv-date', text: day(r.at) + (r.edited ? ' · edited' : '') })]),
           r.title ? el('h3', { text: r.title }) : null,
           el('p', { class: 'rv-body', text: r.body }),
-          el('p', { class: 'rv-who' }, [el('strong', { text: r.name }), course ? ' · ' + course : '', el('span', { class: 'rv-verified', text: 'Verified SaveMyGrade account' })])
+          el('p', { class: 'rv-who' }, [el('strong', { text: r.name }), course ? ' · ' + course : '', el('span', { class: 'rv-verified', text: 'Verified Unizy account' })])
         ]));
       });
       state.offset += (d.reviews || []).length;
@@ -77,7 +77,7 @@
     var box = $('write'); box.innerHTML = '';
     box.appendChild(el('h2', { text: state.mine ? 'Your review' : 'Leave a review' }));
     if (!state.token) {
-      box.appendChild(el('p', { class: 'muted', text: 'Only students who have a SaveMyGrade account and have started their free 7-day trial can leave a review, one per account. No card needed.' }));
+      box.appendChild(el('p', { class: 'muted', text: 'Only students who have a Unizy account and have started their free 7-day trial can leave a review, one per account. No card needed.' }));
       box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/signup?next=' + encodeURIComponent('/reviews'), text: 'Start free trial' }), el('a', { class: 'btn ghost', href: '/login?next=' + encodeURIComponent('/reviews'), text: 'Log in' })]));
       return;
     }
@@ -90,7 +90,7 @@
       return;
     }
     if (state.gate && !state.gate.eligible && !state.mine) {
-      box.appendChild(el('p', { class: 'muted', text: 'Reviews come only from students who have started their free trial. Open SaveMyGrade and set up your university and course first: it takes a minute and you don’t need to use the tutor.' }));
+      box.appendChild(el('p', { class: 'muted', text: 'Reviews come only from students who have started their free trial. Open Unizy and set up your university and course first: it takes a minute and you don’t need to use the tutor.' }));
       box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/app.html', text: 'Start my free trial' })]));
       box.appendChild(el('p', { class: 'muted small', text: 'Come back to this page afterwards to leave your review.' }));
       return;
@@ -129,7 +129,7 @@
       group.appendChild(b);
     })(i);
     var title = el('input', { id: 'rv-title', type: 'text', maxlength: '80', placeholder: 'e.g. Saved me hours before exams', value: m.title || '' });
-    var body = el('textarea', { id: 'rv-body', maxlength: '1500', rows: '6', placeholder: 'What did you use SaveMyGrade for, and how did it help? Be honest: good and bad both help other students.' });
+    var body = el('textarea', { id: 'rv-body', maxlength: '1500', rows: '6', placeholder: 'What did you use Unizy for, and how did it help? Be honest: good and bad both help other students.' });
     body.value = m.body || '';
     var counter = el('span', { class: 'muted small', text: (body.value.length) + ' / 1500' });
     body.addEventListener('input', function () { counter.textContent = body.value.length + ' / 1500'; });

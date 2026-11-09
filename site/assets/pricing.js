@@ -1,4 +1,4 @@
-/* SaveMyGrade pricing page: sends signed-in students to Stripe checkout with their account attached. */
+/* Unizy pricing page: sends signed-in students to Stripe checkout with their account attached. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG, links = CFG.stripe || {};
@@ -44,7 +44,7 @@
     return fetch(CFG.supabaseUrl + '/rest/v1/rpc/my_plan', { method: 'POST', headers: headers(s.access_token), body: '{}' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d) return;
       var day = function (iso) { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
-      var text = d.tier === 'pro' ? 'You’re on SaveMyGrade Pro until ' + day(d.until) + (d.plan === 'monthly' && d.renews ? ' (renews automatically).' : '.') + (d.plan !== 'monthly' ? ' Buying another pass adds the time on.' : '')
+      var text = d.tier === 'pro' ? 'You’re on Unizy Pro until ' + day(d.until) + (d.plan === 'monthly' && d.renews ? ' (renews automatically).' : '.') + (d.plan !== 'monthly' ? ' Buying another pass adds the time on.' : '')
         : d.tier === 'trial' ? 'Your free Pro trial ends on ' + day(d.until) + '. Choose a plan below to keep Pro after that.'
         : 'You’re on the free plan.';
       cur.textContent = text; cur.hidden = false;

@@ -3,7 +3,7 @@ import { INTRO_BOOT } from '@/components/Intro';
 
 const FONTS = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
 
-const TITLE = 'SaveMyGrade · The mark scheme your uni never gave you.';
+const TITLE = 'Unizy · The mark scheme your uni never gave you.';
 const DESC =
   "At A-level you had mark schemes. At UCL you don't. Write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class.";
 
@@ -12,7 +12,7 @@ export const metadata = {
   title: TITLE,
   description: DESC,
   alternates: { canonical: '/' },
-  openGraph: { title: TITLE, description: 'Exam practice and marking for every UCL module.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png'] },
+  openGraph: { title: TITLE, description: 'Exam practice and marking for every UCL module.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png?v=3'] },
   twitter: { card: 'summary_large_image' },
   icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }] },
 };

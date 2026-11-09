@@ -115,8 +115,8 @@ export function drawDashboard(ctx, W, H, f) {
   rr(ctx, 46, 50, 60, 60, 16);
   ctx.fillStyle = grad(ctx, 46, 50, 106, 110, VIO_BLUE);
   ctx.fill();
-  text(ctx, 'S', 76, 92, `700 34px ${f.display}`, '#fff', { align: 'center' });
-  text(ctx, 'SaveMyGrade', 124, 92, `600 32px ${f.display}`, INK);
+  text(ctx, 'U', 76, 92, `700 34px ${f.display}`, '#fff', { align: 'center' });
+  text(ctx, 'Unizy', 124, 92, `600 32px ${f.display}`, INK);
   const nav = ['Home', 'Practice & marking', 'Tutor', 'Marked answers', 'Account'];
   nav.forEach((n, i) => {
     const y = 190 + i * 76;
@@ -234,8 +234,8 @@ export function drawBack(ctx, W, H, f) {
   ctx.shadowBlur = 70;
   ctx.fill();
   ctx.shadowBlur = 0;
-  text(ctx, 'S', W / 2, H / 2 - 62, `700 110px ${f.display}`, '#fff', { align: 'center' });
-  text(ctx, 'SaveMyGrade', W / 2, H / 2 + 110, `700 96px ${f.display}`, '#fff', { align: 'center', ls: '-2px' });
+  text(ctx, 'U', W / 2, H / 2 - 62, `700 110px ${f.display}`, '#fff', { align: 'center' });
+  text(ctx, 'Unizy', W / 2, H / 2 + 110, `700 96px ${f.display}`, '#fff', { align: 'center', ls: '-2px' });
   text(ctx, 'Marked like your department marks.', W / 2, H / 2 + 180, `400 40px ${f.sans}`, '#F1DDA9', { align: 'center' });
 }
 

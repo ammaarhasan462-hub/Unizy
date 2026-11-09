@@ -1,4 +1,4 @@
-/* SaveMyGrade public pages: mobile menu, current-page marker and the logged-in "My dashboard" button. */
+/* Unizy public pages: mobile menu, current-page marker and the logged-in "My dashboard" button. */
 (function () {
   'use strict';
   var btn = document.querySelector('.sx-menu'), nav = document.getElementById('sx-nav'), top = document.querySelector('.sx-top');

@@ -1,5 +1,5 @@
 // Shared bits for the landing page: public Supabase config (publishable key), analytics and session checks.
-export const BRAND = 'SaveMyGrade';
+export const BRAND = 'Unizy';
 export const SB_URL = 'https://aayelwhshiboqyjdhnst.supabase.co';
 export const SB_KEY = 'sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE';
 

@@ -118,7 +118,7 @@ export default function Hero() {
             transition={{ duration: 0.9, ease: EASE, delay: 0.75 }}
             className="mt-7 max-w-[540px] text-[18.5px] leading-relaxed text-mute"
           >
-            Write an answer to any exam question in your module. SaveMyGrade marks it against{' '}
+            Write an answer to any exam question in your module. Unizy marks it against{' '}
             <strong className="font-semibold text-ink">your department’s own grading criteria</strong>, tells you your class, and shows you exactly what would
             move you up one.
           </motion.p>
@@ -161,7 +161,7 @@ export default function Hero() {
           transition={{ duration: 1.6, ease: EASE, delay: 0.3 }}
           className="relative -mx-6 h-[420px] sm:h-[540px] lg:-ml-16 lg:-mr-32 lg:h-[680px]"
           role="img"
-          aria-label="Interactive 3D preview of the SaveMyGrade dashboard. Drag to rotate."
+          aria-label="Interactive 3D preview of the Unizy dashboard. Drag to rotate."
         >
           {gl === true && <HeroScene spinRef={spinRef} scrollRef={scrollRef} />}
           {gl === false && <StaticMock />}

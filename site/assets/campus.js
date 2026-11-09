@@ -1,4 +1,4 @@
-/* SaveMyGrade campus features (website):
+/* Unizy campus features (website):
    - 1-click setup: read a timetable or module handbook (PDF/screenshots) into modules, classes, deadlines and notes
    - Uni calendar sync: Moodle / Canvas / Blackboard / timetable iCal feeds pulled into Plan
    - Uni email verification (name@ucl.ac.uk etc.) for the campus-only features below
@@ -112,7 +112,7 @@
       check: check, checkLabel: V.busy && pending ? 'Checking…' : 'Verify',
       restart: function () { V.data = Object.assign({}, V.data, { pending: false }); V.msg = ''; redraw(); },
       hasMsg: !!V.msg, msg: V.msg, msgBg: V.kind === 'err' ? '#FBEDEF' : '#EEF6E4',
-      privacy: 'We only use your uni email to confirm you study at ' + un + '. It’s never shown to anyone, and one uni email can verify one SaveMyGrade account.',
+      privacy: 'We only use your uni email to confirm you study at ' + un + '. It’s never shown to anyone, and one uni email can verify one Unizy account.',
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
       signup: function () { location.href = '/signup?next=' + encodeURIComponent('/app.html'); }
     };
@@ -136,7 +136,7 @@
         URL.revokeObjectURL(url);
         resolve({ media_type: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.9).split(',')[1] });
       };
-      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error(file.name + ' isn’t an image or PDF SaveMyGrade can read. Use a PDF, JPEG or PNG.')); };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error(file.name + ' isn’t an image or PDF Unizy can read. Use a PDF, JPEG or PNG.')); };
       img.src = url;
     });
   }
@@ -245,7 +245,7 @@
       hasFiles: I.files.length > 0, noFiles: !I.files.length,
       run: function () { runImport(k); }, runLabel: 'Read ' + (I.files.length === 1 ? 'it' : 'them') + ' and set me up',
       hasErr: !!I.err, err: I.err, upgrade: I.upgrade,
-      intro: 'Upload your ' + un + ' timetable (a PDF or a screenshot) or your module handbooks. SaveMyGrade picks out your modules, weekly classes, deadlines and exams, and sets up your plan and notes in about half a minute. You check everything before it’s added.',
+      intro: 'Upload your ' + un + ' timetable (a PDF or a screenshot) or your module handbooks. Unizy picks out your modules, weekly classes, deadlines and exams, and sets up your plan and notes in about half a minute. You check everything before it’s added.',
       hint: 'Tip: a screenshot of your weekly timetable and the assessment page of each handbook work best. Up to 5 files, 18 MB.',
       stage: stageText(), clock: Math.round((Date.now() - I.started) / 1000) + 's',
       hasDone: !!I.done && !I.open, done: I.done || '', clearDone: function () { I.done = ''; redraw(); }
@@ -254,7 +254,7 @@
       var mods = (r.mods || []).map(function (m, i) {
         var cat = m.m !== null && m.m !== undefined ? k.mods[m.m] : null, on = !!I.keepMod[i];
         return { text: (m.code ? m.code + ' · ' : '') + (m.name || ''), matched: !!cat, unmatched: !cat,
-          sub: cat ? (cat.code && cat.code !== m.code ? 'Matched to ' + cat.code + ' ' + cat.name : 'Matched to your ' + un + ' module list') : 'Not in SaveMyGrade’s ' + un + ' Year ' + k.year + ' list, so it won’t get its own page. Its classes and deadlines are still added.',
+          sub: cat ? (cat.code && cat.code !== m.code ? 'Matched to ' + cat.code + ' ' + cat.name : 'Matched to your ' + un + ' module list') : 'Not in Unizy’s ' + un + ' Year ' + k.year + ' list, so it won’t get its own page. Its classes and deadlines are still added.',
           box: on ? '✓' : '', boxBg: on ? (k.strong || '#17302A') : '#FFFFFF', boxFg: k.onStrong || '#FFFFFF', boxBorder: on ? (k.strong || '#17302A') : '#B9C4BE',
           toggle: function () { if (!cat) return; I.keepMod[i] = !I.keepMod[i]; redraw(); } };
       });
@@ -270,7 +270,7 @@
         hb: hb, hasHb: hb.length > 0, hbTitle: 'Handbook pages for Notes (' + hb.length + ')',
         warn: (r.warn || []).map(function (w) { return { text: w }; }), hasWarn: (r.warn || []).length > 0,
         empty: !mods.length && !classes.length && !once.length && !due.length && !hb.length,
-        reviewTitle: 'Here’s what SaveMyGrade found' + (I.secs ? ' (' + I.secs + 's)' : ''),
+        reviewTitle: 'Here’s what Unizy found' + (I.secs ? ' (' + I.secs + 's)' : ''),
         reviewSub: 'Untick a module or remove anything that’s wrong, then add it all. You can edit or delete any of it later in Plan and Notes.',
         apply: function () { applyImport(k); }, applyLabel: k.screen === 'app' ? 'Add it to my plan' : 'Add it and open my dashboard',
         again: function () { I.step = 'pick'; I.res = null; redraw(); }
@@ -378,7 +378,7 @@
       login: function () { location.href = '/login?next=' + encodeURIComponent('/app.html'); },
       count: list.length, has: list.length > 0, none: !list.length,
       btnLabel: list.length ? 'Uni calendar (' + list.length + ')' : 'Sync uni calendar',
-      intro: 'Connect your ' + un + ' calendar from ' + lms + ' (or your online timetable) and assignment deadlines, quizzes, exams and lectures appear in your plan by themselves. SaveMyGrade checks for changes every time you open it, and hourly while it’s open.',
+      intro: 'Connect your ' + un + ' calendar from ' + lms + ' (or your online timetable) and assignment deadlines, quizzes, exams and lectures appear in your plan by themselves. Unizy checks for changes every time you open it, and hourly while it’s open.',
       list: list.map(function (f) {
         var busy = !!F.busy[f.id];
         return {
@@ -525,7 +525,7 @@
       }).catch(function (e) { H.busy = false; hubNote(e.message, 'err'); });
     };
     var members = d && d.members ? +d.members : 0;
-    var invite = 'I’m using SaveMyGrade for ' + (m.code ? m.code + ' ' : '') + m.name + ' at ' + un + '. Join the module hub to swap notes, flashcards and advice: https://unizy.uk/signup';
+    var invite = 'I’m using Unizy for ' + (m.code ? m.code + ' ' : '') + m.name + ' at ' + un + '. Join the module hub to swap notes, flashcards and advice: https://unizy.uk/signup';
     return {
       key: key, hasModule: !!key, noModule: !key,
       module: m.name, code: m.code || '',
@@ -598,7 +598,7 @@
         URL.revokeObjectURL(url);
         c.toBlob(function (b) { if (b) resolve(b); else reject(new Error('Couldn’t read that photo.')); }, 'image/jpeg', 0.84);
       };
-      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('That file isn’t a photo SaveMyGrade can read.')); };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('That file isn’t a photo Unizy can read.')); };
       img.src = url;
     });
   }
@@ -680,7 +680,7 @@
       listings: listings, hasListings: listings.length > 0, empty: ver && !listings.length && !M.loading,
       emptyText: M.mine ? 'You haven’t listed anything yet.' : M.q || M.cat ? 'Nothing matches that yet. Try another search or category.' : 'Nothing for sale at ' + un + ' yet. List the textbooks and kit you no longer need: someone in the year below is looking for them.',
       count: d && d.active ? d.active + ' items for sale at ' + un : '',
-      safety: 'SaveMyGrade doesn’t take payments. Meet somewhere busy on campus, check items before paying, and never pay a deposit or rent for a room you haven’t viewed in person.',
+      safety: 'Unizy doesn’t take payments. Meet somewhere busy on campus, check items before paying, and never pay a deposit or rent for a room you haven’t viewed in person.',
       // detail
       cur: cur ? {
         title: cur.title, price: money(cur.price, cur.unit), desc: cur.description || 'No description.', meta: [CATS.filter(function (c) { return c[0] === cur.category; }).map(function (c) { return c[1]; })[0], cur.category !== 'housing' ? cur.condition : '', cur.module, cur.location].filter(Boolean).join(' · '),
@@ -796,9 +796,9 @@
       } else ping(t, false);
       var txt = clockText(leftMs(t));
       Array.prototype.forEach.call(document.querySelectorAll('[data-cx-clock]'), function (el) { if (el.textContent !== txt) el.textContent = txt; });
-      document.title = txt + (t.phase === 'break' ? ' · Break' : ' · Focus') + ' · SaveMyGrade';
-    } else if (/· SaveMyGrade$/.test(document.title) && /^\d\d:\d\d/.test(document.title)) {
-      document.title = 'SaveMyGrade · your uni, your modules, your own tutor';
+      document.title = txt + (t.phase === 'break' ? ' · Break' : ' · Focus') + ' · Unizy';
+    } else if (/· Unizy$/.test(document.title) && /^\d\d:\d\d/.test(document.title)) {
+      document.title = 'Unizy · your uni, your modules, your own tutor';
     }
   }
   function ensureTick() { if (!S.fo.tick) S.fo.tick = setInterval(tick, 1000); }
@@ -890,7 +890,7 @@
     out.badge = out.mkt && out.mkt.unread ? out.mkt.unread + ' new' : out.fo.running ? 'Focusing' : '';
     return out;
   }
-  // keep connected calendars fresh while SaveMyGrade stays open
+  // keep connected calendars fresh while Unizy stays open
   setInterval(function () { if (S.kit && !document.hidden) autoSync(S.kit); }, 15 * 60000);
   window.UnizyCampus = { vals: vals, hubKey: hubKey, _state: S };
 })();

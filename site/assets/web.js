@@ -1,4 +1,4 @@
-/* SaveMyGrade on the web: accounts (Supabase magic-link email), syncing saved work, and the tutor. */
+/* Unizy on the web: accounts (Supabase magic-link email), syncing saved work, and the tutor. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
@@ -251,7 +251,7 @@
     },
     label: function () {
       var d = Plan.data; if (!d) return '';
-      if (d.tier === 'pro') return 'SaveMyGrade Pro' + (d.plan === 'monthly' ? (d.renews ? ', renews ' : ', ends ') + fmtDay(d.until) : ' (' + (d.plan === 'year' ? 'year pass' : 'exam pass') + '), until ' + fmtDay(d.until));
+      if (d.tier === 'pro') return 'Unizy Pro' + (d.plan === 'monthly' ? (d.renews ? ', renews ' : ', ends ') + fmtDay(d.until) : ' (' + (d.plan === 'year' ? 'year pass' : 'exam pass') + '), until ' + fmtDay(d.until));
       if (d.tier === 'trial') return 'Free Pro trial, ends ' + fmtDay(d.until);
       return 'Free plan: ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerWeek + ' tutor actions and ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerWeek + ' Assess marking left this week';
     }
@@ -301,7 +301,7 @@
     var close = el('button', { 'aria-label': 'Close', style: 'align-self:flex-end;border:none;background:none;font-size:22px;cursor:pointer;width:44px;height:44px;margin:-14px -14px -10px 0', onclick: Account.hide }, ['×']);
     card.appendChild(close);
     if (!s) {
-      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to SaveMyGrade']));
+      card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:26px;letter-spacing:-.02em" }, ['Sign in to Unizy']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;line-height:1.55;color:#34463F' }, ['We’ll email you a sign-in link, no password needed. Signing in saves your notes, flashcards and progress across devices and switches on your tutor and essay marking.']));
       var input = el('input', { type: 'email', autocomplete: 'email', placeholder: 'Personal or uni email', 'aria-label': 'Email address', style: 'font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1.5px solid #C8D1CB' });
       var go = el('button', { style: btn + 'border:none;background:' + theme.c1 + ';color:' + theme.on1 }, [Account.busy ? 'Sending…' : 'Email me a sign-in link']);
@@ -309,7 +309,7 @@
         var v = (input.value || '').trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { Account.msg = 'Enter a valid email address.'; drawModal(); return; }
         Account.busy = true; Account.msg = ''; drawModal();
-        Auth.sendLink(v).then(function () { Account.busy = false; Account.msg = 'Check your inbox for a link from SaveMyGrade and open it on this device. It can take a minute; check spam too.'; drawModal(); })
+        Auth.sendLink(v).then(function () { Account.busy = false; Account.msg = 'Check your inbox for a link from Unizy and open it on this device. It can take a minute; check spam too.'; drawModal(); })
           .catch(function (e) { Account.busy = false; Account.msg = e.message; drawModal(); });
       };
       go.addEventListener('click', submit);
@@ -323,9 +323,9 @@
       card.appendChild(el('h2', { style: "margin:0;font-family:'Fraunces',Georgia,serif;font-weight:800;font-size:24px" }, ['Your account']));
       card.appendChild(el('p', { style: 'margin:0;font-size:15px;color:#34463F' }, [(s.user && s.user.name) ? 'Hi ' + s.user.name + '. ' : '', 'Signed in as ', el('strong', {}, [email])]));
       card.appendChild(el('a', { href: '/reset.html?email=' + encodeURIComponent((s.user && s.user.email) || ''), style: 'font-size:14px;font-weight:600;color:#17302A' }, ['Set or change your password']));
-      card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#17302A' }, ['Leave a review of SaveMyGrade']));
+      card.appendChild(el('a', { href: '/reviews', style: 'font-size:14px;font-weight:600;color:#17302A' }, ['Leave a review of Unizy']));
       card.appendChild(el('p', { style: 'margin:0;font-size:14px;line-height:1.5;color:#34463F' }, [
-        Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. SaveMyGrade will keep trying.' : 'Your work is saved to your account.'
+        Sync.status === 'saving' ? 'Saving your work…' : Sync.status === 'error' ? 'Couldn’t save just now. Unizy will keep trying.' : 'Your work is saved to your account.'
       ]));
       var pd = Plan.data;
       if (pd) {
@@ -412,7 +412,7 @@
     var here = current(), ready = false, inst = null, saveT = null;
     function title(tab) {
       var names = { home: 'Home', overview: 'Module overview', path: 'Learning pathway', notes: 'Notes', packs: 'Lecture packs', quiz: 'Topic tests', assess: 'Marking', flash: 'Flashcards', time: 'Planner', tutor: 'Tutor', friends: 'Friend groups', rooms: 'Study rooms', hub: 'Module hub', market: 'Marketplace', focus: 'Study Mode', play: 'Unwind' };
-      return (names[tab] || 'SaveMyGrade') + ' · SaveMyGrade';
+      return (names[tab] || 'Unizy') + ' · Unizy';
     }
     function arrive() {
       document.title = title(here);
@@ -519,8 +519,8 @@
           Sync.rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});
           if (/[?&]upgraded=1/.test(location.search)) {
             history.replaceState(null, '', location.pathname + location.hash);
-            toast('Payment received. Switching on SaveMyGrade Pro…');
-            var tries = 0, check = function () { Plan.refresh().then(function (d) { if (d && d.tier === 'pro') toast('You’re on SaveMyGrade Pro. Enjoy the full tutor and marking!', null, null, 7000); else if (++tries < 20) setTimeout(check, 3000); else toast('Your payment went through, but Pro hasn’t switched on yet. Refresh in a minute, or email ' + CFG.contactEmail + '.'); }); };
+            toast('Payment received. Switching on Unizy Pro…');
+            var tries = 0, check = function () { Plan.refresh().then(function (d) { if (d && d.tier === 'pro') toast('You’re on Unizy Pro. Enjoy the full tutor and marking!', null, null, 7000); else if (++tries < 20) setTimeout(check, 3000); else toast('Your payment went through, but Pro hasn’t switched on yet. Refresh in a minute, or email ' + CFG.contactEmail + '.'); }); };
             setTimeout(check, 1500);
           }
           Sync.pull().then(function (all) {

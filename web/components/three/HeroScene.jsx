@@ -1,5 +1,5 @@
 'use client';
-// The hero's 3D scene (React Three Fiber): a glass "device" showing the SaveMyGrade dashboard,
+// The hero's 3D scene (React Three Fiber): a glass "device" showing the Unizy dashboard,
 // floating UI cards at different depths, orbit rings and sparkles, bloom glow and per-card depth of field.
 // Drag to rotate with inertia, "spin 360°" button, mouse parallax and scroll-driven tilt.
 import * as THREE from 'three';

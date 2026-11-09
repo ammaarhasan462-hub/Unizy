@@ -10,7 +10,7 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 
-BRAND = "SaveMyGrade"
+BRAND = "Unizy"
 DOMAIN = "unizy.uk"
 MARK = BRAND[:1]
 TAGLINE = "The mark scheme your uni never gave you."
@@ -195,7 +195,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 </body></html>
 """
 
-DASH_PAGE = head(f"Dashboard · {BRAND}", "Your SaveMyGrade dashboard.", "/dashboard") + f"""
+DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard") + f"""
 <div id="root"><div class="db setup" id="db">
 <aside class="db-side">
 <div class="db-bar"><a class="sx-brand db-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><button class="db-menu" id="db-menu" type="button" aria-label="Menu"><span></span><span></span></button></div>
