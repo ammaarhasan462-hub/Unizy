@@ -54,6 +54,8 @@ export default function Intro() {
   const engineRef = useRef(null);
   const doneRef = useRef(false);
   const readyRef = useRef(false);
+  const detachRef = useRef(null);
+  const detach = () => { if (detachRef.current) { detachRef.current(); detachRef.current = null; } };
 
   useEffect(() => {
     const d = document.documentElement;
@@ -71,6 +73,7 @@ export default function Intro() {
       track('intro_' + mode);
       const tl = gsap.timeline({
         onComplete: () => {
+          detach();
           if (engineRef.current) engineRef.current.dispose();
           engineRef.current = null;
           d.classList.remove('intro', 'intro-live');
@@ -91,6 +94,7 @@ export default function Intro() {
       st.target = Math.min(1.06, Math.max(0, st.target + v));
           };
     const onWheel = (e) => {
+      if (doneRef.current) return;
       e.preventDefault();
       const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
       add((e.deltaY * k) / 7000);
@@ -98,13 +102,14 @@ export default function Intro() {
     let ty = null;
     const onTS = (e) => { ty = e.touches[0].clientY; };
     const onTM = (e) => {
-      if (ty == null) return;
+      if (ty == null || doneRef.current) return;
       const y = e.touches[0].clientY;
       add((ty - y) / (window.innerHeight * 4.4));
       ty = y;
       if (e.cancelable) e.preventDefault();
     };
     const onKey = (e) => {
+      if (doneRef.current) return;
       const k = e.key;
       if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); add(0.05); }
       else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); add(-0.05); }
@@ -156,13 +161,16 @@ export default function Intro() {
     window.addEventListener('touchstart', onTS, { passive: true });
     window.addEventListener('touchmove', onTM, { passive: false });
     window.addEventListener('keydown', onKey);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
+    detachRef.current = () => {
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('touchstart', onTS);
       window.removeEventListener('touchmove', onTM);
       window.removeEventListener('keydown', onKey);
+    };
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+      detach();
       if (engineRef.current) engineRef.current.dispose();
       engineRef.current = null;
     };
