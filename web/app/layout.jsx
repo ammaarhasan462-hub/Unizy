@@ -16,7 +16,7 @@ export const metadata = {
   icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }] },
 };
 
-export const viewport = { themeColor: '#06060b', width: 'device-width', initialScale: 1 };
+export const viewport = { themeColor: '#F4F4EF', width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }) {
   return (

@@ -84,9 +84,9 @@ export default function Hero() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.05 }}
-            className="glass inline-flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 text-[13.5px] text-white/85"
+            className="glass inline-flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-4 text-[13.5px] text-ink/85"
           >
-            <span className="rounded-full bg-linear-to-r from-vio to-blue px-2.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wider">New</span>
+            <span className="rounded-full bg-linear-to-r from-vio to-blue px-2.5 py-0.5 text-white font-mono text-[11px] font-medium uppercase tracking-wider">New</span>
             Every UCL module, marked like your department marks
           </motion.span>
 
@@ -119,7 +119,7 @@ export default function Hero() {
             className="mt-7 max-w-[540px] text-[18.5px] leading-relaxed text-mute"
           >
             Write an answer to any exam question in your module. SaveMyGrade marks it against{' '}
-            <strong className="font-semibold text-white">your department’s own grading criteria</strong>, tells you your class, and shows you exactly what would
+            <strong className="font-semibold text-ink">your department’s own grading criteria</strong>, tells you your class, and shows you exactly what would
             move you up one.
           </motion.p>
 
@@ -148,7 +148,7 @@ export default function Hero() {
           >
             {['All 6,682 UCL modules', 'Free 7-day Pro trial', 'No card needed'].map((t) => (
               <motion.li key={t} variants={{ h: { opacity: 0, y: 8 }, s: { opacity: 1, y: 0 } }} className="flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-cyan shadow-[0_0_10px_#22d3ee]" />
+                <span className="size-1.5 rounded-full bg-cyan shadow-[0_0_10px_#B8862F]" />
                 {t}
               </motion.li>
             ))}
@@ -169,7 +169,7 @@ export default function Hero() {
             <div className="pointer-events-auto absolute bottom-1 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap text-[12.5px] text-dim">
               <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current stroke-[1.8]"><path d="M7 12h10M7 12l3-3M7 12l3 3M17 12l-3-3M17 12l-3 3" /></svg>
               Drag to rotate ·
-              <button type="button" onClick={() => spinRef.current && spinRef.current()} className="font-medium text-lilac hover:text-white" data-testid="spin">
+              <button type="button" onClick={() => spinRef.current && spinRef.current()} className="font-medium text-lilac hover:text-ink" data-testid="spin">
                 spin 360°
               </button>
             </div>

@@ -16,7 +16,7 @@ const STEPS = [
 ];
 
 function Panel({ children, className = '' }) {
-  return <div className={`glass-strong rounded-[28px] p-6 shadow-[0_40px_120px_-40px_rgba(139,92,246,.55)] sm:p-8 ${className}`}>{children}</div>;
+  return <div className={`glass-strong rounded-[28px] p-6 shadow-[0_40px_120px_-40px_rgba(62,107,92,0.25)] sm:p-8 ${className}`}>{children}</div>;
 }
 
 function VisCourse() {
@@ -27,12 +27,12 @@ function VisCourse() {
       <p className="mt-2 font-display text-2xl font-semibold">Economics BSc · Year 2</p>
       <ul className="mt-6 space-y-2.5">
         {rows.map(([c, t, on]) => (
-          <li key={c} className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3.5 ${on ? 'border-vio/40 bg-vio/10' : 'border-white/10 bg-white/[.03]'}`}>
+          <li key={c} className={`flex items-center justify-between gap-4 rounded-2xl border px-4 py-3.5 ${on ? 'border-vio/40 bg-vio/10' : 'border-ink/10 bg-white/70'}`}>
             <span className="min-w-0 truncate text-[15px]">
-              <code className="mr-3 font-mono text-[13px] text-[#93c5fd]">{c}</code>
+              <code className="mr-3 font-mono text-[13px] text-vio">{c}</code>
               {t}
             </span>
-            <span className={`grid size-6 shrink-0 place-items-center rounded-full text-[12px] ${on ? 'bg-linear-to-br from-vio to-blue text-white' : 'border border-white/20 text-white/60'}`}>{on ? '✓' : '+'}</span>
+            <span className={`grid size-6 shrink-0 place-items-center rounded-full text-[12px] ${on ? 'bg-linear-to-br from-vio to-blue text-white' : 'border border-ink/20 text-ink/60'}`}>{on ? '✓' : '+'}</span>
           </li>
         ))}
       </ul>
@@ -48,7 +48,7 @@ function VisAnswer({ typedRef, full }) {
         <span className="shrink-0 whitespace-nowrap rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-[12px] text-cyan">⏱ 38:12 left</span>
       </div>
       <p className="mt-4 font-display text-[22px] font-semibold leading-snug">“Explain why a profit-maximising monopolist always produces on the elastic part of the demand curve.”</p>
-      <div className="mt-5 min-h-[168px] rounded-2xl border border-white/10 bg-black/30 p-4 text-[15px] leading-relaxed text-white/85">
+      <div className="mt-5 min-h-[168px] rounded-2xl border border-ink/10 bg-paper p-4 text-[15px] leading-relaxed text-ink/85">
         <span ref={typedRef}>{full ? ANSWER : ''}</span>
         <span className="ml-0.5 inline-block h-[1.1em] w-[2px] translate-y-[3px] animate-pulse bg-cyan" />
       </div>
@@ -75,13 +75,13 @@ function VisResult() {
         {crit.map(([c, t]) => (
           <li key={t} className="flex items-center gap-3 text-[15px]">
             <Chip cls={c} />
-            <span className="text-white/85">{t}</span>
+            <span className="text-ink/85">{t}</span>
           </li>
         ))}
       </ul>
       <div className="mt-5 space-y-2">
         {['Derive MR = P(1 + 1/ε) before using it', 'Add the labelled diagram', 'Finish with the intuition'].map((t, i) => (
-          <div key={t} className={`rounded-2xl border px-4 py-3 text-[15px] ${i === 0 ? 'border-cyan/35 bg-cyan/10 text-white' : 'border-white/10 bg-white/[.03] text-white/80'}`}>
+          <div key={t} className={`rounded-2xl border px-4 py-3 text-[15px] ${i === 0 ? 'border-cyan/35 bg-cyan/10 text-ink' : 'border-ink/10 bg-white/70 text-ink/80'}`}>
             {i + 1}. {t}
           </div>
         ))}
@@ -141,11 +141,11 @@ export default function How() {
               <span className="text-grad">About ten minutes.</span>
             </h2>
             <div className="relative mt-12 pl-8">
-              <span className="absolute bottom-2 left-0 top-2 w-px bg-white/10" />
-              <span className="how-bar absolute bottom-2 left-0 top-2 w-px origin-top bg-linear-to-b from-vio via-blue to-cyan shadow-[0_0_12px_#8b5cf6]" />
+              <span className="absolute bottom-2 left-0 top-2 w-px bg-ink/10" />
+              <span className="how-bar absolute bottom-2 left-0 top-2 w-px origin-top bg-linear-to-b from-vio via-blue to-cyan shadow-[0_0_12px_#3E6B5C]" />
               {STEPS.map((s, i) => (
                 <div key={s.n} className={`relative py-4 transition-all duration-500 ${active === i ? 'opacity-100' : 'opacity-35'}`}>
-                  <span className={`absolute -left-[36.5px] top-6 size-[10px] rounded-full border transition-all duration-500 ${active >= i ? 'border-vio bg-vio shadow-[0_0_14px_#8b5cf6]' : 'border-white/25 bg-ink'}`} />
+                  <span className={`absolute -left-[36.5px] top-6 size-[10px] rounded-full border transition-all duration-500 ${active >= i ? 'border-vio bg-vio shadow-[0_0_14px_#3E6B5C]' : 'border-ink/25 bg-paper'}`} />
                   <span className="font-mono text-[12.5px] text-lilac">{s.n}</span>
                   <h3 className="mt-1 font-display text-[26px] font-semibold tracking-tight">{s.t}</h3>
                   <p className={`max-w-[440px] overflow-hidden text-[15.5px] leading-relaxed text-mute transition-all duration-500 ${active === i ? 'mt-2 max-h-40' : 'max-h-0'}`}>{s.d}</p>

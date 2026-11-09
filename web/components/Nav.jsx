@@ -35,7 +35,7 @@ export default function Nav() {
         <Logo />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {LINKS.map(([t, h]) => (
-            <a key={h} href={h} className="group relative rounded-full px-4 py-2 text-[14.5px] text-mute transition-colors hover:text-white">
+            <a key={h} href={h} className="group relative rounded-full px-4 py-2 text-[14.5px] text-mute transition-colors hover:text-ink">
               {t}
               <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-linear-to-r from-vio to-cyan transition-transform duration-300 group-hover:scale-x-100" />
             </a>
@@ -43,7 +43,7 @@ export default function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           {!authed && (
-            <a href="/login?next=/dashboard" className="hidden rounded-full px-4 py-2 text-[14.5px] font-medium text-white/90 hover:text-white sm:inline-block">
+            <a href="/login?next=/dashboard" className="hidden rounded-full px-4 py-2 text-[14.5px] font-medium text-ink/90 hover:text-ink sm:inline-block">
               Log in
             </a>
           )}
@@ -52,7 +52,7 @@ export default function Nav() {
           </a>
           <button
             type="button"
-            className="grid size-10 place-items-center rounded-full border border-white/10 bg-white/5 lg:hidden"
+            className="grid size-10 place-items-center rounded-full border border-ink/10 bg-white/70 lg:hidden"
             aria-label="Menu"
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
@@ -82,13 +82,13 @@ export default function Nav() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.04 * i }}
-                className="block rounded-2xl px-4 py-3 text-[17px] text-white/90 hover:bg-white/5"
+                className="block rounded-2xl px-4 py-3 text-[17px] text-ink/90 hover:bg-ink/5"
               >
                 {t}
               </motion.a>
             ))}
             {!authed && (
-              <a href="/login?next=/dashboard" className="block rounded-2xl px-4 py-3 text-[17px] text-white/90 hover:bg-white/5">
+              <a href="/login?next=/dashboard" className="block rounded-2xl px-4 py-3 text-[17px] text-ink/90 hover:bg-ink/5">
                 Log in
               </a>
             )}

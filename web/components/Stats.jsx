@@ -47,7 +47,7 @@ export default function Stats() {
       <div className="wrap">
         <div className="glass grid grid-cols-2 overflow-hidden rounded-[28px] lg:grid-cols-4">
           {STATS.map(([v, l], i) => (
-            <div key={l} className={`stat p-6 sm:p-8 ${i % 2 ? 'border-l border-white/[.07]' : ''} ${i > 1 ? 'border-t border-white/[.07] lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}>
+            <div key={l} className={`stat p-6 sm:p-8 ${i % 2 ? 'border-l border-ink/[.07]' : ''} ${i > 1 ? 'border-t border-ink/[.07] lg:border-t-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}>
               <b className="block font-display text-[clamp(38px,4.6vw,60px)] font-bold leading-none tracking-[-0.04em] text-grad" data-count={v}>
                 {v.toLocaleString('en-GB')}
               </b>
@@ -60,8 +60,8 @@ export default function Stats() {
         <div className="flex w-max animate-[marquee_55s_linear_infinite] gap-3 hover:[animation-play-state:paused]">
           {row.map(([c, t], i) => (
             <span key={c + i} className="glass flex items-center gap-3 whitespace-nowrap rounded-full px-4 py-2 text-[14px]">
-              <code className="font-mono text-[12.5px] text-[#93c5fd]">{c}</code>
-              <span className="text-white/80">{t}</span>
+              <code className="font-mono text-[12.5px] text-vio">{c}</code>
+              <span className="text-ink/80">{t}</span>
             </span>
           ))}
         </div>

@@ -33,9 +33,9 @@ function Marking() {
           <motion.div key={t} variants={item}>
             <div className="flex items-center gap-3 text-[15px]">
               <Chip cls={c} />
-              <span className="text-white/85">{t}</span>
+              <span className="text-ink/85">{t}</span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[.07]">
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink/[.07]">
               <motion.div className="h-full rounded-full bg-linear-to-r from-vio via-blue to-cyan" initial={{ width: 0 }} animate={{ width: `${w * 100}%` }} transition={{ duration: 1.2, ease: EASE, delay: 0.5 }} />
             </div>
           </motion.div>
@@ -58,7 +58,7 @@ function Tutor() {
   return (
     <div>
       <div className="flex items-center gap-3">
-        <span className="size-9 rounded-full bg-[conic-gradient(from_90deg,#8b5cf6,#22d3ee,#8b5cf6)] shadow-[0_0_20px_-2px_rgba(139,92,246,.9)]" />
+        <span className="size-9 rounded-full bg-[conic-gradient(from_90deg,#3E6B5C,#B8862F,#3E6B5C)] shadow-[0_0_20px_-2px_rgba(62,107,92,0.41)]" />
         <div>
           <h4 className="font-display text-[22px] font-semibold leading-tight">Professor UCL</h4>
           <p className="text-[13px] text-cyan">ECON0013 · Microeconomics</p>
@@ -71,7 +71,7 @@ function Tutor() {
             initial={{ opacity: 0, y: 14, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.5, ease: EASE, delay: 0.2 + i * 0.85 }}
-            className={`max-w-[88%] rounded-2xl px-4 py-3 text-[14.5px] leading-relaxed ${r === 'me' ? 'ml-auto bg-linear-to-r from-vio to-blue text-white' : 'border border-white/10 bg-white/[.05] text-white/90'}`}
+            className={`max-w-[88%] rounded-2xl px-4 py-3 text-[14.5px] leading-relaxed ${r === 'me' ? 'ml-auto bg-linear-to-r from-vio to-blue text-white' : 'border border-ink/10 bg-white/70 text-ink/90'}`}
           >
             {t}
           </motion.div>
@@ -88,21 +88,21 @@ function History() {
       <h4 className="font-display text-[26px] font-semibold tracking-tight">Watch your marks climb</h4>
       <svg viewBox="0 0 600 170" className="mt-6 w-full" aria-hidden="true">
         <defs>
-          <linearGradient id="fl" x1="0" x2="1"><stop offset="0" stopColor="#8B5CF6" /><stop offset=".6" stopColor="#3B82F6" /><stop offset="1" stopColor="#22D3EE" /></linearGradient>
-          <linearGradient id="fa" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="rgba(139,92,246,.35)" /><stop offset="1" stopColor="rgba(139,92,246,0)" /></linearGradient>
+          <linearGradient id="fl" x1="0" x2="1"><stop offset="0" stopColor="#3E6B5C" /><stop offset=".6" stopColor="#2B4F44" /><stop offset="1" stopColor="#B8862F" /></linearGradient>
+          <linearGradient id="fa" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="rgba(62,107,92,0.16)" /><stop offset="1" stopColor="rgba(62,107,92,0.0)" /></linearGradient>
         </defs>
-        <line x1="0" x2="600" y1="42" y2="42" stroke="rgba(168,85,247,.5)" strokeDasharray="4 6" />
-        <text x="4" y="34" fill="#C4B5FD" fontSize="12" fontFamily="monospace">First</text>
+        <line x1="0" x2="600" y1="42" y2="42" stroke="rgba(184,134,47,.55)" strokeDasharray="4 6" />
+        <text x="4" y="34" fill="#8A5E1E" fontSize="12" fontFamily="monospace">First</text>
         <motion.polygon points="10,140 110,130 210,114 310,104 410,82 510,60 590,40 590,170 10,170" fill="url(#fa)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.9 }} />
         <motion.path d="M10 140 L110 130 L210 114 L310 104 L410 82 L510 60 L590 40" fill="none" stroke="url(#fl)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.6, ease: EASE }} />
-        <motion.circle cx="590" cy="40" r="6" fill="#22D3EE" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.5, type: 'spring' }} />
+        <motion.circle cx="590" cy="40" r="6" fill="#B8862F" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.5, type: 'spring' }} />
       </svg>
       <motion.ul variants={stagger} initial="hide" animate="show" className="mt-5 space-y-2">
         {rows.map(([c, t, m]) => (
-          <motion.li key={t} variants={item} className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.03] px-4 py-3 text-[14.5px]">
+          <motion.li key={t} variants={item} className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-white/70 px-4 py-3 text-[14.5px]">
             <Chip cls={c} />
-            <span className="flex-1 truncate text-white/85">{t}</span>
-            <code className="font-mono text-[13px] text-white/70">{m}</code>
+            <span className="flex-1 truncate text-ink/85">{t}</span>
+            <code className="font-mono text-[13px] text-ink/70">{m}</code>
           </motion.li>
         ))}
       </motion.ul>
@@ -115,16 +115,16 @@ function Modules() {
   return (
     <div>
       <h4 className="font-display text-[26px] font-semibold tracking-tight">Your modules, one click away</h4>
-      <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-[15px] text-mute">
+      <div className="mt-6 flex items-center gap-3 rounded-2xl border border-ink/10 bg-paper px-4 py-3 text-[15px] text-mute">
         <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current stroke-2"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
         Search 6,682 UCL modules
       </div>
       <motion.div variants={stagger} initial="hide" animate="show" className="mt-4 grid grid-cols-2 gap-3">
         {mods.map(([c, t, p]) => (
-          <motion.div key={c} variants={item} whileHover={{ y: -4 }} className="rounded-2xl border border-white/10 bg-white/[.04] p-4">
-            <code className="font-mono text-[12.5px] text-[#93c5fd]">{c}</code>
+          <motion.div key={c} variants={item} whileHover={{ y: -4 }} className="rounded-2xl border border-ink/10 bg-white/70 p-4">
+            <code className="font-mono text-[12.5px] text-vio">{c}</code>
             <p className="mt-1 font-display text-[17px] font-semibold leading-snug">{t}</p>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[.08]">
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-ink/[.08]">
               <motion.div className="h-full rounded-full bg-linear-to-r from-vio to-cyan" initial={{ width: 0 }} animate={{ width: `${p}%` }} transition={{ duration: 1.1, ease: EASE, delay: 0.4 }} />
             </div>
           </motion.div>
@@ -186,7 +186,7 @@ export default function Features() {
               >
                 {i === n && <motion.span layoutId="ftab-bg" className="glass-strong absolute inset-0 rounded-2xl" transition={{ type: 'spring', stiffness: 320, damping: 30 }} />}
                 <span className="relative block">
-                  <b className={`block font-display text-[19px] font-semibold transition-colors ${i === n ? 'text-white' : 'text-white/55'}`}>{t.t}</b>
+                  <b className={`block font-display text-[19px] font-semibold transition-colors ${i === n ? 'text-ink' : 'text-ink/55'}`}>{t.t}</b>
                   <span className={`mt-0.5 block text-[14px] transition-colors ${i === n ? 'text-mute' : 'text-dim'}`}>{t.s}</span>
                 </span>
                 {i === n && (
@@ -217,8 +217,8 @@ export default function Features() {
             onPointerLeave={() => { rx.set(0); ry.set(0); setHover(false); }}
             onPointerEnter={(e) => { if (e.pointerType === 'mouse') setHover(true); }}
           >
-            <div className="absolute inset-x-0 -inset-y-10 -z-10 rounded-[60px] bg-[radial-gradient(closest-side,rgba(139,92,246,.35),transparent)] blur-2xl" />
-            <div className="glass-strong min-h-[520px] rounded-[32px] p-6 shadow-[0_50px_140px_-50px_rgba(59,130,246,.6)] sm:p-9" role="tabpanel">
+            <div className="absolute inset-x-0 -inset-y-10 -z-10 rounded-[60px] bg-[radial-gradient(closest-side,rgba(62,107,92,0.16),transparent)] blur-2xl" />
+            <div className="glass-strong min-h-[520px] rounded-[32px] p-6 shadow-[0_50px_140px_-50px_rgba(23,48,42,0.24)] sm:p-9" role="tabpanel">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={TABS[i].k}

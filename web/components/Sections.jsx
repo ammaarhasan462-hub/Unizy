@@ -31,7 +31,7 @@ export function Trust() {
             <Reveal key={t} delay={0.08 * i}>
               <motion.div whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }} className="h-full">
                 <SpotCard className="glass h-full rounded-[28px] p-7">
-                  <span className="grid size-12 place-items-center rounded-2xl border border-vio/40 bg-vio/15 text-lilac shadow-[0_0_30px_-8px_rgba(139,92,246,.9)]">
+                  <span className="grid size-12 place-items-center rounded-2xl border border-vio/40 bg-vio/15 text-lilac shadow-[0_0_30px_-8px_rgba(62,107,92,0.41)]">
                     <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current stroke-[1.7]">{ICONS[ic]}</svg>
                   </span>
                   <h3 className="mt-6 font-display text-[23px] font-semibold tracking-tight">{t}</h3>
@@ -77,7 +77,7 @@ export function Reviews() {
                       <span className="opacity-25">{'★★★★★'.slice(0, 5 - n)}</span>
                     </span>
                     {r.title && <h3 className="mt-4 font-display text-[20px] font-semibold">{r.title}</h3>}
-                    <p className="mt-3 text-[15.5px] leading-relaxed text-white/85">{r.body}</p>
+                    <p className="mt-3 text-[15.5px] leading-relaxed text-ink/85">{r.body}</p>
                     <p className="mt-5 text-[13px] text-dim">{[r.name, r.course].filter(Boolean).join(' · ')} · Verified account</p>
                   </SpotCard>
                 </Reveal>
@@ -104,20 +104,20 @@ export function Pricing() {
             <SpotCard className="glass h-full rounded-[30px] p-8">
               <h3 className="font-display text-[22px] font-semibold">Free</h3>
               <p className="mt-3 font-display text-6xl font-bold tracking-tight">£0</p>
-              <ul className="mt-7 space-y-3 text-[15px] text-white/85">{free.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>
+              <ul className="mt-7 space-y-3 text-[15px] text-ink/85">{free.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>
               <a href="/signup" onClick={() => track('lp_price_free')} className="btn btn-ghost mt-8 w-full py-3.5">Start free</a>
             </SpotCard>
           </Reveal>
           <Reveal delay={0.08}>
             <div className="relative h-full overflow-hidden rounded-[30px] p-px">
-              <div className="absolute inset-[-60%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#8b5cf6_70deg,#22d3ee_140deg,transparent_200deg)]" />
-              <SpotCard className="relative h-full rounded-[29px] bg-[#0d0c1c]/95 p-8">
+              <div className="absolute inset-[-60%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#3E6B5C_70deg,#B8862F_140deg,transparent_200deg)]" />
+              <SpotCard className="relative h-full rounded-[29px] bg-white p-8">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-[22px] font-semibold">Pro</h3>
-                  <span className="rounded-full bg-linear-to-r from-vio to-blue px-3 py-1 font-mono text-[11px] uppercase tracking-wider">7 days free</span>
+                  <span className="rounded-full bg-linear-to-r from-vio to-blue px-3 py-1 text-white font-mono text-[11px] uppercase tracking-wider">7 days free</span>
                 </div>
                 <p className="mt-3 font-display text-6xl font-bold tracking-tight">£5.99<span className="ml-1 text-[17px] font-medium text-mute">/ month</span></p>
-                <ul className="mt-7 space-y-3 text-[15px] text-white/85">{pro.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>
+                <ul className="mt-7 space-y-3 text-[15px] text-ink/85">{pro.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>
                 <a href="/pricing" onClick={() => track('lp_price_pro')} className="btn btn-glow mt-8 w-full py-3.5">See Pro</a>
               </SpotCard>
             </div>
@@ -148,10 +148,10 @@ export function Faq() {
         <div className="space-y-3">
           {QA.map(([q, a], i) => (
             <Reveal key={q} delay={0.05 * i}>
-              <div className={`rounded-3xl border transition-colors duration-300 ${open === i ? 'glass-strong border-white/15' : 'border-white/[.08] bg-white/[.02] hover:bg-white/[.04]'}`}>
+              <div className={`rounded-3xl border transition-colors duration-300 ${open === i ? 'glass-strong border-ink/15' : 'border-ink/[.08] bg-white/70 hover:bg-ink/5'}`}>
                 <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)} className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left font-display text-[19px] font-semibold">
                   {q}
-                  <motion.span animate={{ rotate: open === i ? 45 : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="grid size-8 shrink-0 place-items-center rounded-full border border-white/15 text-lg text-lilac">+</motion.span>
+                  <motion.span animate={{ rotate: open === i ? 45 : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="grid size-8 shrink-0 place-items-center rounded-full border border-ink/15 text-lg text-lilac">+</motion.span>
                 </button>
                 <AnimatePresence initial={false}>
                   {open === i && (
@@ -180,8 +180,8 @@ export function Final() {
   return (
     <section className="relative py-20 lg:py-28">
       <div className="wrap">
-        <div ref={box} className="relative overflow-hidden rounded-[40px] border border-white/10 px-6 py-20 text-center sm:px-12 lg:py-28">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(139,92,246,.45),transparent_60%),radial-gradient(ellipse_at_50%_100%,rgba(59,130,246,.35),transparent_60%)]" />
+        <div ref={box} className="relative overflow-hidden rounded-[40px] border border-ink/10 px-6 py-20 text-center sm:px-12 lg:py-28">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(62,107,92,0.2),transparent_60%),radial-gradient(ellipse_at_50%_100%,rgba(23,48,42,0.14),transparent_60%)]" />
           <div className="bg-grid absolute inset-0 -z-10 opacity-60" />
           <h2 className="mx-auto max-w-[900px] font-display text-[clamp(40px,6.4vw,92px)] font-bold leading-[0.95] tracking-[-0.045em]">
             Find out what your <span className="text-grad-anim">answer would get.</span>
@@ -201,12 +201,12 @@ export function Final() {
 export function Footer() {
   const links = [['Find your module', '/mark'], ['Pricing', '/pricing'], ['Reviews', '/reviews'], ['FAQ', '/faq'], ['Trust & safety', '/trust'], ['Privacy', '/privacy.html'], ['Terms', '/terms.html'], ['Contact', 'mailto:hello@unizy.uk']];
   return (
-    <footer className="border-t border-white/[.07] py-12">
+    <footer className="border-t border-ink/[.07] py-12">
       <div className="wrap">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <Logo />
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-mute" aria-label="Footer">
-            {links.map(([t, h]) => <a key={h} href={h} className="hover:text-white">{t}</a>)}
+            {links.map(([t, h]) => <a key={h} href={h} className="hover:text-ink">{t}</a>)}
           </nav>
         </div>
         <p className="mt-8 max-w-[900px] text-[12.5px] leading-relaxed text-dim">

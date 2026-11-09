@@ -20,12 +20,12 @@ function GlowPlane() {
   const ref = useRef();
   useFrame((s) => {
     const t = s.clock.elapsedTime;
-    if (ref.current) ref.current.material.opacity = 0.75 + Math.sin(t * 0.9) * 0.12;
+    if (ref.current) ref.current.material.opacity = 0.8 + Math.sin(t * 0.9) * 0.12;
   });
   return (
     <mesh ref={ref} position={[0, 0, -2.2]} renderOrder={-1}>
       <planeGeometry args={[14, 10]} />
-      <meshBasicMaterial map={texture} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      <meshBasicMaterial map={texture} transparent depthWrite={false} toneMapped={false} />
     </mesh>
   );
 }
@@ -41,11 +41,11 @@ function Rings() {
     <group position={[0, -0.2, -1.4]} rotation={[1.2, 0, 0.12]}>
       <mesh ref={a}>
         <torusGeometry args={[3.95, 0.009, 8, 220]} />
-        <meshBasicMaterial color="#a78bfa" toneMapped={false} transparent opacity={0.75} />
+        <meshBasicMaterial color="#3E6B5C" toneMapped={false} transparent opacity={0.55} />
       </mesh>
       <mesh ref={b} scale={1.11}>
         <torusGeometry args={[3.95, 0.006, 8, 220]} />
-        <meshBasicMaterial color="#22d3ee" toneMapped={false} transparent opacity={0.45} />
+        <meshBasicMaterial color="#B8862F" toneMapped={false} transparent opacity={0.55} />
       </mesh>
     </group>
   );
@@ -57,7 +57,7 @@ function Device() {
   return (
     <group>
       <RoundedBox args={[5.92, 3.86, 0.14]} radius={0.09} smoothness={5}>
-        <meshPhysicalMaterial color="#0d0d1d" metalness={0.65} roughness={0.22} clearcoat={1} clearcoatRoughness={0.12} envMapIntensity={1.4} />
+        <meshPhysicalMaterial color="#17302A" metalness={0.55} roughness={0.26} clearcoat={1} clearcoatRoughness={0.12} envMapIntensity={1.4} />
       </RoundedBox>
       <mesh position={[0, 0, 0.0715]}>
         <planeGeometry args={[5.62, 3.567]} />
@@ -232,14 +232,14 @@ export default function HeroScene({ spinRef, scrollRef }) {
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         frameloop={active ? 'always' : 'never'}
       >
-        <ambientLight intensity={0.4} />
-        <pointLight position={[-6, 4, 5]} intensity={90} color="#8b5cf6" />
-        <pointLight position={[6, -3, 4]} intensity={70} color="#3b82f6" />
+        <ambientLight intensity={0.6} />
+        <pointLight position={[-6, 4, 5]} intensity={80} color="#F1DDA9" />
+        <pointLight position={[6, -3, 4]} intensity={60} color="#3E6B5C" />
         <Environment resolution={256} frames={1}>
-          <Lightformer form="rect" intensity={3} color="#8b5cf6" position={[-5, 2, 4]} scale={[6, 3, 1]} />
-          <Lightformer form="rect" intensity={2.5} color="#3b82f6" position={[5, -2, 4]} scale={[6, 3, 1]} />
-          <Lightformer form="ring" intensity={2} color="#22d3ee" position={[0, 5, -3]} scale={3} />
-          <Lightformer form="rect" intensity={0.8} color="#ffffff" position={[0, 0, 9]} scale={[12, 12, 1]} />
+          <Lightformer form="rect" intensity={2.5} color="#F1DDA9" position={[-5, 2, 4]} scale={[6, 3, 1]} />
+          <Lightformer form="rect" intensity={2} color="#3E6B5C" position={[5, -2, 4]} scale={[6, 3, 1]} />
+          <Lightformer form="ring" intensity={2} color="#B8862F" position={[0, 5, -3]} scale={3} />
+          <Lightformer form="rect" intensity={1.2} color="#ffffff" position={[0, 0, 9]} scale={[12, 12, 1]} />
         </Environment>
         <GlowPlane />
         <Rings />
@@ -249,10 +249,10 @@ export default function HeroScene({ spinRef, scrollRef }) {
             <Card key={c.key} spec={c} i={i} focusRef={focusRef} />
           ))}
         </Rig>
-        <Sparkles count={hi ? 90 : 40} scale={[10, 7, 5]} size={2.4} speed={reduce ? 0 : 0.35} opacity={0.75} color="#b4a3ff" />
+        <Sparkles count={hi ? 90 : 40} scale={[10, 7, 5]} size={2.4} speed={reduce ? 0 : 0.35} opacity={0.8} color="#B8862F" />
         {hi && (
           <EffectComposer multisampling={4}>
-            <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.55} luminanceSmoothing={0.3} />
+            <Bloom mipmapBlur intensity={0.3} luminanceThreshold={0.92} luminanceSmoothing={0.2} />
           </EffectComposer>
         )}
       </Canvas>

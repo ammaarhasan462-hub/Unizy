@@ -36,7 +36,7 @@ export default function Gap() {
             const hl = w.startsWith('*');
             const t = w.replace(/\*/g, '');
             return (
-              <span key={i} className={`gw inline ${hl ? 'text-grad' : 'text-white'}`}>
+              <span key={i} className={`gw inline ${hl ? 'text-grad' : 'text-ink'}`}>
                 {t}{' '}
               </span>
             );
