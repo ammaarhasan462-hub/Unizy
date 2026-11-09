@@ -39,7 +39,7 @@ export function buildCity(shared, { mobile }) {
       const dist = Math.hypot(cx, cz);
       if (dist > R) continue;
       if (Math.abs(cz - riverZ(cx)) < 95) continue;
-      if (Math.abs(cx) < 120 && cz > -170 && cz < 210) continue;
+      if (Math.abs(cx) < 95 && cz > -135 && cz < 140) continue;
       if (r() < 0.22) continue;
       const w = S * (0.42 + r() * 0.36);
       const d = S * (0.42 + r() * 0.36);

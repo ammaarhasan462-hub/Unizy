@@ -25,7 +25,7 @@ vec3 city(vec2 pw, float t, float fw){
   float park = smoothstep(0.62, 0.7, vnoise(pw*0.0011 + 7.0));
   float rd = abs(pw.y - riverZ(pw.x));
   float river = 1.0 - smoothstep(58.0, 66.0, rd);
-  float plaza = (1.0 - smoothstep(80.0, 95.0, abs(pw.x))) * (1.0 - smoothstep(150.0, 175.0, abs(pw.y - 20.0)));
+  float plaza = (1.0 - smoothstep(58.0, 66.0, abs(pw.x))) * (1.0 - smoothstep(98.0, 108.0, abs(pw.y - 5.0)));
 
   float dv = abs(fract(g.x + 0.5) - 0.5) * S;
   float dh = abs(fract(g.y + 0.5) - 0.5) * S;
@@ -65,8 +65,13 @@ vec3 city(vec2 pw, float t, float fw){
   col += vec3(1.0, 0.72, 0.42) * bank * 0.6 * fall;
 
   // paved plaza in front of the landmark, washed by floodlights
-  float wash = exp(-pow(max(0.0, abs(pw.x)-10.0)/45.0, 2.0)) * exp(-pow((pw.y-30.0)/70.0, 2.0));
-  col = mix(col, vec3(0.012, 0.011, 0.01) + vec3(0.07, 0.045, 0.024)*wash, plaza);
+  float wash = exp(-pow(max(0.0, abs(pw.x)-10.0)/40.0, 2.0)) * exp(-pow((pw.y-30.0)/60.0, 2.0));
+  vec2 pv = abs(fract(pw / vec2(4.0, 2.0)) - 0.5);
+  float joints = 1.0 - 0.25 * smoothstep(0.46, 0.5, max(pv.x, pv.y)) * step(fw, 1.5);
+  vec2 lp = fract((pw + vec2(0.0, 6.0)) / 14.0) - 0.5;
+  float posts = exp(-dot(lp, lp) * 900.0 / (1.0 + f2)) * step(30.0, abs(pw.x));
+  vec3 pave = (vec3(0.03, 0.027, 0.024) + vec3(0.12, 0.08, 0.045) * wash) * joints + vec3(1.6, 1.15, 0.7) * posts;
+  col = mix(col, pave, plaza);
   return col;
 }
 `;
