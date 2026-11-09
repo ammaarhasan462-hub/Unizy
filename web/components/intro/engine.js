@@ -8,11 +8,12 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
+import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { makeNoise3D } from './noise';
 import { CLOUD_BOTTOM, CLOUD_FS, QUAD_VS } from './shaders';
 import { ATMO, makeSky, SUN_DIR, sunTransmittance } from './atmo';
 import { buildLondon } from './london';
-import { buildUCL } from './ucl';
+import { buildUCL, tickLibrary } from './ucl';
 
 // [progress, camera position, look-at target]
 const KEYS = [
@@ -30,7 +31,9 @@ const KEYS = [
   [0.705, [0, 7.6, 8], [0, 8, -20]],
   [0.745, [0, 7.6, -8], [0, 6.7, -40]],
   [0.82, [0, 6.9, -30], [0, 5.5, -46]],
-  [0.9, [0, 6.0, -43.6], [0, 5.26, -46.05]],
+  [0.875, [-0.05, 5.78, -44.85], [-0.2, 5.27, -45.92]],
+  [0.93, [-0.165, 5.375, -45.835], [-0.2, 5.272, -45.925]],
+  [0.965, [-0.07, 5.5, -45.72], [-0.04, 5.265, -45.97]],
   [1.0, [0.0, 5.54, -45.74], [0.01, 5.262, -45.99]],
 ];
 
@@ -75,23 +78,23 @@ const ss = (a, b, x) => {
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const GRADE = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uVig: { value: 0.5 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uVig: { value: 0.5 }, uFlash: { value: 0 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: `
-    uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; uniform float uVig; varying vec2 vUv;
+    uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; uniform float uVig; uniform float uFlash; varying vec2 vUv;
     void main(){
       vec2 c = vUv - 0.5; float r2 = dot(c, c);
       vec3 col;
-      col.r = texture2D(tDiffuse, vUv - c * 0.0022).r;
+      col.r = texture2D(tDiffuse, vUv - c * 0.0007).r;
       col.g = texture2D(tDiffuse, vUv).g;
-      col.b = texture2D(tDiffuse, vUv + c * 0.0022).b;
+      col.b = texture2D(tDiffuse, vUv + c * 0.0007).b;
       float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
-      col = mix(vec3(l), col, 1.12);
-      col.g *= 0.985;
-      col = (col - 0.5) * 1.05 + 0.5;
+      col = mix(vec3(l), col, 0.96);
+      col = (col - 0.5) * 1.06 + 0.5;
+      col += vec3(0.75, 0.82, 1.0) * uFlash * 0.07;
       col *= 1.0 - r2 * uVig;
       float n = fract(sin(dot(vUv * uRes + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);
-      col += (n - 0.5) * 0.022;
+      col += (n - 0.5) * 0.008;
       gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }`,
 };
@@ -152,6 +155,9 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     uBelow: { value: 0 },
     uSteps: { value: mobile ? 36 : 60 },
     uHaze: ATMO.uHaze,
+    uFlash: { value: 0 },
+    uFlashPos: { value: new THREE.Vector3() },
+    uEmis: { value: london.emTex },
   };
   const cloudScene = new THREE.Scene();
   const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -176,11 +182,46 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   }
   const setAO = (radius, thick) => { if (gtao && gtao.updateGtaoMaterial) { try { gtao.updateGtaoMaterial({ radius, distanceExponent: 1.5, thickness: thick, scale: 1.0, samples: 12, distanceFallOff: 1, screenSpaceRadius: false }); } catch (e) {} } };
   setAO(3, 2);
+  const bokeh = new BokehPass(scene, camera, { focus: 1.0, aperture: 0.004, maxblur: 0.012 });
+  bokeh.enabled = false;
+  composer.addPass(bokeh);
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), mobile ? 0.3 : 0.38, 0.6, 0.95);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   const grade = new ShaderPass(GRADE);
   composer.addPass(grade);
+
+  // lightning: a couple of strikes over the storm clouds right at the start, before the visitor scrolls
+  const boltMat = new THREE.LineBasicMaterial({ color: new THREE.Color(7, 7.5, 9), transparent: true, opacity: 1, toneMapped: false });
+  const makeBolt = (a, b, seed) => {
+    const rr = (() => { let s = seed; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+    const pts = [];
+    const seg = (p0, p1, depth, n) => {
+      let prev = p0.clone();
+      for (let i = 1; i <= n; i++) {
+        const t = i / n;
+        const p = p0.clone().lerp(p1, t);
+        if (i < n) p.add(new THREE.Vector3((rr() - 0.5) * 140 / (depth + 1), (rr() - 0.5) * 40, (rr() - 0.5) * 140 / (depth + 1)));
+        pts.push(prev.x, prev.y, prev.z, p.x, p.y, p.z);
+        if (depth < 2 && rr() < 0.28) { const e = p.clone().add(new THREE.Vector3((rr() - 0.5) * 500, -150 - rr() * 300, (rr() - 0.5) * 500)); seg(p, e, depth + 1, 6); }
+        prev = p;
+      }
+    };
+    seg(a, b, 0, 18);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    const l = new THREE.LineSegments(g, boltMat);
+    l.frustumCulled = false;
+    l.visible = false;
+    scene.add(l);
+    return l;
+  };
+  const strikes = [
+    { t: 1.25, bolt: makeBolt(new THREE.Vector3(-1500, 2900, 2300), new THREE.Vector3(-1150, 1120, 2650), 7), pos: new THREE.Vector3(-1150, 1000, 2650) },
+    { t: 3.0, bolt: makeBolt(new THREE.Vector3(1300, 2700, 1500), new THREE.Vector3(1050, 1120, 1900), 31), pos: new THREE.Vector3(1050, 980, 1900) },
+  ];
+  const pulse = (x, w) => Math.exp(-(x * x) / (w * w));
+  let flashesDone = false;
 
   const posAt = makeTrack(1);
   const lookAt = makeTrack(2);
@@ -256,21 +297,48 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     pos.y += Math.sin(time * 0.5) * breathe;
     pos.x += Math.sin(time * 0.31) * breathe;
     camera.position.copy(pos);
-    camera.near = p < 0.5 ? 2 : p < 0.64 ? 0.5 : 0.03;
+    camera.near = p < 0.5 ? 2 : p < 0.64 ? 0.5 : p < 0.86 ? 0.03 : 0.004;
     camera.far = p < 0.7 ? 60000 : 4000;
     camera.updateProjectionMatrix();
     camera.lookAt(look.x + tmp.x, look.y + tmp.y, look.z + tmp.z);
     camera.updateMatrixWorld();
 
+    // lightning (only while the visitor is still at the start)
+    let flash = 0;
+    if (!flashesDone) {
+      strikes.forEach((s) => {
+        const dt0 = time - s.t;
+        const f = pulse(dt0, 0.045) + 0.55 * pulse(dt0 - 0.09, 0.04) + 0.8 * pulse(dt0 - 0.27, 0.05);
+        if (f > flash) { flash = f; cloudU.uFlashPos.value.copy(s.pos); }
+        s.bolt.visible = p < 0.06 && f > 0.28;
+      });
+      if (time > 3.6 || p > 0.06) { flashesDone = true; strikes.forEach((s) => { s.bolt.visible = false; }); }
+    }
+    if (state.forceFlash != null) { const s = strikes[state.forceFlash]; flash = 1; cloudU.uFlashPos.value.copy(s.pos); strikes.forEach((x) => { x.bolt.visible = x === s; }); }
+    if (p > 0.06) flash = 0;
+    cloudU.uFlash.value = flash;
+    grade.uniforms.uFlash.value = flash;
+
     // stage lighting
     const inside = ss(0.705, 0.75, p);
     ATMO.uIndoor.value = inside;
-    ATMO.uHaze.value = lerp(lerp(0.00005, 0.00013, ss(0.2, 0.32, p)), 0.0002, ss(0.5, 0.64, p));
-    scene.environmentIntensity = lerp(1.5, 0.25, inside);
-    sun.intensity = (4.2 * tmax + 1.2) * (1 - inside);
-    renderer.toneMappingExposure = lerp(lerp(0.82, 1.0, ss(0.28, 0.4, p)), 1.75, inside) * lerp(1, 0.8, ss(0.9, 1, p));
+    ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
+    scene.environmentIntensity = lerp(2.2, 0.3, inside);
+    sun.intensity = 2.2 * (1 - inside);
+    renderer.toneMappingExposure = lerp(lerp(1.0, 1.25, ss(0.28, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
+    london.trafficU.uTime.value = time;
+    london.trafficU.uCam.value.copy(camera.position);
+    if (london.avMat) london.avMat.color.setRGB(6 * (0.15 + 0.85 * (Math.sin(time * 3) > 0.6 ? 1 : 0)), 0.3, 0.15);
+    ucl.ext.forEach(([l, i]) => { l.intensity = i * (1 - inside); });
+    tickLibrary(ucl.furn);
+    // shallow focus for the close-ups on the desk
+    bokeh.enabled = p > 0.85;
+    if (bokeh.enabled) {
+      bokeh.uniforms.focus.value = dist;
+      bokeh.uniforms.aperture.value = lerp(0.0015, 0.012, ss(0.86, 0.93, p)) * (1 - 0.6 * ss(0.95, 1.0, p));
+    }
     grade.uniforms.uTime.value = time;
-    grade.uniforms.uVig.value = lerp(0.45, 0.75, inside);
+    grade.uniforms.uVig.value = lerp(0.42, 0.6, inside);
     ucl.int.forEach(([l, i]) => { l.intensity = i * ss(0.62, 0.72, p); });
     ucl.dust.uTime.value = time;
     ucl.dust.uOpacity.value = ss(0.72, 0.78, p);
@@ -312,7 +380,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     } else if (scene.background !== interiorBg) scene.background = interiorBg;
 
     composer.render(dt);
-    if (onFrame) onFrame(p, state.target);
+    if (onFrame) onFrame(p, state.target, time);
   }
   raf = requestAnimationFrame(frame);
 

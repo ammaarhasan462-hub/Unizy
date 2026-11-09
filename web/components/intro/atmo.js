@@ -3,8 +3,8 @@
 // haze on every surface (atmo()), and through PMREM it is the environment light and reflections for all materials.
 import * as THREE from 'three';
 
-// sun just above the eastern horizon (+z is east, +x is north), a little to the south
-export const SUN_DIR = new THREE.Vector3(-0.3, 0.15, 1.0).normalize();
+// first light: the sun just breaking the eastern horizon (+z is east, +x is north), deep red, sky still dark
+export const SUN_DIR = new THREE.Vector3(-0.3, 0.02, 1.0).normalize();
 
 const RE = 6360e3, RA = 6420e3, HR = 7994, HM = 1200;
 const BR = [5.8e-6, 13.5e-6, 33.1e-6], BM = 4.5e-6;
@@ -73,7 +73,7 @@ vec3 atmo(vec3 dir){
     t += ds;
   }
   // single scattering plus a cheap multiple-scattering fill (lifts the blue overhead and away from the sun)
-  return 13.0 * (sR*bR*pR + sM*bM*pM) + vec3(0.03, 0.06, 0.12) * (0.55 + 0.45 * sqrt(max(dir.y, 0.0)));
+  return 13.0 * (sR*bR*pR + sM*bM*pM) + vec3(0.006, 0.011, 0.028) * (0.55 + 0.45 * sqrt(max(dir.y, 0.0)));
 }
 void main(){
   float phi = (vUv.x - 0.5) * 2.0 * PI;
@@ -164,7 +164,7 @@ export function atmo(material) {
           float hk = exp(-max(vAtmoW.y, 0.0) * 0.0009);
           float af = 1.0 - exp(-ad * uHaze * uHazeK * hk);
           vec3 ac = skyL(uSkyLut, normalize(vec3(adir.x, max(adir.y, 0.02), adir.z)));
-          ac += uSunCol * 0.05 * pow(max(dot(adir, uSunDir), 0.0), 8.0);
+          ac += uSunCol * 0.04 * pow(max(dot(adir, uSunDir), 0.0), 10.0);
           vec3 outc = mix(gl_FragColor.rgb, ac, af);
           float fi = 1.0 - exp(-ad * uIndoorDensity);
           gl_FragColor.rgb = mix(outc, mix(gl_FragColor.rgb, uIndoorCol, fi), uIndoor);

@@ -16,13 +16,13 @@ let facadeId = 0;
 export function facadeMaterial(o = {}) {
   const cfg = {
     floor: 3.3, bay: 2.6, winW: 0.42, winH: 0.56, ground: 0.6, topPad: 1.4, sash: 1, lit: 0.025,
-    frame: '#ece8df', roof: '#5a5c5f', roughness: 0.86, metalness: 0, glassRough: 0.06, ...o,
+    frame: '#ece8df', roof: '#5a5c5f', roughness: 0.86, metalness: 0, glassRough: 0.06, litI: 2.4, ...o,
   };
   const m = new THREE.MeshStandardMaterial({ roughness: cfg.roughness, metalness: cfg.metalness, color: cfg.color || '#ffffff' });
   const U = {
     uFloor: { value: cfg.floor }, uBay: { value: cfg.bay }, uWinW: { value: cfg.winW }, uWinH: { value: cfg.winH },
     uGround: { value: cfg.ground }, uTopPad: { value: cfg.topPad }, uSash: { value: cfg.sash }, uLit: { value: cfg.lit },
-    uFrame: { value: new THREE.Color(cfg.frame) }, uRoof: { value: new THREE.Color(cfg.roof) }, uGlassRough: { value: cfg.glassRough },
+    uFrame: { value: new THREE.Color(cfg.frame) }, uRoof: { value: new THREE.Color(cfg.roof) }, uGlassRough: { value: cfg.glassRough }, uLitI: { value: cfg.litI },
   };
   m.userData.key = 'facade' + facadeId++;
   m.userData.patch = (shader) => {
@@ -47,7 +47,7 @@ export function facadeMaterial(o = {}) {
         '#include <common>',
         `#include <common>
         varying vec3 vObj; varying vec3 vObjN; varying vec3 vSc; varying float vIid;
-        uniform float uFloor, uBay, uWinW, uWinH, uGround, uTopPad, uSash, uLit, uGlassRough;
+        uniform float uFloor, uBay, uWinW, uWinH, uGround, uTopPad, uSash, uLit, uGlassRough, uLitI;
         uniform vec3 uFrame, uRoof;
         float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }`
       )
@@ -55,6 +55,7 @@ export function facadeMaterial(o = {}) {
         '#include <color_fragment>',
         `#include <color_fragment>
         float fWin = 0.0, fLit = 0.0;
+        vec3 litC = vec3(1.0, 0.7, 0.4);
         {
           vec3 nO = normalize(vObjN);
           float mott = fh(floor(vec2(vObj.x + vObj.z, vObj.y) * 1.25) + vIid);
@@ -81,7 +82,10 @@ export function facadeMaterial(o = {}) {
             vec3 avgc = mix(diffuseColor.rgb, vec3(0.06, 0.065, 0.07), avgW);
             diffuseColor.rgb = mix(avgc, pc, aa);
             fWin = gl * aa + avgW * 0.5 * (1.0 - aa);
-            fLit = step(1.0 - uLit, hs) * gl * aa;
+            float bLit = step(0.25, fh(vec2(vIid, 3.7)));  // some buildings entirely dark
+            fLit = (step(1.0 - uLit, hs) * gl * aa + (1.0 - aa) * uLit * uWinW * uWinH * 0.6) * bLit;
+            litC = mix(vec3(1.0, 0.66, 0.36), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, vIid))));
+            litC *= 0.6 + 0.8 * fh(vec2(fl, vIid + 1.0));
             diffuseColor.rgb *= 1.0 - 0.22 * step(vSc.y - 0.75, yy) * step(yy, vSc.y - 0.45);
             diffuseColor.rgb *= 0.82 + 0.18 * smoothstep(0.0, 2.5, yy);
           } else {
@@ -90,7 +94,7 @@ export function facadeMaterial(o = {}) {
         }`
       )
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, uGlassRough, fWin);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * vec3(1.0, 0.72, 0.45) * 0.9;');
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * uLitI;');
   };
   return atmo(m);
 }

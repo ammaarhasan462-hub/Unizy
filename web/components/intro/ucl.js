@@ -5,6 +5,8 @@ import * as THREE from 'three';
 import { DUST_FS, DUST_VS } from './shaders';
 import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, treeGeometry } from './materials';
 import { SUN_DIR } from './atmo';
+import { cofferTex, furnishLibrary, tickLibrary } from './library';
+export { tickLibrary };
 
 export const PODIUM = 4.5; // Portico and library floor height
 const IN = PODIUM - 1.2; // the library interior was modelled with its floor at 1.2
@@ -189,7 +191,7 @@ export function buildUCL({ mobile }) {
   const stone = plainMaterial({ map: stoneTex(), color: '#efe8da', roughness: 0.82 }, 'stone');
   const stoneSmooth = plainMaterial({ color: '#e2d9c6', roughness: 0.7 }, 'stone2');
   const colStone = plainMaterial({ color: '#ddd4c1', roughness: 0.68 }, 'colstone');
-  const wingMat = facadeMaterial({ floor: 4.4, bay: 3.6, winW: 0.36, winH: 0.6, ground: 1.0, topPad: 2.4, lit: 0.04, color: '#ece4d2', frame: '#f3efe6', roof: '#7d7a73' });
+  const wingMat = facadeMaterial({ floor: 4.4, bay: 3.6, winW: 0.36, winH: 0.6, ground: 1.0, topPad: 2.4, lit: 0.32, litI: 2.0, color: '#ece4d2', frame: '#f3efe6', roof: '#7d7a73' });
   const bx = baseBox();
   const shadowed = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
   const box = (mat, x0, x1, y0, y1, z0, z1, parent = g) => {
@@ -404,7 +406,7 @@ export function buildUCL({ mobile }) {
   floor.receiveShadow = true;
   lib.add(floor);
   const panel = plainMaterial({ color: '#1d3a2e', roughness: 0.75 }, 'panel');
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(35, 57.5), plainMaterial({ color: '#4a4238', roughness: 0.95 }, 'ceil'));
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(35, 57.5), plainMaterial({ map: cofferTex(), color: '#ffffff', roughness: 0.8 }, 'ceil'));
   ceil.rotation.x = Math.PI / 2;
   ceil.position.set(0, 18.85, -32.3);
   lib.add(ceil);
@@ -418,7 +420,7 @@ export function buildUCL({ mobile }) {
   const fp = add(new THREE.PlaneGeometry(35, 17.6), panel, 0, 10, -3.45);
   fp.rotation.y = Math.PI;
   fp.visible = false;
-  const wm = plainMaterial({ map: windowTex(), transparent: true, color: '#ffffff', emissive: '#ffe7c2', emissiveIntensity: 1.6, emissiveMap: null, roughness: 1 }, 'iwin');
+  const wm = plainMaterial({ map: windowTex(), transparent: true, color: '#ffffff', emissive: '#b98272', emissiveIntensity: 0.55, emissiveMap: null, roughness: 1 }, 'iwin');
   wm.emissiveMap = wm.map;
   add(new THREE.PlaneGeometry(5.2, 10.4), wm, 0, 12.4, -60.9);
   for (let z = -9; z > -58; z -= 7) for (const s of [-1, 1]) { const w = add(new THREE.PlaneGeometry(2.4, 4.8), wm, s * 17.4, 14.6, z); w.rotation.y = -s * Math.PI / 2; }
@@ -426,7 +428,7 @@ export function buildUCL({ mobile }) {
   const lun = add(new THREE.CircleGeometry(4.2, 48, 0, Math.PI), wm, 0, 12.6, -3.55);
   lun.rotation.y = Math.PI;
   const sh = shaftTex();
-  const shaftMat = new THREE.MeshBasicMaterial({ map: sh, color: new THREE.Color(1.0, 0.82, 0.55), transparent: true, opacity: 0.11, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const shaftMat = new THREE.MeshBasicMaterial({ map: sh, color: new THREE.Color(1.0, 0.5, 0.34), transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   const dir = new THREE.Vector3(-SUN_DIR.x, -Math.max(SUN_DIR.y, 0.18), -SUN_DIR.z).normalize();
   for (let i = 0; i < 4; i++) {
     const s = add(new THREE.PlaneGeometry(2.4 + i * 0.6, 34), shaftMat, (i - 1.5) * 1.6, 0, 0);
@@ -491,9 +493,6 @@ export function buildUCL({ mobile }) {
       }
     }
   }
-  const pend = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.6, 1.75, 0.95) });
-  const cord = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
-  for (let z = -9; z > -44; z -= 7) { add(new THREE.SphereGeometry(0.32, 20, 12), pend, 0, 12.5, z); add(new THREE.CylinderGeometry(0.012, 0.012, 6, 4), cord, 0, 15.8, z); }
 
   // the desk, the marked answer, pen, books and lamp
   add(B(1.7, 0.06, 0.9), wood, 0, 1.93, -46.1);
@@ -526,16 +525,31 @@ export function buildUCL({ mobile }) {
 
   // interior lights
   const int = [];
-  for (let z = -9; z > -44; z -= 14) { const pl = new THREE.PointLight(0xffc27a, 120, 0, 2); pl.position.set(0, 11.5, z); lib.add(pl); int.push([pl, 120]); }
-  for (const x of [-8, 8]) for (const z of [-15, -33]) { const pl = new THREE.PointLight(0xffc27a, 12, 0, 2); pl.position.set(x, 3.2, z); lib.add(pl); int.push([pl, 12]); }
-  const day = new THREE.PointLight(0xfff0d8, 160, 0, 2);
+  const furn = furnishLibrary(lib, { mobile });
+  furn.lights.forEach((l) => int.push(l));
+  const day = new THREE.PointLight(0xffb59a, 40, 0, 2);
   day.position.set(0, 12, -6);
   lib.add(day);
-  int.push([day, 160]);
+  int.push([day, 40]);
   const deskLight = new THREE.PointLight(0xffc483, 0.9, 0, 2);
   deskLight.position.set(0.38, 2.36, -46.2);
   lib.add(deskLight);
   int.push([deskLight, 0.9]);
 
-  return { group: g, lib, int, dust: dustU, shaftMat };
+  // floodlights: warm-white uplighting on the Portico and the dome
+  const ext = [];
+  for (const x of [-13, 13]) {
+    const sp = new THREE.SpotLight(0xffe0bd, 2600, 0, 0.5, 0.85, 2);
+    sp.position.set(x, 0.6, 36);
+    sp.target.position.set(x * 0.45, 15, 8);
+    g.add(sp, sp.target);
+    ext.push([sp, 2600]);
+  }
+  const domeL = new THREE.SpotLight(0xffe6c8, 900, 0, 0.55, 0.9, 2);
+  domeL.position.set(0, 26, -6);
+  domeL.target.position.set(0, 32, -27);
+  g.add(domeL, domeL.target);
+  ext.push([domeL, 900]);
+
+  return { group: g, lib, int, ext, furn, dust: dustU, shaftMat };
 }

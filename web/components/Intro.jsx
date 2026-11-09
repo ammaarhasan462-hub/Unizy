@@ -20,13 +20,21 @@ setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove(
 
 const CH = [
   { a: 0, b: 0.08, mode: 'start' },
-  { a: 0.09, b: 0.2, n: '01', t: 'Revising blind.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
-  { a: 0.3, b: 0.42, n: '02', t: 'Every UCL module.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
-  { a: 0.5, b: 0.63, n: '03', t: 'Your department’s criteria.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
-  { a: 0.75, b: 0.86, n: '04', t: 'Write your answer.', s: 'Exam-style questions written in your module’s style, timed like the real thing.', side: 'right' },
-  { a: 0.91, b: 1.2, n: '05', mode: 'end' },
+  { a: 0.09, b: 0.2, n: '01', k: 'The problem', t: 'Revising *blind*.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
+  { a: 0.3, b: 0.42, n: '02', k: 'Coverage', t: 'Every UCL *module*.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
+  { a: 0.5, b: 0.63, n: '03', k: 'The standard', t: 'Your department’s *criteria*.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
+  { a: 0.655, b: 0.735, mode: 'mark' },
+  { a: 0.75, b: 0.85, n: '04', k: 'Practice', t: 'Write your *answer*.', s: 'Exam-style questions written in your module’s style.', side: 'right' },
+  { a: 0.87, b: 0.95, n: '05', k: 'Conditions', t: 'Timed like the *real thing*.', s: 'Turn on the exam timer and write under real conditions.', side: 'left' },
+  { a: 0.96, b: 1.2, n: '06', mode: 'end' },
 ];
-const LABELS = ['Sunrise', 'Every module', 'Criteria', 'Your answer', 'Marked'];
+const RAIL = CH.filter((c) => c.n);
+const LABELS = ['The problem', 'Coverage', 'The standard', 'Practice', 'Conditions', 'Marked'];
+
+// "Some *words*" -> the starred words set in a fine serif italic
+function T({ s }) {
+  return s.split('*').map((part, i) => (i % 2 ? <em key={i} className="intro-serif">{part}</em> : <span key={i}>{part}</span>));
+}
 
 const ss = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -35,7 +43,7 @@ const ss = (a, b, x) => {
 
 function vis(c, p) {
   if (c.mode === 'start') return 1 - ss(c.a + (c.b - c.a) * 0.35, c.b, p);
-  if (c.mode === 'end') return ss(c.a, c.a + 0.06, p) * (1 - ss(1.005, 1.04, p));
+  if (c.mode === 'end') return ss(c.a, c.a + 0.035, p) * (1 - ss(1.005, 1.04, p));
   const L = c.b - c.a;
   return ss(c.a, c.a + L * 0.28, p) * (1 - ss(c.b - L * 0.28, c.b, p));
 }
@@ -118,7 +126,7 @@ export default function Intro() {
       else if (k === 'Escape') finish('skip');
     };
 
-    const onFrame = (p, target) => {
+    const onFrame = (p, target, time = 0) => {
       if (!readyRef.current) { readyRef.current = true; setReady(true); }
       CH.forEach((c, i) => {
         const el = chap.current[i];
@@ -128,16 +136,20 @@ export default function Intro() {
         el.style.visibility = o < 0.005 ? 'hidden' : 'visible';
         const L = c.b - c.a;
         const local = (p - c.a) / L;
-        const y = c.mode ? (1 - o) * 18 : (0.5 - local) * 46;
-        el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+        if (c.mode === 'mark') {
+          el.style.transform = `scale(${(0.92 + local * 0.22).toFixed(4)})`;
+        } else {
+          const y = c.mode ? (1 - o) * 14 : (0.5 - local) * 36;
+          el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+        }
         el.style.filter = o < 0.98 ? `blur(${((1 - o) * 8).toFixed(1)}px)` : 'none';
         el.style.pointerEvents = c.mode === 'end' && o > 0.6 ? 'auto' : 'none';
       });
       if (fill.current) fill.current.style.transform = `scaleY(${Math.min(1, p).toFixed(4)})`;
       let cur = -1;
-      CH.slice(1).forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
+      RAIL.forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
       dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
-      if (hint.current) hint.current.style.opacity = (1 - ss(0.002, 0.03, p)).toFixed(3);
+      if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, time) * (1 - ss(0.002, 0.03, p))).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
       if (target >= 1.04 && p > 0.995) finish('end');
     };
@@ -203,29 +215,34 @@ export default function Intro() {
 
       {/* chapters */}
       <div ref={(el) => (chap.current[0] = el)} className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <p className="intro-kicker text-[11px] text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">Unizy · UCL</p>
-        <h1 className="intro-title mt-6 max-w-[1100px] text-[clamp(42px,7.4vw,112px)]">
-          The mark scheme your uni never gave you.
+        <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> University College London</p>
+        <h1 className="intro-title mt-7 max-w-[1150px] text-[clamp(40px,6.6vw,104px)]">
+          <T s="The mark scheme your uni *never gave you.*" />
         </h1>
+        <p className="intro-body mt-7 text-[14px] font-light tracking-[.04em] text-white/60">Exam practice and marking for every UCL module</p>
       </div>
-      {CH.slice(1, 5).map((c, i) => (
+      {CH.map((c, i) => (c.mode === 'mark' ? (
+        <div key="mark" ref={(el) => (chap.current[i] = el)} className="pointer-events-none invisible absolute inset-0 grid place-items-center" style={{ opacity: 0 }}>
+          <span className="intro-title intro-mark select-none text-[clamp(84px,19vw,300px)] tracking-[.02em]">UNIZY</span>
+        </div>
+      ) : c.n && !c.mode ? (
         <div
           key={c.n}
-          ref={(el) => (chap.current[i + 1] = el)}
+          ref={(el) => (chap.current[i] = el)}
           className={`pointer-events-none invisible absolute bottom-[12vh] px-6 sm:px-12 ${c.side === 'left' ? 'left-0 text-left' : 'right-0 text-left sm:text-right'}`}
           style={{ opacity: 0 }}
         >
-          <p className="intro-kicker text-[11px] text-[#ffd79a] [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">{c.n} / 05</p>
-          <h2 className="intro-title mt-3 text-[clamp(40px,6.8vw,104px)]">{c.t}</h2>
-          <p className={`intro-body mt-4 max-w-[460px] text-[16px] font-medium leading-relaxed text-white/85 ${c.side === 'right' ? 'sm:ml-auto' : ''}`}>{c.s}</p>
+          <p className="intro-kicker text-[10.5px] text-white/65">{c.n} <span className="mx-2 inline-block h-px w-6 translate-y-[-3px] bg-white/35" /> {c.k}</p>
+          <h2 className="intro-title mt-4 text-[clamp(38px,6vw,92px)]"><T s={c.t} /></h2>
+          <p className={`intro-body mt-5 max-w-[420px] text-[15px] font-light leading-relaxed tracking-[.01em] text-white/75 ${c.side === 'right' ? 'sm:ml-auto' : ''}`}>{c.s}</p>
         </div>
-      ))}
-      <div ref={(el) => (chap.current[5] = el)} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[9vh] sm:px-12" style={{ opacity: 0 }}>
+      ) : null))}
+      <div ref={(el) => (chap.current[CH.length - 1] = el)} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[9vh] sm:px-12" style={{ opacity: 0 }}>
         <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
           <div>
-            <p className="intro-kicker text-[11px] text-[#ffd79a] [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">05 / 05</p>
-            <h2 className="intro-title mt-3 max-w-[720px] text-[clamp(36px,5.6vw,84px)]">
-              Find out what your answer would get.
+            <p className="intro-kicker text-[10.5px] text-white/65">06 <span className="mx-2 inline-block h-px w-6 translate-y-[-3px] bg-white/35" /> Marked</p>
+            <h2 className="intro-title mt-4 max-w-[760px] text-[clamp(34px,5.2vw,80px)]">
+              <T s="Find out what your answer would *get.*" />
             </h2>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a href={authed ? '/dashboard/practice' : '/signup'} onClick={() => track(authed ? 'intro_dashboard' : 'intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
@@ -259,7 +276,7 @@ export default function Intro() {
         <div className="relative h-full w-px bg-white/15">
           <div ref={fill} className="absolute inset-0 origin-top bg-[#d9b46c]/80" style={{ transform: 'scaleY(0)' }} />
           {LABELS.map((l, i) => (
-            <span key={l} ref={(el) => (dots.current[i] = el)} data-on="0" className="group absolute -left-[3px] size-[7px] rounded-full border border-white/40 bg-[#05070b] transition-colors data-[on='1']:border-[#d9b46c] data-[on='1']:bg-[#d9b46c]" style={{ top: `${(CH[i + 1].a * 100).toFixed(1)}%` }}>
+            <span key={l} ref={(el) => (dots.current[i] = el)} data-on="0" className="group absolute -left-[3px] size-[7px] rounded-full border border-white/40 bg-[#05070b] transition-colors data-[on='1']:border-[#d9b46c] data-[on='1']:bg-[#d9b46c]" style={{ top: `${(RAIL[i].a * 100).toFixed(1)}%` }}>
               <span className="absolute right-4 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[.2em] text-[#efe9dd]/55 opacity-0 transition-opacity duration-500 group-data-[cur='1']:opacity-100">{l}</span>
             </span>
           ))}

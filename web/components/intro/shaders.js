@@ -26,6 +26,9 @@ uniform vec3 uSunCol;
 uniform float uBelow;
 uniform float uSteps;
 uniform float uHaze;
+uniform float uFlash;
+uniform vec3 uFlashPos;
+uniform sampler2D uEmis;
 varying vec2 vUv;
 const float BOT = ${CLOUD_BOTTOM.toFixed(1)};
 const float TOP = ${CLOUD_TOP.toFixed(1)};
@@ -56,6 +59,12 @@ vec3 groundCol(vec2 p, vec3 rd, float t){
   vec3 lit = alb * (uSunCol * 0.3 + skyL(uSkyLut, vec3(0.0, 1.0, 0.0)) * 1.4);
   vec3 refl = skyL(uSkyLut, reflect(rd, vec3(0.0, 1.0, 0.0))) * 0.35 + uSunCol * 2.0 * pow(max(dot(reflect(rd, vec3(0,1,0)), uSun), 0.0), 220.0);
   lit = mix(lit, vec3(0.012, 0.02, 0.026) + refl, water);
+  if (abs(p.x) < MH && abs(p.y) < MH) lit += texture(uEmis, vec2(p.x / (2.0*MH) + 0.5, 0.5 - p.y / (2.0*MH))).rgb * 1.6;
+  else {
+    vec2 g = abs(fract(p / vec2(95.0, 130.0)) - 0.5);
+    float street = 1.0 - smoothstep(0.0, 0.05, min(g.x, g.y));
+    lit += vec3(1.0, 0.62, 0.3) * street * 0.25 * smoothstep(9000.0, 2000.0, length(p)) * (1.0 - water);
+  }
   return lit;
 }
 
@@ -94,6 +103,11 @@ void main(){
     }
   } else {
     bg = skyL(uSkyLut, rd);
+    vec3 sp = floor(rd * 900.0);
+    float st = fract(sin(dot(sp, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float lum = dot(bg, vec3(0.3, 0.6, 0.1));
+    bg += vec3(0.75, 0.8, 1.0) * step(0.9983, st) * smoothstep(0.04, 0.35, rd.y) * clamp(1.0 - lum * 18.0, 0.0, 1.0) * 0.6;
+    bg += vec3(0.55, 0.6, 0.75) * uFlash * 0.05 * smoothstep(-0.1, 0.4, rd.y);
     // sun disc with limb darkening and a soft corona
     float sd = acos(clamp(cth, -1.0, 1.0));
     float disc = smoothstep(0.0062, 0.0050, sd);
@@ -143,6 +157,7 @@ void main(){
         float powder = 1.0 - exp(-d * 0.06 * st * 2.0);
         vec3 amb = mix(skyH * 0.25 + skyUp * 0.5, skyUp * 1.3, hf) * (0.5 + 0.5 * hf);
         vec3 L = amb + uSunCol * S * 4.5 * mix(0.55, 1.0, powder);
+        L += vec3(0.72, 0.8, 1.0) * uFlash * 26.0 * exp(-length(p - uFlashPos) / 420.0) * (0.35 + 0.65 * exp(-ld * 0.01));
         float aT = 1.0 - exp(-d * 0.034 * st);
         L = mix(L, hz, 1.0 - exp(-t * uHaze * 0.5));
         acc += T * L * aT;

@@ -110,7 +110,26 @@ export function buildLondon(renderer, { mobile }) {
     }
   });
   mapTex.anisotropy = 16;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95 }, 'ground'));
+  // street lighting at first light: lamp pools along every street, brighter on the main roads, lamps on the Quad path
+  const ES = mobile ? 1024 : 2048;
+  const ek = ES / (2 * H);
+  const emTex = canvasTex(ES, ES, (ctx) => {
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, ES, ES);
+    const lamp = (x, z, rad, a, col) => {
+      const px = (x + H) * ek, pz = (z + H) * ek, rr = Math.max(1.5, rad * ek);
+      const g = ctx.createRadialGradient(px, pz, 0, px, pz, rr);
+      g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(0.25, `rgba(${col},${a * 0.35})`); g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g; ctx.fillRect(px - rr, pz - rr, rr * 2, rr * 2);
+    };
+    const warm = '255,214,168', led = '235,240,255';
+    xl.forEach((l) => { const step = l.major ? 22 : 30; for (let z = -H; z < H; z += step) { lamp(l.c - l.w / 2 - 1.5, z, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); lamp(l.c + l.w / 2 + 1.5, z + step / 2, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); } });
+    zl.forEach((l) => { const step = l.major ? 22 : 30; for (let x = -H; x < H; x += step) { lamp(x, l.c - l.w / 2 - 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); lamp(x + step / 2, l.c + l.w / 2 + 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); } });
+    blocks.forEach((b) => { if (!b.park) return; for (let t = 0.1; t < 1; t += 0.12) { lamp(b.x0 + (b.x1 - b.x0) * t, b.z0 + (b.z1 - b.z0) * t, 7, 0.55, warm); lamp(b.x1 - (b.x1 - b.x0) * t, b.z0 + (b.z1 - b.z0) * t, 7, 0.55, warm); } });
+    for (let z = 34; z < 104; z += 14) { lamp(-7, z, 7, 0.8, warm); lamp(7, z, 7, 0.8, warm); }
+    lamp(0, 30, 40, 0.25, warm);
+  });
+  emTex.colorSpace = THREE.SRGBColorSpace;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1 }, 'ground'));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
@@ -144,11 +163,37 @@ export function buildLondon(renderer, { mobile }) {
   river.receiveShadow = true;
   group.add(river);
 
+  // traffic: headlights and tail lights moving along the main roads
+  const trafficU = { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
+  const TV = 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
+  const TF = `uniform float uTime; uniform float uLen; uniform float uSeed; uniform vec3 uCam; varying vec2 vUv; varying vec3 vW;
+    float th(float n){ return fract(sin(n) * 43758.5453); }
+    void main(){
+      float L = vUv.x * uLen, a = vUv.y;
+      float l1 = exp(-pow((a - 0.3) / 0.07, 2.0)), l2 = exp(-pow((a - 0.7) / 0.07, 2.0));
+      float s1 = L * 0.032 - uTime * 0.5 + uSeed, s2 = L * 0.032 + uTime * 0.46 + uSeed * 1.7;
+      float d1 = exp(-pow((fract(s1) - 0.5) * 26.0, 2.0)) * step(0.5, th(floor(s1) + uSeed));
+      float d2 = exp(-pow((fract(s2) - 0.5) * 26.0, 2.0)) * step(0.5, th(floor(s2) * 1.3 + uSeed));
+      vec3 c = vec3(1.7, 1.55, 1.35) * d1 * l1 * 3.0 + vec3(1.9, 0.12, 0.06) * d2 * l2 * 2.4;
+      c *= smoothstep(7000.0, 1200.0, length(vW - uCam));
+      gl_FragColor = vec4(c, 1.0);
+    }`;
+  const road3 = (len, w, x, z, alongZ, seed) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(len, w), new THREE.ShaderMaterial({ vertexShader: TV, fragmentShader: TF, uniforms: { ...trafficU, uLen: { value: len }, uSeed: { value: seed } }, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    m.rotation.x = -Math.PI / 2;
+    if (alongZ) m.rotation.z = Math.PI / 2;
+    m.position.set(x, 0.35, z);
+    m.frustumCulled = false;
+    group.add(m);
+  };
+  xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
+  zl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, 0, l.c, false, i * 5.7 + 1));
+
   // ---------------------------------------------------------------- terraces
-  const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.02, frame: '#efebe2' });
-  const stuccoMat = facadeMaterial({ floor: 3.4, bay: 2.8, winW: 0.38, winH: 0.56, lit: 0.02, frame: '#f4f2ec' });
-  const modernMat = facadeMaterial({ floor: 3.8, bay: 1.7, winW: 0.86, winH: 0.66, sash: 0, lit: 0.015, frame: '#4b5056', roof: '#6b6d70', glassRough: 0.05 });
-  const stoneMat = facadeMaterial({ floor: 3.9, bay: 3.0, winW: 0.46, winH: 0.58, lit: 0.02, frame: '#e8e2d4', roof: '#77746e' });
+  const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.24, frame: '#efebe2' });
+  const stuccoMat = facadeMaterial({ floor: 3.4, bay: 2.8, winW: 0.38, winH: 0.56, lit: 0.24, frame: '#f4f2ec' });
+  const modernMat = facadeMaterial({ floor: 3.8, bay: 1.7, winW: 0.86, winH: 0.66, sash: 0, lit: 0.34, frame: '#4b5056', roof: '#6b6d70', glassRough: 0.05 });
+  const stoneMat = facadeMaterial({ floor: 3.9, bay: 3.0, winW: 0.46, winH: 0.58, lit: 0.2, frame: '#e8e2d4', roof: '#77746e' });
   const lists = { terrace: [], stucco: [], modern: [], stone: [] };
   const roofs = [], chim = [];
   const BRICK = ['#a88f6c', '#b39b78', '#9c8463', '#bfa684', '#8f5a46', '#7d4b3b', '#a7745a'];
@@ -233,7 +278,7 @@ export function buildLondon(renderer, { mobile }) {
   // ---------------------------------------------------------------- landmarks
   const lm = [];
   const addBox = (mat, x, y, z, w, h, d, col) => { const m = new THREE.Mesh(bx, mat); m.position.set(x, y, z); m.scale.set(w, h, d); if (col) { m.material = mat; } m.castShadow = m.receiveShadow = true; group.add(m); lm.push(m); return m; };
-  const portland = facadeMaterial({ floor: 3.6, bay: 2.4, winW: 0.34, winH: 0.6, lit: 0.01, color: '#d9d1bf', frame: '#cfc7b4', roof: '#8d877b' });
+  const portland = facadeMaterial({ floor: 3.6, bay: 2.4, winW: 0.34, winH: 0.6, lit: 0.16, color: '#d9d1bf', frame: '#cfc7b4', roof: '#8d877b' });
   blocks.forEach((b) => {
     if (b.landmark === 'senate') {
       // Senate House: stepped Art Deco tower in Portland stone
@@ -243,7 +288,7 @@ export function buildLondon(renderer, { mobile }) {
       addBox(portland, cx, 36, cz, 34, 14, 28);
       addBox(portland, cx, 50, cz, 24, 14, 20);
     } else if (b.landmark === 'uch') {
-      const glassG = facadeMaterial({ floor: 3.7, bay: 1.6, winW: 0.9, winH: 0.7, sash: 0, color: '#d8dcd6', frame: '#5e8a72', lit: 0.01 });
+      const glassG = facadeMaterial({ floor: 3.7, bay: 1.6, winW: 0.9, winH: 0.7, sash: 0, color: '#d8dcd6', frame: '#5e8a72', lit: 0.42 });
       addBox(glassG, b.cx, 0, b.cz, 26, 72, 18);
       addBox(glassG, b.cx, 0, b.cz, 18, 64, 34);
       addBox(stoneMat, b.cx, 0, b.cz, b.x1 - b.x0 - 8, 16, b.z1 - b.z0 - 8);
@@ -261,7 +306,7 @@ export function buildLondon(renderer, { mobile }) {
       addBox(portland, b.cx, 0, b.cz, 28, 30, 28);
     } else if (b.landmark === 'bt') {
       const mat = plainMaterial({ color: '#c9cdd1', roughness: 0.35, metalness: 0.3 }, 'bt');
-      const dark = plainMaterial({ color: '#2b3036', roughness: 0.4, metalness: 0.4 }, 'btd');
+      const dark = plainMaterial({ color: '#2b3036', roughness: 0.4, metalness: 0.4, emissive: '#7fc2ff', emissiveIntensity: 0.9 }, 'btd');
       const cyl = (rad, y0, h, m) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), m); c.position.set(b.cx, y0 + h / 2, b.cz); c.castShadow = true; group.add(c); };
       cyl(9, 0, 110, mat);
       for (let i = 0; i < 6; i++) cyl(10.5, 110 + i * 7, 3.5, dark), cyl(9.5, 113.5 + i * 7, 3.5, mat);
@@ -321,7 +366,7 @@ export function buildLondon(renderer, { mobile }) {
   }
   inst(bx, terraceMat, outer, false);
 
-  const towerMat = facadeMaterial({ floor: 4.0, bay: 1.5, winW: 0.9, winH: 0.75, sash: 0, color: '#7e8d98', frame: '#3c444b', roof: '#55595e', glassRough: 0.04, lit: 0.01, metalness: 0.2, roughness: 0.4 });
+  const towerMat = facadeMaterial({ floor: 4.0, bay: 1.5, winW: 0.9, winH: 0.75, sash: 0, color: '#7e8d98', frame: '#3c444b', roof: '#55595e', glassRough: 0.04, lit: 0.45, litI: 3.0, metalness: 0.2, roughness: 0.4 });
   const city = [];
   const rc = rng(5);
   // the City of London cluster to the east-south-east, Canary Wharf further east
@@ -337,6 +382,13 @@ export function buildLondon(renderer, { mobile }) {
     city.push([m4.clone(), new THREE.Color('#8a949c')]);
   }
   inst(bx, towerMat, city, false);
+  // red aviation lights on the tall towers (blink in the engine)
+  const av = [];
+  city.forEach(([mm]) => { const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(); mm.decompose(p, q, s); av.push([new THREE.Matrix4().compose(new THREE.Vector3(p.x, s.y + 2, p.z), q0, new THREE.Vector3(2.2, 2.2, 2.2))]); });
+  const btb = blocks.find((b) => b.landmark === 'bt');
+  if (btb) av.push([new THREE.Matrix4().compose(new THREE.Vector3(btb.cx, 183, btb.cz), q0, new THREE.Vector3(1.6, 1.6, 1.6))]);
+  const avMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.3, 0.15) });
+  inst(new THREE.SphereGeometry(1, 8, 6), avMat, av.map(([m]) => [m, new THREE.Color(1, 1, 1)]), false);
   const glassy = plainMaterial({ color: '#7f909b', roughness: 0.1, metalness: 0.5 }, 'glassy');
   const shard = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 32, 310, 4, 1), glassy);
   shard.position.set(riverX(3100) - 220, 155, 3100);
@@ -347,5 +399,5 @@ export function buildLondon(renderer, { mobile }) {
   gherkin.position.set(-520, 0, 2950);
   group.add(gherkin);
 
-  return { group, mapTex, blocks };
+  return { group, mapTex, emTex, blocks, trafficU, avMat };
 }
