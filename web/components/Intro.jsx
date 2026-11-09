@@ -123,7 +123,7 @@ export default function Intro() {
         const y = c.mode ? (1 - o) * 18 : (0.5 - local) * 46;
         el.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
         el.style.filter = o < 0.98 ? `blur(${((1 - o) * 8).toFixed(1)}px)` : 'none';
-        el.style.pointerEvents = o > 0.6 ? 'auto' : 'none';
+        el.style.pointerEvents = c.mode === 'end' && o > 0.6 ? 'auto' : 'none';
       });
       if (fill.current) fill.current.style.transform = `scaleY(${Math.min(1, p).toFixed(4)})`;
       let cur = -1;
@@ -176,7 +176,7 @@ export default function Intro() {
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
 
       {/* top bar */}
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 py-5 sm:px-9 sm:py-7">
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-9 sm:py-7">
         <span className="flex items-center gap-2.5 font-display text-[17px] font-semibold tracking-tight text-[#efe9dd]">
           <span className="grid size-7 place-items-center rounded-[9px] border border-[#efe9dd]/25 bg-white/5 text-[13px] backdrop-blur">S</span>
           SaveMyGrade
