@@ -23,7 +23,7 @@ const KEYS = [
   [0.71, [0, 4.4, -8], [0, 3.4, -40]],
   [0.8, [0, 3.6, -30], [0, 2.2, -46]],
   [0.9, [0, 2.7, -43.6], [0, 1.96, -46.05]],
-  [1.0, [0.0, 2.24, -45.74], [0.01, 1.962, -46.07]],
+  [1.0, [0.0, 2.24, -45.74], [0.01, 1.962, -45.99]],
 ];
 
 // monotone cubic (Fritsch–Carlson) per component, keyed on progress: smooth, no overshoot
@@ -213,7 +213,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     shared.uFogDensity.value = fd;
     shared.uTime.value = time;
     shared.uCamPos.value.copy(camera.position);
-    renderer.toneMappingExposure = lerp(lerp(lerp(0.95, 1.05, ss(0.3, 0.4, p)), 1.2, inside), 1.0, ss(0.88, 1, p));
+    renderer.toneMappingExposure = lerp(lerp(lerp(0.95, 1.05, ss(0.3, 0.4, p)), 1.35, inside), 1.0, ss(0.9, 1, p));
 
     const below = camera.position.y < CLOUD_BOTTOM - 5;
     city.visible = below && p < 0.74;

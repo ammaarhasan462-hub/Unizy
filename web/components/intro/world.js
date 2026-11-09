@@ -1,7 +1,7 @@
 // Geometry for the intro: night city, the portico landmark, the library reading room, and the desk with a marked answer.
 // Units are metres. The landmark's front steps face +z; the camera arrives from +z.
 import * as THREE from 'three';
-import { BUILDING_FS, BUILDING_VS, DUST_FS, DUST_VS, GROUND_FS, GROUND_VS } from './shaders';
+import { BUILDING_FS, BUILDING_VS, DUST_FS, DUST_VS, GRID_ANGLE, GROUND_FS, GROUND_VS } from './shaders';
 
 function rng(seed) {
   let s = seed;
@@ -28,9 +28,14 @@ export function buildCity(shared, { mobile }) {
   const mats = [];
   const m = new THREE.Matrix4();
   const tall = new THREE.Vector2(900, -700);
-  for (let gx = -Math.ceil(R / S); gx <= Math.ceil(R / S); gx++) {
-    for (let gz = -Math.ceil(R / S); gz <= Math.ceil(R / S); gz++) {
-      const cx = (gx + 0.5) * S, cz = (gz + 0.5) * S;
+  const ca = Math.cos(GRID_ANGLE), sa = Math.sin(GRID_ANGLE);
+  const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), GRID_ANGLE);
+  const lim = Math.ceil(R / S) + 2;
+  for (let gx = -lim; gx <= lim; gx++) {
+    for (let gz = -lim; gz <= lim; gz++) {
+      // cell centre in grid space -> world space (inverse of the shader's rotation)
+      const lx = (gx + 0.5) * S, lz = (gz + 0.5) * S;
+      const cx = ca * lx + sa * lz, cz = -sa * lx + ca * lz;
       const dist = Math.hypot(cx, cz);
       if (dist > R) continue;
       if (Math.abs(cz - riverZ(cx)) < 95) continue;
@@ -43,8 +48,8 @@ export function buildCity(shared, { mobile }) {
       const near = Math.min(1, Math.hypot(cx, cz - 20) / 420);
       let h = (10 + Math.pow(r(), 3.2) * 95 * district) * (0.45 + 0.55 * near);
       if (r() < 0.02 * district) h *= 2.2;
-      m.makeScale(w, h, d);
-      m.setPosition(cx + (r() - 0.5) * (S - w) * 0.6, 0, cz + (r() - 0.5) * (S - d) * 0.6);
+      const ox = (r() - 0.5) * (S - w) * 0.6, oz = (r() - 0.5) * (S - d) * 0.6;
+      m.compose(new THREE.Vector3(cx + ca * ox + sa * oz, 0, cz - sa * ox + ca * oz), q, new THREE.Vector3(w, h, d));
       mats.push(m.clone());
     }
   }

@@ -2,6 +2,7 @@
 // and the raymarched sky + volumetric cloud layer.
 
 export const CLOUD_BOTTOM = 700;
+export const GRID_ANGLE = 0.36; // the street grid is turned so it never lines up with the camera path
 export const CLOUD_TOP = 1150;
 
 const COMMON = /* glsl */ `
@@ -14,15 +15,17 @@ float vnoise(vec2 p){
 float riverZ(float x){ return sin(x*0.0011)*420.0 + sin(x*0.0027+1.3)*160.0 - 250.0; }
 
 // emitted light of the city at ground position p (metres). fw = pixel footprint in metres (anti-aliasing)
-vec3 city(vec2 p, float t, float fw){
+vec3 city(vec2 pw, float t, float fw){
   const float S = 55.0;
+  const float CA = ${Math.cos(0.36).toFixed(6)}, SA = ${Math.sin(0.36).toFixed(6)};
+  vec2 p = vec2(CA*pw.x - SA*pw.y, SA*pw.x + CA*pw.y);
   vec2 g = p / S;
-  float r = length(p);
+  float r = length(pw);
   float fall = smoothstep(11000.0, 1500.0, r);
-  float park = smoothstep(0.62, 0.7, vnoise(p*0.0011 + 7.0));
-  float rd = abs(p.y - riverZ(p.x));
+  float park = smoothstep(0.62, 0.7, vnoise(pw*0.0011 + 7.0));
+  float rd = abs(pw.y - riverZ(pw.x));
   float river = 1.0 - smoothstep(58.0, 66.0, rd);
-  float plaza = (1.0 - smoothstep(80.0, 95.0, abs(p.x))) * (1.0 - smoothstep(150.0, 175.0, abs(p.y - 20.0)));
+  float plaza = (1.0 - smoothstep(80.0, 95.0, abs(pw.x))) * (1.0 - smoothstep(150.0, 175.0, abs(pw.y - 20.0)));
 
   float dv = abs(fract(g.x + 0.5) - 0.5) * S;
   float dh = abs(fract(g.y + 0.5) - 0.5) * S;
@@ -55,14 +58,14 @@ vec3 city(vec2 p, float t, float fw){
   col += base;
 
   // river: dark water with a shimmer of reflected lights, lit embankments
-  float shimmer = pow(h21(floor(p*vec2(0.09, 0.7)) + floor(t*2.0)), 22.0);
+  float shimmer = pow(h21(floor(pw*vec2(0.09, 0.7)) + floor(t*2.0)), 22.0);
   vec3 water = vec3(0.004, 0.006, 0.010) + sod * 0.35 * shimmer * fall;
   col = mix(col, water, river);
   float bank = exp(-pow(rd - 62.0, 2.0)/(10.0+f2)) * sqrt(10.0/(10.0+f2));
   col += vec3(1.0, 0.72, 0.42) * bank * 0.6 * fall;
 
   // paved plaza in front of the landmark, washed by floodlights
-  float wash = exp(-pow(max(0.0, abs(p.x)-10.0)/45.0, 2.0)) * exp(-pow((p.y-30.0)/70.0, 2.0));
+  float wash = exp(-pow(max(0.0, abs(pw.x)-10.0)/45.0, 2.0)) * exp(-pow((pw.y-30.0)/70.0, 2.0));
   col = mix(col, vec3(0.012, 0.011, 0.01) + vec3(0.07, 0.045, 0.024)*wash, plaza);
   return col;
 }
@@ -214,12 +217,14 @@ void main(){
 export const BUILDING_VS = /* glsl */ `
 varying vec3 vW;
 varying vec3 vN;
+varying vec3 vL;
 varying float vId;
 void main(){
   mat4 m = modelMatrix * instanceMatrix;
   vec4 w = m * vec4(position, 1.0);
   vW = w.xyz;
-  vN = normalize(mat3(m) * normal);
+  vN = normal;
+  vL = position * vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
   vId = float(gl_InstanceID);
   gl_Position = projectionMatrix * viewMatrix * w;
 }
@@ -233,6 +238,7 @@ uniform float uFogDensity;
 uniform float uTime;
 varying vec3 vW;
 varying vec3 vN;
+varying vec3 vL;
 varying float vId;
 ${COMMON}
 void main(){
@@ -240,7 +246,7 @@ void main(){
   vec3 col;
   if (abs(n.y) < 0.5) {
     bool sx = abs(n.x) > 0.5;
-    float u = sx ? vW.z : vW.x;
+    float u = (sx ? vL.z : vL.x) + h31(vec3(vId, 4.0, 1.0)) * 3.3;
     float side = sx ? (n.x > 0.0 ? 1.0 : 2.0) : (n.z > 0.0 ? 3.0 : 4.0);
     vec2 g = vec2(u / 3.3, vW.y / 3.7);
     vec2 cell = floor(g); vec2 f = fract(g);
