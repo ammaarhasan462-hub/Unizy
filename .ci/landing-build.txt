@@ -1,5 +1,5 @@
-status: failure
-sha: 3b039968dda2fbac0d6e97627a95a324ebe6e51b
+status: success
+sha: 012ed1a3638cdb642c37e150c303de32140288f0
 --- build
 
 > savemygrade-landing@1.0.0 build
@@ -9,22 +9,31 @@ sha: 3b039968dda2fbac0d6e97627a95a324ebe6e51b
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
-Failed to compile.
+ ✓ Compiled successfully in 14.5s
+   Skipping linting
+   Checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+   Exporting (0/2) ...
+ ✓ Exporting (2/2)
 
-app/layout.jsx
-An error occurred in `next/font`.
-
-TypeError: Cannot read properties of null (reading '1')
-    at /home/runner/work/Unizy/Unizy/web/node_modules/next/dist/compiled/@next/font/dist/google/loader.js:122:78
-    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
-    at async Promise.all (index 3)
-    at async nextFontGoogleFontLoader (/home/runner/work/Unizy/Unizy/web/node_modules/next/dist/compiled/@next/font/dist/google/loader.js:104:33)
-    at async Span.traceAsyncFn (/home/runner/work/Unizy/Unizy/web/node_modules/next/dist/trace/trace.js:157:20)
-    at async /home/runner/work/Unizy/Unizy/web/node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js:84:87
-    at async Span.traceAsyncFn (/home/runner/work/Unizy/Unizy/web/node_modules/next/dist/trace/trace.js:157:20)
+Route (app)                                 Size  First Load JS
+┌ ○ /                                     105 kB         208 kB
+└ ○ /_not-found                            994 B         104 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/255-15b9cc804e0d9c7d.js       46.7 kB
+  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+  └ other shared chunks (total)          2.14 kB
 
 
-> Build failed because of webpack errors
+○  (Static)  prerendered as static content
+
 savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 ├── @emnapi/runtime@1.11.3 extraneous
 ├── @img/sharp-wasm32@0.35.5 extraneous
@@ -43,4 +52,4 @@ savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 111 packages in 12s
+added 111 packages in 13s
