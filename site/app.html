@@ -5527,10 +5527,7 @@ class Component extends DCLogic {
       { id: 'learn', label: 'Learn', sub: 'Course & notes', icon: ICONS.notes, tabs: medB ? [['overview', 'Module overview'], ['path', 'Learning pathway'], ['notes', 'Notes'], ['packs', 'Lecture packs']] : [['overview', 'Module overview'], ['notes', 'Notes'], ['packs', 'Lecture packs']] },
       { id: 'practise', label: 'Practise', sub: 'Tests & marking', icon: ICONS.quiz, tabs: [['quiz', 'Topic tests'], ['assess', 'Essay & answer marking']] },
       { id: 'revise', label: 'Revise', sub: 'Flashcards', icon: ICONS.flash, tabs: [['flash', 'Flashcards']] },
-      { id: 'plan', label: 'Plan', sub: 'Week & deadlines', icon: ICONS.time, tabs: [['time', 'Planner']] },
-      { id: 'ask', label: 'Ask', sub: tutorName + ' & groups', icon: ICONS.tutor, tabs: [['tutor', tutorName], ['friends', 'Friend groups']] },
-      { id: 'campus', label: 'Campus', sub: 'Rooms, hubs, market', icon: ICONS.campus, tabs: [['rooms', 'Study rooms'], ['hub', 'Module hub'], ['market', 'Marketplace'], ['focus', 'Study Mode']] },
-      { id: 'play', label: 'Play', sub: 'Daily word', icon: ICONS.play, tabs: [['play', 'Today’s Unwind']] }
+      { id: 'ask', label: 'Ask', sub: tutorName, icon: ICONS.tutor, tabs: [['tutor', tutorName]] }
     ];
     const curGroup = NAV.find((g) => g.tabs.some((t) => t[0] === tab)) || NAV[0];
     const lightTheme = String(theme.onBtn).toUpperCase() !== '#FFFFFF';
