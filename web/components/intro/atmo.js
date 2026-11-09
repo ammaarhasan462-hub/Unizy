@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 
 // first light: the sun just breaking the eastern horizon (+z is east, +x is north), deep red, sky still dark
-export const SUN_DIR = new THREE.Vector3(-0.3, 0.02, 1.0).normalize();
+export const SUN_DIR = new THREE.Vector3(-0.3, 0.012, 1.0).normalize();
 
 const RE = 6360e3, RA = 6420e3, HR = 7994, HM = 1200;
 const BR = [5.8e-6, 13.5e-6, 33.1e-6], BM = 4.5e-6;
