@@ -3,7 +3,7 @@
 // nearby landmarks (Senate House, UCH, BT Tower, British Museum), the Thames, and the City and the Shard on the horizon.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
 
 const H = MAP_HALF;
 export const riverX = (z) => -2150 + Math.sin(z * 0.00062) * 260 + Math.sin(z * 0.0017 + 1.1) * 120;
@@ -66,15 +66,15 @@ export function buildLondon(renderer, { mobile }) {
   const k = S / (2 * H);
   const toPx = (x, z) => [(x + H) * k, (z + H) * k];
   const mapTex = canvasTex(S, S, (ctx) => {
-    ctx.fillStyle = '#6c665d';
+    ctx.fillStyle = '#857e72';
     ctx.fillRect(0, 0, S, S);
     // pavements around blocks, courtyards inside
     blocks.forEach((b) => {
       const [px, pz] = toPx(b.x0, b.z0);
       const w = (b.x1 - b.x0) * k, d = (b.z1 - b.z0) * k;
-      ctx.fillStyle = '#9b968c';
+      ctx.fillStyle = '#b0aa9e';
       ctx.fillRect(px - 3 * k, pz - 3 * k, w + 6 * k, d + 6 * k);
-      ctx.fillStyle = b.park ? '#4f6a33' : '#5f6449';
+      ctx.fillStyle = b.park ? '#5f7d3d' : '#787a5c';
       ctx.fillRect(px, pz, w, d);
       if (b.park) {
         ctx.strokeStyle = '#b8ad94';
@@ -87,7 +87,7 @@ export function buildLondon(renderer, { mobile }) {
     });
     // roads
     const road = (x0, z0, x1, z1) => { const [a, b] = toPx(x0, z0); const [c, d] = toPx(x1, z1); ctx.fillRect(a, b, c - a, d - b); };
-    ctx.fillStyle = '#3c3e41';
+    ctx.fillStyle = '#4c4e51';
     xl.forEach((l) => road(l.c - l.w / 2, -H, l.c + l.w / 2, H));
     zl.forEach((l) => road(-H, l.c - l.w / 2, H, l.c + l.w / 2));
     // lane markings on major roads, zebra crossings
@@ -100,7 +100,7 @@ export function buildLondon(renderer, { mobile }) {
     }));
     // UCL: Main Quad lawns and paths, Portico steps area
     ctx.fillStyle = '#a7a08f'; road(-48, -5, 48, 108);
-    ctx.fillStyle = '#56733a'; road(-40, 30, -6, 100); road(6, 30, 40, 100);
+    ctx.fillStyle = '#64843f'; road(-40, 30, -6, 100); road(6, 30, 40, 100);
     ctx.fillStyle = '#c9c1ad'; road(-6, 14, 6, 108);
     // grain
     for (let i = 0; i < (mobile ? 20000 : 60000); i++) {
@@ -273,7 +273,7 @@ export function buildLondon(renderer, { mobile }) {
 
   // ---------------------------------------------------------------- trees
   const trees = [];
-  const maxTrees = mobile ? 900 : 2600;
+  const maxTrees = mobile ? 700 : 1800;
   const addTree = (x, z, s = 1) => {
     if (trees.length >= maxTrees || !clear(x, z, 2)) return;
     if (Math.hypot(x, z) > R) return;
@@ -292,17 +292,18 @@ export function buildLondon(renderer, { mobile }) {
   const leafCols = ['#4f6b35', '#5d7a3c', '#46602f', '#6b7f43', '#55703a', '#7a8a48'];
   const canopy = [], trunk = [];
   trees.forEach(([x, z, h, cr]) => {
-    const lobes = 2 + Math.floor(r() * 2);
+    const lobes = 5 + Math.floor(r() * 3);
     for (let i = 0; i < lobes; i++) {
-      const ox = (r() - 0.5) * cr * 0.7, oz = (r() - 0.5) * cr * 0.7, oy = (r() - 0.3) * cr * 0.5;
-      const s = cr * (0.65 + r() * 0.35);
+      const a = r() * Math.PI * 2, rad = Math.sqrt(r()) * cr * 0.62;
+      const ox = Math.cos(a) * rad, oz = Math.sin(a) * rad, oy = (r() - 0.35) * cr * 0.75;
+      const s = cr * (0.42 + r() * 0.2);
       m4.compose(new THREE.Vector3(x + ox, h - cr * 0.6 + oy, z + oz), new THREE.Quaternion().setFromEuler(new THREE.Euler(r() * 3, r() * 3, r() * 3)), new THREE.Vector3(s, s, s));
       canopy.push([m4.clone(), new THREE.Color(leafCols[Math.floor(r() * leafCols.length)]).multiplyScalar(0.85 + r() * 0.3)]);
     }
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(0.45, h - cr * 0.8, 0.45));
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
-  inst(treeGeometry(5), plainMaterial({ roughness: 0.92 }, 'leaf'), canopy);
+  inst(treeGeometry(5, 1), leafMaterial('leaf'), canopy);
   inst(bx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
 
   // ---------------------------------------------------------------- outer city + skyline

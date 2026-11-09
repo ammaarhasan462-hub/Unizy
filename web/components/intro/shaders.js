@@ -37,7 +37,7 @@ float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
   return mix(mix(h21(i), h21(i+vec2(1,0)), f.x), mix(h21(i+vec2(0,1)), h21(i+vec2(1,1)), f.x), f.y); }
 float riverX(float z){ return -2150.0 + sin(z*0.00062)*260.0 + sin(z*0.0017 + 1.1)*120.0; }
 
-vec3 hazeCol(vec3 rd){ return skyL(uSkyLut, normalize(vec3(rd.x, 0.012, rd.z))) + uSunCol * 0.05 * pow(max(dot(normalize(vec3(rd.x,0.0,rd.z)), uSun), 0.0), 8.0); }
+vec3 hazeCol(vec3 rd){ return skyL(uSkyLut, normalize(vec3(rd.x, 0.02, rd.z))) + uSunCol * 0.02 * pow(max(dot(normalize(vec3(rd.x,0.0,rd.z)), uSun), 0.0), 10.0); }
 
 // daylight London seen from above the clouds
 vec3 groundCol(vec2 p, vec3 rd, float t){
@@ -53,7 +53,7 @@ vec3 groundCol(vec2 p, vec3 rd, float t){
   }
   float rv = abs(p.x - riverX(p.y));
   float water = 1.0 - smoothstep(110.0, 130.0, rv);
-  vec3 lit = alb * (uSunCol * 0.18 + skyL(uSkyLut, vec3(0.0, 1.0, 0.0)) * 1.1);
+  vec3 lit = alb * (uSunCol * 0.3 + skyL(uSkyLut, vec3(0.0, 1.0, 0.0)) * 1.4);
   vec3 refl = skyL(uSkyLut, reflect(rd, vec3(0.0, 1.0, 0.0))) * 0.35 + uSunCol * 2.0 * pow(max(dot(reflect(rd, vec3(0,1,0)), uSun), 0.0), 220.0);
   lit = mix(lit, vec3(0.012, 0.02, 0.026) + refl, water);
   return lit;
@@ -97,8 +97,8 @@ void main(){
     // sun disc with limb darkening and a soft corona
     float sd = acos(clamp(cth, -1.0, 1.0));
     float disc = smoothstep(0.0062, 0.0050, sd);
-    bg += uSunCol * 60.0 * disc * (0.6 + 0.4 * sqrt(max(0.0, 1.0 - sd / 0.0062)));
-    bg += uSunCol * (0.6 * exp(-sd * 55.0) + 0.12 * exp(-sd * 9.0));
+    bg += uSunCol * 40.0 * disc * (0.6 + 0.4 * sqrt(max(0.0, 1.0 - sd / 0.0062)));
+    bg += uSunCol * (0.22 * exp(-sd * 60.0) + 0.035 * exp(-sd * 10.0));
     // high cirrus streaks catching the sunrise
     float tc = (7200.0 - ro.y) / rd.y;
     if (tc > 0.0) {
@@ -142,7 +142,7 @@ void main(){
         }
         float powder = 1.0 - exp(-d * 0.06 * st * 2.0);
         vec3 amb = mix(skyH * 0.55, skyUp * 1.15, hf) * (0.55 + 0.45 * hf);
-        vec3 L = amb + uSunCol * S * 12.0 * mix(0.6, 1.0, powder);
+        vec3 L = amb + uSunCol * S * 4.5 * mix(0.55, 1.0, powder);
         float aT = 1.0 - exp(-d * 0.034 * st);
         L = mix(L, hz, 1.0 - exp(-t * uHaze * 0.5));
         acc += T * L * aT;

@@ -116,7 +116,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const T = sunTransmittance(SUN_DIR);
   const tmax = Math.max(T.r, T.g, T.b);
   const sunTint = T.clone().multiplyScalar(1 / tmax);
-  ATMO.uSunCol.value.copy(T).multiplyScalar(3.0);
+  ATMO.uSunCol.value.copy(T).multiplyScalar(1.6);
   const sun = new THREE.DirectionalLight(sunTint, 4.2 * tmax + 1.2);
   sun.castShadow = true;
   const smap = mobile ? 2048 : 4096;
@@ -146,7 +146,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     uCamWorld: { value: new THREE.Matrix4() },
     uTime: { value: 0 },
     uSun: { value: SUN_DIR.clone() },
-    uSunCol: { value: T.clone().multiplyScalar(5.0) },
+    uSunCol: { value: T.clone().multiplyScalar(4.0) },
     uBelow: { value: 0 },
     uSteps: { value: mobile ? 36 : 60 },
     uHaze: ATMO.uHaze,
@@ -262,10 +262,10 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     // stage lighting
     const inside = ss(0.705, 0.75, p);
     ATMO.uIndoor.value = inside;
-    ATMO.uHaze.value = lerp(lerp(0.00012, 0.00026, ss(0.2, 0.32, p)), 0.00045, ss(0.5, 0.64, p));
-    scene.environmentIntensity = lerp(1.0, 0.18, inside);
+    ATMO.uHaze.value = lerp(lerp(0.00005, 0.00013, ss(0.2, 0.32, p)), 0.0002, ss(0.5, 0.64, p));
+    scene.environmentIntensity = lerp(1.5, 0.25, inside);
     sun.intensity = (4.2 * tmax + 1.2) * (1 - inside);
-    renderer.toneMappingExposure = lerp(lerp(0.85, 1.0, ss(0.28, 0.4, p)), 1.45, inside) * lerp(1, 0.82, ss(0.9, 1, p));
+    renderer.toneMappingExposure = lerp(lerp(0.9, 1.0, ss(0.28, 0.4, p)), 1.75, inside) * lerp(1, 0.8, ss(0.9, 1, p));
     grade.uniforms.uTime.value = time;
     grade.uniforms.uVig.value = lerp(0.45, 0.75, inside);
     ucl.int.forEach(([l, i]) => { l.intensity = i * ss(0.62, 0.72, p); });

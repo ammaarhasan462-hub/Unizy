@@ -3,13 +3,13 @@
 // library reading room with the desk and the marked answer. Portico faces east (+z). Units: metres.
 import * as THREE from 'three';
 import { DUST_FS, DUST_VS } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, plainMaterial, rng, treeGeometry } from './materials';
+import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, treeGeometry } from './materials';
 import { SUN_DIR } from './atmo';
 
 export const PODIUM = 4.5; // Portico and library floor height
 const IN = PODIUM - 1.2; // the library interior was modelled with its floor at 1.2
 
-function stoneTex(rep = [6, 3]) {
+function stoneTex(rep = [14, 7]) {
   return canvasTex(512, 512, (ctx, W, H) => {
     const r = rng(9);
     ctx.fillStyle = '#c9bfab';
@@ -21,12 +21,12 @@ function stoneTex(rep = [6, 3]) {
     }
     for (let i = 0; i < 40; i++) {
       const g = ctx.createRadialGradient(r() * W, r() * H, 0, r() * W, r() * H, 40 + r() * 80);
-      g.addColorStop(0, 'rgba(90,82,70,.10)');
+      g.addColorStop(0, 'rgba(90,82,70,.045)');
       g.addColorStop(1, 'rgba(90,82,70,0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, W, H);
     }
-    ctx.strokeStyle = 'rgba(80,72,60,.32)';
+    ctx.strokeStyle = 'rgba(80,72,60,.2)';
     ctx.lineWidth = 2;
     for (let y = 0; y <= H; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
     for (let y = 0; y < H; y += 64) for (let x = ((y / 64) % 2) * 64; x < W; x += 128) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 64); ctx.stroke(); }
@@ -382,13 +382,14 @@ export function buildUCL({ mobile }) {
   const cano = [], trk = [];
   [[-30, 45], [-24, 78], [-36, 92], [28, 52], [33, 85], [22, 96]].forEach(([x, z]) => {
     const h = 15 + r() * 4, cr = 6 + r() * 2;
-    for (let i = 0; i < 3; i++) {
-      const s = cr * (0.7 + r() * 0.3);
-      cano.push(new THREE.Matrix4().compose(new THREE.Vector3(x + (r() - 0.5) * cr * 0.6, h - cr * 0.6 + (r() - 0.3) * 2, z + (r() - 0.5) * cr * 0.6), new THREE.Quaternion().setFromEuler(new THREE.Euler(r() * 3, r() * 3, 0)), new THREE.Vector3(s, s, s)));
+    for (let i = 0; i < 16; i++) {
+      const a = r() * Math.PI * 2, rad = Math.sqrt(r()) * cr * 0.7;
+      const s = cr * (0.34 + r() * 0.18);
+      cano.push(new THREE.Matrix4().compose(new THREE.Vector3(x + Math.cos(a) * rad, h - cr * 0.6 + (r() - 0.35) * cr * 0.9, z + Math.sin(a) * rad), new THREE.Quaternion().setFromEuler(new THREE.Euler(r() * 3, r() * 3, 0)), new THREE.Vector3(s, s, s)));
     }
     trk.push(M(x, 0, z, 0.55, h - cr * 0.7, 0.55));
   });
-  inst(treeGeometry(11), plainMaterial({ color: '#56703a', roughness: 0.92 }, 'leaf2'), cano);
+  inst(treeGeometry(11, 2), leafMaterial('leaf2', '#5d7a3c'), cano);
   inst(bx, plainMaterial({ color: '#5a5047', roughness: 0.9 }, 'trunk2'), trk);
 
   // ====================================================== library interior (floor at PODIUM)
@@ -402,8 +403,8 @@ export function buildUCL({ mobile }) {
   floor.position.set(0, 1.21, -32.3);
   floor.receiveShadow = true;
   lib.add(floor);
-  const panel = plainMaterial({ color: '#0e2019', roughness: 0.8 }, 'panel');
-  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(35, 57.5), plainMaterial({ color: '#2a2622', roughness: 0.95 }, 'ceil'));
+  const panel = plainMaterial({ color: '#1d3a2e', roughness: 0.75 }, 'panel');
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(35, 57.5), plainMaterial({ color: '#4a4238', roughness: 0.95 }, 'ceil'));
   ceil.rotation.x = Math.PI / 2;
   ceil.position.set(0, 18.85, -32.3);
   lib.add(ceil);
@@ -524,7 +525,7 @@ export function buildUCL({ mobile }) {
 
   // interior lights
   const int = [];
-  for (let z = -9; z > -44; z -= 14) { const pl = new THREE.PointLight(0xffc27a, 70, 0, 2); pl.position.set(0, 11.5, z); lib.add(pl); int.push([pl, 70]); }
+  for (let z = -9; z > -44; z -= 14) { const pl = new THREE.PointLight(0xffc27a, 120, 0, 2); pl.position.set(0, 11.5, z); lib.add(pl); int.push([pl, 120]); }
   for (const x of [-8, 8]) for (const z of [-15, -33]) { const pl = new THREE.PointLight(0xffc27a, 12, 0, 2); pl.position.set(x, 3.2, z); lib.add(pl); int.push([pl, 12]); }
   const day = new THREE.PointLight(0xfff0d8, 160, 0, 2);
   day.position.set(0, 12, -6);

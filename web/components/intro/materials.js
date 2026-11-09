@@ -140,8 +140,26 @@ export function roofGeometry() {
   return g;
 }
 
-export function treeGeometry(seed) {
-  const g = new THREE.IcosahedronGeometry(1, 2);
+// foliage: mottled light/dark clumps from 3D noise, so canopies read as leaves rather than smooth shapes
+export function leafMaterial(key, color) {
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.95, color: color || '#ffffff' });
+  m.userData.key = key;
+  m.userData.patch = (shader) => {
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        float lh3(vec3 p){ p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+        float ln3(vec3 x){ vec3 i = floor(x), f = fract(x); f = f*f*(3.0-2.0*f);
+          return mix(mix(mix(lh3(i), lh3(i+vec3(1,0,0)), f.x), mix(lh3(i+vec3(0,1,0)), lh3(i+vec3(1,1,0)), f.x), f.y),
+                     mix(mix(lh3(i+vec3(0,0,1)), lh3(i+vec3(1,0,1)), f.x), mix(lh3(i+vec3(0,1,1)), lh3(i+vec3(1,1,1)), f.x), f.y), f.z); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float lf = ln3(vAtmoW * 1.1) * 0.55 + ln3(vAtmoW * 3.3) * 0.45;
+        diffuseColor.rgb *= 0.45 + 0.95 * lf;`);
+  };
+  return atmo(m);
+}
+
+export function treeGeometry(seed, detail = 2) {
+  const g = new THREE.IcosahedronGeometry(1, detail);
   const p = g.attributes.position;
   const r = rng(seed);
   const map = new Map();
