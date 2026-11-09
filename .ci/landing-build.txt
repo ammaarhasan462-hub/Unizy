@@ -1,15 +1,15 @@
 status: success
-sha: cf1a54311ba66e00045b92d35996eb464def39f5
+sha: 2d0d9ae71f18caf26ce0b3fee1852e53603afd7a
 --- build
 
-> savemygrade-landing@1.0.0 build
+> unizy-landing@1.0.0 build
 > next build
 
 ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 14.7s
+ ✓ Compiled successfully in 10.6s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -24,7 +24,7 @@ sha: cf1a54311ba66e00045b92d35996eb464def39f5
  ✓ Exporting (2/2)
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                    58.5 kB         212 kB
+┌ ○ /                                    58.4 kB         212 kB
 └ ○ /_not-found                            994 B         104 kB
 + First Load JS shared by all             103 kB
   ├ chunks/255-15b9cc804e0d9c7d.js       46.7 kB
@@ -34,7 +34,7 @@ Route (app)                                 Size  First Load JS
 
 ○  (Static)  prerendered as static content
 
-savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
+unizy-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 ├── @emnapi/runtime@1.11.3 extraneous
 ├── @img/sharp-wasm32@0.35.5 extraneous
 ├── @react-three/drei@10.7.9
@@ -52,4 +52,4 @@ savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 11s
+added 116 packages in 6s
