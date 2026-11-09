@@ -1,5 +1,5 @@
 status: success
-sha: 6e53f4b3cbc80d2bdf563f9ddd7293e82f98ab21
+sha: 899108a5a3e472501760a1412960b10806884a24
 --- build
 
 > savemygrade-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: 6e53f4b3cbc80d2bdf563f9ddd7293e82f98ab21
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 12.4s
+ ✓ Compiled successfully in 14.9s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -24,12 +24,12 @@ sha: 6e53f4b3cbc80d2bdf563f9ddd7293e82f98ab21
  ✓ Exporting (2/2)
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                     105 kB         208 kB
+┌ ○ /                                    58.5 kB         212 kB
 └ ○ /_not-found                            994 B         104 kB
 + First Load JS shared by all             103 kB
   ├ chunks/255-15b9cc804e0d9c7d.js       46.7 kB
   ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
-  └ other shared chunks (total)          2.08 kB
+  └ other shared chunks (total)          2.12 kB
 
 
 ○  (Static)  prerendered as static content
@@ -52,4 +52,4 @@ savemygrade-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 11s
+added 116 packages in 9s

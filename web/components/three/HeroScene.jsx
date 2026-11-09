@@ -144,12 +144,16 @@ export default function HeroScene({ spinRef, scrollRef }) {
   const focusRef = useRef(12);
   const wrapRef = useRef(null);
   const [active, setActive] = useState(true);
+  const [intro, setIntro] = useState(false);
   const [hi, setHi] = useState(true);
   const [reduce, setReduce] = useState(false);
 
   useEffect(() => {
     setHi(window.innerWidth >= 768 && (navigator.hardwareConcurrency || 8) > 4);
     setReduce(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    setIntro(document.documentElement.classList.contains('intro'));
+    const endIntro = () => setIntro(false);
+    window.addEventListener('smg:intro-end', endIntro);
     const io = new IntersectionObserver(([e]) => setActive(e.isIntersecting), { rootMargin: '120px' });
     if (wrapRef.current) io.observe(wrapRef.current);
     const move = (e) => {
@@ -160,6 +164,7 @@ export default function HeroScene({ spinRef, scrollRef }) {
     return () => {
       io.disconnect();
       window.removeEventListener('pointermove', move);
+      window.removeEventListener('smg:intro-end', endIntro);
     };
   }, []);
 
@@ -229,7 +234,7 @@ export default function HeroScene({ spinRef, scrollRef }) {
         dpr={[1, hi ? 2 : 1.5]}
         camera={{ position: [0, 0, 12], fov: 34, near: 0.1, far: 60 }}
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-        frameloop={active ? 'always' : 'never'}
+        frameloop={active && !intro ? 'always' : 'never'}
       >
         <ambientLight intensity={0.6} />
         <pointLight position={[-6, 4, 5]} intensity={80} color="#F1DDA9" />
