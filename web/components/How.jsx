@@ -43,9 +43,9 @@ function VisCourse() {
 function VisAnswer({ typedRef, full }) {
   return (
     <Panel>
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[12px] uppercase tracking-[.14em] text-lilac">ECON0013 · Question 3</span>
-        <span className="rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-[12px] text-cyan">⏱ 38:12 left</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="min-w-0 truncate font-mono text-[11.5px] uppercase tracking-[.12em] text-lilac sm:text-[12px]">ECON0013 · Q3</span>
+        <span className="shrink-0 whitespace-nowrap rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1 font-mono text-[12px] text-cyan">⏱ 38:12 left</span>
       </div>
       <p className="mt-4 font-display text-[22px] font-semibold leading-snug">“Explain why a profit-maximising monopolist always produces on the elastic part of the demand curve.”</p>
       <div className="mt-5 min-h-[168px] rounded-2xl border border-white/10 bg-black/30 p-4 text-[15px] leading-relaxed text-white/85">

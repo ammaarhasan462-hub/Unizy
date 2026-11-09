@@ -40,11 +40,11 @@ function Rings() {
   return (
     <group position={[0, -0.2, -1.4]} rotation={[1.2, 0, 0.12]}>
       <mesh ref={a}>
-        <torusGeometry args={[4.6, 0.009, 8, 220]} />
+        <torusGeometry args={[3.95, 0.009, 8, 220]} />
         <meshBasicMaterial color="#a78bfa" toneMapped={false} transparent opacity={0.75} />
       </mesh>
-      <mesh ref={b} scale={1.2}>
-        <torusGeometry args={[4.6, 0.006, 8, 220]} />
+      <mesh ref={b} scale={1.11}>
+        <torusGeometry args={[3.95, 0.006, 8, 220]} />
         <meshBasicMaterial color="#22d3ee" toneMapped={false} transparent opacity={0.45} />
       </mesh>
     </group>
@@ -249,7 +249,7 @@ export default function HeroScene({ spinRef, scrollRef }) {
             <Card key={c.key} spec={c} i={i} focusRef={focusRef} />
           ))}
         </Rig>
-        <Sparkles count={hi ? 90 : 40} scale={[13, 8, 6]} size={2.4} speed={reduce ? 0 : 0.35} opacity={0.75} color="#b4a3ff" />
+        <Sparkles count={hi ? 90 : 40} scale={[10, 7, 5]} size={2.4} speed={reduce ? 0 : 0.35} opacity={0.75} color="#b4a3ff" />
         {hi && (
           <EffectComposer multisampling={4}>
             <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.55} luminanceSmoothing={0.3} />
