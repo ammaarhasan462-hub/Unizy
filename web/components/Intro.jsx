@@ -1,8 +1,9 @@
 'use client';
 // Opening screen: a full-screen 3D journey. Scrolling, swiping or the arrow keys move the camera
-// instead of the page; at the end it opens onto the landing page. It is the first thing every visitor
-// sees on unizy.uk, signed in or not, once per browser tab (so going back to Home inside the site
-// doesn't replay it). Not shown with reduced motion or without WebGL 2. ?intro=1 forces it, ?intro=0 skips it.
+// instead of the page; at the end it opens onto the landing page. It plays every time someone opens
+// unizy.uk (typed, bookmarked, from a search or a shared link, reloaded), signed in or not. It is skipped
+// only when clicking Home from another Unizy page, with reduced motion, or without WebGL 2.
+// ?intro=1 forces it, ?intro=0 skips it.
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -12,9 +13,9 @@ if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 export const INTRO_BOOT = `(function(){try{var d=document.documentElement,q=location.search;
 var force=/[?&]intro=1/.test(q),off=/[?&]intro=0/.test(q);
-var done=false;try{done=sessionStorage.getItem('smg:intro')==='done'}catch(e){}
+var inside=false;try{var r=document.referrer;inside=!!r&&new URL(r).host===location.host&&performance.getEntriesByType('navigation')[0].type==='navigate'}catch(e){}
 var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(force||(!off&&!done&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
+if(force||(!off&&!inside&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
 setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
 const CH = [
