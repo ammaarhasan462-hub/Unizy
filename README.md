@@ -27,3 +27,9 @@ Study website for UK university students: pick your uni, degree and modules, the
 - `supabase/functions/marker/`: writes 8 exam-style practice questions per module on first open (cached for everyone, uses the daily £ budget only) and marks answers against UCL grade bands + department rubrics (counts as an Assess marking). Deploy with verify_jwt off (it checks the user itself).
 - Tables in `supabase/sql/marker.sql`. Department rubrics live in `marking_rubrics` (one UCL-wide default plus departments that publish criteria). Real First-class model answers go in `model_answers` (set `published` once checked).
 - Play, Campus, Plan and friend groups are hidden from the app navigation (code kept).
+
+## Landing page (web/)
+
+The home page is a Next.js app in `web/` (Tailwind CSS, React Three Fiber, GSAP ScrollTrigger, Framer Motion), exported as static files.
+Pushing changes under `web/` runs `.github/workflows/build-landing.yml`, which builds it and commits `site/index.html` and `site/_next/`
+back to the same branch for Cloudflare Pages. The last build log is in `.ci/landing-build.txt`.

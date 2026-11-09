@@ -224,5 +224,9 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your SaveMyGrade dashboard.", "/dashb
 if __name__ == "__main__":
     (SITE / "dashboard.html").write_text(DASH_PAGE)
     (SITE / "mark.html").write_text(MARK_PAGE)
-    (SITE / "index.html").write_text(HOME)
-    print("wrote site/mark.html, site/index.html and site/dashboard.html for", BRAND)
+    # site/index.html is now the Next.js landing page (web/), built by .github/workflows/build-landing.yml.
+    # HOME below is the earlier plain-HTML version, kept for reference: python3 tools/build_marker_pages.py --classic-home
+    import sys
+    if "--classic-home" in sys.argv:
+        (SITE / "index.html").write_text(HOME)
+    print("wrote site/mark.html and site/dashboard.html for", BRAND)
