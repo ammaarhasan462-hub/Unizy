@@ -1,4 +1,4 @@
-/* Unizy clinical review workspace: invited clinicians read every part of a medical topic (answers and explanations
+/* SaveMyGrade clinical review workspace: invited clinicians read every part of a medical topic (answers and explanations
    visible) and sign it off. A sign-off records the topic's content hash, so any later edit needs a fresh review. */
 (function () {
   'use strict';
@@ -44,14 +44,14 @@
   function signedOut() {
     var m = main();
     m.appendChild(el('h1', { text: 'Clinical review' }));
-    m.appendChild(el('p', { class: 'lead', text: 'This workspace is for doctors and other registered clinicians who review Unizy’s medical content. Log in with the account you were invited with.' }));
+    m.appendChild(el('p', { class: 'lead', text: 'This workspace is for doctors and other registered clinicians who review SaveMyGrade’s medical content. Log in with the account you were invited with.' }));
     m.appendChild(el('div', {}, [el('a', { class: 'btn', href: '/login?next=' + encodeURIComponent('/review'), text: 'Log in' })]));
   }
   function notReviewer() {
     var m = main();
     m.appendChild(el('h1', { text: 'Clinical review' }));
-    m.appendChild(el('p', { class: 'lead', text: 'Your account isn’t set up as a clinical reviewer yet. Unizy invites registered clinicians (for example foundation doctors and above, with a GMC number) to check medical topics before their name appears on them.' }));
-    m.appendChild(el('p', { class: 'lead' }, ['Interested? Email ', el('a', { href: 'mailto:' + CFG.contactEmail + '?subject=' + encodeURIComponent('Clinical reviewer for Unizy'), text: CFG.contactEmail }), ' with your role, GMC number and the areas you could review.']));
+    m.appendChild(el('p', { class: 'lead', text: 'Your account isn’t set up as a clinical reviewer yet. SaveMyGrade invites registered clinicians (for example foundation doctors and above, with a GMC number) to check medical topics before their name appears on them.' }));
+    m.appendChild(el('p', { class: 'lead' }, ['Interested? Email ', el('a', { href: 'mailto:' + CFG.contactEmail + '?subject=' + encodeURIComponent('Clinical reviewer for SaveMyGrade'), text: CFG.contactEmail }), ' with your role, GMC number and the areas you could review.']));
   }
   function home() {
     S.pack = null; S.topic = null; history.replaceState(null, '', '/review');

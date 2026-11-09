@@ -1,5 +1,5 @@
 /* Generated from coverage/diagrams.js by coverage/sync_diagrams.py. */
-// Unizy medical diagrams and ECG strips. Pure functions returning SVG data URIs.
+// SaveMyGrade medical diagrams and ECG strips. Pure functions returning SVG data URIs.
 // Pasted into app.html's Component class as static methods (keep in sync with the copy there).
 const UZDIAG = (() => {
   const uri = (svg) => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);

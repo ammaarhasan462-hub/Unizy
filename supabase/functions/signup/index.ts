@@ -1,4 +1,4 @@
-// Unizy sign-up: creates an account with email + password straight away (no confirmation link),
+// SaveMyGrade sign-up: creates an account with email + password straight away (no confirmation link),
 // then sends a short "you've signed up" email. The page then logs in with the same email and password.
 // Email links are only used for password resets and the optional "email me a link" log-in.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -28,24 +28,24 @@ async function sendWelcome(email: string, name: string) {
   const hi = name ? `Hi ${name},` : "Hi,";
   const text = `${hi}
 
-You've signed up to Unizy with this email address. You're all set: log in any time at https://unizy.uk/login with your email and password.
+You've signed up to SaveMyGrade with this email address. You're all set: log in any time at https://unizy.uk/login with your email and password.
 
 Forgotten your password? Reset it at https://unizy.uk/reset.html
 
 If you didn't sign up, reply to this email or contact hello@unizy.uk.
 
-Unizy`;
+SaveMyGrade`;
   const html = `<div style="font-family:'DM Sans',Arial,sans-serif;font-size:16px;line-height:1.55;color:#17302A;max-width:520px">
 <p>${esc(hi)}</p>
-<p>You've signed up to Unizy with this email address. You're all set: log in any time with your email and password.</p>
-<p><a href="https://unizy.uk/app" style="display:inline-block;background:#17302A;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px">Open Unizy</a></p>
+<p>You've signed up to SaveMyGrade with this email address. You're all set: log in any time with your email and password.</p>
+<p><a href="https://unizy.uk/app" style="display:inline-block;background:#17302A;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px">Open SaveMyGrade</a></p>
 <p style="font-size:14px;color:#5D6D67">Forgotten your password? <a href="https://unizy.uk/reset.html" style="color:#17302A">Reset it here</a>.<br>If you didn't sign up, reply to this email or contact hello@unizy.uk.</p>
 </div>`;
   try {
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Unizy <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: "Welcome to Unizy", text, html }),
+      body: JSON.stringify({ from: "SaveMyGrade <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: "Welcome to SaveMyGrade", text, html }),
     });
   } catch { /* the account still works if the email fails */ }
 }

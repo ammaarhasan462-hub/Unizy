@@ -1,4 +1,4 @@
-// Unizy sign-in and password-reset codes.
+// SaveMyGrade sign-in and password-reset codes.
 // Emails a 6-digit code instead of a link. Uni mail systems (Microsoft 365 at UCL, Imperial, LSE…) open every
 // link in an email to scan it, which used up one-time sign-in links before the student could click them.
 // A code can't be "clicked", so it survives scanning. The page then calls /auth/v1/verify with the code.
@@ -27,25 +27,25 @@ async function sendCode(email: string, code: string, purpose: "login" | "reset")
   const key = Deno.env.get("RESEND_API_KEY");
   if (!key) throw new Error("no email key");
   const what = purpose === "reset" ? "reset your password" : "log in";
-  const subject = purpose === "reset" ? `${code} is your Unizy password reset code` : `${code} is your Unizy sign-in code`;
-  const text = `Your Unizy code is ${code}
+  const subject = purpose === "reset" ? `${code} is your SaveMyGrade password reset code` : `${code} is your SaveMyGrade sign-in code`;
+  const text = `Your SaveMyGrade code is ${code}
 
-Type it on the Unizy page to ${what}. It works once and expires in an hour.
+Type it on the SaveMyGrade page to ${what}. It works once and expires in an hour.
 
 If you didn't ask for this, you can ignore this email. Your account is safe.
 
-Unizy · unizy.uk`;
+SaveMyGrade · unizy.uk`;
   const spaced = code.split("").join(" ");
   const html = `<div style="font-family:'DM Sans',Arial,sans-serif;font-size:16px;line-height:1.55;color:#17302A;max-width:480px">
-<p style="margin:0 0 6px;font-family:Georgia,serif;font-size:22px">Your Unizy code</p>
-<p style="margin:0 0 18px;color:#5D6D67">Type it on the Unizy page to ${what}.</p>
+<p style="margin:0 0 6px;font-family:Georgia,serif;font-size:22px">Your SaveMyGrade code</p>
+<p style="margin:0 0 18px;color:#5D6D67">Type it on the SaveMyGrade page to ${what}.</p>
 <p style="margin:0 0 18px;font-family:'Courier New',monospace;font-size:34px;letter-spacing:6px;font-weight:700;background:#F4F4EF;border:1px solid #DDE3DE;border-radius:10px;padding:14px 18px;display:inline-block">${spaced}</p>
 <p style="margin:0;font-size:14px;color:#5D6D67">It works once and expires in an hour. If you didn't ask for this, ignore this email; your account is safe.</p>
 </div>`;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: "Unizy <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject, text, html }),
+    body: JSON.stringify({ from: "SaveMyGrade <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject, text, html }),
   });
   if (!r.ok) throw new Error("send failed " + r.status);
 }

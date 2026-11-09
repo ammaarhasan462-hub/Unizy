@@ -1,4 +1,4 @@
-/* Unizy study rooms (website): module sub-groups for verified students at the same university.
+/* SaveMyGrade study rooms (website): module sub-groups for verified students at the same university.
    Shared notes edited together (one person per section at a time, everyone sees changes live),
    a pooled flashcard vault, a seminar reading split, live multiplayer quizzes, and a cohort benchmark. */
 (function () {
@@ -246,7 +246,7 @@
       name: room.name || 'Study room', module: room.module || k.active.name, code: room.code || '', isOwner: !!room.owner,
       openText: room.open ? 'Open: coursemates can find it' : 'Invite only', toggleOpen: function () { rpc('room_settings', { p_room: S.rid, p_name: null, p_open: !room.open }).then(function () { S.rev = null; poll(); }).catch(function () {}); },
       copyCode: function () {
-        var t = 'Join my Unizy study room for ' + (room.module || k.active.name) + ': code ' + room.code + ' (Campus → Study rooms on unizy.uk)';
+        var t = 'Join my SaveMyGrade study room for ' + (room.module || k.active.name) + ': code ' + room.code + ' (Campus → Study rooms on unizy.uk)';
         try { navigator.clipboard.writeText(t).then(function () { note('Invite copied. Send it to your group.', 'ok'); }, function () { window.prompt('Copy this invite:', t); }); } catch (e) { window.prompt('Copy this invite:', t); }
       },
       back: closeRoom,

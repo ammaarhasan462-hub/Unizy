@@ -1,4 +1,4 @@
-/* Unizy page runtime: renders the app's templates (holes, sc-if, sc-for, on* handlers)
+/* SaveMyGrade page runtime: renders the app's templates (holes, sc-if, sc-for, on* handlers)
    and patches the live DOM in place so typing and focus are never interrupted. */
 (function () {
   'use strict';
