@@ -132,6 +132,12 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
   .chip-22 { color: #4D3B14; background: #E8DCC0; }
 }
 
+/* opening 3D intro: hidden unless the boot script added html.intro */
+#intro-root { display: none; }
+html.intro #intro-root { display: block; }
+html.intro, html.intro body { overflow: hidden; overscroll-behavior: none; }
+@keyframes introline { 0% { transform: translateY(-100%); } 100% { transform: translateY(260%); } }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }

@@ -1,4 +1,5 @@
 import './globals.css';
+import { INTRO_BOOT } from '@/components/Intro';
 
 const FONTS = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
 
@@ -20,11 +21,12 @@ export const viewport = { themeColor: '#F4F4EF', width: 'device-width', initialS
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-GB">
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="stylesheet" href={FONTS} />
+        <script dangerouslySetInnerHTML={{ __html: INTRO_BOOT }} />
       </head>
       <body>{children}</body>
     </html>
