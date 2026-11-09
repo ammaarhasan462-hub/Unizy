@@ -32,10 +32,10 @@ export default function Nav() {
       className="fixed inset-x-0 top-0 z-50"
     >
       <div className={`mx-auto mt-3 flex max-w-[1240px] items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 sm:px-5 ${scrolled || open ? 'glass mx-3 shadow-[0_10px_40px_-12px_rgba(0,0,0,.8)] sm:mx-6 xl:mx-auto' : 'border border-transparent'}`}>
-        <Logo />
+        <Logo className={scrolled || open ? '' : 'text-paper!'} />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {LINKS.map(([t, h]) => (
-            <a key={h} href={h} className="group relative rounded-full px-4 py-2 text-[14.5px] text-mute transition-colors hover:text-ink">
+            <a key={h} href={h} className={`group relative rounded-full px-4 py-2 text-[14.5px] transition-colors ${scrolled ? 'text-mute hover:text-ink' : 'text-paper/75 hover:text-paper'}`}>
               {t}
               <span className="absolute inset-x-4 bottom-1 h-px origin-left scale-x-0 bg-linear-to-r from-vio to-cyan transition-transform duration-300 group-hover:scale-x-100" />
             </a>
@@ -43,7 +43,7 @@ export default function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           {!authed && (
-            <a href="/login?next=/dashboard" className="hidden rounded-full px-4 py-2 text-[14.5px] font-medium text-ink/90 hover:text-ink sm:inline-block">
+            <a href="/login?next=/dashboard" className={`hidden rounded-full px-4 py-2 text-[14.5px] font-medium sm:inline-block ${scrolled ? 'text-ink/90 hover:text-ink' : 'text-paper/90 hover:text-paper'}`}>
               Log in
             </a>
           )}

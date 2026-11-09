@@ -2,12 +2,8 @@ import Background from '@/components/Background';
 import Boot from '@/components/Boot';
 import Intro from '@/components/Intro';
 import Nav from '@/components/Nav';
-import Hero from '@/components/Hero';
-import Stats from '@/components/Stats';
-import Gap from '@/components/Gap';
-import How from '@/components/How';
-import Features from '@/components/Features';
-import { Faq, Final, Footer, Pricing, Reviews, Trust } from '@/components/Sections';
+import { StoryTop, StoryEnd } from '@/components/Story';
+import { Faq, Footer, Pricing, Reviews, Trust } from '@/components/Sections';
 
 export default function Page() {
   return (
@@ -20,16 +16,12 @@ export default function Page() {
       <Boot />
       <Nav />
       <main id="main">
-        <Hero />
-        <Stats />
-        <Gap />
-        <How />
-        <Features />
+        <StoryTop />
         <Trust />
         <Reviews />
         <Pricing />
         <Faq />
-        <Final />
+        <StoryEnd />
       </main>
       <Footer />
     </>
