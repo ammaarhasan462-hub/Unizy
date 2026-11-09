@@ -19,14 +19,14 @@ if(force||(!off&&!inside&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriv
 setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
 const CH = [
-  { a: 0, b: 0.085, mode: 'start' },
-  { a: 0.1, b: 0.22, n: '01', t: 'Revising blind.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
-  { a: 0.31, b: 0.43, n: '02', t: 'Every UCL module.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
-  { a: 0.5, b: 0.62, n: '03', t: 'Your department’s criteria.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
-  { a: 0.71, b: 0.84, n: '04', t: 'Write your answer.', s: 'Exam-style questions written in your module’s style, timed like the real thing.', side: 'right' },
-  { a: 0.9, b: 1.2, n: '05', mode: 'end' },
+  { a: 0, b: 0.08, mode: 'start' },
+  { a: 0.09, b: 0.2, n: '01', t: 'Revising blind.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
+  { a: 0.3, b: 0.42, n: '02', t: 'Every UCL module.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
+  { a: 0.5, b: 0.63, n: '03', t: 'Your department’s criteria.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
+  { a: 0.75, b: 0.86, n: '04', t: 'Write your answer.', s: 'Exam-style questions written in your module’s style, timed like the real thing.', side: 'right' },
+  { a: 0.91, b: 1.2, n: '05', mode: 'end' },
 ];
-const LABELS = ['Above', 'Every module', 'Criteria', 'Your answer', 'Marked'];
+const LABELS = ['Sunrise', 'Every module', 'Criteria', 'Your answer', 'Marked'];
 
 const ss = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -183,12 +183,13 @@ export default function Intro() {
   return (
     <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="Unizy intro">
       <canvas ref={canvas} className="absolute inset-0 block h-full w-full" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(0,0,0,.55)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(0,0,0,.4)_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[48vh] bg-[linear-gradient(to_top,rgba(6,8,12,.62),rgba(6,8,12,0))]" />
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
 
       {/* top bar */}
       <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-9 sm:py-7">
-        <span className="flex items-center gap-2.5 font-display text-[17px] font-semibold tracking-tight text-[#efe9dd]">
+        <span className="flex items-center gap-2.5 text-[18px] font-extrabold tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:115%] [text-shadow:0_1px_10px_rgba(0,0,0,.4)]">
           <span className="grid size-7 place-items-center rounded-[9px] border border-[#efe9dd]/25 bg-white/5 text-[13px] backdrop-blur">U</span>
           Unizy
         </span>
@@ -202,8 +203,8 @@ export default function Intro() {
 
       {/* chapters */}
       <div ref={(el) => (chap.current[0] = el)} className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <p className="font-mono text-[11.5px] uppercase tracking-[.42em] text-[#efe9dd]/55">Unizy</p>
-        <h1 className="mt-6 max-w-[980px] font-display text-[clamp(40px,6.6vw,96px)] font-semibold leading-[0.98] tracking-[-0.035em] text-[#f3eee4] [text-shadow:0_2px_40px_rgba(0,0,0,.35)]">
+        <p className="intro-kicker text-[11px] text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">Unizy · UCL</p>
+        <h1 className="intro-title mt-6 max-w-[1100px] text-[clamp(42px,7.4vw,112px)]">
           The mark scheme your uni never gave you.
         </h1>
       </div>
@@ -214,16 +215,16 @@ export default function Intro() {
           className={`pointer-events-none invisible absolute bottom-[12vh] px-6 sm:px-12 ${c.side === 'left' ? 'left-0 text-left' : 'right-0 text-left sm:text-right'}`}
           style={{ opacity: 0 }}
         >
-          <p className="font-mono text-[11.5px] tracking-[.3em] text-[#d9b46c]/80">{c.n} / 05</p>
-          <h2 className="mt-3 font-display text-[clamp(38px,6.2vw,92px)] font-semibold leading-[0.95] tracking-[-0.035em] text-[#f3eee4] [text-shadow:0_2px_30px_rgba(0,0,0,.45)]">{c.t}</h2>
-          <p className={`mt-4 max-w-[440px] text-[15.5px] leading-relaxed text-[#efe9dd]/70 ${c.side === 'right' ? 'sm:ml-auto' : ''}`}>{c.s}</p>
+          <p className="intro-kicker text-[11px] text-[#ffd79a] [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">{c.n} / 05</p>
+          <h2 className="intro-title mt-3 text-[clamp(40px,6.8vw,104px)]">{c.t}</h2>
+          <p className={`intro-body mt-4 max-w-[460px] text-[16px] font-medium leading-relaxed text-white/85 ${c.side === 'right' ? 'sm:ml-auto' : ''}`}>{c.s}</p>
         </div>
       ))}
       <div ref={(el) => (chap.current[5] = el)} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[9vh] sm:px-12" style={{ opacity: 0 }}>
         <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
           <div>
-            <p className="font-mono text-[11.5px] tracking-[.3em] text-[#d9b46c]/80">05 / 05</p>
-            <h2 className="mt-3 max-w-[640px] font-display text-[clamp(36px,5.2vw,78px)] font-semibold leading-[0.95] tracking-[-0.035em] text-[#f3eee4] [text-shadow:0_2px_30px_rgba(0,0,0,.5)]">
+            <p className="intro-kicker text-[11px] text-[#ffd79a] [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">05 / 05</p>
+            <h2 className="intro-title mt-3 max-w-[720px] text-[clamp(36px,5.6vw,84px)]">
               Find out what your answer would get.
             </h2>
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -266,7 +267,7 @@ export default function Intro() {
       </div>
 
       {/* start hint */}
-      <div ref={hint} className="pointer-events-none absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 text-[12px] uppercase tracking-[.3em] text-[#efe9dd]/60 transition-opacity duration-700">
+      <div ref={hint} className="intro-kicker pointer-events-none absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 text-[10.5px] text-white/80 transition-opacity duration-700 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">
         <span className="hidden sm:inline">Scroll to begin</span>
         <span className="sm:hidden">Swipe up to begin</span>
         <span className="relative h-10 w-px overflow-hidden bg-white/15">
