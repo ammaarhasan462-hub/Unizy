@@ -230,7 +230,7 @@ Instructions:
 - Judge the answer against the criteria at the module's level, best fit. Be honest and calibrated, as a real second marker would be: do not inflate. Most competent answers are 2:1 or 2:2; reserve 70+ for answers that genuinely meet the First descriptors.
 - Give a mark range no wider than 5 marks (e.g. 62-66) and the class it falls in.
 - Feedback must quote or point to specific parts of the student's answer.
-- "changes" = the three changes that would most raise the mark, most important first, each concrete enough to act on in the next attempt.
+- "changes" = the three changes that would most raise the mark, most important first, each concrete enough to act on in the next attempt. Keep each "change" under 70 words and each "why" under 40 words.
 - "example_answer" = a concise First-class answer to the same question (400-650 words) for comparison, written at this level; use only well-established material, no invented citations. Start with a one-line plan.
 
 Return one JSON object:
@@ -263,7 +263,7 @@ Return one JSON object:
       headline: String(out.headline || "").slice(0, 400),
       criteria: Array.isArray(out.criteria) ? out.criteria.slice(0, 6).map((c: any) => ({ name: String(c?.name || "").slice(0, 80), band: classes.includes(c?.band) ? c.band : "", comment: String(c?.comment || "").slice(0, 800) })) : [],
       strengths: Array.isArray(out.strengths) ? out.strengths.slice(0, 4).map((s: any) => String(s).slice(0, 300)) : [],
-      changes: Array.isArray(out.changes) ? out.changes.slice(0, 3).map((c: any) => ({ change: String(c?.change || c || "").slice(0, 400), why: String(c?.why || "").slice(0, 400) })) : [],
+      changes: Array.isArray(out.changes) ? out.changes.slice(0, 3).map((c: any) => ({ change: String(c?.change || c || "").slice(0, 1200), why: String(c?.why || "").slice(0, 800) })) : [],
       example_answer: String(out.example_answer || "").slice(0, 8000),
       rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : "UCL-wide",
     };
