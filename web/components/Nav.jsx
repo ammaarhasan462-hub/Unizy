@@ -58,8 +58,8 @@ export default function Nav() {
             onClick={() => setOpen((o) => !o)}
           >
             <span className="relative block h-3 w-4">
-              <span className={`absolute left-0 top-0 h-[1.5px] w-4 bg-white transition-transform duration-300 ${open ? 'translate-y-[5px] rotate-45' : ''}`} />
-              <span className={`absolute bottom-0 left-0 h-[1.5px] w-4 bg-white transition-transform duration-300 ${open ? '-translate-y-[5px] -rotate-45' : ''}`} />
+              <span className={`absolute left-0 top-0 h-[1.5px] w-4 bg-ink transition-transform duration-300 ${open ? 'translate-y-[5px] rotate-45' : ''}`} />
+              <span className={`absolute bottom-0 left-0 h-[1.5px] w-4 bg-ink transition-transform duration-300 ${open ? '-translate-y-[5px] -rotate-45' : ''}`} />
             </span>
           </button>
         </div>
