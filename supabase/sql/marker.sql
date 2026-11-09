@@ -45,3 +45,24 @@ create policy "own attempts delete" on public.mark_attempts for delete using (au
 create policy "own attempts real mark" on public.mark_attempts for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 revoke update on public.mark_attempts from authenticated, anon;
 grant update (real_mark) on public.mark_attempts to authenticated;
+
+-- Dashboard (Nov 2026): picked modules, course/year, department list.
+create table if not exists public.my_modules (
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  code text not null references public.ucl_modules(code) on delete cascade,
+  added_at timestamptz default now(), primary key (user_id, code)
+);
+alter table public.my_modules enable row level security;
+create policy "own modules read" on public.my_modules for select using (auth.uid() = user_id);
+create policy "own modules add" on public.my_modules for insert with check (auth.uid() = user_id);
+create policy "own modules remove" on public.my_modules for delete using (auth.uid() = user_id);
+create table if not exists public.study_profile (
+  user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  course text, course_id text, department text, year int check (year between 1 and 6), updated_at timestamptz default now()
+);
+alter table public.study_profile enable row level security;
+create policy "own profile read" on public.study_profile for select using (auth.uid() = user_id);
+create policy "own profile write" on public.study_profile for insert with check (auth.uid() = user_id);
+create policy "own profile update" on public.study_profile for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create or replace view public.ucl_departments with (security_invoker = true) as
+  select department, count(*) filter (where level between 4 and 6) as ug_modules, count(*) as modules from public.ucl_modules where department is not null group by department;

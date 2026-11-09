@@ -1,6 +1,7 @@
-// SaveMyGrade sign-up: creates an account with email + password straight away (no confirmation link),
-// then sends a short "you've signed up" email. The page then logs in with the same email and password.
-// Email links are only used for password resets and the optional "email me a link" log-in.
+// SaveMyGrade sign-up: creates an unverified account with email + password, then emails a 6-digit
+// verification code (codes survive uni mail scanners, unlike links). The page verifies the code with
+// /auth/v1/verify, which confirms the email and logs the student in. Unverified accounts can't log in
+// with a password until verified (the log-in page offers a new code).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -22,32 +23,33 @@ async function sha256(s: string) {
 }
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-async function sendWelcome(email: string, name: string) {
+async function sendVerify(email: string, name: string, code: string) {
   const key = Deno.env.get("RESEND_API_KEY");
-  if (!key) return;
+  if (!key) throw new Error("no email key");
   const hi = name ? `Hi ${name},` : "Hi,";
   const text = `${hi}
 
-You've signed up to SaveMyGrade with this email address. You're all set: log in any time at https://unizy.uk/login with your email and password.
+Your SaveMyGrade verification code is ${code}
 
-Forgotten your password? Reset it at https://unizy.uk/reset.html
+Type it on the sign-up page to verify your email and finish creating your account. It works once and expires in an hour.
 
-If you didn't sign up, reply to this email or contact hello@unizy.uk.
+If you didn't sign up, you can ignore this email.
 
-SaveMyGrade`;
+SaveMyGrade · unizy.uk`;
+  const spaced = code.split("").join(" ");
   const html = `<div style="font-family:'DM Sans',Arial,sans-serif;font-size:16px;line-height:1.55;color:#17302A;max-width:520px">
-<p>${esc(hi)}</p>
-<p>You've signed up to SaveMyGrade with this email address. You're all set: log in any time with your email and password.</p>
-<p><a href="https://unizy.uk/app" style="display:inline-block;background:#17302A;color:#fff;text-decoration:none;font-weight:700;padding:12px 20px;border-radius:10px">Open SaveMyGrade</a></p>
-<p style="font-size:14px;color:#5D6D67">Forgotten your password? <a href="https://unizy.uk/reset.html" style="color:#17302A">Reset it here</a>.<br>If you didn't sign up, reply to this email or contact hello@unizy.uk.</p>
+<p style="margin:0 0 6px">${esc(hi)}</p>
+<p style="margin:0 0 6px;font-family:Georgia,serif;font-size:22px">Verify your email</p>
+<p style="margin:0 0 18px;color:#5D6D67">Type this code on the SaveMyGrade sign-up page to finish creating your account.</p>
+<p style="margin:0 0 18px;font-family:'Courier New',monospace;font-size:34px;letter-spacing:6px;font-weight:700;background:#F4F4EF;border:1px solid #DDE3DE;border-radius:10px;padding:14px 18px;display:inline-block">${spaced}</p>
+<p style="margin:0;font-size:14px;color:#5D6D67">It works once and expires in an hour. If you didn't sign up, ignore this email.</p>
 </div>`;
-  try {
-    await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "SaveMyGrade <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: "Welcome to SaveMyGrade", text, html }),
-    });
-  } catch { /* the account still works if the email fails */ }
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: "SaveMyGrade <noreply@unizy.uk>", reply_to: "hello@unizy.uk", to: [email], subject: `${code} is your SaveMyGrade verification code`, text, html }),
+  });
+  if (!r.ok) throw new Error("send failed " + r.status);
 }
 
 Deno.serve(async (req) => {
@@ -77,7 +79,7 @@ Deno.serve(async (req) => {
   const { error } = await service.auth.admin.createUser({
     email,
     password,
-    email_confirm: true,
+    email_confirm: false,
     user_metadata: name ? { full_name: name } : {},
   });
   if (error) {
@@ -89,6 +91,10 @@ Deno.serve(async (req) => {
     return json(500, { error: "failed" });
   }
 
-  await sendWelcome(email, name);
-  return json(200, { ok: true });
+  // a 6-digit code: verifying it confirms the email and signs the student in
+  const { data: link, error: linkErr } = await service.auth.admin.generateLink({ type: "magiclink", email });
+  const otp = link?.properties?.email_otp;
+  if (linkErr || !otp) { console.error("verify link", String(linkErr?.message || "no otp")); return json(200, { ok: true, verify: true, sent: false }); }
+  try { await sendVerify(email, name, otp); } catch (e) { console.error("verify email", String(e)); return json(200, { ok: true, verify: true, sent: false }); }
+  return json(200, { ok: true, verify: true, sent: true, digits: otp.length });
 });

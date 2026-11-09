@@ -6,8 +6,8 @@
   var SKEY = 'unizy.session';
   var root = document.getElementById('auth');
   var params = new URLSearchParams(location.search);
-  var next = params.get('next') || '/app.html';
-  if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/app.html';
+  var next = params.get('next') || '/dashboard';
+  if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/dashboard';
   var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   // anonymous daily totals only: no cookies, no IDs
   function track(ev) {
@@ -67,7 +67,7 @@
     if (!p) { var a = new Uint8Array(32); crypto.getRandomValues(a); p = b64url(a); try { sessionStorage.setItem('unizy.pair', JSON.stringify({ v: p, t: Date.now() })); } catch (e) {} }
     return p;
   }
-  function confirmUrl(pair) { return location.origin + '/confirmed?pair=' + pair + (next !== '/app.html' ? '&next=' + encodeURIComponent(next) : ''); }
+  function confirmUrl(pair) { return location.origin + '/confirmed?pair=' + pair + (next !== '/dashboard' ? '&next=' + encodeURIComponent(next) : ''); }
   function fn(name, body, token) {
     return fetch(CFG.supabaseUrl + '/functions/v1/' + name, { method: 'POST', headers: headers(token || CFG.anonKey), body: JSON.stringify(body) }).then(function (r) { return r.json().catch(function () { return {}; }); });
   }
@@ -173,7 +173,7 @@
     var n = digits || 6, box = msgBox();
     var code = field({ name: 'code', label: n + '-digit code', autocomplete: 'one-time-code', placeholder: '', required: true, inputmode: 'numeric' });
     code.input.setAttribute('maxlength', String(n)); code.input.setAttribute('pattern', '[0-9]*'); code.input.className = 'code-input'; code.input.style.cssText = 'font-family:ui-monospace,Menlo,monospace;font-size:28px;letter-spacing:.45em;text-align:center;padding-left:.45em';
-    var submit = el('button', { type: 'submit', class: 'btn primary wide', text: purpose === 'reset' ? 'Continue' : 'Log in' });
+    var submit = el('button', { type: 'submit', class: 'btn primary wide', text: purpose === 'reset' ? 'Continue' : purpose === 'verify' ? 'Verify my email' : 'Log in' });
     var form = el('form', { novalidate: true, method: 'post', action: '#' }, [code.node, box, submit]);
     function check() {
       var v = code.input.value.replace(/\D/g, '');
@@ -181,9 +181,9 @@
       busy(submit, true, 'Checking…'); showMsg(box, '');
       api('verify', { type: purpose === 'reset' ? 'recovery' : 'magiclink', email: email, token: v }).catch(function (e1) { if (purpose === 'reset' || e1.status === 429) throw e1; return api('verify', { type: 'email', email: email, token: v }); }).then(function (b) {
         if (purpose === 'reset') { resetView({ access_token: b.access_token, refresh_token: b.refresh_token, expires_at: b.expires_at || Math.floor(Date.now() / 1000) + (b.expires_in || 3600) }); return; }
-        saveSession(b); busy(submit, true, 'Logged in'); go();
+        saveSession(b); busy(submit, true, purpose === 'verify' ? 'Email verified' : 'Logged in'); if (purpose === 'verify') track('signup_verified'); go();
       }).catch(function (err) {
-        busy(submit, false, purpose === 'reset' ? 'Continue' : 'Log in');
+        busy(submit, false, purpose === 'reset' ? 'Continue' : purpose === 'verify' ? 'Verify my email' : 'Log in');
         showMsg(box, err.status === 429 ? friendly(err) : 'That code didn’t work. Check it, or send a new one. Codes work once and expire after an hour.');
       });
     }
@@ -197,8 +197,8 @@
     });
     render([
       el('div', { class: 'inbox-icon', 'aria-hidden': 'true' }, [svgMail()]),
-      h1('Check your inbox'),
-      el('p', { class: 'sub' }, ['We’ve emailed a ' + n + '-digit code to ', el('strong', { text: email }), purpose === 'reset' ? '. Enter it here to choose a new password.' : '. Enter it here to log in.']),
+      h1(purpose === 'verify' ? 'Verify your email' : 'Check your inbox'),
+      el('p', { class: 'sub' }, ['We’ve emailed a ' + n + '-digit code to ', el('strong', { text: email }), purpose === 'reset' ? '. Enter it here to choose a new password.' : purpose === 'verify' ? '. Enter it here to verify your email and finish creating your account.' : '. Enter it here to log in.']),
       form,
       el('p', { class: 'hint', text: 'Can’t see it? Check Junk, Spam or Other. The email comes from noreply@unizy.uk. On a uni email, it can sometimes take a few minutes.' }),
       el('div', { class: 'actions' }, [resend, el('a', { class: 'btn ghost', href: link('/login'), text: 'Use a different email' })])
@@ -238,8 +238,8 @@
           busy(submit, false, 'Log in');
           var f = friendly(err);
           if (f === 'confirm') {
-            var again = el('button', { type: 'button', class: 'linkish', text: 'Email me a code to finish' });
-            again.addEventListener('click', function () { sendCode(em, 'login').then(function (r) { codeView(em, 'login', r.digits); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
+            var again = el('button', { type: 'button', class: 'linkish', text: 'Email me a verification code' });
+            again.addEventListener('click', function () { sendCode(em, 'verify').then(function (r) { codeView(em, 'verify', r.digits); }).catch(function (e2) { showMsg(box, friendly(e2)); }); });
             showMsg(box, el('span', {}, ['Your email isn’t confirmed yet. ', again]));
           } else showMsg(box, f);
         });
@@ -312,7 +312,7 @@
       if (p.toLowerCase() === em.toLowerCase() || /^(password|12345678|qwerty)/i.test(p)) { showMsg(box, 'Choose a password that’s harder to guess.'); pw.input.focus(); return; }
       busy(submit, true, 'Creating your account…'); showMsg(box, '');
       track('signup_submit');
-      // create the account (no email link needed), then log straight in with the same details
+      // create the account (unverified), email a 6-digit code, then verify it here
       fetch(CFG.supabaseUrl + '/functions/v1/signup', { method: 'POST', headers: headers(CFG.anonKey), body: JSON.stringify({ email: em, password: p, name: nm }) })
         .then(function (r) {
           return r.json().catch(function () { return {}; }).then(function (b) {
@@ -322,12 +322,12 @@
             throw e;
           });
         }, function () { var e = new Error('offline'); e.code = 'offline'; throw e; })
-        .then(function () {
+        .then(function (b) {
           // where this new student first came from (set by the home page from ?ref= / the referrer), as an anonymous daily total
           try { var sr = JSON.parse(localStorage.getItem('unizy-src') || 'null'); if (sr && sr.s && Date.now() - sr.at < 30 * 864e5) track('join_' + sr.s); } catch (x) { /* ignore */ }
-          busy(submit, true, 'Logging you in…'); return api('token?grant_type=password', { email: em, password: p });
+          return b;
         })
-        .then(function (b) { saveSession(b); go(); })
+        .then(function (b) { codeView(em, 'verify', (b && b.digits) || 6); })
         .catch(function (err) {
           busy(submit, false, 'Create account');
           var f = friendly(err);
@@ -335,7 +335,7 @@
           else showMsg(box, f === 'confirm' ? 'Your account was created. Log in to continue.' : f);
         });
     });
-    render([h1('Create your account', 'Free for students. Save your notes, flashcards and progress, and switch on your tutor and essay marking.'), form,
+    render([h1('Create your account', 'Free for UCL students. Get your answers marked, ask your tutor and track every marked answer.'), form,
       el('p', { class: 'switch' }, ['Already have an account? ', el('a', { href: link('/login'), text: 'Log in' })]), legal()]);
   }
 
@@ -365,7 +365,7 @@
   function confirmedView() {
     var h = new URLSearchParams(location.hash.replace(/^#/, ''));
     var pair = params.get('pair') || '';
-    if (location.hash) history.replaceState(null, '', location.pathname + (next !== '/app.html' ? '?next=' + encodeURIComponent(next) : ''));
+    if (location.hash) history.replaceState(null, '', location.pathname + (next !== '/dashboard' ? '?next=' + encodeURIComponent(next) : ''));
     if (h.get('error_description') || !h.get('access_token')) {
       var s0 = getSession();
       render([h1('That link has already been used', 'Links work once and expire after an hour. If you’ve already logged in somewhere, you’re all set.'),
