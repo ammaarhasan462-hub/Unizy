@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Environment, Float, Lightformer, RoundedBox, Sparkles } from '@react-three/drei';
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
+import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import gsap from 'gsap';
 import { CARDS, drawBack, drawDashboard, radialGlow } from './textures';
 import { useCanvasTexture } from './useCanvasTexture';
@@ -253,7 +253,6 @@ export default function HeroScene({ spinRef, scrollRef }) {
         {hi && (
           <EffectComposer multisampling={4}>
             <Bloom mipmapBlur intensity={0.7} luminanceThreshold={0.55} luminanceSmoothing={0.3} />
-            <Vignette offset={0.3} darkness={0.55} />
           </EffectComposer>
         )}
       </Canvas>
