@@ -1,4 +1,4 @@
-/* Unizy personal welcome: a private note shown to one account after it signs in, before the app.
+/* SaveMyGrade personal welcome: a private note shown to one account after it signs in, before the app.
    Who gets one and what it says is stored only in the database (public.special_welcomes) and served by
    the special_welcome() RPC to that account alone, so nothing personal lives in this public file. */
 (function () {
@@ -71,7 +71,7 @@
     return e;
   }
 
-  // the Unizy tutor cat, in pink, holding a little heart
+  // the SaveMyGrade tutor cat, in pink, holding a little heart
   var CAT = '<svg class="uzw-cat" viewBox="0 0 120 120" aria-hidden="true">' +
     '<path d="M88 106c16 0 22-14 15-27" fill="none" stroke="#4A1F2C" stroke-width="10" stroke-linecap="round"/>' +
     '<path d="M88 106c16 0 22-14 15-27" fill="none" stroke="#F6B9C8" stroke-width="5.5" stroke-linecap="round"/>' +
@@ -116,7 +116,7 @@
     wrap.appendChild(hearts);
 
     var inner = el('div', 'uzw-in');
-    inner.appendChild(el('div', 'uzw-kick', 'Unizy'));
+    inner.appendChild(el('div', 'uzw-kick', 'SaveMyGrade'));
     var h1 = el('h1', 'uzw-h');
     h1.appendChild(document.createTextNode('Welcome back, '));
     h1.appendChild(el('em', null, d.compliment));

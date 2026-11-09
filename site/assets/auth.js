@@ -1,4 +1,4 @@
-/* Unizy log in, sign up and password reset pages. Shares the session with the app (localStorage "unizy.session"). */
+/* SaveMyGrade log in, sign up and password reset pages. Shares the session with the app (localStorage "unizy.session"). */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
@@ -38,7 +38,7 @@
   function friendly(e, ctx) {
     if (e && e.custom) return e.message;
     var c = String(e.code || ''), m = String(e.message || '');
-    if (c === 'offline') return 'Couldn’t reach Unizy. Check your internet connection and try again.';
+    if (c === 'offline') return 'Couldn’t reach SaveMyGrade. Check your internet connection and try again.';
     if (e.status === 429 || /rate_limit|over_/.test(c) || /rate limit|too many/i.test(m)) return 'Too many attempts just now. Wait a few minutes and try again.';
     if (c === 'invalid_credentials' || /invalid login/i.test(m)) return 'That email and password don’t match. Check them, or reset your password below. If you’ve only ever used email links, choose “Email me a code instead”.';
     if (c === 'email_not_confirmed' || /not confirmed/i.test(m)) return 'confirm';
@@ -130,7 +130,7 @@
   function busy(btn, on, label) { btn.disabled = on; btn.setAttribute('aria-busy', on ? 'true' : 'false'); if (label) btn.textContent = label; }
   function render(nodes) { root.innerHTML = ''; nodes.forEach(function (n) { if (n) root.appendChild(n); }); var f = root.querySelector('input:not([type=hidden])'); if (f && window.innerWidth > 700) setTimeout(function () { f.focus(); }, 20); }
   function h1(t, sub) { return el('div', { class: 'head' }, [el('h1', { text: t }), sub ? el('p', { class: 'sub', text: sub }) : null]); }
-  function legal() { return el('p', { class: 'legal' }, ['By continuing you agree to Unizy’s ', el('a', { href: '/terms.html', text: 'terms' }), ' and ', el('a', { href: '/privacy.html', text: 'privacy policy' }), '. Unizy is for students aged 16 and over.']); }
+  function legal() { return el('p', { class: 'legal' }, ['By continuing you agree to SaveMyGrade’s ', el('a', { href: '/terms.html', text: 'terms' }), ' and ', el('a', { href: '/privacy.html', text: 'privacy policy' }), '. SaveMyGrade is for students aged 16 and over.']); }
 
   // ---------- "check your inbox" ----------
   function inbox(email, kind) {
@@ -154,7 +154,7 @@
       h1(lines[0]),
       el('p', { class: 'sub' }, [lines[1], el('strong', { text: email }), lines[2]]),
       waiting,
-      el('p', { class: 'hint', text: 'Can’t see it? Check your spam or promotions folder. The email comes from noreply@unizy.uk.' + (kind === 'signup' ? ' If you already have an Unizy account, log in instead.' : '') }),
+      el('p', { class: 'hint', text: 'Can’t see it? Check your spam or promotions folder. The email comes from noreply@unizy.uk.' + (kind === 'signup' ? ' If you already have an SaveMyGrade account, log in instead.' : '') }),
       box,
       el('div', { class: 'actions' }, [resend, el('a', { class: 'btn ghost', href: kind === 'signup' ? link('/signup') : link('/login'), text: 'Use a different email' })]),
       kind === 'signup' ? el('p', { class: 'switch' }, ['Already confirmed? ', el('a', { href: link('/login'), text: 'Log in' })]) : el('p', { class: 'switch' }, [el('a', { href: link('/login'), text: 'Back to log in' })])
@@ -168,7 +168,7 @@
   }
 
   // ---------- sign-in / reset code (scanner-proof: uni mail systems open links, but can't type codes) ----------
-  function sendCode(email, purpose) { return fn('login-code', { email: email, purpose: purpose }).catch(function () { return { error: 'offline_fn' }; }).then(function (r) { if (!r || !r.ok) { var er = r && r.error; var e = new Error(er === 'invalid_email' ? 'Check that your email address is correct.' : er === 'too_soon' ? 'We’ve just sent you a code. Wait a minute before asking for another.' : er === 'rate_limited' ? 'Too many codes asked for just now. Wait a few minutes and try again.' : 'Couldn’t send the email just now. Try again in a minute.'); e.code = er === 'offline_fn' ? 'offline_fn' : (er || 'send_failed'); if (er === 'offline_fn') e.message = 'Couldn’t reach Unizy. Check your internet connection and try again.'; e.custom = true; throw e; } return r; }); }
+  function sendCode(email, purpose) { return fn('login-code', { email: email, purpose: purpose }).catch(function () { return { error: 'offline_fn' }; }).then(function (r) { if (!r || !r.ok) { var er = r && r.error; var e = new Error(er === 'invalid_email' ? 'Check that your email address is correct.' : er === 'too_soon' ? 'We’ve just sent you a code. Wait a minute before asking for another.' : er === 'rate_limited' ? 'Too many codes asked for just now. Wait a few minutes and try again.' : 'Couldn’t send the email just now. Try again in a minute.'); e.code = er === 'offline_fn' ? 'offline_fn' : (er || 'send_failed'); if (er === 'offline_fn') e.message = 'Couldn’t reach SaveMyGrade. Check your internet connection and try again.'; e.custom = true; throw e; } return r; }); }
   function codeView(email, purpose, digits) {
     var n = digits || 6, box = msgBox();
     var code = field({ name: 'code', label: n + '-digit code', autocomplete: 'one-time-code', placeholder: '', required: true, inputmode: 'numeric' });
@@ -251,13 +251,13 @@
       sendCode(em, 'login').then(function (r) { codeView(em, 'login', r.digits); })
         .catch(function (err) {
           if (/^(invalid_email|too_soon|rate_limited)$/.test(err.code)) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(err)); return; }
-          // backup route: Unizy's standard sign-in link email
+          // backup route: SaveMyGrade's standard sign-in link email
           api('otp?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, create_user: true }).then(function () { inbox(em, 'link'); })
             .catch(function (e2) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(e2)); });
         });
     });
     render([h1('Welcome back', 'Log in to pick up where you left off.'), form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
-      el('p', { class: 'switch' }, ['New to Unizy? ', el('a', { href: link('/signup'), text: 'Create an account' })]), legal()]);
+      el('p', { class: 'switch' }, ['New to SaveMyGrade? ', el('a', { href: link('/signup'), text: 'Create an account' })]), legal()]);
   }
 
   // ---------- forgot password ----------
@@ -280,7 +280,7 @@
     });
     var back = el('a', { href: link('/login'), text: 'Back to log in' });
     if (MODE === 'login') back.addEventListener('click', function (e) { e.preventDefault(); loginView(email.input.value.trim()); });
-    render([h1('Reset your password', 'Enter the email you use for Unizy and we’ll send you a code to choose a new password.'), form, el('p', { class: 'switch' }, [back])]);
+    render([h1('Reset your password', 'Enter the email you use for SaveMyGrade and we’ll send you a code to choose a new password.'), form, el('p', { class: 'switch' }, [back])]);
   }
 
   // ---------- sign up ----------

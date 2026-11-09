@@ -1,9 +1,9 @@
-/* Unizy lecture packs, reading lists and course launches (website):
-   - Lecture packs: upload a lecture's slides or handout (PDF, PowerPoint, Word, text). Unizy writes notes with
+/* SaveMyGrade lecture packs, reading lists and course launches (website):
+   - Lecture packs: upload a lecture's slides or handout (PDF, PowerPoint, Word, text). SaveMyGrade writes notes with
      slide references, flashcards and practice questions mapped to the module outline, and makes the slides
      searchable so the tutor can quote them.
    - Reading lists: imports the module's official reading list (with its weekly sections) from the university.
-   - Course launches: when a student opens Unizy from Moodle/Canvas/Blackboard, picks out that course. */
+   - Course launches: when a student opens SaveMyGrade from Moodle/Canvas/Blackboard, picks out that course. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
@@ -92,7 +92,7 @@
         var num = function (f) { return +(/(\d+)\.xml$/.exec(f.name) || [0, 0])[1]; };
         var slides = z.files.filter(function (f) { return /^ppt\/slides\/slide\d+\.xml$/.test(f.name); }).sort(function (a, b) { return num(a) - num(b); });
         var notes = {}; z.files.filter(function (f) { return /^ppt\/notesSlides\/notesSlide\d+\.xml$/.test(f.name); }).forEach(function (f) { notes[num(f)] = f; });
-        if (!slides.length) throw new Error('That PowerPoint file has no slides Unizy can read.');
+        if (!slides.length) throw new Error('That PowerPoint file has no slides SaveMyGrade can read.');
         return Promise.all(slides.map(function (f) {
           var n = num(f);
           return Promise.all([z.read(f), notes[n] ? z.read(notes[n]) : Promise.resolve('')]).then(function (xs) {
@@ -177,7 +177,7 @@
       border: k.weakCoverage ? '2px solid ' + ((k.theme && k.theme.c1) || '#17302A') : '1px solid #E2E7E3',
       openPanel: function () { k.go('packs'); setTimeout(function () { var el = document.getElementById('lecture-packs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120); },
       headline: k.weakCoverage ? 'Build ' + k.active.name + '’s study pack from your lecture slides' : 'Turn a lecture into a study pack',
-      intro: 'Upload a lecture’s slides or handout (PDF, PowerPoint, Word or text). Unizy writes revision notes with slide references, flashcards and practice questions, matched to the official ' + (k.active.code || k.active.name) + ' outline. ' + tutor + ' can then quote your slides when you ask questions.',
+      intro: 'Upload a lecture’s slides or handout (PDF, PowerPoint, Word or text). SaveMyGrade writes revision notes with slide references, flashcards and practice questions, matched to the official ' + (k.active.code || k.active.name) + ' outline. ' + tutor + ' can then quote your slides when you ask questions.',
       isPick: L.step === 'pick', isBuilding: L.step === 'building',
       onFile: function (e) { var f = e && e.target && e.target.files && e.target.files[0]; if (f) { L.file = f; L.err = ''; L.title = f.name.replace(/\.[^.]+$/, '').slice(0, 120); } try { e.target.value = ''; } catch (x) { /* ignore */ } redraw(); },
       hasFile: !!L.file, noFile: !L.file, fileName: L.file ? L.file.name : '', fileSize: L.file ? (L.file.size > 1048576 ? (L.file.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(L.file.size / 1024)) + ' KB') : '',
@@ -274,7 +274,7 @@
       if (window.UnizyCampus && window.UnizyCampus._state) { window.UnizyCampus._state.ver.data = null; window.UnizyCampus._state.ver.at = 0; }
       var hay = String((p.label || '') + ' ' + (p.title || '')).toLowerCase();
       var course = p.title || p.label || 'your course';
-      if (!kk.uni || kk.uni.id !== p.uni || !kk.degree) { kk.startSetup(p.uni); kk.notify('Welcome from your uni', 'Pick your degree and year, and Unizy will set up ' + course + '.'); S.lti.pendingText = hay; return; }
+      if (!kk.uni || kk.uni.id !== p.uni || !kk.degree) { kk.startSetup(p.uni); kk.notify('Welcome from your uni', 'Pick your degree and year, and SaveMyGrade will set up ' + course + '.'); S.lti.pendingText = hay; return; }
       var hit = kk.mods.filter(function (m) { return m.code && hay.indexOf(String(m.code).toLowerCase()) !== -1; })[0] || kk.mods.filter(function (m) { return m.name.length > 6 && hay.indexOf(m.name.toLowerCase()) !== -1; })[0];
       if (hit) { kk.openModule(hit.key); kk.notify('Opened ' + hit.name, 'From your uni’s course page. Everything here is set up for ' + (hit.code || hit.name) + '.'); }
       else kk.notify('Signed in from ' + course, 'Pick the matching module on the left, or add it with “Add or remove modules”.');

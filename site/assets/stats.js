@@ -1,4 +1,4 @@
-/* Private funnel page for the Unizy owner. Data comes from funnel_report(), which only answers admin accounts. */
+/* Private funnel page for the SaveMyGrade owner. Data comes from funnel_report(), which only answers admin accounts. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG, box = document.getElementById('stats');
@@ -48,7 +48,7 @@
           var prev = i ? steps[i - 1][1] : 0, note = x[3] !== undefined ? ' of ' + x[3] + ' whose first week is over' : (i ? ' · ' + pct(x[1], prev) + ' of previous step' : '');
           return '<li class="' + x[2] + '"><span class="lab">' + (i + 1) + '. ' + esc(x[0]) + '</span><span class="bar"><i style="width:' + Math.max(1, Math.round(x[1] / max * 100)) + '%"></i></span><span class="num"><b>' + x[1] + '</b>' + note + '</span></li>';
         }).join('') + '</ol></section>';
-      var ctas = [['Explore Unizy (hero)', 'cta_explore_hero'], ['See how it works (hero)', 'cta_how_hero'], ['How it works (nav)', 'nav_how'], ['Sign up (nav)', 'nav_signup'], ['Explore Unizy (end of demo)', 'cta_explore_demo'], ['Sign up (end of demo)', 'cta_signup_demo'], ['Explore Unizy (bottom)', 'cta_explore_final'], ['Sign up (bottom)', 'cta_signup_final'], ['Answered all demo quiz questions', 'demo_quiz_done'], ['Log-in page views', 'login_view']];
+      var ctas = [['Explore SaveMyGrade (hero)', 'cta_explore_hero'], ['See how it works (hero)', 'cta_how_hero'], ['How it works (nav)', 'nav_how'], ['Sign up (nav)', 'nav_signup'], ['Explore SaveMyGrade (end of demo)', 'cta_explore_demo'], ['Sign up (end of demo)', 'cta_signup_demo'], ['Explore SaveMyGrade (bottom)', 'cta_explore_final'], ['Sign up (bottom)', 'cta_signup_final'], ['Answered all demo quiz questions', 'demo_quiz_done'], ['Log-in page views', 'login_view']];
       h += '<section class="card"><h2>Buttons and pages</h2><table><tbody>' + ctas.map(function (c) { return '<tr><td>' + c[0] + '</td><td class="r">' + v(c[1]) + '</td></tr>'; }).join('') + '</tbody></table></section>';
       h += '<section class="card"><h2>Weekly sign-up cohorts</h2><table><thead><tr><th>Week starting</th><th class="r">Sign-ups</th><th class="r">First useful result</th><th class="r">Came back within a week</th></tr></thead><tbody>' +
         ((d.cohorts || []).map(function (c) { return '<tr><td>' + esc(c.week) + '</td><td class="r">' + c.signups + '</td><td class="r">' + c.firstResult + ' (' + pct(c.firstResult, c.signups) + ')</td><td class="r">' + (c.eligible ? c.returned + ' of ' + c.eligible + ' (' + pct(c.returned, c.eligible) + ')' : 'week not over') + '</td></tr>'; }).join('') || '<tr><td colspan="4" class="muted">No sign-ups in this period yet.</td></tr>') + '</tbody></table>' +

@@ -10,9 +10,9 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 
-BRAND = "Unizy"          # placeholder until the new name is chosen
+BRAND = "SaveMyGrade"
 DOMAIN = "unizy.uk"
-MARK = BRAND[:1].lower()
+MARK = BRAND[:1]
 TAGLINE = "The mark scheme your uni never gave you."
 
 cfg = re.search(r"<script>window.UNIZY_CONFIG=(\{.*?\});", (SITE / "pricing.html").read_text()) or re.search(r"<script>window.UNIZY_CONFIG=(\{\"supabaseUrl.*?\}\});", (SITE / "faq.html").read_text())
@@ -25,10 +25,10 @@ def head(title, desc, path, extra_css=""):
 
 
 def header(current):
-    links = [("/", "Home"), ("/mark", "Find your module"), ("/how-it-works", "How it works"), ("/pricing", "Pricing"), ("/faq", "FAQ")]
+    links = [("/", "Home"), ("/mark", "Find your module"), ("/#how", "How it works"), ("/pricing", "Pricing"), ("/faq", "FAQ")]
     nav = "".join(f'<a href="{h}"{" aria-current=\"page\"" if h == current else ""}>{t}</a>' for h, t in links)
     return f"""<header class="sx-top"><div class="sx-bar">
-<a class="sx-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND.lower()}</span></a>
+<a class="sx-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a>
 <nav class="sx-nav" id="sx-nav" aria-label="Main">{nav}</nav>
 <div class="sx-act"><a class="sx-login" href="/login?next=/mark" data-auth="login">Log in</a><a class="sx-cta" href="/mark" data-ev="nav_mark">Get marked free</a><button class="sx-menu" type="button" aria-expanded="false" aria-controls="sx-nav"><span></span><span></span><span class="sr">Menu</span></button></div>
 </div></header>"""
@@ -36,8 +36,8 @@ def header(current):
 
 def footer():
     return f"""<footer class="sx-foot"><div class="sx-foot-in">
-<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND.lower()}</span></a><p>{TAGLINE} Exam practice and marking for UCL students.</p></div>
-<nav class="sx-foot-col" aria-label="Product"><span>Product</span><a href="/mark">Find your module</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a><a href="/app">Study tools</a></nav>
+<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><p>{TAGLINE} Exam practice and marking for UCL students.</p></div>
+<nav class="sx-foot-col" aria-label="Product"><span>Product</span><a href="/mark">Find your module</a><a href="/#how">How it works</a><a href="/pricing">Pricing</a><a href="/app">Study tools</a></nav>
 <nav class="sx-foot-col" aria-label="About"><span>About</span><a href="/trust">Trust &amp; safety</a><a href="/reviews">Reviews</a><a href="/faq">FAQ</a></nav>
 <nav class="sx-foot-col" aria-label="Legal"><span>Legal</span><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="mailto:hello@{DOMAIN}">Contact</a></nav>
 </div>

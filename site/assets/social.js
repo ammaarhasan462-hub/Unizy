@@ -1,4 +1,4 @@
-/* Unizy Friend groups (website): friend codes, same-uni friend requests, group chats with @Professor / @Dr. */
+/* SaveMyGrade Friend groups (website): friend codes, same-uni friend requests, group chats with @Professor / @Dr. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG;
@@ -309,7 +309,7 @@
       shGoLabel: S.busy ? 'Sharing…' : shType === 'cards' ? 'Share these cards' : shType === 'quiz' ? 'Start the group quiz' : shType === 'prep' ? 'Post seminar prep' : 'Share a copy',
       shareGo: shareGo,
       shModule: (kit && kit.module) || '',
-      sharePrivacy: shType === 'note' ? 'Your notes are private. This posts a copy of the note you pick to everyone in ' + (cur ? cur.name : 'this group') + '; you can remove it later. Unizy never shares notes for you.' : 'Everyone in ' + (cur ? cur.name : 'this group') + ' will see this. You can remove anything you share.',
+      sharePrivacy: shType === 'note' ? 'Your notes are private. This posts a copy of the note you pick to everyone in ' + (cur ? cur.name : 'this group') + '; you can remove it later. SaveMyGrade never shares notes for you.' : 'Everyone in ' + (cur ? cur.name : 'this group') + ' will see this. You can remove anything you share.',
       badge: unreadTotal + (d.incoming || []).length,
       code: d.me.code || '…', uniShort: uniShort,
       codeHint: 'Friends at ' + uniShort + ' add you with this code.',

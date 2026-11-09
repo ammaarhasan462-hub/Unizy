@@ -2,7 +2,7 @@
    and the department's criteria, compare with a First-class answer, rewrite and track your class over time. */
 (function () {
   'use strict';
-  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'Unizy';
+  var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'SaveMyGrade';
   var SKEY = 'unizy.session', DKEY = 'mark:drafts', root = document.getElementById('mk');
   var state = { q: '', ug: true, results: [], mod: null, questions: null, qsBusy: false, cur: null, result: null, attempts: null, busy: false, err: '' };
 
