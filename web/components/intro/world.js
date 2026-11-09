@@ -186,10 +186,44 @@ function paperTex() {
   });
 }
 
+function stoneTex() {
+  return canvasTex(512, 512, (ctx, W, H) => {
+    const r = rng(9);
+    ctx.fillStyle = '#7d776c';
+    ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 9000; i++) {
+      const v = 100 + r() * 40;
+      ctx.fillStyle = `rgba(${v},${v * 0.96},${v * 0.88},${0.05 + r() * 0.08})`;
+      ctx.fillRect(r() * W, r() * H, 1 + r() * 3, 1 + r() * 3);
+    }
+    ctx.strokeStyle = 'rgba(40,36,30,.35)';
+    ctx.lineWidth = 2;
+    for (let y = 0; y <= H; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let y = 0; y < H; y += 64) for (let x = ((y / 64) % 2) * 64; x < W; x += 128) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 64); ctx.stroke(); }
+  }, { repeat: [6, 3] });
+}
+
+function flutedColumn(r0, r1, h) {
+  const geo = new THREE.CylinderGeometry(r0, r1, h, 72, 8);
+  const p = geo.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const rr = Math.hypot(v.x, v.z);
+    if (rr < 1e-4) continue;
+    const th = Math.atan2(v.z, v.x);
+    const k = 1 - 0.045 * Math.pow(Math.abs(Math.cos(th * 10)), 0.6);
+    p.setXYZ(i, v.x * k, v.y, v.z * k);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
 // ---------------------------------------------------------------- landmark + library
 export function buildLandmark({ mobile }) {
   const g = new THREE.Group();
-  const stone = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.46, 0.44, 0.4), roughness: 0.85, metalness: 0 });
+  const stone = new THREE.MeshStandardMaterial({ map: stoneTex(), color: new THREE.Color(0.62, 0.6, 0.56), roughness: 0.88, metalness: 0 });
+  const colStone = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.5, 0.48, 0.44), roughness: 0.7, metalness: 0 });
   const stoneDark = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.38, 0.36, 0.33), roughness: 0.9 });
   const add = (geo, mat, x, y, z, parent = g) => { const me = new THREE.Mesh(geo, mat); me.position.set(x, y, z); parent.add(me); return me; };
   const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
@@ -198,10 +232,10 @@ export function buildLandmark({ mobile }) {
   add(B(46, 1.2, 83), stoneDark, 0, 0.6, -24);
   for (let i = 0; i < 4; i++) add(B(40, 0.3, 1.5), stone, 0, 0.15 + i * 0.3 - 0.0, 22 - i * 1.5 + 0.75).scale.set(1, 1, 1);
   // columns
-  const colGeo = new THREE.CylinderGeometry(0.78, 0.86, 14, 24, 1);
+  const colGeo = flutedColumn(0.76, 0.86, 14);
   for (let i = 0; i < 8; i++) {
     const x = -17.5 + i * 5;
-    add(colGeo, stone, x, 1.2 + 7, 9);
+    add(colGeo, colStone, x, 1.2 + 7, 9);
     add(B(2.1, 0.5, 2.1), stone, x, 1.45, 9);
     add(B(2.2, 0.6, 2.2), stone, x, 15.5, 9);
   }
@@ -383,23 +417,23 @@ export function buildLandmark({ mobile }) {
     g.add(sp, sp.target);
     ext.push([sp, 1700]);
   }
-  const porch = new THREE.PointLight(0xffb873, 70, 0, 2);
+  const porch = new THREE.PointLight(0xffb873, 22, 0, 2);
   porch.position.set(0, 13, 4);
   g.add(porch);
-  ext.push([porch, 70]);
+  ext.push([porch, 22]);
   const int = [];
   for (let z = -9; z > -44; z -= 14) {
-    const pl = new THREE.PointLight(0xffb366, 55, 0, 2);
+    const pl = new THREE.PointLight(0xffb366, 95, 0, 2);
     pl.position.set(0, 11.5, z);
     lib.add(pl);
-    int.push([pl, 55]);
+    int.push([pl, 95]);
   }
   for (const x of [-8, 8]) {
     for (const z of [-15, -33]) {
-      const pl = new THREE.PointLight(0xffc27a, 9, 0, 2);
+      const pl = new THREE.PointLight(0xffc27a, 15, 0, 2);
       pl.position.set(x, 3.2, z);
       lib.add(pl);
-      int.push([pl, 9]);
+      int.push([pl, 15]);
     }
   }
   const deskLight = new THREE.PointLight(0xffc483, 0.75, 0, 2);

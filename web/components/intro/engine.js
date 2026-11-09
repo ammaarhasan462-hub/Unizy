@@ -82,7 +82,8 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const fogCol = new THREE.Color(0.035, 0.042, 0.06);
   scene.fog = new THREE.FogExp2(fogCol.clone(), 0.0002);
   const camera = new THREE.PerspectiveCamera(55, 1, 1, 40000);
-  scene.add(new THREE.HemisphereLight(0x33405c, 0x0b0805, 0.25));
+  const hemi = new THREE.HemisphereLight(0x33405c, 0x0b0805, 0.25);
+  scene.add(hemi);
 
   const shared = {
     uTime: { value: 0 },
@@ -219,7 +220,8 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     land.group.visible = below;
     land.ext.forEach(([l, i]) => { l.intensity = i * (1 - inside); });
     land.int.forEach(([l, i]) => { l.intensity = i * ss(0.5, 0.66, p); });
-    land.doorGlow.material.opacity = 0.28 * ss(0.48, 0.6, p) * (1 - ss(0.64, 0.67, p));
+    land.doorGlow.material.opacity = 0.12 * ss(0.48, 0.6, p) * (1 - ss(0.64, 0.67, p));
+    hemi.intensity = lerp(0.25, 0.5, inside);
     land.dust.uTime.value = time;
     land.dust.uOpacity.value = ss(0.66, 0.74, p);
 

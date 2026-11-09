@@ -58,8 +58,8 @@ vec3 city(vec2 p, float t, float fw){
   float shimmer = pow(h21(floor(p*vec2(0.09, 0.7)) + floor(t*2.0)), 22.0);
   vec3 water = vec3(0.004, 0.006, 0.010) + sod * 0.35 * shimmer * fall;
   col = mix(col, water, river);
-  float bank = exp(-pow(rd - 62.0, 2.0)/(10.0+f2));
-  col += vec3(1.0, 0.72, 0.42) * bank * 1.1 * fall;
+  float bank = exp(-pow(rd - 62.0, 2.0)/(10.0+f2)) * sqrt(10.0/(10.0+f2));
+  col += vec3(1.0, 0.72, 0.42) * bank * 0.6 * fall;
 
   // paved plaza in front of the landmark, washed by floodlights
   float wash = exp(-pow(max(0.0, abs(p.x)-10.0)/45.0, 2.0)) * exp(-pow((p.y-30.0)/70.0, 2.0));
@@ -112,6 +112,8 @@ vec3 sky(vec3 rd){
   return c;
 }
 
+vec3 haze(vec3 rd){ return sky(normalize(vec3(rd.x, 0.0, rd.z) + vec3(0.0, 1e-4, 0.0))); }
+
 float dens(vec3 p, bool cheap){
   float h = (p.y - BOT) / (TOP - BOT);
   if (h < 0.0 || h > 1.0) return 0.0;
@@ -137,12 +139,12 @@ void main(){
   // background: sky, or the city through the gaps when looking down from above the clouds
   vec3 bg;
   if (rd.y < 0.0) {
-    if (uBelow > 0.5) bg = horizonCol(rd);
+    if (uBelow > 0.5) bg = haze(rd);
     else {
       float tg = -ro.y / rd.y;
       vec3 gp = ro + rd * tg;
       bg = city(gp.xz, uTime, tg * 0.0035);
-      bg = mix(horizonCol(rd), bg, exp(-tg * 0.00017));
+      bg = mix(haze(rd), bg, exp(-tg * 0.00017));
     }
   } else bg = sky(rd);
 
@@ -150,7 +152,7 @@ void main(){
   float t0 = (BOT - ro.y) / rd.y, t1 = (TOP - ro.y) / rd.y;
   float tn = min(t0, t1), tf = max(t0, t1);
   if (abs(rd.y) < 1e-4) { tn = (ro.y > BOT && ro.y < TOP) ? 0.0 : 1e9; tf = 1e9; }
-  tn = max(tn, 0.0); tf = min(tf, 14000.0);
+  tn = max(tn, 0.0); tf = min(tf, 26000.0);
   vec3 acc = vec3(0.0); float T = 1.0;
   if (tf > tn) {
     float N = uSteps;
@@ -159,7 +161,8 @@ void main(){
     float t = tn + st * jit;
     float cth = dot(rd, uSun);
     float ph = mix(hg(cth, 0.62), hg(cth, -0.2), 0.35) * 4.0 * 3.14159;
-    vec3 sunc = vec3(1.0, 0.64, 0.42) * 0.42;
+    vec3 sunc = vec3(0.95, 0.74, 0.58) * 0.36;
+    vec3 hz = haze(rd);
     for (int i = 0; i < 72; i++) {
       if (float(i) >= N || t > tf || T < 0.012) break;
       vec3 p = ro + rd * t;
@@ -170,12 +173,12 @@ void main(){
         float beer = exp(-ld * 0.03);
         float powder = 1.0 - exp(-ld * 0.06);
         float hf = (p.y - BOT) / (TOP - BOT);
-        vec3 amb = mix(vec3(0.008, 0.011, 0.019), vec3(0.034, 0.042, 0.064), hf);
+        vec3 amb = mix(vec3(0.007, 0.010, 0.018), vec3(0.030, 0.041, 0.07), hf);
         amb += vec3(0.032, 0.017, 0.007) * (1.0 - hf) * (1.0 - hf);
         vec3 L = amb + sunc * beer * mix(1.0, powder * 1.6, 0.55) * ph * 0.55;
         float a = 1.0 - exp(-d * 0.028 * st);
         // aerial perspective on distant cloud tops
-        L = mix(L, horizonCol(rd), 1.0 - exp(-t * 0.00011));
+        L = mix(L, hz, 1.0 - exp(-t * 0.00011));
         acc += T * L * a;
         T *= 1.0 - a;
       }
