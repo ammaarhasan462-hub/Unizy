@@ -144,7 +144,7 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
   font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif; font-style: italic; font-weight: 400;
   font-stretch: normal; letter-spacing: -0.005em; padding-right: 0.06em;
 }
-.intro-mark { opacity: .9; mix-blend-mode: screen; letter-spacing: .04em; background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(200,206,214,.55)); -webkit-background-clip: text; background-clip: text; }
+.intro-mark { letter-spacing: .06em; background: linear-gradient(180deg, rgba(255,255,255,.92) 0%, rgba(226,230,236,.8) 55%, rgba(170,178,188,.55) 100%); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(0 4px 30px rgba(0,0,0,.5)); }
 .intro-kicker { font-family: var(--font-inter), system-ui, sans-serif; font-weight: 500; letter-spacing: .38em; text-transform: uppercase; text-shadow: 0 1px 10px rgba(0, 0, 0, .5); }
 .intro-body { font-family: var(--font-inter), system-ui, sans-serif; text-shadow: 0 1px 14px rgba(0, 0, 0, .6); }
 #intro-root { display: none; }

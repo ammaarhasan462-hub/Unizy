@@ -539,17 +539,17 @@ export function buildUCL({ mobile }) {
   // floodlights: warm-white uplighting on the Portico and the dome
   const ext = [];
   for (const x of [-13, 13]) {
-    const sp = new THREE.SpotLight(0xffe0bd, 2600, 0, 0.5, 0.85, 2);
+    const sp = new THREE.SpotLight(0xffe0bd, 1500, 0, 0.5, 0.85, 2);
     sp.position.set(x, 0.6, 36);
     sp.target.position.set(x * 0.45, 15, 8);
     g.add(sp, sp.target);
-    ext.push([sp, 2600]);
+    ext.push([sp, 1500]);
   }
-  const domeL = new THREE.SpotLight(0xffe6c8, 900, 0, 0.55, 0.9, 2);
+  const domeL = new THREE.SpotLight(0xffe6c8, 600, 0, 0.55, 0.9, 2);
   domeL.position.set(0, 26, -6);
   domeL.target.position.set(0, 32, -27);
   g.add(domeL, domeL.target);
-  ext.push([domeL, 900]);
+  ext.push([domeL, 600]);
 
   return { group: g, lib, int, ext, furn, dust: dustU, shaftMat };
 }

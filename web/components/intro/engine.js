@@ -151,7 +151,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     uCamWorld: { value: new THREE.Matrix4() },
     uTime: { value: 0 },
     uSun: { value: SUN_DIR.clone() },
-    uSunCol: { value: T.clone().multiplyScalar(4.0) },
+    uSunCol: { value: T.clone().multiplyScalar(2.8) },
     uBelow: { value: 0 },
     uSteps: { value: mobile ? 36 : 60 },
     uHaze: ATMO.uHaze,
@@ -325,7 +325,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
     scene.environmentIntensity = lerp(2.2, 0.3, inside);
     sun.intensity = 2.2 * (1 - inside);
-    renderer.toneMappingExposure = lerp(lerp(1.0, 1.25, ss(0.28, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
+    renderer.toneMappingExposure = lerp(lerp(0.66, 1.12, ss(0.26, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
     london.trafficU.uTime.value = time;
     london.trafficU.uCam.value.copy(camera.position);
     if (london.avMat) london.avMat.color.setRGB(6 * (0.15 + 0.85 * (Math.sin(time * 3) > 0.6 ? 1 : 0)), 0.3, 0.15);

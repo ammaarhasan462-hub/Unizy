@@ -23,8 +23,8 @@ const CH = [
   { a: 0.09, b: 0.2, n: '01', k: 'The problem', t: 'Revising *blind*.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
   { a: 0.3, b: 0.42, n: '02', k: 'Coverage', t: 'Every UCL *module*.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
   { a: 0.5, b: 0.63, n: '03', k: 'The standard', t: 'Your department’s *criteria*.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
-  { a: 0.655, b: 0.735, mode: 'mark' },
-  { a: 0.75, b: 0.85, n: '04', k: 'Practice', t: 'Write your *answer*.', s: 'Exam-style questions written in your module’s style.', side: 'right' },
+  { a: 0.705, b: 0.78, mode: 'mark' },
+  { a: 0.78, b: 0.86, n: '04', k: 'Practice', t: 'Write your *answer*.', s: 'Exam-style questions written in your module’s style.', side: 'right' },
   { a: 0.87, b: 0.95, n: '05', k: 'Conditions', t: 'Timed like the *real thing*.', s: 'Turn on the exam timer and write under real conditions.', side: 'left' },
   { a: 0.96, b: 1.2, n: '06', mode: 'end' },
 ];
