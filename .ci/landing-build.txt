@@ -1,5 +1,5 @@
 status: success
-sha: 84c1d417976cfcf4148eb88cc7b4f8651017c9e3
+sha: 04aa54d6e0bb1e9dcd7eb8170bcb23951d60ab6e
 --- build
 
 > savemygrade-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: 84c1d417976cfcf4148eb88cc7b4f8651017c9e3
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 12.2s
+ ✓ Compiled successfully in 11.7s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
