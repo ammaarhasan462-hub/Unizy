@@ -1,5 +1,6 @@
-# Same data as fetch-city.yml, but from the Geofabrik Greater London extract (no Overpass queue):
-# OpenStreetMap (c) OpenStreetMap contributors, ODbL. Writes tools/city/raw/<site>.geojsonseq.gz.
+# Map data for the intro cities from the Geofabrik Greater London extract: OpenStreetMap (c) OpenStreetMap
+# contributors, ODbL. Writes tools/city/raw/<site>.geojsonseq.gz, bakes site/assets/city/*.json, and commits both.
+# Runs monthly, so newly mapped buildings and heights reach the intros on their own.
 name: Fetch city data (extract)
 
 on:
@@ -7,6 +8,7 @@ on:
     paths:
       - '.github/workflows/fetch-city-pbf.yml'
       - 'tools/city/pbf_filter.py'
+      - 'tools/city/bake_city.py'
   workflow_dispatch:
   schedule:
     - cron: '41 4 2 * *' # monthly refresh
@@ -43,16 +45,23 @@ jobs:
           }
           ex ucl -1.6100e-1 51.5075 -1.0680e-1 51.5417
           ex imperial -2.0430e-1 51.4811 -1.4930e-1 51.5153
+          ex qmul -6.7600e-2 51.5069 -1.2800e-2 51.5410
+          ex lse -1.4400e-1 51.4973 -8.9100e-2 51.5314
           # tall buildings and the Thames for the skyline
           osmium extract -s smart -b "-0.2500,51.4600,0.0300,51.5650" london.osm.pbf -o sky-box.osm.pbf --overwrite
           osmium tags-filter sky-box.osm.pbf nwr/building nwr/building:part nwr/waterway=river nwr/water=river -o sky-f.osm.pbf --overwrite
           osmium export sky-f.osm.pbf -f geojsonseq -a type,id -u type_id --geometry-types=linestring,polygon -o sky.geojsonseq --overwrite
           python3 "$GITHUB_WORKSPACE/tools/city/pbf_filter.py" sky.geojsonseq "$GITHUB_WORKSPACE/tools/city/raw/skyline.geojsonseq.gz"
           ls -la "$GITHUB_WORKSPACE/tools/city/raw/"
+      - name: Bake
+        run: |
+          pip install -q pillow
+          python3 tools/city/bake_city.py > tools/city/raw/bake.log 2>&1 || (cat tools/city/raw/bake.log; exit 1)
+          tail -n 40 tools/city/raw/bake.log
       - name: Commit
         run: |
           git config user.name "city-fetch"
           git config user.email "actions@users.noreply.github.com"
-          git add -A tools/city/raw
+          git add -A tools/city/raw site/assets/city
           git commit -m "Fetch city data (extract)" || exit 0
           for i in 1 2 3 4; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done

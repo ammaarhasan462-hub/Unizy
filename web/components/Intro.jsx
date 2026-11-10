@@ -62,6 +62,7 @@ export default function Intro() {
   const [pickerGone, setPickerGone] = useState(false);
   const [uni, setUni] = useState('ucl');
   const [switching, setSwitching] = useState(false);
+  const [osm, setOsm] = useState(false);
   const switchingRef = useRef(false);
   const firstFrameRef = useRef(null);
   const stage = useRef(null);
@@ -123,9 +124,14 @@ export default function Intro() {
       return c;
     };
     const startEngine = async (u) => {
-      const { createIntro } = await import('./intro/engine');
+      const [{ createIntro }, { loadCity }] = await Promise.all([import('./intro/engine'), import('./intro/city')]);
+      // the real city (OpenStreetMap buildings and streets); the hand-built one if it is slow or unavailable
+      const city = await Promise.race([loadCity(u), new Promise((res) => setTimeout(() => res(null), 6000))]);
       if (cancelled) return;
-      engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u });
+      engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u, city });
+      setOsm(!!city);
+      // fetch Imperial's map in the background while the picker is up
+      if (u === 'ucl') setTimeout(() => loadCity('imperial'), 1500);
       engineRef.current = engine;
       window.__smgIntro = engine;
     };
@@ -287,6 +293,7 @@ export default function Intro() {
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
 
       {/* top bar */}
+      {osm && <div className="pointer-events-none absolute bottom-2 left-3 z-30 text-[10px] tracking-wide text-white/35">Map data © OpenStreetMap contributors</div>}
       <TopBar authed={authed} uniShort={picked ? (UNIS.find((u) => u.id === uni) || {}).short : ''} onSkip={() => finish('skip')} />
 
       {/* chapters */}

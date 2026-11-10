@@ -1,0 +1,32 @@
+{
+ "brick": {
+  "size": 1.4,
+  "src": "Poly Haven red_brick (CC0)",
+  "diff": "red_brick_diff_512.jpg",
+  "nor": "red_brick_nor_512.jpg"
+ },
+ "plaster": {
+  "size": 2.0,
+  "src": "Poly Haven painted_plaster_wall (CC0)",
+  "diff": "painted_plaster_wall_diff_512.jpg",
+  "nor": "painted_plaster_wall_nor_512.jpg"
+ },
+ "stone": {
+  "size": 3.0,
+  "src": "Poly Haven sandstone_blocks_05 (CC0)",
+  "diff": "sandstone_blocks_05_diff_512.jpg",
+  "nor": "sandstone_blocks_05_nor_512.jpg"
+ },
+ "concrete": {
+  "size": 2.0,
+  "src": "Poly Haven concrete_layers_02 (CC0)",
+  "diff": "concrete_layers_02_diff_512.jpg",
+  "nor": "concrete_layers_02_nor_512.jpg"
+ },
+ "roof": {
+  "size": 3.0,
+  "src": "Poly Haven roof_slates_03 (CC0)",
+  "diff": "roof_slates_03_diff_512.jpg",
+  "nor": "roof_slates_03_nor_512.jpg"
+ }
+}

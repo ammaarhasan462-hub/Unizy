@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
 import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { buildCity } from './city';
 
 const H = MAP_HALF;
 export const riverX = (z) => -2150 + Math.sin(z * 0.00062) * 260 + Math.sin(z * 0.0017 + 1.1) * 120;
@@ -42,9 +43,23 @@ const SQUARES = [
 ];
 const LANDMARK_SITES = { senate: [-320, 190], museum: [-560, 330], uch: [190, 160], bt: [-320, -620], euston: [470, 520] };
 
-export function buildLondon(renderer, { mobile }) {
+export function buildLondon(renderer, { mobile, city: cityData }) {
   const r = rng(1234);
   const group = new THREE.Group();
+  // the real Bloomsbury from OpenStreetMap when it has loaded; the hand-built grid below otherwise
+  const keepReal = (x, z) => !inRect(x, z, [-22, 22, -66, 114], 4) && !inRect(x, z, [-67, 67, -28, 114], 4) && !inRect(x, z, [-95, 95, 112, 250], 0);
+  let real = null;
+  if (cityData) {
+    // the hand-built campus keeps its own ground: the Main Quad's paving, lawns and the Portico's approach
+    const paint = (ctx, toPx, k) => {
+      const box = (x0, z0, x1, z1) => { const [a, b] = toPx(x0, z0); const [c, d] = toPx(x1, z1); ctx.fillRect(a, b, c - a, d - b); };
+      ctx.fillStyle = '#9d978a'; box(-67, -28, 67, 104); box(-22, -66, 22, -28);
+      ctx.fillStyle = '#a7a08f'; box(-48, -5, 48, 108);
+      ctx.fillStyle = '#64843f'; box(-40, 30, -6, 100); box(6, 30, 40, 100);
+      ctx.fillStyle = '#c9c1ad'; box(-6, 14, 6, 108);
+    };
+    try { real = buildCity(cityData, { mobile, H, site: 'ucl', keep: keepReal, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
+  }
   const { xl, zl } = streets(r);
   const blocks = [];
   for (let i = 0; i < xl.length - 1; i++) {
@@ -65,7 +80,7 @@ export function buildLondon(renderer, { mobile }) {
   const S = mobile ? 2048 : 4096;
   const k = S / (2 * H);
   const toPx = (x, z) => [(x + H) * k, (z + H) * k];
-  const mapTex = canvasTex(S, S, (ctx) => {
+  const mapTex = real ? real.mapTex : canvasTex(S, S, (ctx) => {
     ctx.fillStyle = '#857e72';
     ctx.fillRect(0, 0, S, S);
     // pavements around blocks, courtyards inside
@@ -113,7 +128,7 @@ export function buildLondon(renderer, { mobile }) {
   // street lighting at first light: lamp pools along every street, brighter on the main roads, lamps on the Quad path
   const ES = mobile ? 1024 : 2048;
   const ek = ES / (2 * H);
-  const emTex = canvasTex(ES, ES, (ctx) => {
+  const emTex = real ? real.emTex : canvasTex(ES, ES, (ctx) => {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, ES, ES);
     const lamp = (x, z, rad, a, col) => {
       const px = (x + H) * ek, pz = (z + H) * ek, rr = Math.max(1.5, rad * ek);
@@ -132,7 +147,7 @@ export function buildLondon(renderer, { mobile }) {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1 }, 'ground'));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
-  group.add(ground);
+  if (!real) group.add(ground);
   const farTex = canvasTex(1024, 1024, (ctx, W) => {
     const rr = rng(77);
     ctx.fillStyle = '#5d5953'; ctx.fillRect(0, 0, W, W);
@@ -164,7 +179,7 @@ export function buildLondon(renderer, { mobile }) {
   group.add(river);
 
   // traffic: headlights and tail lights moving along the main roads
-  const trafficU = { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
+  const trafficU = real ? real.trafficU : { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
   const TV = 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
   const TF = `uniform float uTime; uniform float uLen; uniform float uSeed; uniform vec3 uCam; varying vec2 vUv; varying vec3 vW;
     float th(float n){ return fract(sin(n) * 43758.5453); }
@@ -186,8 +201,10 @@ export function buildLondon(renderer, { mobile }) {
     m.frustumCulled = false;
     group.add(m);
   };
-  xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
-  zl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, 0, l.c, false, i * 5.7 + 1));
+  if (!real) {
+    xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
+    zl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, 0, l.c, false, i * 5.7 + 1));
+  }
 
   // ---------------------------------------------------------------- terraces
   const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.24, frame: '#efebe2' });
@@ -248,7 +265,7 @@ export function buildLondon(renderer, { mobile }) {
   };
 
   blocks.forEach((b) => {
-    if (b.park || b.landmark) return;
+    if (real || b.park || b.landmark) return;
     if (Math.hypot(b.cx, b.cz) > R + 150) return;
     let style = r() < 0.18 ? 'modern' : r() < 0.18 ? 'stucco' : 'terrace';
     if (b.campus || (Math.abs(b.cx) < 400 && Math.abs(b.cz) < 300 && r() < 0.5)) style = r() < 0.6 ? 'stone' : 'modern';
@@ -279,7 +296,8 @@ export function buildLondon(renderer, { mobile }) {
   const lm = [];
   const addBox = (mat, x, y, z, w, h, d, col) => { const m = new THREE.Mesh(bx, mat); m.position.set(x, y, z); m.scale.set(w, h, d); if (col) { m.material = mat; } m.castShadow = m.receiveShadow = true; group.add(m); lm.push(m); return m; };
   const portland = facadeMaterial({ floor: 3.6, bay: 2.4, winW: 0.34, winH: 0.6, lit: 0.16, color: '#d9d1bf', frame: '#cfc7b4', roof: '#8d877b' });
-  blocks.forEach((b) => {
+  const realBT = real && real.landmarks['BT Tower'];
+  (real ? (realBT ? [{ landmark: 'bt', cx: realBT[0], cz: realBT[1], real: true }] : []) : blocks).forEach((b) => {
     if (b.landmark === 'senate') {
       // Senate House: stepped Art Deco tower in Portland stone
       const cx = b.cx, cz = b.cz;
@@ -312,7 +330,7 @@ export function buildLondon(renderer, { mobile }) {
       for (let i = 0; i < 6; i++) cyl(10.5, 110 + i * 7, 3.5, dark), cyl(9.5, 113.5 + i * 7, 3.5, mat);
       cyl(7, 152, 16, mat);
       cyl(2, 168, 14, dark);
-      addBox(stoneMat, b.cx, 0, b.cz, b.x1 - b.x0 - 10, 14, b.z1 - b.z0 - 10);
+      if (!b.real) addBox(stoneMat, b.cx, 0, b.cz, b.x1 - b.x0 - 10, 14, b.z1 - b.z0 - 10);
     } else if (b.landmark === 'euston') {
       addBox(modernMat, b.cx, 0, b.cz, b.x1 - b.x0 - 10, 18, b.z1 - b.z0 - 10);
     }
@@ -327,15 +345,15 @@ export function buildLondon(renderer, { mobile }) {
     const h = (12 + r() * 9) * s, cr = (4.5 + r() * 3) * s;
     trees.push([x, z, h, cr]);
   };
-  blocks.forEach((b) => {
+  if (!real) blocks.forEach((b) => {
     if (!b.park || Math.hypot(b.cx, b.cz) > R) return;
     for (let x = b.x0 + 4; x < b.x1 - 3; x += 9) for (let z = b.z0 + 4; z < b.z1 - 3; z += 9) {
       const edge = Math.min(x - b.x0, b.x1 - x, z - b.z0, b.z1 - z) < 12;
       if (r() < (edge ? 0.85 : 0.35)) addTree(x + (r() - 0.5) * 5, z + (r() - 0.5) * 5);
     }
   });
-  xl.filter((l) => l.major).forEach((l) => { for (let z = -R; z < R; z += 13) { if (r() < 0.7) addTree(l.c - l.w / 2 - 2, z, 0.8); if (r() < 0.7) addTree(l.c + l.w / 2 + 2, z, 0.8); } });
-  zl.filter((l) => l.major).forEach((l) => { for (let x = -R; x < R; x += 13) { if (r() < 0.7) addTree(x, l.c - l.w / 2 - 2, 0.8); if (r() < 0.7) addTree(x, l.c + l.w / 2 + 2, 0.8); } });
+  if (!real) xl.filter((l) => l.major).forEach((l) => { for (let z = -R; z < R; z += 13) { if (r() < 0.7) addTree(l.c - l.w / 2 - 2, z, 0.8); if (r() < 0.7) addTree(l.c + l.w / 2 + 2, z, 0.8); } });
+  if (!real) zl.filter((l) => l.major).forEach((l) => { for (let x = -R; x < R; x += 13) { if (r() < 0.7) addTree(x, l.c - l.w / 2 - 2, 0.8); if (r() < 0.7) addTree(x, l.c + l.w / 2 + 2, 0.8); } });
   const leafCols = ['#4f6b35', '#5d7a3c', '#46602f', '#6b7f43', '#55703a', '#7a8a48'];
   const canopy = [], trunk = [];
   trees.forEach(([x, z, h, cr]) => {
@@ -370,13 +388,14 @@ export function buildLondon(renderer, { mobile }) {
   const city = [];
   const rc = rng(5);
   // the City of London cluster to the east-south-east, Canary Wharf further east
-  for (let i = 0; i < 26; i++) {
+  const realSky = real && real.tallTops.length > 8;
+  for (let i = 0; i < (realSky ? 0 : 26); i++) {
     const x = -650 + (rc() - 0.5) * 700, z = 2700 + (rc() - 0.5) * 800;
     const h = 90 + Math.pow(rc(), 1.5) * 190;
     m4.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rc() * 0.6, 0)), new THREE.Vector3(30 + rc() * 25, h, 30 + rc() * 25));
     city.push([m4.clone(), new THREE.Color(MOD[Math.floor(rc() * 4)])]);
   }
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < (realSky ? 0 : 14); i++) {
     const x = -2900 + (rc() - 0.5) * 500, z = 7600 + (rc() - 0.5) * 600;
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(40, 140 + rc() * 100, 40));
     city.push([m4.clone(), new THREE.Color('#8a949c')]);
@@ -384,19 +403,22 @@ export function buildLondon(renderer, { mobile }) {
   inst(bx, towerMat, city, false);
   // red aviation lights on the tall towers (blink in the engine)
   const av = [];
+  if (realSky) real.tallTops.forEach(([x, h, z]) => av.push([new THREE.Matrix4().compose(new THREE.Vector3(x, h + 2, z), q0, new THREE.Vector3(2.2, 2.2, 2.2))]));
   city.forEach(([mm]) => { const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(); mm.decompose(p, q, s); av.push([new THREE.Matrix4().compose(new THREE.Vector3(p.x, s.y + 2, p.z), q0, new THREE.Vector3(2.2, 2.2, 2.2))]); });
-  const btb = blocks.find((b) => b.landmark === 'bt');
+  const btb = realBT ? { cx: realBT[0], cz: realBT[1] } : blocks.find((b) => b.landmark === 'bt');
   if (btb) av.push([new THREE.Matrix4().compose(new THREE.Vector3(btb.cx, 183, btb.cz), q0, new THREE.Vector3(1.6, 1.6, 1.6))]);
   const avMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.3, 0.15) });
   inst(new THREE.SphereGeometry(1, 8, 6), avMat, av.map(([m]) => [m, new THREE.Color(1, 1, 1)]), false);
   const glassy = plainMaterial({ color: '#7f909b', roughness: 0.1, metalness: 0.5 }, 'glassy');
   const shard = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 32, 310, 4, 1), glassy);
-  shard.position.set(riverX(3100) - 220, 155, 3100);
+  const rs = real && real.landmarks['The Shard'];
+  if (rs) shard.position.set(rs[0], 155, rs[1]); else shard.position.set(riverX(3100) - 220, 155, 3100);
   shard.rotation.y = Math.PI / 4;
   group.add(shard);
   const gh = new THREE.LatheGeometry(Array.from({ length: 16 }, (_, i) => { const t = i / 15; return new THREE.Vector2(Math.max(0.5, 27 * Math.sin(Math.PI * (0.18 + t * 0.82)) * (1 - t * 0.25)), t * 180); }), 32);
   const gherkin = new THREE.Mesh(gh, plainMaterial({ color: '#4e6470', roughness: 0.18, metalness: 0.4 }, 'gherkin'));
-  gherkin.position.set(-520, 0, 2950);
+  const rg2 = real && real.landmarks['30 St Mary Axe'];
+  if (rg2) gherkin.position.set(rg2[0], 0, rg2[1]); else gherkin.position.set(-520, 0, 2950);
   group.add(gherkin);
 
   return { group, mapTex, emTex, blocks, trafficU, avMat };

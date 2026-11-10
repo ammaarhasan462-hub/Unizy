@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
 import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { buildCity } from './city';
 
 const H = MAP_HALF;
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -53,9 +54,29 @@ function streets(r) {
   return { xl, zl };
 }
 
-export function buildSouthKen(renderer, { mobile }) {
+// hand-built landmarks kept over the real map, moved onto their mapped footprints, with the real footprints they replace
+const LANDMARK_FIX = { nhm: [0, 121], kp: [-90, -8] };
+const LANDMARK_RECTS = [[245, 347, -82, 11], [-284, -140, -81, 202], [-284, -53, 216, 460], [689, 811, -830, -717], [438, 474, -73, -37]];
+
+export function buildSouthKen(renderer, { mobile, city: cityData }) {
   const r = rng(4321);
   const group = new THREE.Group();
+  let real = null;
+  if (cityData) {
+    const keep = (x, z) => !inRect(x, z, CAMPUS, 4) && !LANDMARK_RECTS.some((q) => inRect(x, z, q, 4));
+    const skip = (x, z) => LANDMARK_RECTS.some((q) => inRect(x, z, q, 0));
+    // Imperial's own ground: the campus paving, Queen's Lawn, Dangoor Plaza, the courtyard north of the Sherfield Building
+    const paint = (ctx, toPx) => {
+      const box = (x0, z0, x1, z1) => { const [a, b] = toPx(x0, z0); const [c, d] = toPx(x1, z1); ctx.fillRect(a, b, c - a, d - b); };
+      ctx.fillStyle = '#a49d8d'; box(-24, -181, 208, 197);
+      ctx.fillStyle = '#5f7d3d'; box(-22, -72, 30, -10);
+      ctx.fillStyle = '#c3bba8'; box(-22, -10, 30, 160); box(95, -60, 175, 50);
+      ctx.fillStyle = '#5f7d3d'; box(108, -48, 132, -20); box(140, 10, 165, 40);
+      ctx.fillStyle = '#b9b2a2'; box(430, -82, 482, -28);
+    };
+    try { real = buildCity(cityData, { mobile, H, site: 'imperial', keep, skip, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
+  }
+  const shiftSince = (mark, [dx, dz]) => { if (!real) return; for (let i = mark; i < group.children.length; i++) { group.children[i].position.x += dx; group.children[i].position.z += dz; } };
   const { xl, zl } = streets(r);
   const blocks = [];
   for (let i = 0; i < xl.length - 1; i++) {
@@ -81,7 +102,7 @@ export function buildSouthKen(renderer, { mobile }) {
   const S = mobile ? 2048 : 4096;
   const k = S / (2 * H);
   const toPx = (x, z) => [(x + H) * k, (z + H) * k];
-  const mapTex = canvasTex(S, S, (ctx) => {
+  const mapTex = real ? real.mapTex : canvasTex(S, S, (ctx) => {
     ctx.fillStyle = '#857e72';
     ctx.fillRect(0, 0, S, S);
     blocks.forEach((b) => {
@@ -136,7 +157,7 @@ export function buildSouthKen(renderer, { mobile }) {
   mapTex.anisotropy = 16;
   const ES = mobile ? 1024 : 2048;
   const ek = ES / (2 * H);
-  const emTex = canvasTex(ES, ES, (ctx) => {
+  const emTex = real ? real.emTex : canvasTex(ES, ES, (ctx) => {
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, ES, ES);
     const lamp = (x, z, rad, a, col) => {
       const px = (x + H) * ek, pz = (z + H) * ek, rr = Math.max(1.5, rad * ek);
@@ -162,7 +183,7 @@ export function buildSouthKen(renderer, { mobile }) {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1 }, 'sk-ground'));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
-  group.add(ground);
+  if (!real) group.add(ground);
   const farTex = canvasTex(1024, 1024, (ctx, W) => {
     const rr = rng(78);
     ctx.fillStyle = '#5d5953'; ctx.fillRect(0, 0, W, W);
@@ -200,7 +221,7 @@ export function buildSouthKen(renderer, { mobile }) {
     river.receiveShadow = true;
     group.add(river);
   }
-  {
+  if (!real) {
     const v = [], idx = [];
     SERPENTINE.forEach(([x, z, w], i) => {
       const n = SERPENTINE[Math.min(i + 1, SERPENTINE.length - 1)], pv = SERPENTINE[Math.max(i - 1, 0)];
@@ -223,7 +244,7 @@ export function buildSouthKen(renderer, { mobile }) {
   }
 
   // traffic on the main roads (the north-south roads stop at the park)
-  const trafficU = { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
+  const trafficU = real ? real.trafficU : { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
   const TV = 'varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
   const TF = `uniform float uTime; uniform float uLen; uniform float uSeed; uniform vec3 uCam; varying vec2 vUv; varying vec3 vW;
     float th(float n){ return fract(sin(n) * 43758.5453); }
@@ -246,8 +267,8 @@ export function buildSouthKen(renderer, { mobile }) {
     group.add(m);
   };
   // Exhibition Road is a quiet shared space: no traffic streaks there
-  xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
-  zl.filter((l) => l.major && l.c !== 208).forEach((l, i) => road3(KENS_GORE + H, l.w * 0.8, (KENS_GORE - H) / 2, l.c, false, i * 5.7 + 1));
+  if (!real) xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
+  if (!real) zl.filter((l) => l.major && l.c !== 208).forEach((l, i) => road3(KENS_GORE + H, l.w * 0.8, (KENS_GORE - H) / 2, l.c, false, i * 5.7 + 1));
 
   // ---------------------------------------------------------------- terraces: white stucco, red-brick mansion blocks
   const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.24, frame: '#efebe2' });
@@ -304,7 +325,7 @@ export function buildSouthKen(renderer, { mobile }) {
     }
   };
   blocks.forEach((b) => {
-    if (b.park || b.landmark === 'campus' || b.landmark === 'museums' || b.landmark === 'va') return;
+    if (real || b.park || b.landmark === 'campus' || b.landmark === 'museums' || b.landmark === 'va') return;
     if (Math.hypot(b.cx, b.cz) > R + 150) return;
     // South Kensington is white stucco and red-brick mansion blocks; the odd modern block
     let style = r() < 0.12 ? 'modern' : r() < 0.55 ? 'stucco' : r() < 0.6 ? 'mansion' : 'terrace';
@@ -445,6 +466,7 @@ export function buildSouthKen(renderer, { mobile }) {
     box(gold, AX - 0.1, AX + 1.4, 9.4, 10.2, AZ - 1.1, AZ + 1.1);
   }
 
+  const mNhm = group.children.length;
   // Natural History Museum: the long Romanesque front on Cromwell Road in buff and blue-grey terracotta bands,
   // twin central towers with spires, end pavilions with towers, the great hall behind
   const nhmTex = canvasTex(512, 256, (ctx, W, Hh) => {
@@ -474,6 +496,7 @@ export function buildSouthKen(renderer, { mobile }) {
   box(portland, -232, -100, 0, 24, 60, 196);
   box(portland, -100, -60, 0, 20, 120, 196);
 
+  shiftSince(mNhm, LANDMARK_FIX.nhm);
   // V&A: Aston Webb's Cromwell Road front in red brick and Portland stone, the central tower with its open crown
   {
     const va = facadeMaterial({ floor: 5.0, bay: 3.6, winW: 0.4, winH: 0.6, lit: 0.22, color: '#a35a42', frame: '#e3d9c4', roof: '#596068' });
@@ -486,6 +509,7 @@ export function buildSouthKen(renderer, { mobile }) {
     const fame = new THREE.Mesh(new THREE.ConeGeometry(0.8, 4, 8), gold); fame.position.set(-274, 54, 330); group.add(fame);
   }
 
+  const mKp = group.children.length;
   // Kensington Palace (red brick) at the west of the gardens, and the Orangery
   {
     const kp = facadeMaterial({ floor: 4.4, bay: 3.2, winW: 0.42, winH: 0.62, lit: 0.18, color: '#a1543d', frame: '#e8e0d0', roof: '#4f545b' });
@@ -501,11 +525,12 @@ export function buildSouthKen(renderer, { mobile }) {
   inst(roofGeometry(), plainMaterial({ roughness: 0.7, metalness: 0.05 }, 'sk-slate'), roofs);
   inst(bx, plainMaterial({ roughness: 0.9 }, 'sk-chim'), chim);
 
+  shiftSince(mKp, LANDMARK_FIX.kp);
   // ---------------------------------------------------------------- trees: the park's avenues and groves, street plane trees
   const trees = [];
   const maxTrees = mobile ? 1300 : 3800;
   const addTree = (x, z, s = 1) => {
-    if (trees.length >= maxTrees || inRect(x, z, CAMPUS, 2)) return;
+    if (real || trees.length >= maxTrees || inRect(x, z, CAMPUS, 2)) return;
     if (Math.hypot(x, z) > R) return;
     if (x > PARK_X && SERPENTINE.some(([sx, sz, w]) => Math.hypot(x - sx, z - sz) < w * 0.75 + 8)) return;
     if (Math.hypot((x - ROUND_POND[0]) / (ROUND_POND[2] + 8), (z - ROUND_POND[1]) / (ROUND_POND[3] + 8)) < 1) return;
@@ -563,42 +588,47 @@ export function buildSouthKen(renderer, { mobile }) {
   const city = [];
   const rc = rng(6);
   // the City cluster to the east, Canary Wharf beyond, a few towers at Vauxhall and Nine Elms
-  for (let i = 0; i < 28; i++) {
+  const realSky = real && real.tallTops.length > 8;
+  for (let i = 0; i < (realSky ? 0 : 28); i++) {
     const x = 1350 + (rc() - 0.5) * 700, z = 6500 + (rc() - 0.5) * 700;
     const h = 90 + Math.pow(rc(), 1.5) * 190;
     m4.compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rc() * 0.6, 0)), new THREE.Vector3(30 + rc() * 25, h, 30 + rc() * 25));
     city.push([m4.clone(), new THREE.Color(MOD[Math.floor(rc() * 4)])]);
   }
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < (realSky ? 0 : 14); i++) {
     const x = 400 + (rc() - 0.5) * 500, z = 11200 + (rc() - 0.5) * 600;
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(40, 140 + rc() * 100, 40));
     city.push([m4.clone(), new THREE.Color('#8a949c')]);
   }
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < (realSky ? 0 : 8); i++) {
     const x = -1500 + (rc() - 0.5) * 300, z = 3300 + (rc() - 0.5) * 500;
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(28, 80 + rc() * 90, 28));
     city.push([m4.clone(), new THREE.Color(MOD[Math.floor(rc() * 4)])]);
   }
   inst(bx, towerMat, city, false);
   const av = [];
+  if (realSky) real.tallTops.forEach(([x, h, z]) => av.push(new THREE.Matrix4().compose(new THREE.Vector3(x, h + 2, z), q0, new THREE.Vector3(2.2, 2.2, 2.2))));
   city.forEach(([mm]) => { const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(); mm.decompose(p, q, s); av.push(new THREE.Matrix4().compose(new THREE.Vector3(p.x, s.y + 2, p.z), q0, new THREE.Vector3(2.2, 2.2, 2.2))); });
   const glassy = plainMaterial({ color: '#7f909b', roughness: 0.1, metalness: 0.5 }, 'sk-glassy');
   // the Shard (south bank by London Bridge)
   const shard = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 32, 310, 4, 1), glassy);
   const shz = 6260;
-  shard.position.set(riverX(shz) - 200, 155, shz);
+  const rsh = real && real.landmarks['The Shard'];
+  shard.position.set(rsh ? rsh[0] : riverX(shz) - 200, 155, rsh ? rsh[1] : shz);
   shard.rotation.y = Math.PI / 4;
   group.add(shard);
-  av.push(new THREE.Matrix4().compose(new THREE.Vector3(shard.position.x, 312, shz), q0, new THREE.Vector3(2.4, 2.4, 2.4)));
+  av.push(new THREE.Matrix4().compose(new THREE.Vector3(shard.position.x, 312, shard.position.z), q0, new THREE.Vector3(2.4, 2.4, 2.4)));
   const gh = new THREE.LatheGeometry(Array.from({ length: 16 }, (_, i) => { const t = i / 15; return new THREE.Vector2(Math.max(0.5, 27 * Math.sin(Math.PI * (0.18 + t * 0.82)) * (1 - t * 0.25)), t * 180); }), 32);
   const gherkin = new THREE.Mesh(gh, plainMaterial({ color: '#4e6470', roughness: 0.18, metalness: 0.4 }, 'sk-gherkin'));
-  gherkin.position.set(1550, 0, 6750);
+  const rgk = real && real.landmarks['30 St Mary Axe'];
+  gherkin.position.set(rgk ? rgk[0] : 1550, 0, rgk ? rgk[1] : 6750);
   group.add(gherkin);
   // the BT Tower to the north-east
   {
     const mat = plainMaterial({ color: '#c9cdd1', roughness: 0.35, metalness: 0.3 }, 'sk-bt');
     const dark = plainMaterial({ color: '#2b3036', roughness: 0.4, metalness: 0.4, emissive: '#7fc2ff', emissiveIntensity: 0.9 }, 'sk-btd');
-    const BX = 2580, BZ = 2630;
+    const rbt = real && real.landmarks['BT Tower'];
+    const BX = rbt ? rbt[0] : 2580, BZ = rbt ? rbt[1] : 2630;
     const cyl = (rad, y0, h, m) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), m); c.position.set(BX, y0 + h / 2, BZ); group.add(c); };
     cyl(9, 0, 110, mat);
     for (let i = 0; i < 6; i++) cyl(10.5, 110 + i * 7, 3.5, dark), cyl(9.5, 113.5 + i * 7, 3.5, mat);
