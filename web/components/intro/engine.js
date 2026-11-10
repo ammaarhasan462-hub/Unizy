@@ -318,6 +318,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
     if (state.forceFlash != null) { const s = strikes[state.forceFlash]; flash = 1; cloudU.uFlashPos.value.copy(s.pos); strikes.forEach((x) => { x.bolt.visible = x === s; }); }
     if (p > 0.06) flash = 0;
     cloudU.uFlash.value = flash;
+    state.flash = flash;
     grade.uniforms.uFlash.value = flash;
 
     // stage lighting

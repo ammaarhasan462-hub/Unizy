@@ -314,7 +314,7 @@ export default function Intro() {
         >
           <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> Choose your university</p>
           <h1 className="intro-title mt-6 text-[clamp(38px,5.6vw,88px)]"><T s="Where do you *study?*" /></h1>
-          <p className="intro-body mt-5 max-w-[460px] text-[14px] font-light tracking-[.03em] text-white/60">Pick your university to begin. More London universities are on the way.</p>
+          <p className="intro-body mt-5 max-w-[540px] text-[14px] font-light tracking-[.03em] text-white/60">Pick your university to begin. More London universities are on the way.</p>
           <ul className="mt-9 grid w-full max-w-[1120px] grid-cols-2 gap-2.5 sm:mt-11 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
             {UNIS.map((u) => (
               <li key={u.id} className={u.live ? 'col-span-2 sm:col-span-1' : ''}>
@@ -338,7 +338,7 @@ export default function Intro() {
                       <span className="block text-[22px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
                       <span className="mt-1.5 block text-[11.5px] leading-snug text-white/65 sm:text-[12.5px]">{u.name}</span>
                     </span>
-                    <span className="pointer-events-none absolute left-[-25%] right-[-25%] top-[38%] -translate-y-1/2 rotate-[-9deg] border-y border-[#d9b46c]/45 bg-[#07090d]/85 py-1.5 text-center font-mono text-[10.5px] uppercase tracking-[.34em] text-[#d9b46c] shadow-[0_8px_30px_rgba(0,0,0,.45)] sm:py-2 sm:text-[11px]">
+                    <span className="pointer-events-none absolute left-[-25%] right-[-25%] top-[30%] -translate-y-1/2 rotate-[-9deg] sm:top-[27%] border-y border-[#d9b46c]/45 bg-[#07090d]/85 py-1.5 text-center font-mono text-[10.5px] uppercase tracking-[.34em] text-[#d9b46c] shadow-[0_8px_30px_rgba(0,0,0,.45)] sm:py-2 sm:text-[11px]">
                       In Progress
                     </span>
                   </div>
