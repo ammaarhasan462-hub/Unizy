@@ -1,0 +1,272 @@
+{
+ "red_brick": {
+  "cat": "brick",
+  "name": "Red Brick",
+  "dims_mm": [
+   1399.999976158142,
+   1399.999976158142
+  ],
+  "files": {
+   "diff": "red_brick_diff_1k.jpg",
+   "nor": "red_brick_nor_1k.jpg",
+   "rough": "red_brick_rough_1k.jpg",
+   "ao": "red_brick_ao_1k.jpg"
+  },
+  "tags": [
+   "brick",
+   "bricks",
+   "wall",
+   "red brick",
+   "brick wall",
+   "rough",
+   "exterior"
+  ]
+ },
+ "red_brick_03": {
+  "cat": "brick",
+  "name": "Red Brick 03",
+  "dims_mm": [
+   1000,
+   1000
+  ],
+  "files": {
+   "diff": "red_brick_03_diff_1k.jpg",
+   "nor": "red_brick_03_nor_1k.jpg",
+   "rough": "red_brick_03_rough_1k.jpg",
+   "ao": "red_brick_03_ao_1k.jpg"
+  },
+  "tags": [
+   "red",
+   "industrial",
+   "factory",
+   "brown"
+  ]
+ },
+ "medieval_blocks_03": {
+  "cat": "brick",
+  "name": "Medieval Blocks 03",
+  "dims_mm": [
+   2000,
+   2000
+  ],
+  "files": {
+   "diff": "medieval_blocks_03_diff_1k.jpg",
+   "nor": "medieval_blocks_03_nor_1k.jpg",
+   "rough": "medieval_blocks_03_rough_1k.jpg",
+   "ao": "medieval_blocks_03_ao_1k.jpg"
+  },
+  "tags": [
+   "blocks",
+   "large",
+   "old",
+   "rough"
+  ]
+ },
+ "cracked_concrete_wall": {
+  "cat": "brick",
+  "name": "Cracked Concrete Wall",
+  "dims_mm": [
+   1000,
+   1000
+  ],
+  "files": {
+   "diff": "cracked_concrete_wall_diff_1k.jpg",
+   "nor": "cracked_concrete_wall_nor_1k.jpg",
+   "rough": "cracked_concrete_wall_rough_1k.jpg",
+   "ao": "cracked_concrete_wall_ao_1k.jpg"
+  },
+  "tags": [
+   "rough",
+   "uneven",
+   "old",
+   "weathered",
+   "wall",
+   "worn",
+   "discolored",
+   "cracked",
+   "chipped",
+   "stained",
+   "dirty",
+   "beige"
+  ]
+ },
+ "factory_wall": {
+  "cat": "roofing",
+  "name": "Factory Wall",
+  "dims_mm": [
+   3000,
+   3000
+  ],
+  "files": {
+   "diff": "factory_wall_diff_1k.jpg",
+   "nor": "factory_wall_nor_1k.jpg",
+   "rough": "factory_wall_rough_1k.jpg",
+   "ao": "factory_wall_ao_1k.jpg"
+  },
+  "tags": [
+   "wall",
+   "fence",
+   "industrial",
+   "corrugated"
+  ]
+ },
+ "corrugated_iron": {
+  "cat": "roofing",
+  "name": "Corrugated Iron",
+  "dims_mm": [
+   1120.0000047683716,
+   1120.0000047683716
+  ],
+  "files": {
+   "diff": "corrugated_iron_diff_1k.jpg",
+   "nor": "corrugated_iron_nor_1k.jpg",
+   "rough": "corrugated_iron_rough_1k.jpg",
+   "ao": "corrugated_iron_ao_1k.jpg"
+  },
+  "tags": [
+   "metal",
+   "corrugated",
+   "roof",
+   "roofing",
+   "steel",
+   "metallic",
+   "sheet",
+   "metal sheet",
+   "weathered",
+   "rusty",
+   "iron",
+   "galvanized"
+  ]
+ },
+ "asphalt_02": {
+  "cat": "road",
+  "name": "Asphalt 02",
+  "dims_mm": [
+   3000.000238418579,
+   3000
+  ],
+  "files": {
+   "diff": "asphalt_02_diff_1k.jpg",
+   "nor": "asphalt_02_nor_1k.jpg",
+   "rough": "asphalt_02_rough_1k.jpg",
+   "ao": "asphalt_02_ao_1k.jpg"
+  },
+  "tags": [
+   "asphalt",
+   "cracked",
+   "flat",
+   "road",
+   "asphalt road",
+   "tarmac road",
+   "gritty",
+   "weathered",
+   "grey",
+   "cracking",
+   "tar",
+   "cracks"
+  ]
+ },
+ "aerial_asphalt_01": {
+  "cat": "road",
+  "name": "Aerial Asphalt 01",
+  "dims_mm": [
+   30000,
+   30000
+  ],
+  "files": {
+   "diff": "aerial_asphalt_01_diff_1k.jpg",
+   "nor": "aerial_asphalt_01_nor_1k.jpg",
+   "rough": "aerial_asphalt_01_rough_1k.jpg",
+   "ao": "aerial_asphalt_01_ao_1k.jpg"
+  },
+  "tags": [
+   "road",
+   "flat",
+   "cracked"
+  ]
+ },
+ "concrete_floor_worn_001": {
+  "cat": "plaster-concrete",
+  "name": "Concrete Floor Worn 001",
+  "dims_mm": [
+   3000,
+   3000.000238418579
+  ],
+  "files": {
+   "diff": "concrete_floor_worn_001_diff_1k.jpg",
+   "nor": "concrete_floor_worn_001_nor_1k.jpg",
+   "rough": "concrete_floor_worn_001_rough_1k.jpg",
+   "ao": "concrete_floor_worn_001_ao_1k.jpg"
+  },
+  "tags": [
+   "worn",
+   "old",
+   "plain",
+   "grey",
+   "weathered",
+   "bare",
+   "discolored"
+  ]
+ },
+ "concrete_floor_02": {
+  "cat": "concrete",
+  "name": "Concrete Floor 02",
+  "dims_mm": [
+   2000,
+   2000
+  ],
+  "files": {
+   "diff": "concrete_floor_02_diff_1k.jpg",
+   "nor": "concrete_floor_02_nor_1k.jpg",
+   "rough": "concrete_floor_02_rough_1k.jpg",
+   "ao": "concrete_floor_02_ao_1k.jpg"
+  },
+  "tags": [
+   "rough",
+   "moss",
+   "plain"
+  ]
+ },
+ "beige_wall_001": {
+  "cat": "plaster-concrete",
+  "name": "Beige Wall 001",
+  "dims_mm": [
+   3000,
+   3000.000238418579
+  ],
+  "files": {
+   "diff": "beige_wall_001_diff_1k.jpg",
+   "nor": "beige_wall_001_nor_1k.jpg",
+   "rough": "beige_wall_001_rough_1k.jpg",
+   "ao": "beige_wall_001_ao_1k.jpg"
+  },
+  "tags": [
+   "beige",
+   "painted",
+   "smooth",
+   "suburb",
+   "house",
+   "home"
+  ]
+ },
+ "cobblestone_floor_04": {
+  "cat": "cobblestone",
+  "name": "Cobblestone Floor 04",
+  "dims_mm": [
+   1500,
+   1500
+  ],
+  "files": {
+   "diff": "cobblestone_floor_04_diff_1k.jpg",
+   "nor": "cobblestone_floor_04_nor_1k.jpg",
+   "rough": "cobblestone_floor_04_rough_1k.jpg",
+   "ao": "cobblestone_floor_04_ao_1k.jpg"
+  },
+  "tags": [
+   "cobblestone",
+   "moss",
+   "damp",
+   "wet"
+  ]
+ }
+}
