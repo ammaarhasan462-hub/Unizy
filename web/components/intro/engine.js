@@ -80,10 +80,10 @@ const ss = (a, b, x) => {
 const lerp = (a, b, t) => a + (b - a) * t;
 
 const GRADE = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uVig: { value: 0.5 }, uFlash: { value: 0 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uRes: { value: new THREE.Vector2(1, 1) }, uVig: { value: 0.5 }, uFlash: { value: 0 }, uSplit: { value: 0 }, uGrain: { value: 0.014 } },
   vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
   fragmentShader: `
-    uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; uniform float uVig; uniform float uFlash; varying vec2 vUv;
+    uniform sampler2D tDiffuse; uniform float uTime; uniform vec2 uRes; uniform float uVig; uniform float uFlash; uniform float uSplit; uniform float uGrain; varying vec2 vUv;
     void main(){
       vec2 c = vUv - 0.5; float r2 = dot(c, c);
       vec3 col;
@@ -93,10 +93,14 @@ const GRADE = {
       float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
       col = mix(vec3(l), col, 0.96);
       col = (col - 0.5) * 1.06 + 0.5;
+      // split toning like a dawn photograph: shadows lean cool, highlights keep the warm light
+      float lt = dot(col, vec3(0.2126, 0.7152, 0.0722));
+      col *= mix(mix(vec3(0.9, 0.97, 1.08), vec3(1.0), smoothstep(0.02, 0.45, lt)), vec3(1.0), uSplit);
       col += vec3(0.75, 0.82, 1.0) * uFlash * 0.07;
       col *= 1.0 - r2 * uVig;
       float n = fract(sin(dot(vUv * uRes + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);
-      col += (n - 0.5) * 0.008;
+      // film grain, stronger in the shadows and mid-tones than in the highlights
+      col += (n - 0.5) * uGrain * (1.2 - 0.8 * smoothstep(0.2, 0.9, lt));
       gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }`,
 };
@@ -145,6 +149,21 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   scene.add(london.group);
   const ucl = imp ? buildImperial({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
+  // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
+  let intEnv = null, disposed = false;
+  {
+    import('./realism').then(({ loadInterior, upgradeLibrary, upgradeHall, stoneExterior }) => loadInterior(imp ? 'imperial' : 'ucl').then((A) => {
+      if (disposed || !A) return;
+      try {
+        if (imp) {
+          stoneExterior(ucl.group, A.stone, { skip: ucl.lib, keys: /^qt-stone/ });
+          stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^qt-brick/, scale: 1 / 1.4, tint: 0.35 });
+        } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
+        const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
+        if (res) { intEnv = res.env; renderer.shadowMap.needsUpdate = true; }
+      } catch (e) { console.error(e); }
+    })).catch(() => {});
+  }
 
   const cloudU = {
     uNoise: { value: noise },
@@ -349,7 +368,8 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const inside = ss(0.705, 0.75, p);
     ATMO.uIndoor.value = inside;
     ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
-    scene.environmentIntensity = lerp(2.2, 0.3, inside);
+    scene.environment = intEnv && inside > 0.5 ? intEnv : sky.env;
+    scene.environmentIntensity = intEnv && inside > 0.5 ? lerp(0.3, 0.42, inside) : lerp(2.2, 0.3, inside);
     sun.intensity = 2.2 * (1 - inside);
     renderer.toneMappingExposure = lerp(lerp(0.5, 1.08, ss(0.24, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
     london.trafficU.uTime.value = time;
@@ -368,7 +388,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     grade.uniforms.uVig.value = lerp(0.42, 0.6, inside);
     ucl.int.forEach(([l, i]) => { l.intensity = i * ss(0.62, 0.72, p); });
     ucl.dust.uTime.value = time;
-    ucl.dust.uOpacity.value = ss(0.72, 0.78, p);
+    ucl.dust.uOpacity.value = ss(0.72, 0.78, p) * (ucl.dustK ?? 1);
     ucl.shaftMat.opacity = 0.11 * ss(0.7, 0.78, p);
 
     // sun shadow frustum follows the stage
@@ -415,10 +435,11 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
   return {
     state,
-    debug: { scene, composer, get gtao() { return gtao; } },
+    debug: { scene, composer, renderer, grade, get gtao() { return gtao; } },
     jump(p) { state.p = state.target = p; },
     begin() { if (state.beginAt == null) state.beginAt = state.time; },
     dispose() {
+      disposed = true;
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onMove);
