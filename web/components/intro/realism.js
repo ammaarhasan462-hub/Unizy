@@ -184,6 +184,96 @@ function bookMaterial() {
   return atmo(m);
 }
 
+
+// ------------------------------------------------------------------ procedural surfaces with photographic detail
+// a worn runner: Persian-style border and field, knotted pile, the walking line faded down the middle
+function rugTex2() {
+  return canvasTex(512, 4096, (ctx, W, H) => {
+    const r = rng(23);
+    ctx.fillStyle = '#5b1d1a'; ctx.fillRect(0, 0, W, H);
+    const band = (x0, w, c1, c2) => {
+      ctx.fillStyle = c1; ctx.fillRect(x0, 0, w, H); ctx.fillRect(W - x0 - w, 0, w, H);
+      for (let y = 0; y < H; y += 28) for (const x of [x0 + w / 2, W - x0 - w / 2]) {
+        ctx.fillStyle = c2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w * 0.32, y + 14); ctx.lineTo(x, y + 28); ctx.lineTo(x - w * 0.32, y + 14); ctx.closePath(); ctx.fill();
+      }
+    };
+    band(10, 26, '#1f2a3d', '#b8955a');
+    band(40, 14, '#d6c6a0', '#7a2a22');
+    band(58, 34, '#20283a', '#9c6b3c');
+    // the field: a lattice of small guls
+    for (let y = 60; y < H - 40; y += 64) for (let x = 120; x < W - 110; x += 68) {
+      const off = ((y / 64) | 0) % 2 ? 34 : 0;
+      ctx.save(); ctx.translate(x + off, y);
+      ctx.fillStyle = '#2a3346'; ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(18, 0); ctx.lineTo(0, 22); ctx.lineTo(-18, 0); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#b08d58'; ctx.fillRect(-4, -4, 8, 8);
+      ctx.strokeStyle = 'rgba(214,198,160,.55)'; ctx.lineWidth = 2; ctx.strokeRect(-9, -9, 18, 18);
+      ctx.restore();
+    }
+    // knots and pile
+    for (let i = 0; i < 160000; i++) { const v = r(); ctx.fillStyle = v < 0.5 ? `rgba(0,0,0,${r() * 0.16})` : `rgba(255,230,200,${r() * 0.06})`; ctx.fillRect(r() * W, r() * H, 2, 2); }
+    // wear down the middle, and a few darker stains
+    const g = ctx.createLinearGradient(0, 0, W, 0);
+    g.addColorStop(0.3, 'rgba(190,160,130,0)'); g.addColorStop(0.5, 'rgba(190,160,130,.16)'); g.addColorStop(0.7, 'rgba(190,160,130,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 14; i++) { const gg = ctx.createRadialGradient(r() * W, r() * H, 0, r() * W, r() * H, 30 + r() * 70); gg.addColorStop(0, 'rgba(20,8,4,.12)'); gg.addColorStop(1, 'rgba(20,8,4,0)'); ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H); }
+  });
+}
+
+// marble with soft grey veining, for the columns and pedestals
+function marbleTex() {
+  return canvasTex(1024, 1024, (ctx, W, H) => {
+    const r = rng(31);
+    ctx.fillStyle = '#e9e5dc'; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 40; i++) { const gg = ctx.createRadialGradient(r() * W, r() * H, 0, r() * W, r() * H, 80 + r() * 220); gg.addColorStop(0, `rgba(${200 + r() * 30},${195 + r() * 30},${185 + r() * 30},.35)`); gg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H); }
+    for (let v = 0; v < 26; v++) {
+      let x = r() * W, y = 0;
+      const a = 0.6 + r() * 1.2, wob = 20 + r() * 60;
+      ctx.strokeStyle = `rgba(${90 + r() * 50},${90 + r() * 50},${95 + r() * 50},${0.08 + r() * 0.22})`;
+      ctx.lineWidth = 0.6 + r() * 2.2;
+      ctx.beginPath(); ctx.moveTo(x, y);
+      for (let k = 0; k < 60; k++) { y += H / 60; x += Math.sin(k * 0.5 + v) * wob * 0.1 + (r() - 0.5) * 9 + a; ctx.lineTo(((x % W) + W) % W, y); }
+      ctx.stroke();
+    }
+  }, { repeat: [1, 1] });
+}
+
+// old crown glass at dawn: a warm sky low down, cooler higher up, every pane a little different, heavy glazing bars
+function windowTex2() {
+  return canvasTex(512, 1024, (ctx, W, H) => {
+    const r = rng(41);
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(0, H); ctx.lineTo(0, W / 2); ctx.arc(W / 2, W / 2, W / 2, Math.PI, 0); ctx.lineTo(W, H); ctx.closePath();
+    ctx.clip();
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#c9d0d6'); g.addColorStop(0.45, '#f1d9bd'); g.addColorStop(0.8, '#f6c79a'); g.addColorStop(1, '#e8a77a');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const cols = 3, pw = W / cols, ph = 120;
+    for (let y = W / 2 - ph; y < H; y += ph) for (let c = 0; c < cols; c++) {
+      ctx.fillStyle = `rgba(${r() < 0.5 ? '255,255,255' : '90,70,60'},${r() * 0.09})`; ctx.fillRect(c * pw, y, pw, ph);
+      const gg = ctx.createLinearGradient(c * pw, y, c * pw + pw, y + ph); gg.addColorStop(0, 'rgba(255,255,255,.08)'); gg.addColorStop(1, 'rgba(0,0,0,.06)'); ctx.fillStyle = gg; ctx.fillRect(c * pw, y, pw, ph);
+    }
+    // the silhouette of the building opposite low in the lower panes
+    ctx.fillStyle = 'rgba(70,52,46,.5)'; ctx.fillRect(0, H - 150, W, 150);
+    for (let x = 0; x < W; x += 34) ctx.fillRect(x, H - 150 - r() * 30, 20, 40);
+    ctx.strokeStyle = '#1c1a17'; ctx.lineWidth = 14;
+    for (let x = pw; x < W - 1; x += pw) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = W / 2; y < H; y += ph) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.strokeStyle = '#2c2925'; ctx.lineWidth = 26; ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(0, W / 2); ctx.arc(W / 2, W / 2, W / 2, Math.PI, 0); ctx.lineTo(W, H); ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// soft radial blob for contact shadows and lamp pools
+function blobTex() {
+  return canvasTex(128, 128, (ctx, W) => {
+    const g = ctx.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.45, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+  });
+}
+
 export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   const lib = ucl.lib, furn = ucl.furn;
   if (!lib || !furn || !furn.place) return null;
@@ -196,15 +286,26 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   // surfaces
   const S = A.T;
   const floorM = surface(S.wood_floor, { rough: 0.35, key: 'rl-floor', nScale: 0.6 });
-  [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set(35 / 2.2, 57.5 / 2.2));
+  [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set(35 / 1.1, 57.5 / 1.1));
   const shelfM = surface(S.dark_wood, { color: '#a08070', rough: 0.55, tri: 0.45, key: 'rl-wood' });
   const tableM = surface(S.wood_table_001, { color: '#d0b8a8', rough: 0.3, tri: 0.5, key: 'rl-table' });
   const plasterM = surface(S.painted_plaster_wall, { color: '#3e6b55', rough: 0.85, key: 'rl-plaster' });
   [plasterM.map, plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(57.5 / 2, 17.6 / 2));
   const leatherM = surface(S.brown_leather, { color: '#4f8a63', rough: 0.55, key: 'rl-leather' });
+  const rugM = surface(S.painted_plaster_wall, { rough: 1, key: 'rl-rug', nScale: 0.9 });
+  rugM.map = rugTex2();
+  const marbleM = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: marbleTex(), roughness: 0.16, color: '#f2efe8' }), { userData: { key: 'rl-marble' } }));
+  const winTex = windowTex2();
+  const winM = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: winTex, emissiveMap: winTex, emissive: '#ffffff', emissiveIntensity: 0.95, transparent: true, roughness: 0.08, metalness: 0 }), { userData: { key: 'rl-win' } }));
+  const legs = [];
   lib.traverse((o) => {
     if (!o.isMesh || !o.material || !o.material.userData) return;
     const k = o.material.userData.key;
+    const gp = o.geometry && o.geometry.parameters;
+    if (k === 'rug') { o.material = rugM; return; }
+    if (k === 'marble') { o.material = marbleM; return; }
+    if (k === 'iwin') { o.material = winM; return; }
+    if (k === 'wood' && gp && Math.abs(gp.width - 0.1) < 1e-3 && Math.abs(gp.height - 0.76) < 1e-3) { legs.push(o); return; }
     if (k === 'floor') o.material = floorM;
     else if (k === 'wood' || k === 'wood2') o.material = o.geometry.parameters && o.geometry.parameters.width > 1.9 && o.geometry.parameters.depth > 6 ? tableM : shelfM;
     else if (k === 'panel') o.material = plasterM;
@@ -213,6 +314,54 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   });
 
   const added = [];
+  // reading tables: turned legs in place of the square posts, an apron under each top
+  if (legs.length) {
+    const prof = [];
+    [[0.05, 0], [0.055, 0.04], [0.042, 0.08], [0.03, 0.2], [0.038, 0.34], [0.026, 0.42], [0.034, 0.56], [0.045, 0.62], [0.045, 0.76]].forEach(([rr, y]) => prof.push(new THREE.Vector2(rr, y)));
+    const legG = new THREE.LatheGeometry(prof, 20);
+    const legMs = legs.map((o) => { o.visible = false; return mtx(o.position.x, o.position.y - 0.38, o.position.z, 0); });
+    const im = new THREE.InstancedMesh(legG, tableM, legMs.length);
+    legMs.forEach((m, i) => im.setMatrixAt(i, m));
+    im.castShadow = im.receiveShadow = true; im.frustumCulled = false;
+    lib.add(im); added.push(im);
+    const ap = [];
+    for (const x of [-11.5, -5, 5, 11.5]) for (let z = -11; z > -41; z -= 9.5) ap.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 1.86, z), new THREE.Quaternion(), new THREE.Vector3(1.86, 0.14, 6.9)));
+    const apM = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), tableM, ap.length);
+    ap.forEach((m, i) => apM.setMatrixAt(i, m));
+    apM.castShadow = apM.receiveShadow = true; apM.frustumCulled = false;
+    lib.add(apM); added.push(apM);
+  }
+  // contact shadows under chairs and tables, and warm pools of light under the green lamps
+  const blob = blobTex();
+  const flat = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  const shadowM = new THREE.MeshBasicMaterial({ map: blob, color: '#000000', transparent: true, opacity: 0.55, depthWrite: false });
+  shadowM.alphaMap = blob;
+  const sh = [];
+  P.chairs.forEach(([x, z]) => sh.push(new THREE.Matrix4().compose(new THREE.Vector3(x, F + 0.004, z), new THREE.Quaternion(), new THREE.Vector3(0.95, 1, 0.95))));
+  for (const x of [-11.5, -5, 5, 11.5]) for (let z = -11; z > -41; z -= 9.5) sh.push(new THREE.Matrix4().compose(new THREE.Vector3(x, F + 0.003, z), new THREE.Quaternion(), new THREE.Vector3(3.0, 1, 8.4)));
+  const shM = new THREE.InstancedMesh(flat, shadowM, sh.length);
+  sh.forEach((m, i) => shM.setMatrixAt(i, m));
+  shM.frustumCulled = false; shM.renderOrder = 1;
+  lib.add(shM); added.push(shM);
+  const poolM = new THREE.MeshBasicMaterial({ map: blob, color: new THREE.Color(1.0, 0.62, 0.3), transparent: true, opacity: 0.38, blending: THREE.AdditiveBlending, depthWrite: false });
+  const pools = [];
+  for (const x of [-11.5, -5, 5, 11.5]) for (let z = -11; z > -41; z -= 9.5) for (const lz of [-2.2, 0, 2.2]) pools.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 2.032, z + lz), new THREE.Quaternion(), new THREE.Vector3(1.7, 1, 1.5)));
+  pools.push(new THREE.Matrix4().compose(new THREE.Vector3(0.3, 1.966, -46.15), new THREE.Quaternion(), new THREE.Vector3(1.2, 1, 0.9)));
+  const plM = new THREE.InstancedMesh(flat, poolM, pools.length);
+  pools.forEach((m, i) => plM.setMatrixAt(i, m));
+  plM.frustumCulled = false; plM.renderOrder = 2;
+  lib.add(plM); added.push(plM);
+  // the end wall: dark oak wainscot with fielded panels below the clock
+  {
+    const wt = canvasTex(1024, 128, (ctx, W, H) => {
+      ctx.fillStyle = '#26170e'; ctx.fillRect(0, 0, W, H);
+      for (let x = 8; x < W; x += 64) { ctx.fillStyle = '#2f1d12'; ctx.fillRect(x, 14, 52, H - 30); ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 3; ctx.strokeRect(x, 14, 52, H - 30); ctx.strokeStyle = 'rgba(255,220,180,.08)'; ctx.lineWidth = 1; ctx.strokeRect(x + 5, 19, 42, H - 40); }
+      ctx.fillStyle = '#1b100a'; ctx.fillRect(0, 0, W, 8); ctx.fillRect(0, H - 8, W, 8);
+    });
+    const wm = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: wt, roughness: 0.45, color: '#ffffff' }), { userData: { key: 'rl-wains' } }));
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(35, 2.2), wm);
+    w.position.set(0, F + 1.1, -60.9); lib.add(w); added.push(w);
+  }
   // chairs: tufted leather dining chairs, turned to face their table
   if (A.m.dining_chair_02 && P.chairs.length) {
     hide(furn.proc.chairs);
@@ -252,7 +401,7 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
     const r = rng(9);
     const picks = P.stacks.filter((_, i) => i % 3 === 0).slice(0, mobile ? 8 : 24).map((m) => {
       m.decompose(pos, q, sc);
-      return mtx(pos.x, F + 0.79, pos.z, (r() < 0.5 ? 0 : Math.PI) + (r() - 0.5) * 0.3, 0.42 + r() * 0.12);
+      return mtx(pos.x, F + 0.79, pos.z, (r() < 0.5 ? 0 : Math.PI) + (r() - 0.5) * 0.3, 0.92 + r() * 0.1);
     });
     added.push(...instance(A.m.book_encyclopedia_set_01, picks, lib, { fix }));
   }
@@ -270,5 +419,6 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
     pm.dispose();
     A.hdr.dispose();
   }
+  ucl.dustK = 0.3;
   return { env, added };
 }

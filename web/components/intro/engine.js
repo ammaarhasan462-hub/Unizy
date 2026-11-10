@@ -365,7 +365,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     ATMO.uIndoor.value = inside;
     ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
     scene.environment = intEnv && inside > 0.5 ? intEnv : sky.env;
-    scene.environmentIntensity = intEnv && inside > 0.5 ? lerp(0.3, 0.55, inside) : lerp(2.2, 0.3, inside);
+    scene.environmentIntensity = intEnv && inside > 0.5 ? lerp(0.3, 0.42, inside) : lerp(2.2, 0.3, inside);
     sun.intensity = 2.2 * (1 - inside);
     renderer.toneMappingExposure = lerp(lerp(0.5, 1.08, ss(0.24, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
     london.trafficU.uTime.value = time;
@@ -384,7 +384,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     grade.uniforms.uVig.value = lerp(0.42, 0.6, inside);
     ucl.int.forEach(([l, i]) => { l.intensity = i * ss(0.62, 0.72, p); });
     ucl.dust.uTime.value = time;
-    ucl.dust.uOpacity.value = ss(0.72, 0.78, p);
+    ucl.dust.uOpacity.value = ss(0.72, 0.78, p) * (ucl.dustK ?? 1);
     ucl.shaftMat.opacity = 0.11 * ss(0.7, 0.78, p);
 
     // sun shadow frustum follows the stage
