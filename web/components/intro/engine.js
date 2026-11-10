@@ -99,7 +99,7 @@ const GRADE = {
     }`,
 };
 
-export function createIntro(canvas, { mobile = false, onFrame } = {}) {
+export function createIntro(canvas, { mobile = false, onFrame, hold = false } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
   let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.6);
   renderer.setPixelRatio(pr);
@@ -230,7 +230,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   const tmp = new THREE.Vector3();
   const sc = new THREE.Vector3();
 
-  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true };
+  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0 };
   let w = 1, h = 1;
   function resize() {
     w = window.innerWidth;
@@ -268,6 +268,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     const time = (now - t0) / 1000;
+    state.time = time;
     if (state.running) state.p += (state.target - state.p) * (1 - Math.exp(-dt * 2.3));
     const p = state.p;
 
@@ -307,12 +308,12 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
     let flash = 0;
     if (!flashesDone) {
       strikes.forEach((s) => {
-        const dt0 = time - s.t;
+        const dt0 = state.beginAt == null ? -9 : time - state.beginAt - s.t;
         const f = pulse(dt0, 0.045) + 0.55 * pulse(dt0 - 0.09, 0.04) + 0.8 * pulse(dt0 - 0.27, 0.05);
         if (f > flash) { flash = f; cloudU.uFlashPos.value.copy(s.pos); }
         s.bolt.visible = p < 0.06 && f > 0.28;
       });
-      if (time > 3.6 || p > 0.06) { flashesDone = true; strikes.forEach((s) => { s.bolt.visible = false; }); }
+      if ((state.beginAt != null && time - state.beginAt > 3.6) || p > 0.06) { flashesDone = true; strikes.forEach((s) => { s.bolt.visible = false; }); }
     }
     if (state.forceFlash != null) { const s = strikes[state.forceFlash]; flash = 1; cloudU.uFlashPos.value.copy(s.pos); strikes.forEach((x) => { x.bolt.visible = x === s; }); }
     if (p > 0.06) flash = 0;
@@ -387,6 +388,7 @@ export function createIntro(canvas, { mobile = false, onFrame } = {}) {
   return {
     state,
     jump(p) { state.p = state.target = p; },
+    begin() { if (state.beginAt == null) state.beginAt = state.time; },
     dispose() {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', resize);

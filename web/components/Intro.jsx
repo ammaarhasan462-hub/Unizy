@@ -29,6 +29,14 @@ const CH = [
   { a: 0.96, b: 1.2, n: '06', mode: 'end' },
 ];
 const RAIL = CH.filter((c) => c.n);
+// the university picker that opens the intro: only UCL is live so far
+const UNIS = [
+  { id: 'ucl', short: 'UCL', name: 'University College London', live: true },
+  { id: 'qmul', short: 'Queen Mary', name: 'Queen Mary University of London' },
+  { id: 'lse', short: 'LSE', name: 'London School of Economics' },
+  { id: 'imperial', short: 'Imperial', name: 'Imperial College London' },
+  { id: 'kcl', short: 'King’s', name: 'King’s College London' },
+];
 const LABELS = ['The problem', 'Coverage', 'The standard', 'Practice', 'Conditions', 'Marked'];
 
 // "Some *words*" -> the starred words set in a fine serif italic
@@ -52,6 +60,12 @@ export default function Intro() {
   const [on, setOn] = useState(true);
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
+  const [picked, setPicked] = useState(false);
+  const [pickerGone, setPickerGone] = useState(false);
+  const pickedRef = useRef(false);
+  const beginRef = useRef(0);
+  const pickRef = useRef(null);
+  const rail = useRef(null);
   const root = useRef(null);
   const canvas = useRef(null);
   const flash = useRef(null);
@@ -96,8 +110,21 @@ export default function Intro() {
     };
     window.__smgIntroFinish = finish;
 
+    // choosing a university starts the intro: lightning first, then scrolling flies you in
+    const pick = (id = 'ucl') => {
+      if (pickedRef.current || doneRef.current || !engine) return;
+      pickedRef.current = true;
+      beginRef.current = engine.state.time;
+      engine.begin();
+      track('intro_pick_' + id);
+      setPicked(true);
+      setTimeout(() => setPickerGone(true), 900);
+    };
+    pickRef.current = pick;
+    window.__smgIntroPick = pick;
+
     const add = (v) => {
-      if (!engine || doneRef.current) return;
+      if (!engine || doneRef.current || !pickedRef.current) return;
       const st = engine.state;
       st.target = Math.min(1.06, Math.max(0, st.target + v));
           };
@@ -119,6 +146,12 @@ export default function Intro() {
     const onKey = (e) => {
       if (doneRef.current) return;
       const k = e.key;
+      if (!pickedRef.current) {
+        if (k === 'Escape') finish('skip');
+        else if (k === 'Enter' && !(e.target && e.target.closest && e.target.closest('button,a'))) { e.preventDefault(); pick('ucl'); }
+        else if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') e.preventDefault();
+        return;
+      }
       if (k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); add(0.05); }
       else if (k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); add(-0.05); }
       else if (k === 'Home') add(-2);
@@ -128,10 +161,11 @@ export default function Intro() {
 
     const onFrame = (p, target, time = 0) => {
       if (!readyRef.current) { readyRef.current = true; setReady(true); }
+      const tb = pickedRef.current ? time - beginRef.current : -1;
       CH.forEach((c, i) => {
         const el = chap.current[i];
         if (!el) return;
-        const o = vis(c, p);
+        const o = vis(c, p) * (i === 0 ? ss(0.35, 1.5, tb) : 1);
         el.style.opacity = o.toFixed(3);
         el.style.visibility = o < 0.005 ? 'hidden' : 'visible';
         const L = c.b - c.a;
@@ -149,7 +183,8 @@ export default function Intro() {
       let cur = -1;
       RAIL.forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
       dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
-      if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, time) * (1 - ss(0.002, 0.03, p))).toFixed(3);
+      if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, tb) * (1 - ss(0.002, 0.03, p))).toFixed(3);
+      if (rail.current) rail.current.style.opacity = ss(0.6, 1.6, tb).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
       if (target >= 1.04 && p > 0.995) finish('end');
     };
@@ -159,7 +194,7 @@ export default function Intro() {
       try {
         const { createIntro } = await import('./intro/engine');
         if (cancelled) return;
-        engine = createIntro(canvas.current, { mobile, onFrame });
+        engine = createIntro(canvas.current, { mobile, onFrame, hold: true });
         engineRef.current = engine;
         window.__smgIntro = engine;
         track('intro_view');
@@ -271,8 +306,51 @@ export default function Intro() {
         </div>
       </div>
 
+      {/* university picker: the first thing you see */}
+      {!pickerGone && (
+        <div
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center px-5 pt-16 text-center transition-[opacity,filter,transform] duration-[900ms] ease-out sm:px-8 ${ready && !picked ? 'opacity-100' : 'pointer-events-none opacity-0'} ${picked ? 'scale-[1.03] blur-[6px]' : ''}`}
+          data-testid="intro-picker"
+        >
+          <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> Choose your university</p>
+          <h1 className="intro-title mt-6 text-[clamp(38px,5.6vw,88px)]"><T s="Where do you *study?*" /></h1>
+          <p className="intro-body mt-5 max-w-[460px] text-[14px] font-light tracking-[.03em] text-white/60">Pick your university to begin. More London universities are on the way.</p>
+          <ul className="mt-9 grid w-full max-w-[1120px] grid-cols-2 gap-2.5 sm:mt-11 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
+            {UNIS.map((u) => (
+              <li key={u.id} className={u.live ? 'col-span-2 sm:col-span-1' : ''}>
+                {u.live ? (
+                  <button
+                    type="button"
+                    onClick={() => pickRef.current && pickRef.current(u.id)}
+                    className="group relative flex h-[118px] w-full flex-col justify-end overflow-hidden rounded-2xl border border-[#d9b46c]/55 bg-[#0b0f14]/55 p-4 text-left shadow-[0_0_0_1px_rgba(217,180,108,.08),0_18px_60px_-20px_rgba(217,180,108,.45)] backdrop-blur-xl transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[#d9b46c] hover:bg-[#0b0f14]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9b46c] sm:h-[164px] sm:p-5"
+                    data-testid="pick-ucl"
+                  >
+                    <span className="absolute left-4 top-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.24em] text-[#d9b46c] sm:left-5 sm:top-5">
+                      <span className="size-1.5 rounded-full bg-[#7fd1a8] shadow-[0_0_10px_#7fd1a8]" /> Open now
+                    </span>
+                    <span className="absolute right-4 top-3.5 text-[18px] text-[#efe9dd]/70 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-[#efe9dd] sm:right-5 sm:top-4">→</span>
+                    <span className="block text-[26px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
+                    <span className="mt-1.5 block text-[12.5px] text-white/65">{u.name}</span>
+                  </button>
+                ) : (
+                  <div className="relative flex h-[104px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/45 p-4 text-left backdrop-blur-xl sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
+                    <span className="opacity-40 grayscale">
+                      <span className="block text-[22px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
+                      <span className="mt-1.5 block text-[11.5px] leading-snug text-white/65 sm:text-[12.5px]">{u.name}</span>
+                    </span>
+                    <span className="pointer-events-none absolute left-[-25%] right-[-25%] top-[38%] -translate-y-1/2 rotate-[-9deg] border-y border-[#d9b46c]/45 bg-[#07090d]/85 py-1.5 text-center font-mono text-[10.5px] uppercase tracking-[.34em] text-[#d9b46c] shadow-[0_8px_30px_rgba(0,0,0,.45)] sm:py-2 sm:text-[11px]">
+                      In Progress
+                    </span>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* progress rail */}
-      <div className="pointer-events-none absolute right-5 top-1/2 hidden h-[34vh] -translate-y-1/2 sm:block">
+      <div ref={rail} style={{ opacity: 0 }} className="pointer-events-none absolute right-5 top-1/2 hidden h-[34vh] -translate-y-1/2 sm:block">
         <div className="relative h-full w-px bg-white/15">
           <div ref={fill} className="absolute inset-0 origin-top bg-[#d9b46c]/80" style={{ transform: 'scaleY(0)' }} />
           {LABELS.map((l, i) => (
