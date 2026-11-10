@@ -151,12 +151,15 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   scene.add(ucl.group);
   // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
   let intEnv = null, disposed = false;
-  if (!imp) {
-    import('./realism').then(({ loadInterior, upgradeLibrary, stoneExterior }) => loadInterior().then((A) => {
+  {
+    import('./realism').then(({ loadInterior, upgradeLibrary, upgradeHall, stoneExterior }) => loadInterior(imp ? 'imperial' : 'ucl').then((A) => {
       if (disposed || !A) return;
       try {
-        stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
-        const res = upgradeLibrary(renderer, ucl, A, { mobile });
+        if (imp) {
+          stoneExterior(ucl.group, A.stone, { skip: ucl.lib, keys: /^qt-stone/ });
+          stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^qt-brick/, scale: 1 / 1.4, tint: 0.35 });
+        } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
+        const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
         if (res) { intEnv = res.env; renderer.shadowMap.needsUpdate = true; }
       } catch (e) { console.error(e); }
     })).catch(() => {});

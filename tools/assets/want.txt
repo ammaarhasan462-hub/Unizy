@@ -1,5 +1,6 @@
 # Poly Haven asset ids to download (CC0). Models become site/assets/models/<id>.glb; textures and HDRIs are copied.
 dining_chair_02 0.3      # reading-room chairs (tufted leather)
+SchoolChair_01 0.35      # exam-hall stacking chairs
 Chandelier_03            # crystal chandeliers
 marble_bust_01           # busts along the aisle
 book_encyclopedia_set_01 0.15 # books on the tables and the desk

@@ -450,7 +450,8 @@ export function buildImperial({ mobile }) {
   }
 
   // modern ring chandeliers: brass rings with warm LED bands, on three cables
-  const out = { lights: [] };
+  // proc / place: hand-built pieces a scanned model can replace, and where they stand (see realism.js)
+  const out = { lights: [], proc: { chairs: [], people: [] }, place: { chairs: [], F, hw: HW, len: LEN, mz: MZ } };
   const ringsB = [], cables = [];
   const ledMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.4, 2.5, 1.5) });
   [-12, -24, -36, -48].forEach((cz) => {
@@ -506,6 +507,7 @@ export function buildImperial({ mobile }) {
       const dz = sz - 0.76;
       deskTop.push(M(sx, TOP - 0.02, dz, 0.82, 0.04, 0.58));
       for (const lx of [-0.37, 0.37]) for (const lz of [-0.25, 0.25]) deskLeg.push(M(sx + lx, F + (TOP - F) / 2, dz + lz, 0.03, TOP - F, 0.03));
+      out.place.chairs.push([sx, sz]);
       chairSeat.push(M(sx, F + 0.45, sz, 0.42, 0.04, 0.42));
       chairBack.push(M(sx, F + 0.74, sz + 0.2, 0.42, 0.5, 0.04, -0.08));
       for (const lx of [-0.18, 0.18]) for (const lz of [-0.18, 0.18]) chairLeg.push(M(sx + lx, F + 0.22, sz + lz, 0.03, 0.45, 0.03));
@@ -532,16 +534,18 @@ export function buildImperial({ mobile }) {
   const wood2 = plainMaterial({ color: '#5a3c25', roughness: 0.42 }, 'h-desk');
   addInst(lib, B(1, 1, 1), wood2, deskTop, { cast: true });
   addInst(lib, B(1, 1, 1), iron, deskLeg);
-  addInst(lib, B(1, 1, 1), plainMaterial({ color: '#2b2f36', roughness: 0.6 }, 'h-chair'), chairSeat);
-  addInst(lib, B(1, 1, 1), plainMaterial({ color: '#2b2f36', roughness: 0.6 }, 'h-chair2'), chairBack);
-  addInst(lib, B(1, 1, 1), iron, chairLeg);
+  out.proc.chairs.push(
+    addInst(lib, B(1, 1, 1), plainMaterial({ color: '#2b2f36', roughness: 0.6 }, 'h-chair'), chairSeat),
+    addInst(lib, B(1, 1, 1), plainMaterial({ color: '#2b2f36', roughness: 0.6 }, 'h-chair2'), chairBack),
+    addInst(lib, B(1, 1, 1), iron, chairLeg));
   const cloth = plainMaterial({ roughness: 0.85 }, 'h-cloth');
-  addInst(lib, new THREE.CapsuleGeometry(1, 1.2, 6, 16), cloth, torso, { color: true });
-  addInst(lib, new THREE.SphereGeometry(1, 20, 14), plainMaterial({ roughness: 0.6 }, 'h-skin'), headsS, { color: true });
-  addInst(lib, new THREE.SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), plainMaterial({ roughness: 0.75 }, 'h-hair'), hair, { color: true });
-  addInst(lib, limbGeo, cloth, limbs, { color: true });
-  addInst(lib, limbGeo, cloth, legs, { color: true });
-  addInst(lib, B(1, 1, 1), plainMaterial({ color: '#141210', roughness: 0.4 }, 'h-shoe'), shoes);
+  out.proc.people.push(
+    addInst(lib, new THREE.CapsuleGeometry(1, 1.2, 6, 16), cloth, torso, { color: true }),
+    addInst(lib, new THREE.SphereGeometry(1, 20, 14), plainMaterial({ roughness: 0.6 }, 'h-skin'), headsS, { color: true }),
+    addInst(lib, new THREE.SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), plainMaterial({ roughness: 0.75 }, 'h-hair'), hair, { color: true }),
+    addInst(lib, limbGeo, cloth, limbs, { color: true }),
+    addInst(lib, limbGeo, cloth, legs, { color: true }),
+    addInst(lib, B(1, 1, 1), plainMaterial({ color: '#141210', roughness: 0.4 }, 'h-shoe'), shoes));
   addInst(lib, B(1, 1, 1), plainMaterial({ color: '#f3f1ea', roughness: 0.9 }, 'h-paper'), papers);
   addInst(lib, B(1, 1, 1), plainMaterial({ color: '#dfe6ee', roughness: 0.9 }, 'h-booklet'), booklets);
   addInst(lib, new THREE.CylinderGeometry(1, 1, 1, 8), plainMaterial({ color: '#111318', roughness: 0.3, metalness: 0.5 }, 'h-pen'), pens);

@@ -11,14 +11,17 @@ import { canvasTex, rng } from './materials';
 
 const BASE = '/assets/models/';
 const V = 1;
-let cache = null;
 
-const MODELS = ['dining_chair_02', 'Chandelier_03', 'marble_bust_01', 'book_encyclopedia_set_01', 'fancy_picture_frame_01', 'fancy_picture_frame_02', 'round_spectacles'];
-const SURF = ['wood_floor', 'dark_wood', 'wood_table_001', 'painted_plaster_wall', 'brown_leather'];
+const NEED = {
+  ucl: { models: ['dining_chair_02', 'Chandelier_03', 'marble_bust_01', 'book_encyclopedia_set_01', 'fancy_picture_frame_01', 'fancy_picture_frame_02', 'round_spectacles'], surf: ['wood_floor', 'dark_wood', 'wood_table_001', 'painted_plaster_wall', 'brown_leather'], hdr: true },
+  imperial: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall'], hdr: false },
+};
 
-export function loadInterior() {
-  if (cache) return cache;
-  cache = (async () => {
+const caches = {};
+export function loadInterior(uni = 'ucl') {
+  if (caches[uni]) return caches[uni];
+  const { models: MODELS, surf: SURF, hdr: wantHdr } = NEED[uni] || NEED.ucl;
+  caches[uni] = (async () => {
     const gl = new GLTFLoader();
     const tl = new THREE.TextureLoader();
     const model = (id) => gl.loadAsync(`${BASE}${id}.glb?v=${V}`).then((g) => g.scene).catch(() => null);
@@ -29,17 +32,18 @@ export function loadInterior() {
       return t;
     }).catch(() => null);
     const city = (f) => tl.loadAsync(`/assets/city/tex/${f}`).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
-    const [models, surfs, hdr, stone] = await Promise.all([
+    const [models, surfs, hdr, stone, brick] = await Promise.all([
       Promise.all(MODELS.map(model)),
       Promise.all(SURF.map(async (id) => ({ diff: await tex(id, 'diff'), nor: await tex(id, 'nor'), rough: await tex(id, 'rough') }))),
-      new RGBELoader().loadAsync(`${BASE}ballroom_1k.hdr?v=${V}`).catch(() => null),
+      wantHdr ? new RGBELoader().loadAsync(`${BASE}ballroom_1k.hdr?v=${V}`).catch(() => null) : null,
       city('sandstone_blocks_05_diff_512.jpg'),
+      city('red_brick_diff_512.jpg'),
     ]);
     const m = {}; MODELS.forEach((id, i) => { m[id] = models[i]; });
     const T = {}; SURF.forEach((id, i) => { T[id] = surfs[i]; });
-    return { m, T, hdr, stone };
+    return { m, T, hdr, stone, brick };
   })();
-  return cache;
+  return caches[uni];
 }
 
 // every mesh in a model, baked into one InstancedMesh per mesh, placed at each matrix
@@ -278,14 +282,14 @@ function blobTex() {
 
 // dressed stone on the hand-built exteriors: photo-scanned ashlar mapped in world space at true scale, its colour
 // taken from the building (Portland stone, brick) and its texture kept
-export function stoneExterior(root, tex, { skip = null, scale = 1 / 3 } = {}) {
+export function stoneExterior(root, tex, { skip = null, scale = 1 / 3, keys = /^(stone|stone2|colstone|facade)/, tint = 0.75 } = {}) {
   if (!tex) return;
   const done = new Set();
   root.traverse((o) => {
     if (skip && (o === skip || (o.parent && isUnder(o, skip)))) return;
     if (!o.isMesh || !o.material || done.has(o.material)) return;
     const m = o.material, k = (m.userData && m.userData.key) || '';
-    if (!/^(stone|stone2|colstone|facade|h-stone|h-brick|qt-|i-stone|i-brick)/.test(k)) return;
+    if (!keys.test(k) || /-ash$/.test(k)) return;
     done.add(m);
     const prev = m.userData.patch;
     m.map = tex;
@@ -293,7 +297,7 @@ export function stoneExterior(root, tex, { skip = null, scale = 1 / 3 } = {}) {
     m.customProgramCacheKey = () => 'atmo' + k + '-ash';
     m.userData.patch = (shader) => {
       if (prev) prev(shader);
-      shader.uniforms.uAsh = { value: scale };
+      shader.uniforms.uAsh = { value: scale }; shader.uniforms.uAshK = { value: tint };
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vAshN;')
         .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
@@ -303,13 +307,13 @@ export function stoneExterior(root, tex, { skip = null, scale = 1 / 3 } = {}) {
             vAshN = normalize(mat3(modelMatrix) * objectNormal);
           #endif`);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nvarying vec3 vAshN; uniform float uAsh;')
+        .replace('#include <common>', '#include <common>\nvarying vec3 vAshN; uniform float uAsh, uAshK;')
         .replace('#include <map_fragment>', `#ifdef USE_MAP
           {
             vec3 w = pow(abs(vAshN), vec3(4.0)); w /= dot(w, vec3(1.0));
             vec3 tx = texture2D(map, vAtmoW.zy * uAsh).rgb * w.x + texture2D(map, vAtmoW.xz * uAsh).rgb * w.y + texture2D(map, vAtmoW.xy * uAsh).rgb * w.z;
             float tl = dot(tx, vec3(0.299, 0.587, 0.114));
-            diffuseColor.rgb *= mix(vec3(1.0), vec3(tl) * 1.9, 0.75);
+            diffuseColor.rgb *= mix(tx * 1.5, vec3(tl) * 1.9, uAshK);
           }
           #endif`);
     };
@@ -490,4 +494,36 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   }
   ucl.dustK = 0.1;
   return { env, added };
+}
+
+// Imperial's exam hall: stacking school chairs at the desks, oak floor, oak desks, plaster with texture; the hall is
+// laid out ready for the paper, nobody in it yet
+export function upgradeHall(renderer, ucl, A, { mobile }) {
+  const lib = ucl.lib, furn = ucl.furn;
+  if (!lib || !furn || !furn.place) return null;
+  const P = furn.place, F = P.F;
+  const S = A.T;
+  const floorM = surface(S.wood_floor, { rough: 0.32, key: 'rlh-floor', nScale: 0.6 });
+  [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set((2 * P.hw) / 1.1, P.len / 1.1));
+  const deskM = surface(S.wood_table_001, { color: '#e0c8b0', rough: 0.35, tri: 0.6, key: 'rlh-desk' });
+  const plasterM = surface(S.painted_plaster_wall, { color: '#e2dccf', rough: 0.9, key: 'rlh-plaster' });
+  [plasterM.map, plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(20, 6));
+  lib.traverse((o) => {
+    if (!o.isMesh || !o.material || !o.material.userData) return;
+    const k = o.material.userData.key;
+    if (k === 'h-floor') o.material = floorM;
+    else if (k === 'h-desk') o.material = deskM;
+    else if (k === 'h-plaster') o.material = plasterM;
+  });
+  const hide = (arr) => arr.forEach((o) => { if (o) o.visible = false; });
+  hide(furn.proc.people);
+  const added = [];
+  if (A.m.SchoolChair_01 && P.chairs.length) {
+    hide(furn.proc.chairs);
+    const r = rng(8);
+    const Q = (ry) => new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry);
+    added.push(...instance(A.m.SchoolChair_01, P.chairs.map(([x, z]) => new THREE.Matrix4().compose(new THREE.Vector3(x + (r() - 0.5) * 0.06, F, z + (r() - 0.5) * 0.08), Q(Math.PI + (r() - 0.5) * 0.18), new THREE.Vector3(1, 1, 1))), lib, { fix: fixMat() }));
+  }
+  ucl.dustK = 0.15;
+  return { env: null, added };
 }
