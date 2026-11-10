@@ -113,6 +113,7 @@ function facade(fam, T) {
         #endif`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         float fWin = 0.0, fLit = 0.0, fGR = 0.06;
+        vec3 roomE = vec3(1.0);
         vec3 litC = vec3(1.0, 0.7, 0.4);
         {
           int st = int(vB.x + 0.5);
@@ -137,7 +138,7 @@ function facade(fam, T) {
           // ---- the room behind each window (interior mapping): follow the view ray into a box room the width of
           // the bay and one storey high, and shade whichever wall, floor or ceiling it reaches
           vec3 glass = vec3(0.03);
-          vec3 roomE = vec3(0.0);
+          roomE = vec3(0.0);
           if (gl * aa > 0.001) {
             vec3 Vd = normalize(vAtmoW - cameraPosition);
             vec3 Nw = normalize(vWN);
