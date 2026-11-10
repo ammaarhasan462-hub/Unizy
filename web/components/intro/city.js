@@ -116,10 +116,11 @@ function facade(fam, T) {
         vec3 litC = vec3(1.0, 0.7, 0.4);
         {
           int st = int(vB.x + 0.5);
-          float seed = vB.y, wl = vB.z, bh = vB.w;
+          // the building seed is interpolated, so quantise it before hashing (hashes amplify float noise into speckle)
+          float seed = floor(vB.y * 997.0 + 0.5) * 0.1373, wl = vB.z, bh = vB.w;
           float flo = uFloor[st], bay = uBay[st], ww = uWinW[st], wh = uWinH[st];
           float u = vW.x, yy = vW.y;
-          diffuseColor.rgb *= 0.92 + 0.16 * fh(vec2(floor(u * 0.25), floor(yy * 0.3)) + seed * 91.0);
+          diffuseColor.rgb *= 0.92 + 0.16 * fh(vec2(floor(u * 0.25), floor(yy * 0.3)) + seed);
           float nb = max(1.0, floor(wl / bay + 0.25));
           float bu = u / (wl / nb);
           float fx = fract(bu), fy = fract(yy / flo), fl = floor(yy / flo);
@@ -130,7 +131,7 @@ function facade(fam, T) {
           float frameM = inWin - gl;
           gl *= 1.0 - uSash[st] * step(abs(fy - 0.5), 0.014);
           float aa = clamp(1.0 - max(fwidth(bu), fwidth(yy / flo)) * 2.0, 0.0, 1.0);
-          float hs = fh(vec2(floor(bu), fl) + seed * 137.0);
+          float hs = fh(vec2(floor(bu), fl) + seed);
           vec3 glass = mix(vec3(0.026, 0.03, 0.036), vec3(0.1, 0.095, 0.085), step(0.8, hs));
           // net curtains and blinds in some sash windows
           glass = mix(glass, vec3(0.33, 0.31, 0.28), step(0.9, fh(vec2(hs, fl))) * uSash[st] * step(fy, 0.5));
@@ -141,7 +142,7 @@ function facade(fam, T) {
           diffuseColor.rgb = mix(avgc, pc, aa);
           fWin = gl * aa + avgW * 0.5 * (1.0 - aa);
           fGR = uGlassR[st];
-          float bLit = step(0.45, fract(seed * 7.13));
+          float bLit = step(0.45, fract(seed * 4.5313));
           fLit = (step(1.0 - uLit[st], hs) * gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6) * bLit;
           litC = mix(vec3(1.0, 0.66, 0.36), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, seed))));
           litC *= 0.6 + 0.8 * fh(vec2(fl, seed + 1.0));
