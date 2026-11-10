@@ -415,7 +415,7 @@ export function buildImperial({ mobile }) {
   for (const s of [-1, 1]) { const d = add(new THREE.PlaneGeometry(doorW / 2 - 0.1, doorH - 0.1), glassM, s * (doorW / 4 + 1.2), F + doorH / 2, LZ0 + 0.4); d.rotation.y = Math.PI + s * 0.9; }
   for (const x of [-doorW / 2, 0, doorW / 2]) add(B(0.12, doorH, 0.14), iron, x, F + doorH / 2, LZ0 + 0.5);
   add(B(doorW + 4, 0.35, 3.2), concIn, 0, F + doorH + 0.6, LZ0 + 1.9); // canopy
-  const fasc = add(new THREE.PlaneGeometry(doorW + 4, 0.9), signMat([['Imperial College London', 120, 700, 128, 40], ['Sherfield Building · Queen’s Tower Rooms', 64, 500, 128, 1210]], 2048, 256), 0, F + doorH + 0.6, LZ0 + 3.52);
+  const fasc = add(new THREE.PlaneGeometry(doorW + 4, 1.25), signMat([['Imperial College London', 116, 700, 104, 60], ['Sherfield Building  ·  Queen’s Tower Rooms', 62, 500, 214, 64]], 2048, 256), 0, F + doorH + 0.6, LZ0 + 3.52);
   fasc.scale.set(1, 1, 1);
   const plaque = add(new THREE.PlaneGeometry(2.8, 0.75), signMat([['Imperial College', 84, 700, 80, 40], ['London', 84, 400, 180, 40]], 1024, 256), -6.2, F + 3.2, LZ0 + 0.52);
   plaque.rotation.y = 0;
@@ -529,7 +529,7 @@ export function buildImperial({ mobile }) {
     }
   };
   standing(-0.2, -22, 1); standing(6.9, -33, -1); standing(-7.2, -14, 1); standing(-9, -50.5, 1);
-  const wood2 = plainMaterial({ color: '#7b5838', roughness: 0.45 }, 'h-desk');
+  const wood2 = plainMaterial({ color: '#5a3c25', roughness: 0.42 }, 'h-desk');
   addInst(lib, B(1, 1, 1), wood2, deskTop, { cast: true });
   addInst(lib, B(1, 1, 1), iron, deskLeg);
   addInst(lib, B(1, 1, 1), plainMaterial({ color: '#2b2f36', roughness: 0.6 }, 'h-chair'), chairSeat);
@@ -618,15 +618,15 @@ export function buildImperial({ mobile }) {
   const int = [...out.lights];
   const day = new THREE.PointLight(0xff9c84, 46, 0, 2); day.position.set(0, F + 6, LZ1 + 3); lib.add(day); int.push([day, 46]);
   const fill = new THREE.PointLight(0xffd2a8, 18, 0, 2); fill.position.set(0, F + 5, -8); lib.add(fill); int.push([fill, 18]);
-  const deskLight = new THREE.PointLight(0xffc483, 1.1, 0, 2); deskLight.position.set(0.38, F + 1.4, -46.0); lib.add(deskLight); int.push([deskLight, 1.1]);
+  const deskLight = new THREE.PointLight(0xffd2a0, 0.5, 0, 2); deskLight.position.set(0.5, F + 1.6, -45.8); lib.add(deskLight); int.push([deskLight, 0.5]);
 
   // floodlights: the tower is lit from the lawn and the plaza, the dome from the Sherfield roof; lamps in the courtyard
   const ext = [];
   const flood = (x, y, z, tx, ty, tz, i, ang, col = 0xffe2c2) => { const sp = new THREE.SpotLight(col, i, 0, ang, 0.8, 2); sp.position.set(x, y, z); sp.target.position.set(tx, ty, tz); g.add(sp, sp.target); ext.push([sp, i]); };
-  flood(-22, 0.8, 0, 0, 40, 0, 9000, 0.32);
-  flood(22, 0.8, 0, 0, 40, 0, 7000, 0.32);
-  flood(0, 0.8, 22, 0, 40, 0, 8000, 0.32);
-  flood(0, 0.8, -22, 0, 40, 0, 6000, 0.32);
+  // the north face (seen from the exam hall) from the lawn by the Sherfield Building; the east faces from the plaza
+  flood(26, 0.8, 4, 0, 15, 0, 6500, 0.6);
+  flood(-20, 0.8, 22, 0, 42, 0, 9000, 0.34);
+  flood(22, 0.8, 22, 0, 46, 0, 9000, 0.34);
   flood(30, SH + 1.5, 6, 0, 78, 0, 3500, 0.2, 0xfff0dc);
   flood(140, 6, -6, 92, 4, -6, 900, 0.7, 0xffd6a6);
   return { group: g, lib, int, ext, furn: out, dust: dustU, shaftMat };

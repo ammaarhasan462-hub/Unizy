@@ -104,9 +104,9 @@ export function buildSouthKen(renderer, { mobile }) {
     for (let x = -300; x < KENS_GORE; x += 3) for (let z = 197; z < 219; z += 3) { ctx.fillStyle = ((x + z) / 3) % 2 ? '#9d978b' : '#b5ae9f'; road(x, z, x + 3, z + 3); }
     // the park: grass, the Serpentine, the Round Pond, the paths
     const [p0x, p0z] = toPx(PARK_X, -H);
-    ctx.fillStyle = '#4f6e35';
+    ctx.fillStyle = '#62823f';
     ctx.fillRect(p0x, p0z, S - p0x, S);
-    for (let i = 0; i < 9000; i++) { ctx.fillStyle = `rgba(${40 + r() * 40},${70 + r() * 45},${25 + r() * 20},.3)`; const [a, b] = toPx(PARK_X + r() * (H - PARK_X), -H + r() * 2 * H); ctx.fillRect(a, b, 6 * k, 6 * k); }
+    for (let i = 0; i < 16000; i++) { ctx.fillStyle = `rgba(${55 + r() * 50},${85 + r() * 50},${30 + r() * 25},.35)`; const [a, b] = toPx(PARK_X + r() * (H - PARK_X), -H + r() * 2 * H); ctx.fillRect(a, b, 6 * k, 6 * k); }
     ctx.strokeStyle = '#c4b89c';
     ctx.lineCap = 'round';
     const path = (pts, w) => { ctx.lineWidth = w * k; ctx.beginPath(); pts.forEach(([x, z], i) => { const [a, b] = toPx(x, z); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.stroke(); };
@@ -145,7 +145,7 @@ export function buildSouthKen(renderer, { mobile }) {
       ctx.fillStyle = g; ctx.fillRect(px - rr, pz - rr, rr * 2, rr * 2);
     };
     const warm = '255,214,168', led = '235,240,255';
-    xl.forEach((l) => { const step = l.major ? 22 : 30; for (let z = -H; z < H; z += step) { lamp(l.c - l.w / 2 - 1.5, z, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); if (!inPark(l.c + l.w / 2 + 1.5, z)) lamp(l.c + l.w / 2 + 1.5, z + step / 2, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); } });
+    xl.forEach((l) => { const step = l.major ? 22 : 30; for (let z = -H; z < H; z += step) { lamp(l.c - l.w / 2 - 1.5, z, l.major ? 9 : 8, l.major ? 0.62 : 0.6, l.major ? led : warm); if (!inPark(l.c + l.w / 2 + 1.5, z)) lamp(l.c + l.w / 2 + 1.5, z + step / 2, l.major ? 9 : 8, l.major ? 0.62 : 0.6, l.major ? led : warm); } });
     zl.forEach((l) => { const step = l.major ? 22 : 30; for (let x = -H; x < KENS_GORE; x += step) { lamp(x, l.c - l.w / 2 - 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); lamp(x + step / 2, l.c + l.w / 2 + 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); } });
     // park paths, the Albert Memorial, Imperial's walkways
     for (let x = 430; x < H; x += 26) lamp(x, -55, 6, 0.5, warm);
@@ -500,7 +500,7 @@ export function buildSouthKen(renderer, { mobile }) {
 
   // ---------------------------------------------------------------- trees: the park's avenues and groves, street plane trees
   const trees = [];
-  const maxTrees = mobile ? 900 : 2600;
+  const maxTrees = mobile ? 1300 : 3800;
   const addTree = (x, z, s = 1) => {
     if (trees.length >= maxTrees || inRect(x, z, CAMPUS, 2)) return;
     if (Math.hypot(x, z) > R) return;
@@ -516,7 +516,7 @@ export function buildSouthKen(renderer, { mobile }) {
   for (let z = 300; z < R; z += 12) { addTree(462, z); addTree(480, z); }
   for (let z = -900; z < 200; z += 14) addTree(452, z, 0.9);
   // groves
-  for (let i = 0; i < 2200 && trees.length < maxTrees; i++) {
+  for (let i = 0; i < 6000 && trees.length < maxTrees - 500; i++) {
     const x = PARK_X + 12 + r() * (R - PARK_X - 12), z = -R + r() * 2 * R;
     const n = Math.sin(x * 0.006 + 1.3) * Math.cos(z * 0.005) + Math.sin(z * 0.011 + x * 0.004);
     if (n > 0.35 || r() < 0.08) addTree(x, z);
@@ -528,7 +528,7 @@ export function buildSouthKen(renderer, { mobile }) {
   const leafCols = ['#4f6b35', '#5d7a3c', '#46602f', '#6b7f43', '#55703a', '#7a8a48'];
   const canopy = [], trunk = [];
   trees.forEach(([x, z, h, cr]) => {
-    const lobes = 5 + Math.floor(r() * 3);
+    const lobes = x > PARK_X ? 4 + Math.floor(r() * 2) : 5 + Math.floor(r() * 3);
     for (let i = 0; i < lobes; i++) {
       const a = r() * Math.PI * 2, rad = Math.sqrt(r()) * cr * 0.62;
       const ox = Math.cos(a) * rad, oz = Math.sin(a) * rad, oy = (r() - 0.35) * cr * 0.75;
