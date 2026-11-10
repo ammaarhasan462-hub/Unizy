@@ -308,6 +308,24 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     camera.far = p < 0.7 ? 60000 : 4000;
     camera.updateProjectionMatrix();
     camera.lookAt(look.x + tmp.x, look.y + tmp.y, look.z + tmp.z);
+    // filmed, not computed: bank into turns like a drone outside, a faint steadicam float indoors
+    {
+      const dx = look.x - pos.x, dz = look.z - pos.z;
+      const yaw = Math.atan2(dx, dz);
+      if (state.yaw == null) state.yaw = yaw;
+      let dy = yaw - state.yaw;
+      if (dy > Math.PI) dy -= Math.PI * 2; else if (dy < -Math.PI) dy += Math.PI * 2;
+      state.yaw = yaw;
+      const indoor = ss(0.68, 0.74, p);
+      const rate = dt > 0 ? dy / dt : 0;
+      const rollT = Math.max(-0.075, Math.min(0.075, -rate * 0.32)) * (1 - indoor);
+      state.roll = (state.roll || 0) + (rollT - (state.roll || 0)) * (1 - Math.exp(-dt * 2.2));
+      const n = (f, ph) => Math.sin(time * f + ph) * 0.6 + Math.sin(time * f * 2.13 + ph * 1.7) * 0.3 + Math.sin(time * f * 4.71 + ph * 2.3) * 0.1;
+      const jit = (0.0022 - 0.0014 * indoor) * (1 - 0.7 * ss(0.9, 1, p));
+      camera.rotateZ(state.roll + n(0.37, 1.1) * jit * 0.6);
+      camera.rotateX(n(0.53, 0.3) * jit);
+      camera.rotateY(n(0.41, 2.6) * jit);
+    }
     camera.updateMatrixWorld();
 
     // lightning (only while the visitor is still at the start)

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { hasSession, track } from '@/lib/site';
+import { COPY, EndCard, ProgressRail, StartTitle, Chapter, TopBar, chaptersFor, Em } from './intro/IntroChrome';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
@@ -18,34 +19,18 @@ var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches
 if(force||(!off&&!inside&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
 setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
+// timings (fractions of the journey) and layout; the words are in intro/IntroChrome.jsx
 const CH = [
   { a: 0, b: 0.08, mode: 'start' },
-  { a: 0.09, b: 0.2, n: '01', k: 'The problem', t: 'Revising *blind*.', s: 'At A-level you had mark schemes. At UCL you get past papers, and nothing to check your answers against.', side: 'left' },
-  { a: 0.3, b: 0.42, n: '02', k: 'Coverage', t: 'Every UCL *module*.', s: 'All 6,682 modules from the official catalogue, across 81 departments.', side: 'right' },
-  { a: 0.5, b: 0.63, n: '03', k: 'The standard', t: 'Your department’s *criteria*.', s: 'Answers are marked against UCL’s grade bands and the criteria your department publishes.', side: 'left' },
+  { a: 0.09, b: 0.2, n: '01', side: 'left' },
+  { a: 0.3, b: 0.42, n: '02', side: 'right' },
+  { a: 0.5, b: 0.63, n: '03', side: 'left' },
   { a: 0.705, b: 0.78, mode: 'mark' },
-  { a: 0.78, b: 0.86, n: '04', k: 'Practice', t: 'Write your *answer*.', s: 'Exam-style questions written in your module’s style.', side: 'right' },
-  { a: 0.87, b: 0.95, n: '05', k: 'Conditions', t: 'Timed like the *real thing*.', s: 'Turn on the exam timer and write under real conditions.', side: 'left' },
+  { a: 0.78, b: 0.86, n: '04', side: 'right' },
+  { a: 0.87, b: 0.95, n: '05', side: 'left' },
   { a: 0.96, b: 1.2, n: '06', mode: 'end' },
 ];
 const RAIL = CH.filter((c) => c.n);
-// wording that changes with the university picked (chapter text by chapter number)
-const COPY = {
-  ucl: {
-    kicker: 'University College London',
-    sub: 'Exam practice and marking for every UCL module',
-    ch: {},
-  },
-  imperial: {
-    kicker: 'Imperial College London',
-    sub: 'Exam practice and marking for Imperial modules',
-    ch: {
-      '01': { s: 'At school you had mark schemes. At Imperial you get past papers, and nothing to check your answers against.' },
-      '02': { t: 'Imperial’s *modules*.', s: '1,180 modules from Imperial’s official programme specifications, across 18 departments.' },
-      '03': { s: 'Answers are marked against Imperial’s grade bands and, where your department publishes them, its own criteria.' },
-    },
-  },
-};
 // the university picker that opens the intro
 const UNIS = [
   { id: 'ucl', short: 'UCL', name: 'University College London', live: true },
@@ -54,12 +39,8 @@ const UNIS = [
   { id: 'imperial', short: 'Imperial', name: 'Imperial College London', live: true },
   { id: 'kcl', short: 'King’s', name: 'King’s College London' },
 ];
-const LABELS = ['The problem', 'Coverage', 'The standard', 'Practice', 'Conditions', 'Marked'];
 
-// "Some *words*" -> the starred words set in a fine serif italic
-function T({ s }) {
-  return s.split('*').map((part, i) => (i % 2 ? <em key={i} className="intro-serif">{part}</em> : <span key={i}>{part}</span>));
-}
+const T = Em;
 
 const ss = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -88,6 +69,7 @@ export default function Intro() {
   const beginRef = useRef(0);
   const pickRef = useRef(null);
   const rail = useRef(null);
+  const count = useRef(null);
   const root = useRef(null);
   const canvas = useRef(null);
   const flash = useRef(null);
@@ -244,6 +226,7 @@ export default function Intro() {
       let cur = -1;
       RAIL.forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
       dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
+      if (count.current) { const t = `${String(Math.max(0, cur + 1)).padStart(2, '0')} / ${String(RAIL.length).padStart(2, '0')}`; if (count.current.textContent !== t) count.current.textContent = t; }
       if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, tb) * (1 - ss(0.002, 0.03, p))).toFixed(3);
       if (rail.current) rail.current.style.opacity = ss(0.6, 1.6, tb).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
@@ -284,7 +267,9 @@ export default function Intro() {
   if (!on) return null;
   const finish = (m) => window.__smgIntroFinish && window.__smgIntroFinish(m);
   const copy = COPY[uni] || COPY.ucl;
-  const chText = (c) => ({ ...c, ...(copy.ch[c.n] || {}) });
+  const words = chaptersFor(uni);
+  const chText = (c) => ({ ...c, ...(words.find((w) => w.n === c.n) || {}) });
+  const railItems = [...words, { n: '06', k: 'Marked' }];
 
   return (
     <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="Unizy intro">
@@ -293,7 +278,7 @@ export default function Intro() {
       <div className={`pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#05070b] transition-opacity duration-700 ${switching ? 'opacity-100' : 'opacity-0'}`} aria-hidden={!switching}>
         <div className="px-6 text-center">
           <p className="intro-kicker text-[10.5px] text-white/60">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/35" /> {copy.kicker}</p>
-          <p className="intro-title mt-5 text-[clamp(34px,4.6vw,64px)]"><T s="South *Kensington*" /></p>
+          <p className="intro-ed mt-5 text-[clamp(38px,5vw,72px)] leading-none text-[#f3eee4]"><T s="South *Kensington*" /></p>
           <span className="mx-auto mt-7 block h-px w-24 overflow-hidden bg-white/15"><span className="block h-full w-1/2 animate-[introload_1.1s_ease-in-out_infinite] bg-[#d9b46c]/80" /></span>
         </div>
       </div>
@@ -302,94 +287,18 @@ export default function Intro() {
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
 
       {/* top bar */}
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 sm:px-9 sm:py-7">
-        <span className="flex items-center gap-2.5 text-[18px] font-extrabold tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:115%] [text-shadow:0_1px_10px_rgba(0,0,0,.4)]">
-          <span className="grid size-7 place-items-center rounded-[9px] border border-[#efe9dd]/25 bg-white/5 text-[13px] backdrop-blur">U</span>
-          Unizy
-        </span>
-        <div className="flex items-center gap-2 text-[13.5px]">
-          <a href={authed ? '/dashboard' : '/login?next=/dashboard'} className="hidden rounded-full px-4 py-2 text-[#efe9dd]/70 transition-colors hover:text-[#efe9dd] sm:inline-block">{authed ? 'Dashboard' : 'Log in'}</a>
-          <button type="button" onClick={() => finish('skip')} className="rounded-full border border-[#efe9dd]/20 bg-white/[.04] px-4 py-2 text-[#efe9dd]/85 backdrop-blur transition-colors hover:border-[#efe9dd]/40 hover:text-[#efe9dd]" data-testid="intro-skip">
-            Skip intro
-          </button>
-        </div>
-      </div>
+      <TopBar authed={authed} uniShort={picked ? (UNIS.find((u) => u.id === uni) || {}).short : ''} onSkip={() => finish('skip')} />
 
       {/* chapters */}
-      <div ref={(el) => (chap.current[0] = el)} className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> {copy.kicker}</p>
-        <h1 className="intro-title mt-7 max-w-[1150px] text-[clamp(40px,6.6vw,104px)]">
-          <T s="The mark scheme your uni *never gave you.*" />
-        </h1>
-        <p className="intro-body mt-7 text-[14px] font-light tracking-[.04em] text-white/60">{copy.sub}</p>
-      </div>
+      <StartTitle setRef={(el) => (chap.current[0] = el)} copy={copy} />
       {CH.map(chText).map((c, i) => (c.mode === 'mark' ? (
         <div key="mark" ref={(el) => (chap.current[i] = el)} className="pointer-events-none invisible absolute inset-0 grid place-items-center" style={{ opacity: 0 }}>
           <span className="intro-title intro-mark select-none text-[clamp(84px,19vw,300px)] tracking-[.02em]">UNIZY</span>
         </div>
       ) : c.n && !c.mode ? (
-        <div
-          key={c.n}
-          ref={(el) => (chap.current[i] = el)}
-          className={`pointer-events-none invisible absolute bottom-[12vh] px-6 sm:px-12 ${c.side === 'left' ? 'left-0 text-left' : 'right-0 text-left sm:text-right'}`}
-          style={{ opacity: 0 }}
-        >
-          <p className="intro-kicker text-[10.5px] text-white/65">{c.n} <span className="mx-2 inline-block h-px w-6 translate-y-[-3px] bg-white/35" /> {c.k}</p>
-          <h2 className="intro-title mt-4 text-[clamp(38px,6vw,92px)]"><T s={c.t} /></h2>
-          <p className={`intro-body mt-5 max-w-[420px] text-[15px] font-light leading-relaxed tracking-[.01em] text-white/75 ${c.side === 'right' ? 'sm:ml-auto' : ''}`}>{c.s}</p>
-        </div>
+        <Chapter key={c.n} c={c} side={c.side} setRef={(el) => (chap.current[i] = el)} />
       ) : null))}
-      <div ref={(el) => (chap.current[CH.length - 1] = el)} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[9vh] sm:px-12" style={{ opacity: 0 }}>
-        <div className="mx-auto flex max-w-[1180px] flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
-          <div>
-            <p className="intro-kicker text-[10.5px] text-white/65">06 <span className="mx-2 inline-block h-px w-6 translate-y-[-3px] bg-white/35" /> Marked</p>
-            <h2 className="intro-title mt-4 max-w-[760px] text-[clamp(34px,5.2vw,80px)]">
-              <T s="Find out what your answer would *get.*" />
-            </h2>
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <a href={authed ? '/dashboard/practice' : '/signup'} onClick={() => track(authed ? 'intro_dashboard' : 'intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
-                {authed ? 'Practise in my dashboard' : 'Get my first answer marked, free'}
-              </a>
-              <button type="button" onClick={() => finish('enter')} className="rounded-full border border-[#efe9dd]/25 bg-white/[.05] px-6 py-3.5 text-[15px] font-medium text-[#efe9dd] backdrop-blur hover:border-[#efe9dd]/45" data-testid="intro-enter">
-                Enter Unizy ↓
-              </button>
-            </div>
-          </div>
-          {uni === 'imperial' ? (
-            <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
-              <div className="flex items-center gap-4">
-                <span className="grid size-14 place-items-center rounded-2xl bg-[#0b2f5c] font-display text-[13px] font-bold tracking-wide text-white">1,180</span>
-                <div>
-                  <p className="font-display text-[24px] font-semibold leading-tight">Imperial modules</p>
-                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">From Imperial’s official programme specifications</p>
-                </div>
-              </div>
-              <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">What every marked answer shows</p>
-              <ol className="mt-2 space-y-1.5 text-[13.5px] text-[#efe9dd]/85">
-                <li>1. Your class and a mark range</li>
-                <li>2. The criteria behind the mark</li>
-                <li>3. Three changes to move up a class</li>
-              </ol>
-            </div>
-          ) : (
-            <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
-              <div className="flex items-center gap-4">
-                <span className="grid size-14 place-items-center rounded-2xl bg-[#3E6B5C] font-display text-[20px] font-bold text-white">2:1</span>
-                <div>
-                  <p className="font-display text-[30px] font-semibold leading-none">62–66</p>
-                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">ECON0013 · UCL Economics criteria</p>
-                </div>
-              </div>
-              <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">3 changes to move up a class</p>
-              <ol className="mt-2 space-y-1.5 text-[13.5px] text-[#efe9dd]/85">
-                <li>1. Derive MR = P(1 + 1/ε) before using it</li>
-                <li>2. Add the labelled diagram</li>
-                <li>3. Finish with the intuition</li>
-              </ol>
-            </div>
-          )}
-        </div>
-      </div>
+      <EndCard setRef={(el) => (chap.current[CH.length - 1] = el)} authed={authed} uni={uni} onCta={() => track(authed ? 'intro_dashboard' : 'intro_signup')} onEnter={() => finish('enter')} />
 
       {/* university picker: the first thing you see */}
       {!pickerGone && (
@@ -398,7 +307,7 @@ export default function Intro() {
           data-testid="intro-picker"
         >
           <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> Choose your university</p>
-          <h1 className="intro-title mt-6 text-[clamp(38px,5.6vw,88px)]"><T s="Where do you *study?*" /></h1>
+          <h1 className="intro-ed mt-6 text-[clamp(42px,6vw,96px)] leading-[.95] text-[#f3eee4]"><T s="Where do you *study?*" /></h1>
           <p className="intro-body mt-5 max-w-[540px] text-[14px] font-light tracking-[.03em] text-white/60">Pick your university to begin. More London universities are on the way.</p>
           <ul className="mt-9 grid w-full max-w-[1120px] grid-cols-2 gap-2.5 sm:mt-11 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
             {UNIS.map((u) => (
@@ -435,16 +344,7 @@ export default function Intro() {
       )}
 
       {/* progress rail */}
-      <div ref={rail} style={{ opacity: 0 }} className="pointer-events-none absolute right-5 top-1/2 hidden h-[34vh] -translate-y-1/2 sm:block">
-        <div className="relative h-full w-px bg-white/15">
-          <div ref={fill} className="absolute inset-0 origin-top bg-[#d9b46c]/80" style={{ transform: 'scaleY(0)' }} />
-          {LABELS.map((l, i) => (
-            <span key={l} ref={(el) => (dots.current[i] = el)} data-on="0" className="group absolute -left-[3px] size-[7px] rounded-full border border-white/40 bg-[#05070b] transition-colors data-[on='1']:border-[#d9b46c] data-[on='1']:bg-[#d9b46c]" style={{ top: `${(RAIL[i].a * 100).toFixed(1)}%` }}>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 whitespace-nowrap font-mono text-[10px] uppercase tracking-[.2em] text-[#efe9dd]/55 opacity-0 transition-opacity duration-500 group-data-[cur='1']:opacity-100">{l}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+      <ProgressRail railRef={rail} fillRef={fill} dotsRef={dots} countRef={count} chapters={railItems} positions={RAIL.map((c) => c.a)} />
 
       {/* start hint */}
       <div ref={hint} className="intro-kicker pointer-events-none absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 text-[10.5px] text-white/80 transition-opacity duration-700 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">

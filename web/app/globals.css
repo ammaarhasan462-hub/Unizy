@@ -157,3 +157,7 @@ html.intro, html.intro body { overflow: hidden; overscroll-behavior: none; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 }
+
+/* intro: editorial serif headers (Instrument Serif), amber italic accent */
+.intro-ed { font-family: 'Instrument Serif', 'Times New Roman', Georgia, serif; font-weight: 400; letter-spacing: -0.012em; text-wrap: balance; text-shadow: 0 2px 30px rgba(0,0,0,.35); }
+.intro-ed-i { font-style: italic; color: #e2c08a; letter-spacing: -0.005em; }
