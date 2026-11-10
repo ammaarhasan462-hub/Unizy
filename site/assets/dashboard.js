@@ -10,11 +10,17 @@
     { id: 'tutor', label: 'Tutor', path: '/dashboard/tutor', icon: 'M4 5h16v11H8l-4 4z' },
     { id: 'play', label: 'Play', path: '/dashboard/play', icon: 'M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3' },
     { id: 'history', label: 'Marked answers', path: '/dashboard/history', icon: 'M5 4h14v16H5zM8 9h8M8 13h8M8 17h5' },
-    { id: 'account', label: 'Account', path: '/dashboard/account', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0' }
+    { id: 'account', label: 'Account', path: '/dashboard/account', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0' },
+    { id: 'cards', label: 'Flashcards', path: '/dashboard/cards' },
+    { id: 'exam', label: 'Exam simulator', path: '/dashboard/exam' }
   ];
-  var S = { session: null, profile: undefined, mods: [], attempts: null, plan: null, courses: null, depts: null, setup: null, tutorBusy: false, histOpen: {}, histMod: '', today: null, cards: null, card: { i: 0, show: false } };
+  var S = { session: null, profile: undefined, mods: [], attempts: null, plan: null, courses: null, depts: null, setup: null, tutorBusy: false, histOpen: {}, histMod: '', today: null, cards: null, card: { i: 0, show: false }, all: null, rev: null, exam: { tier: 'exam', min: 45, fresh: true },
+    mode: lsGet('unizy:mode') || 'arena', ragf: lsGet('unizy:ragf') || '', treeOpen: lsJson('unizy:tree') || {} };
   var ST = window.UnizyStudy;
   var $ = function (id) { return document.getElementById(id); };
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { if (v == null || v === '') localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function lsJson(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
 
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -111,14 +117,17 @@
     document.querySelectorAll('.db-tab').forEach(function (sec) { sec.hidden = sec.getAttribute('data-tab') !== tab; });
     var t = TABS.filter(function (x) { return x.id === tab; })[0];
     document.title = (t ? t.label : 'Dashboard') + ' · ' + BRAND;
-    renderSide();
+    if (tab === 'cards' || tab === 'exam') setMode(tab); else if (tab === 'practice') setMode(/[?&]exam=/.test(location.search) ? 'exam' : 'arena');
+    renderSide(); renderTop();
     if (tab === 'home') renderHome();
+    else if (tab === 'cards') renderCards();
+    else if (tab === 'exam') renderExam();
     else if (tab === 'practice') { if (window.Marker) window.Marker.route(); }
     else if (tab === 'tutor') renderTutor();
     else if (tab === 'history') renderHistory();
     else if (tab === 'account') renderAccount();
     else if (tab === 'play') renderPlay();
-    window.scrollTo(0, 0);
+    if (tab !== 'practice') window.scrollTo(0, 0); // the marker scrolls itself (e.g. to an opened topic)
   }
 
   // ---------- data ----------
@@ -144,10 +153,12 @@
     return rest('my_modules?code=eq.' + encodeURIComponent(code), { method: 'DELETE', prefer: 'return=minimal' })
       .then(function () { S.mods = S.mods.filter(function (m) { return m.code !== code; }); renderSide(); });
   }
+  var chTimer = null;
   window.MarkHooks = {
     myModules: function () { return S.mods; },
     uni: function () { return uniId(); },
     has: hasMod,
+    changed: function () { clearTimeout(chTimer); chTimer = setTimeout(function () { refreshStudy(true); }, 700); },
     toggle: function (mod) { return hasMod(mod.code) ? removeMod(mod.code) : addMods([mod]); },
     examDate: function (code) { var m = S.mods.filter(function (x) { return x.code === code; })[0]; return m ? m.exam_date : null; },
     setExamDate: function (code, date) {
@@ -156,14 +167,158 @@
     }
   };
 
-  // ---------- sidebar ----------
-  function renderSide() {
-    var el = $('db-mods'); if (!el) return;
-    var cur = (/\/dashboard\/practice\/([A-Z]{4}[0-9]{4,5})/.exec(location.pathname) || [])[1];
-    el.innerHTML = S.mods.length ? S.mods.map(function (m) {
-      return '<li><a href="/dashboard/practice/' + m.code + '"' + (cur === m.code ? ' aria-current="page"' : '') + '><span class="db-mcode">' + esc(m.code) + '</span><span class="db-mtitle">' + esc(m.title) + '</span></a></li>';
-    }).join('') : '<li class="db-empty">No modules yet.</li>';
+  // ---------- sidebar: revision mode + University → Module → Topic tree with R/A/G dots ----------
+  function setMode(m) { if (S.mode === m) return; S.mode = m; lsSet('unizy:mode', m); }
+  function modeHref(code) { return S.mode === 'cards' ? '/dashboard/cards?m=' + code : S.mode === 'exam' ? '/dashboard/exam?m=' + code : '/dashboard/practice/' + code; }
+  function topicsOf(code) { return S.today ? S.today.topics.filter(function (t) { return t.code === code; }) : null; }
+  function ratingOf(code, pos) { var r = S.today && S.today.ratings.filter(function (x) { return x.code === code && x.topic_pos === pos; })[0]; return r ? r.rating : ''; }
+  function topicStatus(code, pos, d) { d = d || modData(code); if (!d.qById) d.qById = ST.index(d.questions); return ST.ragStatus(ST.topicMastery(pos, d), ratingOf(code, pos)); }
+  function curCode() {
+    var m = /\/dashboard\/practice\/([A-Z]{4}[0-9]{4,5})/.exec(location.pathname);
+    if (m) return m[1];
+    var t = tabOf(location.pathname);
+    return t === 'cards' || t === 'exam' || t === 'tutor' ? new URLSearchParams(location.search).get('m') : null;
   }
+  function renderSide() {
+    document.querySelectorAll('.db-seg a').forEach(function (a) { if (a.getAttribute('data-mode') === S.mode) a.setAttribute('aria-pressed', 'true'); else a.removeAttribute('aria-pressed'); });
+    var el = $('db-mods'); if (!el) return;
+    var cur = curCode(), curT = new URLSearchParams(location.search).get('t');
+    if (!S.mods.length) { el.innerHTML = '<li class="db-empty">No modules yet.</li>'; return; }
+    var unis = []; S.mods.forEach(function (m) { var u = m.uni || 'ucl'; if (unis.indexOf(u) < 0) unis.push(u); });
+    el.innerHTML = unis.map(function (u) {
+      return '<li class="db-uni">' + esc(UN(u).long) + '</li>' + S.mods.filter(function (m) { return (m.uni || 'ucl') === u; }).map(function (m) {
+        var tps = topicsOf(m.code), d = modData(m.code), ms = tps && tps.length ? masteryOf(m.code) : null;
+        var st = tps ? tps.map(function (t) { return topicStatus(m.code, t.position, d); }) : [];
+        var hit = S.ragf && st.indexOf(S.ragf) >= 0;
+        var open = S.treeOpen[m.code] != null ? S.treeOpen[m.code] : cur === m.code;
+        if (hit) open = true;
+        var row = '<div class="db-trow"><button type="button" class="db-tx" data-tx="' + m.code + '" aria-expanded="' + !!open + '" aria-label="Show topics in ' + esc(m.code) + '"><span></span></button><a href="' + modeHref(m.code) + '"' + (cur === m.code && curT == null ? ' aria-current="page"' : '') + '><span class="db-mcode">' + esc(m.code) + '</span><span class="db-mtitle">' + esc(m.title) + '</span></a>' + (ms ? '<span class="db-mpct" title="' + ms.pct + '% mastered">' + ms.pct + '%</span>' : '') + '</div>';
+        var kids = '';
+        if (open) {
+          if (tps === null) kids = '<li class="db-tnone">Loading topics…</li>';
+          else if (!tps.length) kids = '<li class="db-tnone"><a href="/dashboard/practice/' + m.code + '">Open to build its topic map →</a></li>';
+          else kids = tps.map(function (t, i) {
+            var rs = st[i];
+            return '<li><a href="/dashboard/practice/' + m.code + '?t=' + t.position + '" data-rs="' + rs + '"' + (cur === m.code && curT === String(t.position) ? ' aria-current="page"' : '') + ' title="' + esc(rs ? ST.RAGF[rs] : 'Not started') + '"><i class="dot ' + (rs || 'n') + '"></i><span class="n">T' + (t.position + 1) + '</span><span class="tt">' + esc(t.title) + '</span></a></li>';
+          }).join('');
+          kids = '<ul class="db-tt">' + kids + '</ul>';
+        }
+        return '<li class="db-tm' + (open ? ' open' : '') + (cur === m.code ? ' cur' : '') + '">' + row + kids + '</li>';
+      }).join('');
+    }).join('');
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tx]'); if (!b) return;
+    var c = b.getAttribute('data-tx'); S.treeOpen[c] = b.getAttribute('aria-expanded') !== 'true';
+    try { localStorage.setItem('unizy:tree', JSON.stringify(S.treeOpen)); } catch (er) {}
+    renderSide();
+  });
+  document.addEventListener('click', function (e) { var a = e.target.closest('.db-seg a'); if (a) setMode(a.getAttribute('data-mode')); }, true);
+
+  // ---------- top bar: command palette, cards due, R/A/G highlight, plan ----------
+  function renderTop() {
+    var due = $('db-due'), n = S.cards ? S.cards.length : null;
+    if (due) {
+      due.hidden = n == null;
+      due.className = 'db-due' + (n ? ' on' : '');
+      due.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h12v12H4zM8 3h12v12"/></svg><b>' + (n >= 60 ? '60+' : n) + '</b> flashcard' + (n === 1 ? '' : 's') + ' due';
+    }
+    var counts = { r: 0, a: 0, g: 0 };
+    if (S.today) S.mods.forEach(function (m) { var d = modData(m.code); (topicsOf(m.code) || []).forEach(function (t) { var rs = topicStatus(m.code, t.position, d); if (rs) counts[rs]++; }); });
+    var rf = $('db-ragf');
+    if (rf) rf.innerHTML = '<button type="button" data-ragf=""' + (!S.ragf ? ' aria-pressed="true"' : '') + '>All</button>' + ['r', 'a', 'g'].map(function (k) {
+      return '<button type="button" data-ragf="' + k + '"' + (S.ragf === k ? ' aria-pressed="true"' : '') + ' title="Highlight ' + ST.RAGF[k].toLowerCase() + ' topics in every module"><i class="dot ' + k + '"></i>' + ST.RAGF[k] + (S.today ? '<small>' + counts[k] + '</small>' : '') + '</button>';
+    }).join('');
+    document.documentElement.setAttribute('data-rag', S.ragf || '');
+    var pl = $('db-plan'); if (pl) pl.innerHTML = planChip();
+    var k = $('db-kbd'); if (k && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) k.textContent = '⌘K';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-ragf]'); if (!b) return;
+    S.ragf = b.getAttribute('data-ragf'); lsSet('unizy:ragf', S.ragf); track('ragf_' + (S.ragf || 'all'));
+    renderTop(); renderSide();
+  });
+  // one refresh of everything the sidebar, top bar and Home need (topics, questions, ratings, recall, attempts, due cards)
+  var studyP = null, studyAt = 0;
+  function refreshStudy(force) {
+    if (studyP) return studyP;
+    if (!force && S.today && Date.now() - studyAt < 8000) return Promise.resolve();
+    studyP = Promise.all([loadAttempts().catch(function () {}), loadToday().catch(function () { S.today = S.today || { topics: [], qs: [], recalls: [], ratings: [] }; S.cards = S.cards || []; })])
+      .then(function () { studyAt = Date.now(); studyP = null; renderSide(); renderTop(); var t = tabOf(location.pathname); if (t === 'home' && homeDraw) homeDraw(); if (t === 'exam') renderExam(); });
+    return studyP;
+  }
+
+  // command palette (Ctrl/⌘ K): any of your modules or topics, any catalogue module, "ECON0002 W3" jumps to topic 3
+  var PAL = { open: false, q: '', sel: 0, items: [], cat: [], seq: 0 };
+  var ACTIONS = [['Home', '/dashboard', 'Today'], ['Flashcards', '/dashboard/cards', 'Revision mode'], ['Topic arena', '/dashboard/practice', 'Revision mode'], ['Exam simulator', '/dashboard/exam', 'Revision mode'], ['Tutor', '/dashboard/tutor', 'Ask'], ['Marked answers', '/dashboard/history', 'History'], ['Account', '/dashboard/account', 'Settings']];
+  function palItems() {
+    var q = PAL.q.trim(), out = [], low = q.toLowerCase();
+    var jump = /^([A-Za-z]{4}\d{4,5})\s*[-·:]?\s*(?:w|wk|week|t|topic|lecture|l)?\s*(\d{1,2})$/i.exec(q);
+    if (jump) {
+      var code = jump[1].toUpperCase(), n = +jump[2], t = (topicsOf(code) || []).filter(function (x) { return x.position === n - 1; })[0];
+      out.push({ g: 'Jump to', label: code + ' · Topic ' + n, sub: t ? t.title : 'Opens the module at topic ' + n, href: '/dashboard/practice/' + code + '?t=' + (n - 1), rs: t ? topicStatus(code, t.position) : '' });
+    }
+    var tok = low.split(/\s+/).filter(Boolean);
+    var ok = function (h) { h = h.toLowerCase(); return tok.every(function (w) { return h.indexOf(w) >= 0; }); };
+    if (!tok.length) ACTIONS.forEach(function (a) { out.push({ g: 'Go to', label: a[0], sub: a[2], href: a[1] }); });
+    S.mods.forEach(function (m) { if (!tok.length || ok(m.code + ' ' + m.title)) out.push({ g: 'My modules', label: m.code, sub: m.title, href: '/dashboard/practice/' + m.code }); });
+    if (tok.length) {
+      var tops = [];
+      S.mods.forEach(function (m) { (topicsOf(m.code) || []).forEach(function (t) { if (ok(m.code + ' w' + (t.position + 1) + ' t' + (t.position + 1) + ' week ' + (t.position + 1) + ' ' + t.title)) tops.push({ g: 'Topics', label: m.code + ' · T' + (t.position + 1), sub: t.title, href: '/dashboard/practice/' + m.code + '?t=' + t.position, rs: topicStatus(m.code, t.position) }); }); });
+      out = out.concat(tops.slice(0, 12));
+      ACTIONS.forEach(function (a) { if (ok(a[0])) out.push({ g: 'Go to', label: a[0], sub: a[2], href: a[1] }); });
+      PAL.cat.forEach(function (m) { if (!hasMod(m.code)) out.push({ g: 'All ' + UN().short + ' modules', label: m.code, sub: m.title + (m.department ? ' · ' + m.department : ''), href: '/dashboard/practice/' + m.code }); });
+    }
+    return out;
+  }
+  var palTimer = null;
+  function palSearch() {
+    clearTimeout(palTimer);
+    var t = PAL.q.trim().replace(/[%*,()]/g, ' ').trim().replace(/\s*(?:w|wk|week|t|topic)?\s*\d{1,2}$/i, function (x) { return /^[A-Za-z]{4}\d{4,5}/.test(PAL.q.trim()) ? '' : x; }).trim();
+    if (t.length < 2) { PAL.cat = []; return; }
+    palTimer = setTimeout(function () {
+      var seq = ++PAL.seq;
+      var filt = /^[A-Za-z]{4}\d{0,5}$/.test(t) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*)';
+      rest('ucl_modules?select=code,title,department&uni=eq.' + uniId() + '&' + filt + '&level=lte.7&order=level.asc,code.asc&limit=8').then(function (rows) { if (seq === PAL.seq && PAL.open) { PAL.cat = rows || []; palPaint(); } }).catch(function () {});
+    }, 160);
+  }
+  function palOpen() {
+    if (PAL.open || !S.profile) return;
+    PAL.open = true; PAL.q = ''; PAL.sel = 0; PAL.cat = [];
+    var d = document.createElement('div'); d.id = 'db-pal'; d.className = 'db-pal';
+    d.innerHTML = '<div class="db-palbox" role="dialog" aria-modal="true" aria-label="Jump to a module or topic"><div class="db-palin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg><input id="db-palq" type="text" autocomplete="off" spellcheck="false" placeholder="Module code, topic or page… e.g. ECON0002 W3" aria-controls="db-pallist"><kbd>Esc</kbd></div><ul id="db-pallist" class="db-pallist" role="listbox"></ul><p class="db-palfoot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span>Type a code + week, e.g. <b>ECON0002 W3</b></span></p></div>';
+    document.body.appendChild(d);
+    d.addEventListener('mousedown', function (e) { if (e.target === d) palClose(); });
+    d.addEventListener('click', function (e) { var li = e.target.closest('[data-pi]'); if (li) { PAL.sel = +li.getAttribute('data-pi'); palGo(); } });
+    var inp = $('db-palq');
+    inp.addEventListener('input', function () { PAL.q = inp.value; PAL.sel = 0; palSearch(); palPaint(); });
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); PAL.sel = Math.min(PAL.items.length - 1, PAL.sel + 1); palPaint(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); PAL.sel = Math.max(0, PAL.sel - 1); palPaint(); }
+      else if (e.key === 'Enter') { e.preventDefault(); palGo(); }
+      else if (e.key === 'Escape') { e.preventDefault(); palClose(); }
+    });
+    palPaint(); inp.focus(); track('palette_open');
+  }
+  function palPaint() {
+    var ul = $('db-pallist'); if (!ul) return;
+    PAL.items = palItems();
+    if (PAL.sel >= PAL.items.length) PAL.sel = Math.max(0, PAL.items.length - 1);
+    var g = '';
+    ul.innerHTML = PAL.items.length ? PAL.items.map(function (it, i) {
+      var head = it.g !== g ? '<li class="db-palg" role="presentation">' + esc(it.g) + '</li>' : ''; g = it.g;
+      return head + '<li role="option" data-pi="' + i + '"' + (i === PAL.sel ? ' aria-selected="true"' : '') + '>' + (it.rs != null ? '<i class="dot ' + (it.rs || 'n') + '"></i>' : '') + '<b>' + esc(it.label) + '</b><span>' + esc(it.sub || '') + '</span>' + (i === PAL.sel ? '<kbd>↵</kbd>' : '') + '</li>';
+    }).join('') : '<li class="db-palnone">Nothing matches. Try a module code like ECON0002.</li>';
+    var s2 = ul.querySelector('[aria-selected]'); if (s2) s2.scrollIntoView({ block: 'nearest' });
+  }
+  function palGo() { var it = PAL.items[PAL.sel]; if (!it) return; palClose(); track('palette_go'); nav(it.href); }
+  function palClose() { PAL.open = false; var d = $('db-pal'); if (d) d.remove(); }
+  document.addEventListener('keydown', function (e) {
+    if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); if (PAL.open) palClose(); else palOpen(); return; }
+    if (e.key === '/' && !PAL.open && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && !(document.activeElement || {}).isContentEditable) { e.preventDefault(); palOpen(); }
+  });
+  document.addEventListener('click', function (e) { if (e.target.closest('#db-cmdk')) palOpen(); });
+
   function closeMenu() { var d = $('db'); if (d) d.classList.remove('menu'); }
 
   // ---------- first-run set-up: course, year, modules ----------
@@ -356,13 +511,25 @@
     if (!pick) return { mod: mod, topic: t, why: why, href: '/dashboard/practice/' + mod.code + '?t=' + t.position };
     return { mod: mod, topic: t, why: why, q: pick, href: '/dashboard/practice/' + mod.code + '?q=' + pick.id + '&v=answer' };
   }
+  var IC = {
+    book: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h7',
+    target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',
+    bolt: 'M13 2L4 14h7l-1 8 9-12h-7z',
+    check: 'M20 6L9 17l-5-5', avg: 'M4 19h16M7 15l4-4 3 3 5-6', star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z', cards: 'M4 7h12v12H4zM8 3h12v12'
+  };
+  function go(href, label) { return '<a class="btn primary td-go" href="' + href + '">' + label + '<span class="arr" aria-hidden="true">→</span></a>'; }
   function nextHtml(n) {
-    if (!n) return '<div class="td-card td-next"><span class="td-why">Start here</span><h2>Add your modules</h2><p class="sub">Pick the modules you’re taking and Today will tell you what to practise next.</p><a class="btn primary" href="/dashboard/practice">Find a module</a></div>';
-    if (n.none) return '<div class="td-card td-next"><span class="td-why">Start here</span><h2>Open ' + esc(n.mod.code) + '</h2><p class="sub">Open ' + esc(n.mod.title) + ' to see its Module Map: every topic, with practice questions at three levels.</p><a class="btn primary" href="/dashboard/practice/' + n.mod.code + '">Open ' + esc(n.mod.code) + '</a></div>';
-    var html = '<div class="td-card td-next"><span class="td-why">' + esc(n.why) + '</span><h2>Next up: ' + esc(n.topic.title) + '</h2><p class="sub">' + esc(n.mod.code) + ' ' + esc(n.mod.title) + '</p>';
-    if (n.recall) html += '<p class="q">Warm up with ' + n.recall + ' quick-recall question' + (n.recall === 1 ? '' : 's') + ' on this topic, then try the exam-style question.</p><a class="btn primary" href="' + n.href + '">Start quick recall</a>';
-    else if (n.q) html += '<p class="q">' + esc(String(n.q.question).slice(0, 260)) + (String(n.q.question).length > 260 ? '…' : '') + '</p><a class="btn primary" href="' + n.href + '">' + (n.q.tier === 'first' ? 'Try the First-class question' : 'Answer this') + '</a>';
-    else html += '<a class="btn primary" href="' + n.href + '">Open the topic</a>';
+    var head = function (ic, why) { return '<div class="td-nhead"><span class="td-ic" aria-hidden="true">' + icon(IC[ic]) + '</span><span class="td-why">' + esc(why) + '</span></div>'; };
+    if (!n) return '<div class="td-card td-next">' + head('book', 'Start here') + '<h2>Add your modules</h2><p class="sub">Pick the modules you’re taking and Today will tell you what to practise next.</p>' + go('/dashboard/practice', 'Find a module') + '</div>';
+    if (n.none) {
+      var lv = levelName(n.mod.level);
+      return '<div class="td-card td-next">' + head('book', 'Start here') + '<h2>Open ' + esc(n.mod.code) + '</h2><p class="td-meta">' + esc([n.mod.title, n.mod.department, lv].filter(Boolean).join(' · ')) + '</p><p class="sub">Opening it builds its Module Map: every topic in teaching order, with quick-recall, exam-style and First-class questions. Takes about a minute, once.</p>' + go('/dashboard/practice/' + n.mod.code, 'Open ' + esc(n.mod.code)) + '</div>';
+    }
+    var tps = topicsOf(n.mod.code) || [];
+    var html = '<div class="td-card td-next">' + head(n.recall ? 'bolt' : 'target', n.why) + '<h2>Next up: ' + esc(n.topic.title) + '</h2><p class="td-meta">' + esc(n.mod.code) + ' · Topic ' + (n.topic.position + 1) + ' of ' + tps.length + (n.q ? ' · ' + (n.q.tier === 'first' ? 'First-class stretch' : 'Exam-style') : n.recall ? ' · Quick recall' : '') + '</p>';
+    if (n.recall) html += '<p class="q">Warm up with ' + n.recall + ' quick-recall question' + (n.recall === 1 ? '' : 's') + ' on this topic, then try the exam-style question.</p>' + go(n.href, 'Start quick recall');
+    else if (n.q) html += '<p class="q">' + esc(String(n.q.question).slice(0, 260)) + (String(n.q.question).length > 260 ? '…' : '') + '</p>' + go(n.href, n.q.tier === 'first' ? 'Try the First-class question' : 'Answer this');
+    else html += go(n.href, 'Open the topic');
     return html + '</div>';
   }
   function cardsHtml() {
@@ -386,24 +553,46 @@
     track('card_' + grade);
     rest('review_cards?id=eq.' + c.id, { method: 'PATCH', prefer: 'return=minimal', body: n }).catch(function () {});
     var box = $('td-cards'); if (box) box.outerHTML = cardsHtml();
+    renderTop();
+  }
+  function statusPill(ms, hasTopics) {
+    if (!S.today) return '<span class="td-pill wait">…</span>';
+    if (!hasTopics) return '<span class="td-pill new">Not opened</span>';
+    if (!ms.started) return '<span class="td-pill new">Not started</span>';
+    return ms.pct >= 70 ? '<span class="td-pill done">Mastered</span>' : '<span class="td-pill go">In progress</span>';
   }
   function progressHtml() {
     if (!S.mods.length) return '';
     return '<section class="db-sec"><div class="mk-row"><h2>Your modules</h2><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div><ul class="td-prog">' + S.mods.map(function (m) {
-      var ms = masteryOf(m.code), cd = m.exam_date ? ST.countdown(m.exam_date) : '';
-      return '<li><div class="t"><b>' + esc(m.code) + '</b><span>' + esc(m.title) + '</span></div><div class="p">' + (ms ? '<span>' + ms.pct + '% mastered · ' + ms.started + '/' + ms.total + ' topics</span><span class="mk-bar"><i style="width:' + ms.pct + '%"></i></span>' : '<span>' + (S.today ? 'Not opened yet' : '…') + '</span>') + (cd ? '<span>' + esc(cd) + '</span>' : '') + '</div><div class="a"><a class="btn dark small" href="/dashboard/practice/' + m.code + '">Practise</a><a class="btn line small" href="/dashboard/tutor?m=' + m.code + '">Tutor</a></div></li>';
+      var tps = topicsOf(m.code) || [], ms = tps.length ? masteryOf(m.code) : null, cd = m.exam_date ? ST.countdown(m.exam_date) : '', d = modData(m.code);
+      var dots = tps.length ? '<span class="td-dots" aria-hidden="true">' + tps.map(function (t) { var rs = topicStatus(m.code, t.position, d); return '<i class="dot ' + (rs || 'n') + '" title="T' + (t.position + 1) + ' ' + esc(t.title) + '"></i>'; }).join('') + '</span>' : '';
+      var p = ms ? '<span class="td-pline">' + statusPill(ms, true) + '<b>' + ms.pct + '%</b><span>' + ms.started + '/' + ms.total + ' topics</span></span><span class="mk-bar' + (ms.pct >= 70 ? ' done' : '') + '"><i style="width:' + Math.max(ms.started ? 3 : 0, ms.pct) + '%"></i></span>' + dots
+        : '<span class="td-pline">' + statusPill(null, false) + '<span>' + (S.today ? 'Opens with a topic map' : '') + '</span></span>';
+      return '<li><div class="t"><b>' + esc(m.code) + '</b><span>' + esc(m.title) + '</span>' + (cd ? '<em class="td-cd">' + esc(cd) + '</em>' : '') + '</div><div class="p">' + p + '</div><div class="a"><a class="btn dark small" href="/dashboard/practice/' + m.code + '">' + (ms && ms.started ? 'Continue' : 'Practise') + '</a><a class="btn line small" href="/dashboard/tutor?m=' + m.code + '">Tutor</a></div></li>';
     }).join('') + '</ul></section>';
+  }
+  function perfHtml(st) {
+    var pct = function (v) { return v != null ? Math.round(v) + '%' : '–'; };
+    var cell = function (ic, val, lab, extra, href) { return '<' + (href ? 'a href="' + href + '"' : 'div') + ' class="pf"><span class="pf-ic" aria-hidden="true">' + icon(IC[ic]) + '</span><span class="pf-tx"><b>' + val + (extra || '') + '</b><span>' + lab + '</span></span></' + (href ? 'a' : 'div') + '>'; };
+    var cls = function (v) { if (v == null) return ''; var c = clsOf(v); return ' <em class="mk-cls ' + clsSlug(c) + '">' + c + '</em>'; };
+    var due = S.cards ? S.cards.length : null;
+    return '<section class="td-perf" aria-label="Performance overview">' +
+      cell('check', st.n, 'Answer' + (st.n === 1 ? '' : 's') + ' marked', '', '/dashboard/history') +
+      cell('avg', pct(st.avg), 'Average mark', cls(st.avg)) +
+      cell('star', st.best != null ? Math.round(st.best) + '%' : '–', 'Best mark', cls(st.best)) +
+      cell('cards', due == null ? '–' : due >= 60 ? '60+' : due, 'Cards due today', '', '/dashboard/cards') + '</section>';
   }
   function renderHome() {
     var el = $('db-home');
-    var draw = function () {
+    var draw = homeDraw = function () {
+      if (tabOf(location.pathname) !== 'home') return;
       var a = S.attempts || [], st = stats(a), p = S.profile || {};
-      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', p.uni === 'imperial' ? 'Imperial' : ''].filter(Boolean).join(' · ') || UN().short) + planChip() + '</p></header>';
+      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', p.uni === 'imperial' ? 'Imperial' : ''].filter(Boolean).join(' · ') || UN().short) + '</p></header>';
       var exams = S.mods.filter(function (m) { var d = ST.daysUntil(m.exam_date); return d != null && d >= 0; }).sort(function (x, y) { return ST.daysUntil(x.exam_date) - ST.daysUntil(y.exam_date); });
       if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
       else if (S.mods.length) html += '<p class="db-more" style="margin:0 0 14px">Add your exam dates on each module’s page for a countdown here.</p>';
       html += '<div class="td-grid">' + (S.today ? nextHtml(nextUp()) : '<div class="td-card td-next"><span class="td-why">Today</span><h2>Finding your next question…</h2></div>') + cardsHtml() + '</div>';
-      html += '<div class="db-stats"><div><b>' + st.n + '</b><span>answers marked</span></div><div><b>' + (st.avg != null ? clsOf(st.avg) : '–') + '</b><span>average class' + (st.avg != null ? ' (' + Math.round(st.avg) + ')' : '') + '</span></div><div><b>' + (st.best != null ? Math.round(st.best) : '–') + '</b><span>best mark</span></div><div><b>' + (S.cards ? S.cards.length : '–') + '</b><span>cards due</span></div></div>';
+      html += perfHtml(st);
       html += progressHtml();
       if (a.length) {
         html += '<section class="db-sec"><div class="mk-row"><h2>Recent marked answers</h2><a class="btn line small" href="/dashboard/history">See all</a></div><ul class="mk-hist">' + a.slice(0, 5).map(histRow).join('') + '</ul></section>';
@@ -417,16 +606,114 @@
       if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
       if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
     };
-    Promise.all([loadAttempts().catch(function () {}), loadToday().catch(function () { S.today = S.today || { topics: [], qs: [], recalls: [], ratings: [] }; S.cards = S.cards || []; })])
-      .then(function () { if (tabOf(location.pathname) === 'home') draw(); });
+    refreshStudy();
   }
+  var homeDraw = null;
   function planChip() {
     var p = S.plan; if (!p) return '';
-    return ' <span class="db-chip' + (p.tier === 'free' ? '' : ' pro') + '">' + (p.tier === 'pro' ? 'Pro' : p.tier === 'trial' ? 'Free trial' : 'Trial ended') + '</span>';
+    if (p.tier === 'pro') return ' <span class="db-chip pro">Pro</span>';
+    if (p.tier === 'trial') return ' <a class="db-chip trial" href="/pricing" title="Free trial until ' + esc(day(p.until)) + '">Free trial · until ' + esc(day(p.until)) + '</a>';
+    return ' <a class="db-chip ended" href="/pricing">Trial ended · Go Pro</a>';
   }
   function histRow(x) {
     var r = x.result || {};
     return '<li><span class="mk-cls ' + clsSlug(r.class) + '">' + esc(r.class || '?') + '</span><a class="mk-hq" href="/dashboard/history?a=' + x.id + '"><b>' + esc(x.code) + '</b> ' + esc(String(x.question).slice(0, 120)) + (String(x.question).length > 120 ? '…' : '') + '</a><span class="mk-hm">' + (r.mark_low != null ? r.mark_low + '–' + r.mark_high : '') + ' · ' + day(x.created_at) + '</span></li>';
+  }
+
+  // ---------- Flashcards (revision mode): a deck per module, review what's due, browse and delete ----------
+  function loadAllCards() {
+    return rest('review_cards?select=id,code,topic_pos,front,back,interval_days,ease,reps,due,created_at&order=due.asc,created_at.asc&limit=2000').then(function (r) { S.all = r || []; });
+  }
+  function deckStats(code) {
+    var list = (S.all || []).filter(function (c) { return !code || c.code === code; }), t = ST.today();
+    return { n: list.length, due: list.filter(function (c) { return !c.due || c.due <= t; }).length, solid: list.filter(function (c) { return (c.interval_days || 0) >= 21; }).length };
+  }
+  function renderCards() {
+    var el = $('db-cards'), pm = new URLSearchParams(location.search).get('m');
+    var draw = function () {
+      if (tabOf(location.pathname) !== 'cards') return;
+      var html = '<header class="db-hello"><span class="db-kick">Revision mode · Flashcards</span><h1>Flashcard decks</h1><p>Every mark you lose, every quick-recall miss and every set of notes you parse becomes a card. Each one comes back just before you’d forget it.</p></header>';
+      if (S.all === null) { el.innerHTML = html + '<p class="mk-hint">Loading your decks…</p>'; return; }
+      if (S.rev) { el.innerHTML = html + reviewHtml(); return; }
+      var all = deckStats('');
+      html += '<div class="cd-sum"><div><b>' + all.n + '</b><span>cards</span></div><div><b>' + all.due + '</b><span>due today</span></div><div><b>' + all.solid + '</b><span>well learned (3+ weeks)</span></div>' + (all.due ? '<button type="button" class="btn primary td-go" data-rev="">Review all ' + all.due + ' due<span class="arr" aria-hidden="true">→</span></button>' : '') + '</div>';
+      var codes = S.mods.map(function (m) { return m.code; });
+      (S.all || []).forEach(function (c) { if (codes.indexOf(c.code) < 0) codes.push(c.code); });
+      html += '<ul class="cd-decks">' + codes.map(function (code) {
+        var m = S.mods.filter(function (x) { return x.code === code; })[0] || { code: code, title: '' }, d = deckStats(code), pct = d.n ? Math.round(d.solid / d.n * 100) : 0;
+        return '<li class="cd-deck' + (pm === code ? ' on' : '') + '" id="cd-' + code + '"><div class="cd-dh"><span class="db-mcode">' + esc(code) + '</span><b>' + esc(m.title) + '</b></div><p class="cd-dm"><span><b>' + d.n + '</b> cards</span><span' + (d.due ? ' class="due"' : '') + '><b>' + d.due + '</b> due</span></p><span class="mk-bar"><i style="width:' + pct + '%"></i></span>' +
+          '<div class="cd-da">' + (d.due ? '<button type="button" class="btn dark small" data-rev="' + code + '">Review ' + d.due + '</button>' : '') + (d.n ? '<button type="button" class="btn line small" data-browse="' + code + '">' + (S.browse === code ? 'Hide cards' : 'Browse') + '</button>' : '') + '<a class="btn line small" href="/dashboard/practice/' + code + '?w=parse">+ From my notes</a></div>' +
+          (S.browse === code ? '<ul class="cd-list">' + (S.all || []).filter(function (c) { return c.code === code; }).map(function (c) { return '<li><div><b>' + esc(c.front) + '</b><p>' + esc(c.back) + '</p></div><span class="cd-due">' + (c.due && c.due > ST.today() ? 'Next: ' + esc(day(c.due)) : 'Due') + '</span><button type="button" class="mk-x" data-cdel="' + c.id + '" aria-label="Delete this card">×</button></li>'; }).join('') + '</ul>' : '') + '</li>';
+      }).join('') + '</ul>';
+      if (!codes.length) html += '<section class="mk-card"><p>No cards yet. Answer a quick-recall question or get an answer marked and your first cards appear here.</p></section>';
+      el.innerHTML = html;
+      if (pm && !S.rev) { var dk = $('cd-' + pm); if (dk) dk.scrollIntoView({ block: 'center' }); }
+    };
+    function reviewHtml() {
+      var r = S.rev, c = r.list[r.i];
+      if (!c) return '<section class="mk-card cd-done"><h2>Deck done</h2><p>' + r.done + ' card' + (r.done === 1 ? '' : 's') + ' reviewed. They’ll come back when they’re due.</p><button type="button" class="btn primary" data-revend="1">Back to decks</button></section>';
+      var m = S.mods.filter(function (x) { return x.code === c.code; })[0];
+      return '<section class="cd-rev"><div class="mk-row"><span class="db-kick">' + esc(r.code || 'All decks') + ' · ' + (r.list.length - r.i) + ' left</span><button type="button" class="mk-clear" data-revend="1">× End review</button></div><span class="mk-bar"><i style="width:' + Math.round(r.done / (r.done + r.list.length - r.i) * 100) + '%"></i></span>' +
+        '<div class="td-fc cd-fc"><span class="meta">' + esc(c.code) + (m ? ' · ' + esc(m.title) : '') + '</span><div class="front">' + esc(c.front) + '</div>' +
+        (r.show ? '<div class="back">' + esc(c.back) + '</div><div class="td-grades"><button type="button" class="btn line small" data-cgrade="again">Again <kbd>1</kbd></button><button type="button" class="btn dark small" data-cgrade="good">Good <kbd>2</kbd></button><button type="button" class="btn line small" data-cgrade="easy">Easy <kbd>3</kbd></button></div>'
+          : '<div><button type="button" class="btn dark small" data-cflip="1">Show answer <kbd>Space</kbd></button></div>') + '</div></section>';
+    }
+    function grade(g) {
+      var r = S.rev, c = r.list[r.i]; if (!c) return;
+      var n = ST.schedule(c, g); Object.assign(c, n);
+      if (g === 'again') r.list.push(c); else r.done++;
+      r.i++; r.show = false; track('card_' + g);
+      rest('review_cards?id=eq.' + c.id, { method: 'PATCH', prefer: 'return=minimal', body: n }).catch(function () {});
+      if (S.cards && g !== 'again') S.cards = S.cards.filter(function (x) { return x.id !== c.id; });
+      renderTop(); draw();
+    }
+    el.onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-rev')) { var code = b.getAttribute('data-rev'), t = ST.today(); S.rev = { code: code, i: 0, done: 0, show: false, list: (S.all || []).filter(function (c) { return (!code || c.code === code) && (!c.due || c.due <= t); }) }; track('deck_review'); draw(); window.scrollTo(0, 0); }
+      else if (b.hasAttribute('data-revend')) { S.rev = null; draw(); }
+      else if (b.hasAttribute('data-cflip')) { S.rev.show = true; draw(); }
+      else if (b.hasAttribute('data-cgrade')) grade(b.getAttribute('data-cgrade'));
+      else if (b.hasAttribute('data-browse')) { var bc = b.getAttribute('data-browse'); S.browse = S.browse === bc ? null : bc; draw(); }
+      else if (b.hasAttribute('data-cdel') && confirm('Delete this card?')) { var id = b.getAttribute('data-cdel'); S.all = S.all.filter(function (c) { return c.id !== id; }); if (S.cards) S.cards = S.cards.filter(function (c) { return c.id !== id; }); rest('review_cards?id=eq.' + id, { method: 'DELETE', prefer: 'return=minimal' }).catch(function () {}); renderTop(); draw(); }
+    };
+    cardKeys = function (e) {
+      if (tabOf(location.pathname) !== 'cards' || !S.rev || PAL.open || /INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || '')) return;
+      if (e.key === ' ' && !S.rev.show) { e.preventDefault(); S.rev.show = true; draw(); }
+      else if (S.rev.show && /^[123]$/.test(e.key)) grade(['again', 'good', 'easy'][+e.key - 1]);
+    };
+    draw();
+    loadAllCards().then(draw).catch(function () { S.all = []; draw(); });
+  }
+  var cardKeys = null;
+  document.addEventListener('keydown', function (e) { if (cardKeys) cardKeys(e); });
+
+  // ---------- Exam simulator (revision mode): one unseen question, a strict clock, no hints ----------
+  function renderExam() {
+    var el = $('db-exam'), x = S.exam, pm = new URLSearchParams(location.search).get('m');
+    if (pm && hasMod(pm)) x.code = pm;
+    if (!x.code || !hasMod(x.code)) x.code = S.mods[0] && S.mods[0].code;
+    var html = '<header class="db-hello"><span class="db-kick">Revision mode · Exam simulator</span><h1>Exam simulator</h1><p>One question you haven’t seen, a clock that counts down, and no hints or mark scheme until it’s marked. The closest thing to the exam hall.</p></header>';
+    if (!S.mods.length) { el.innerHTML = html + '<a class="btn primary" href="/dashboard/practice">Add a module first</a>'; return; }
+    var qs = S.today ? S.today.qs.filter(function (q) { return q.code === x.code && q.tier !== 'foundation'; }) : null;
+    var done = {}; (S.attempts || []).forEach(function (a) { if (a.question_id) done[a.question_id] = true; });
+    var pool = qs ? qs.filter(function (q) { return (x.tier === 'any' || q.tier === x.tier) && (!x.fresh || !done[q.id]); }) : [];
+    var seg = function (name, val, opts) { return '<div class="ex-seg" role="radiogroup" aria-label="' + name + '">' + opts.map(function (o) { return '<button type="button" role="radio" aria-checked="' + (String(val) === String(o[0])) + '" data-ex="' + name + '" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>'; };
+    html += '<section class="mk-card ex-set"><label class="mk-lab" for="ex-mod">Module</label><select id="ex-mod">' + S.mods.map(function (m) { return '<option value="' + m.code + '"' + (m.code === x.code ? ' selected' : '') + '>' + esc(m.code + ' ' + m.title) + '</option>'; }).join('') + '</select>' +
+      '<div class="ex-row"><div><span class="mk-lab">Paper</span>' + seg('tier', x.tier, [['exam', 'Exam-style'], ['first', 'First-class stretch'], ['any', 'Either']]) + '</div><div><span class="mk-lab">Time allowed</span>' + seg('min', x.min, [[30, '30 min'], [45, '45 min'], [60, '1 hour'], [90, '90 min']]) + '</div></div>' +
+      '<label class="mk-check"><input type="checkbox" id="ex-fresh"' + (x.fresh ? ' checked' : '') + '> Only questions I haven’t answered yet</label>';
+    if (qs === null) html += '<p class="mk-hint">Loading questions…</p>';
+    else if (!qs.length) html += '<div class="mk-warn">' + esc(x.code) + ' doesn’t have practice questions yet. <a href="/dashboard/practice/' + x.code + '">Open it once</a> to write its Module Map (about a minute), then come back.</div>';
+    else if (!pool.length) html += '<div class="mk-warn">You’ve answered every ' + (x.tier === 'first' ? 'First-class' : x.tier === 'exam' ? 'exam-style' : '') + ' question in ' + esc(x.code) + '. Untick “only questions I haven’t answered” to sit one again.</div>';
+    html += '<div class="ex-go"><p><b>' + (pool.length || 0) + '</b> question' + (pool.length === 1 ? '' : 's') + ' in the pool · picked at random · timer starts as soon as you open it</p><button type="button" class="btn primary big td-go" id="ex-start"' + (pool.length ? '' : ' disabled') + '>Start the exam<span class="arr" aria-hidden="true">→</span></button></div></section>' +
+      '<ul class="ex-rules"><li><b>No hints.</b> Worked steps, the mark scheme and examiner warnings stay hidden until it’s marked.</li><li><b>The clock is real.</b> It turns red when you go over, and the time you took is sent with your answer.</li><li><b>Same marking.</b> Your answer is marked against your department’s criteria, with a full mark allocation afterwards.</li></ul>';
+    el.innerHTML = html;
+    el.onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-ex')) { var k = b.getAttribute('data-ex'), v = b.getAttribute('data-v'); x[k] = k === 'min' ? +v : v; renderExam(); }
+      if (b.id === 'ex-start' && pool.length) { var q = pool[Math.floor(Math.random() * pool.length)]; track('exam_start'); nav('/dashboard/practice/' + x.code + '?q=' + q.id + '&v=answer&exam=' + x.min); }
+    };
+    el.onchange = function (e) { if (e.target.id === 'ex-mod') { x.code = e.target.value; history.replaceState(null, '', '/dashboard/exam?m=' + x.code); renderSide(); renderExam(); } if (e.target.id === 'ex-fresh') { x.fresh = e.target.checked; renderExam(); } };
+    if (!S.today) refreshStudy();
   }
 
   // ---------- Play (Unwind, the daily word game in play.js) ----------
@@ -462,6 +749,8 @@
         var r = x.result || {}, on = !!S.histOpen[x.id];
         var body = on ? '<div class="db-hbody"><p class="mk-headline">' + esc(r.headline || '') + '</p>' +
           (r.criteria && r.criteria.length ? '<ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>' : '') +
+          (r.allocation && r.allocation.length ? '<h3>Mark allocation</h3><ul class="mk-alloc">' + r.allocation.map(function (a) { return '<li><span class="it">' + esc(a.item) + '</span><span class="sc"><b>' + a.awarded + '</b>/' + a.available + '</span><span class="ab"><i style="width:' + Math.round(a.awarded / a.available * 100) + '%"></i></span></li>'; }).join('') + '</ul>' : '') +
+          (r.warnings && r.warnings.length ? '<div class="mk-warns">' + r.warnings.map(function (w) { return '<p class="mk-wcall"><b>Examiner warning</b>' + esc(w) + '</p>'; }).join('') + '</div>' : '') +
           (r.changes && r.changes.length ? '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>' : '') +
           (r.lost && r.lost.length ? '<h3>Where you lost marks</h3><ol class="mk-lostlist">' + r.lost.map(function (l, i) { return '<li><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>' : '') +
           (r.model_plan && r.model_plan.length ? '<details class="db-det"><summary>A First-class plan</summary><ul class="mk-plan">' + r.model_plan.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' + (r.model_paragraph ? '<div class="mk-prose mk-modelp">' + paras(r.model_paragraph) + '</div>' : '') + '</details>' : '') +
@@ -605,6 +894,7 @@
         // older accounts that already have modules skip set-up
         if (!S.profile && S.mods.length) S.profile = { course: null, year: null };
         show();
+        refreshStudy();
         if (window.Marker && tabOf(location.pathname) === 'practice') window.Marker.render();
         rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});
         if (window.UnizyWelcome) window.UnizyWelcome.check(rawRest, null, uid());

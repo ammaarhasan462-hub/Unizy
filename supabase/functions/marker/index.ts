@@ -364,13 +364,15 @@ Instructions:
 - "model_paragraph" = one paragraph (120-200 words) showing the weakest part of the student's answer done at First-class standard. Use only well-established material; no invented citations.
 - "rewrite" = the paragraph the student should rewrite first: "quote" = its first 6 to 12 words copied exactly from ${src}; "task" = what to change in it (under 40 words).
 - "cards" = 2 to 4 flashcards on knowledge the student got wrong or left out: "front" a short question (under 25 words), "back" the answer (under 45 words). Only well-established facts.
+- "allocation" = an indicative mark scheme for THIS question split into 4 to 7 line items that together are worth 100 marks, and what this answer earned on each: "item" = what earns the marks (under 14 words), "available" = int, "awarded" = int from 0 to available. The awarded marks must add up to a total inside your mark range.
+- "warnings" = 2 or 3 examiner warnings: the traps students most often fall into on THIS question (whether or not this student did), each one sentence under 30 words, written as advice ("Don't…", "Watch for…").
 ${askTopic ? `- "topic_pos" = the number of the module topic this question mostly belongs to, from: ${tlist.map((t) => t.position + " = " + t.title).join("; ")}. Use -1 if none fits.\n` : ""}${hasAtt ? `- If the attachments do not contain an answer to this question (blank, unreadable, or about something else), do not mark: set "refused": true and say briefly what's wrong in "refuse_reason" (e.g. which photo can't be read). If only part is unreadable, mark the rest and say which part in the headline.
 - "transcript" = a faithful transcription of the answer content in the attachments, in order, so the student has a typed copy (keep their wording and mistakes; mark unreadable words as [unclear]; max 2,000 words).
 ` : ""}
 Return one JSON object:
-{"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}]${askTopic ? ', "topic_pos": int' : ""}}`;
+{"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}], "allocation": [{"item": "...", "available": int, "awarded": int}], "warnings": ["..."]${askTopic ? ', "topic_pos": int' : ""}}`;
 
-    const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 7000);
+    const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 8000);
     if (!res.ok) {
       console.error("mark upstream", code, res.status, res.text.slice(0, 300));
       await refund();
@@ -394,6 +396,19 @@ Return one JSON object:
     const cls = mid >= 70 ? "First" : mid >= 60 ? "2:1" : mid >= 50 ? "2:2" : mid >= 40 ? "Third" : "Fail";
     if (askTopic && Number.isInteger(+out.topic_pos) && tlist.some((t) => t.position === +out.topic_pos)) topicPos = +out.topic_pos;
     const cards = Array.isArray(out.cards) ? out.cards.map((c: any) => ({ front: s(c?.front, 300), back: s(c?.back, 600) })).filter((c: any) => c.front.length >= 3 && c.back).slice(0, 4) : [];
+    // mark allocation: line items worth 100 in total, awarded marks scaled so they add up to the middle of the range
+    let allocation: { item: string; available: number; awarded: number }[] = [];
+    if (Array.isArray(out.allocation)) {
+      const rows = out.allocation.slice(0, 8).map((a: any) => ({ item: s(a?.item, 140), available: Math.max(1, Math.round(+a?.available || 0)), awarded: Math.max(0, Math.round(+a?.awarded || 0)) })).filter((a: any) => a.item);
+      const avail = rows.reduce((t: number, a: any) => t + a.available, 0);
+      if (rows.length >= 2 && avail > 0) {
+        rows.forEach((a: any) => { a.available = Math.max(1, Math.round(a.available * 100 / avail)); a.awarded = Math.min(a.available, a.awarded); });
+        const got = rows.reduce((t: number, a: any) => t + a.awarded, 0);
+        if (got > 0 && (got < lo || got > hi)) rows.forEach((a: any) => { a.awarded = Math.min(a.available, Math.round(a.awarded * mid / got)); });
+        allocation = rows;
+      }
+    }
+    const warnings = Array.isArray(out.warnings) ? out.warnings.slice(0, 3).map((x: any) => s(x, 300)).filter(Boolean) : [];
     const result = {
       class: cls,
       mark_low: lo, mark_high: hi,
@@ -406,6 +421,8 @@ Return one JSON object:
       model_paragraph: s(out.model_paragraph, 2500),
       rewrite: out.rewrite && typeof out.rewrite === "object" ? { quote: s(out.rewrite.quote, 300), task: s(out.rewrite.task, 400) } : null,
       cards: cards.length,
+      allocation,
+      warnings,
       rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : U.name + "-wide",
     };
     // with attachments, keep a typed copy of what was marked so history shows the answer

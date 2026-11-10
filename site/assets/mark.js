@@ -21,7 +21,8 @@
   function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   var state = {
     q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
-    attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, rtab: 'breakdown', rewrite: null, busy: false, err: ''
+    attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, itab: 'alloc', rewrite: null, busy: false, err: '',
+    tierF: '', wmode: 'study', exam: 0, mono: false, pbusy: false, perr: '', ptext: {}
   };
 
   // ---------- helpers ----------
@@ -80,12 +81,13 @@
   function clsSlug(c) { return c === 'First' ? 'first' : c === '2:1' ? 'u2' : c === '2:2' ? 'l2' : c === 'Third' ? 'third' : 'fail'; }
   function tierName(t) { return t === 'first' ? 'First-class stretch' : t === 'foundation' ? 'Quick recall' : 'Exam-style'; }
   function kindName(k) { return k === 'problem' ? 'Problem' : k === 'short' ? 'Short answers' : 'Essay'; }
+  function changed() { if (HOOKS && HOOKS.changed) HOOKS.changed(); }
   function studyData() { return { questions: state.questions || [], attempts: state.attempts || [], recalls: state.recalls || [] }; }
 
   // ---------- routing ----------
   function go(params, replace) {
     var u = new URL(location.href);
-    ['m', 'q', 'v', 't'].forEach(function (k) { u.searchParams.delete(k); });
+    ['m', 'q', 'v', 't', 'exam', 'w'].forEach(function (k) { u.searchParams.delete(k); });
     Object.keys(params || {}).forEach(function (k) { if (params[k] != null && params[k] !== '') u.searchParams.set(k, params[k]); });
     var path = params && params.m ? MBASE + params.m : BASE;
     u.searchParams.delete('m');
@@ -95,7 +97,7 @@
   }
   function routeParams() {
     var p = new URLSearchParams(location.search), m = MODRE.exec(location.pathname);
-    return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '', t: p.get('t') };
+    return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '', t: p.get('t'), exam: +p.get('exam') || 0, w: p.get('w') || '' };
   }
   function route() {
     var r = routeParams();
@@ -107,9 +109,14 @@
         else if (state.questions) state.cur = state.questions.filter(function (x) { return x.id === r.q && x.tier !== 'foundation'; })[0] || null;
         else { render(); return; } // questions still loading; loadMap() routes again
         if (!state.cur) { go({ m: r.m }, true); return; }
-      } else if (r.v !== 'result') { state.cur = null; state.result = null; }
+        // exam simulator: strict clock from the moment the question opens, no hints until it's marked
+        if (r.exam && state.exam !== r.exam) { state.exam = r.exam; timer.limit = Math.min(180, r.exam); startTimer(); track('exam_open'); }
+        else if (!r.exam && state.exam) { state.exam = 0; timer.limit = 45; }
+        state.itab = 'scheme';
+      } else if (r.v !== 'result') { state.cur = null; state.result = null; if (state.exam) { state.exam = 0; stopTimer(); timer.on = false; timer.limit = 45; } }
       if (r.v === 'result' && !state.result) { go({ m: r.m }, true); return; }
-      if (!r.v && r.t != null && r.t !== '') state.open[+r.t] = true;
+      if (!r.v && r.t != null && r.t !== '') { state.open[+r.t] = true; state.wmode = 'study'; }
+      if (!r.v && r.w === 'parse') state.wmode = 'parse';
       render(); setTitle();
       var tEl = !r.v && r.t != null && r.t !== '' && document.getElementById('mk-t' + r.t);
       if (tEl) tEl.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
@@ -215,7 +222,7 @@
     var code = state.mod.code, was = state.ratings[pos];
     state.ratings[pos] = rating; render();
     rest('topic_ratings', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: pos, rating: rating, updated_at: new Date().toISOString() } })
-      .then(function () { track('rag_' + rating); })
+      .then(function () { track('rag_' + rating); changed(); })
       .catch(function () { state.ratings[pos] = was; render(); });
   }
   function recall(qid, got) {
@@ -224,7 +231,7 @@
     var code = state.mod.code, row = { question_id: qid, topic_pos: q.topic_pos, got: got, created_at: new Date().toISOString() };
     state.recalls.unshift(row); render();
     rest('recall_log', { method: 'POST', auth: true, prefer: 'return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, question_id: qid, got: got } }).catch(function () {});
-    track(got ? 'recall_got' : 'recall_miss');
+    track(got ? 'recall_got' : 'recall_miss'); changed();
     // a missed recall question becomes a flashcard in "Due today"
     if (!got && q.answer) rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, front: q.question.slice(0, 600), back: q.answer.slice(0, 1200) } }).catch(function () {});
   }
@@ -264,8 +271,8 @@
       state.busy = false; stopTimer(); timer.on = false;
       if (b.refused) { state.err = b.message; render(); return; }
       state.result = b; state.result.question = question; state.result.answer = b.answer || answer;
-      state.rewrite = null; state.rtab = 'breakdown';
-      track('mark_done');
+      state.rewrite = null; state.itab = 'alloc'; state.exam = 0; timer.limit = 45;
+      track('mark_done'); changed();
       loadMine();
       go({ m: state.mod.code, q: state.cur.id || 'own', v: 'result' });
     }).catch(function (e) {
@@ -369,7 +376,10 @@
       (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
       examRow(m) +
       (m.summary || m.uni === 'imperial' ? '<p class="mk-sum">' + esc((m.summary || (m.programmes && m.programmes.length ? 'Taught on ' + m.programmes.slice(0, 3).join(', ') + (m.programmes.length > 3 ? ' and ' + (m.programmes.length - 3) + ' more' : '') + '.' : '')).replace(/\.\.\.$/, '…')) + (m.url ? ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + U().src + '</a>' : '') + '</p>' : '') + '</section>';
+    if (HOOKS && signed) html += '<div class="mk-wmode" role="tablist" aria-label="Workspace mode">' + [['study', 'Study mode', 'Structured topics and practice'], ['parse', 'Parse mode', 'Drop slides, transcripts or notes']].map(function (w) { return '<button type="button" role="tab" data-wmode="' + w[0] + '" aria-selected="' + (state.wmode === w[0]) + '"><b>' + w[1] + '</b><span>' + w[2] + '</span></button>'; }).join('') + '</div>';
+    if (HOOKS && signed && state.wmode === 'parse') return html + parseHtml();
     if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.</p></section>';
+    if (HOOKS && signed) html += unitsHtml(true);
     html += mapHtml();
     html += attemptsHtml();
     return html;
@@ -388,29 +398,113 @@
       if (loose0.length) html += '<h3>Practice questions</h3>' + qList(loose0);
       return html + own + '</section>';
     }
-    var d = studyData(); d.qById = ST.index(qs);
-    html += '<ol class="mk-topics">' + topics.map(function (t) {
+    var d = studyData(), tf = state.tierF; d.qById = ST.index(qs);
+    html += '<div class="mk-tiers" role="tablist" aria-label="Filter questions by level">' + TIERS.map(function (x) {
+      var n = qs.filter(function (q) { return q.topic_pos != null && (!x[0] || q.tier === x[0]); }).length;
+      return '<button type="button" role="tab" data-tierf="' + x[0] + '" aria-selected="' + (tf === x[0]) + '" class="t-' + (x[0] || 'all') + '"><b>' + x[1] + '</b><span>' + x[2] + ' · ' + n + '</span></button>';
+    }).join('') + '</div>';
+    html += '<ol class="mk-topics' + (tf ? ' tf' : '') + '">' + topics.map(function (t) {
       var pos = t.position, open = !!state.open[pos], ms = ST.topicMastery(pos, d), rg = state.ratings[pos];
-      var tq = qs.filter(function (q) { return q.topic_pos === pos; });
+      var tq = qs.filter(function (q) { return q.topic_pos === pos; }), rs = signed ? ST.ragStatus(ms, rg) : '';
       var warn = signed && rg === 'g' && ms.started && ms.pct < 50 ? '<p class="mk-warn">You rated this green, but you’re at ' + ms.pct + '%. Try the exam-style question to check.</p>' : signed && rg === 'r' && ms.pct >= 70 ? '<p class="mk-good">You rated this red, but you’re at ' + ms.pct + '%. You know more than you think.</p>' : '';
       var top = '<div class="mk-thead"><button type="button" class="mk-ttog" data-topic="' + pos + '" aria-expanded="' + open + '"><span class="mk-tnum">' + (pos + 1) + '</span><span class="mk-ttl"><b>' + esc(t.title) + '</b>' + (t.summary ? '<span>' + esc(t.summary) + '</span>' : '') + '</span><span class="mk-tpct">' + (signed ? (ms.started ? ms.pct + '%' : 'Not started') : tq.length + ' questions') + (signed ? bar(ms.pct) : '') + '</span><span class="mk-chev" aria-hidden="true"></span></button>' +
         (signed ? '<div class="mk-rag" role="group" aria-label="How confident are you on ' + esc(t.title) + '?">' + ['r', 'a', 'g'].map(function (k) { return '<button type="button" class="' + k + (rg === k ? ' on' : '') + '" data-rag="' + k + '" data-pos="' + pos + '" aria-pressed="' + (rg === k) + '" title="' + ST.RAG[k] + '"><span class="sr">' + ST.RAG[k] + '</span></button>'; }).join('') + '</div>' : '') + '</div>';
       var body = '';
       if (open) {
-        var rec = tq.filter(function (q) { return q.tier === 'foundation'; }), ex = tq.filter(function (q) { return q.tier === 'exam'; }), fc = tq.filter(function (q) { return q.tier === 'first'; });
+        var rec = tq.filter(function (q) { return q.tier === 'foundation' && (!tf || tf === 'foundation'); }), ex = tq.filter(function (q) { return q.tier === 'exam' && (!tf || tf === 'exam'); }), fc = tq.filter(function (q) { return q.tier === 'first' && (!tf || tf === 'first'); });
         body = '<div class="mk-tbody">' + warn +
           (rec.length ? '<div class="mk-tier"><h4><span class="mk-tag f">Foundation</span> Quick recall <small>Check yourself, then say how you did. Misses become flashcards.</small></h4><ul class="mk-recall">' + rec.map(recallItem).join('') + '</ul></div>' : '') +
           (ex.length ? '<div class="mk-tier"><h4><span class="mk-tag e">Exam-style</span> Answer under exam conditions <small>Marked against your department’s criteria.</small></h4>' + qList(ex) + '</div>' : '') +
           (fc.length ? '<div class="mk-tier"><h4><span class="mk-tag x">First-Class</span> Stretch question <small>Links topics, weighs arguments or pushes the hard case. This is where 70+ comes from.</small></h4>' + qList(fc) + '</div>' : '') +
+          (!rec.length && !ex.length && !fc.length ? '<p class="mk-hint">No ' + esc(tierName(tf)) + ' questions in this topic.</p>' : '') +
           '</div>';
       } else if (warn) body = '<div class="mk-tbody slim">' + warn + '</div>';
-      return '<li class="mk-tp' + (open ? ' open' : '') + (rg ? ' rg-' + rg : '') + '" id="mk-t' + pos + '">' + top + body + '</li>';
+      return '<li class="mk-tp' + (open ? ' open' : '') + (rg ? ' rg-' + rg : '') + '" id="mk-t' + pos + '"' + (signed ? ' data-rs="' + rs + '"' : '') + '>' + top + body + '</li>';
     }).join('') + '</ol>';
     var loose = qs.filter(function (q) { return q.topic_pos == null && q.tier !== 'foundation'; });
     if (loose.length) html += '<details class="mk-more"><summary>More practice questions (' + loose.length + ')</summary>' + qList(loose) + '</details>';
     html += own + '<p class="mk-fine">Questions are written for revision from the module’s public description, in the style your department examines. They are not taken from ' + U().short + ' exam papers.</p></section>';
     return html;
   }
+  // Tiered practice: the three levels as grade targets
+  var TIERS = [['', 'All levels', 'Every question'], ['foundation', 'Pass (50%)', 'Quick recall'], ['exam', 'Merit (60%)', 'Exam-style'], ['first', '1st Class (70%+)', 'Stretch']];
+
+  // ---------- Parse mode: lecture slides, transcripts or notes → micro-units with flashcards ----------
+  var UKEY = 'unizy:units:';
+  function unitsGet(code) { try { return JSON.parse(localStorage.getItem(UKEY + code) || 'null'); } catch (e) { return null; } }
+  function unitsSet(code, v) { try { if (v) localStorage.setItem(UKEY + code, JSON.stringify(v)); else localStorage.removeItem(UKEY + code); } catch (e) {} }
+  function ptray() { return window.UnizyAttach ? window.UnizyAttach.tray('parse:' + state.mod.code) : null; }
+  function parseHtml() {
+    var m = state.mod, t = ptray();
+    var html = '<section class="mk-card mk-parse"><div class="mk-row"><h2>Turn your material into study units</h2></div><p class="mk-sub">Drop lecture slides, a Moodle transcript or your raw notes for ' + esc(m.code) + '. You get short study units with the key points, and flashcards you can add to your ' + esc(m.code) + ' deck in one click.</p>' +
+      '<div class="mk-drop"><div class="mk-dropin"><span class="mk-dropic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span><b>Drag &amp; drop slides, transcripts or notes</b><span>PDF, Word, text or photos of slides</span></div>' + (t ? t.html() : '') +
+      '<label class="mk-lab" for="mk-ptext">…or paste text</label><textarea id="mk-ptext" rows="6" placeholder="Paste a lecture transcript, your notes or the text of the slides">' + esc(state.ptext[m.code] || '') + '</textarea></div>' +
+      (state.perr ? '<p class="mk-err">' + state.perr + '</p>' : '') +
+      '<div class="mk-row end"><span class="mk-fine">Counts as one tutor question (more for long PDFs). Your units stay on this device until you remove them.</span>' + (state.pbusy ? '<p class="mk-busy"><span class="spin"></span>Reading your material… about 30 seconds</p>' : '<button type="button" class="btn primary td-go" data-act="parse">Make study units<span class="arr" aria-hidden="true">→</span></button>') + '</div></section>';
+    return html + unitsHtml(false);
+  }
+  function unitsHtml(compact) {
+    var u = unitsGet(state.mod.code);
+    if (!u || !u.units || !u.units.length) return '';
+    var cards = 0, added = 0; u.units.forEach(function (x) { cards += (x.cards || []).length; if (x.added) added += (x.cards || []).length; });
+    var body = '<ol class="mk-units">' + u.units.map(function (x, i) {
+      return '<li><span class="mk-tnum">' + (i + 1) + '</span><div><b>' + esc(x.title) + '</b>' + (x.summary ? '<p>' + esc(x.summary) + '</p>' : '') + (x.points && x.points.length ? '<ul>' + x.points.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>' : '') +
+        (x.cards && x.cards.length ? '<details class="mk-ucards"><summary>' + x.cards.length + ' flashcard' + (x.cards.length === 1 ? '' : 's') + (x.added ? ' · in your deck' : '') + '</summary><ul>' + x.cards.map(function (c) { return '<li><b>' + esc(c.front) + '</b><span>' + esc(c.back) + '</span></li>'; }).join('') + '</ul></details>' : '') + '</div></li>';
+    }).join('') + '</ol>';
+    var act = '<div class="mk-row start">' + (added < cards ? '<button type="button" class="btn dark small" data-act="ucards">Add ' + (cards - added) + ' flashcards to my ' + esc(state.mod.code) + ' deck</button>' : '<a class="btn line small" href="/dashboard/cards?m=' + state.mod.code + '">✓ In your deck · review them</a>') + '<button type="button" class="mk-clear" data-act="uclear">× Remove these units</button></div>';
+    if (compact) return '<details class="mk-card mk-unitsbox"><summary><h2>Your parsed notes</h2><span>' + u.units.length + ' study units' + (u.source ? ' from ' + esc(u.source) : '') + '</span></summary>' + body + act + '</details>';
+    return '<section class="mk-card"><div class="mk-row"><h2>' + u.units.length + ' study units</h2><span class="mk-fine">' + (u.source ? 'From ' + esc(u.source) : '') + '</span></div>' + body + act + '</section>';
+  }
+  function parseJsonText(t) {
+    t = String(t || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+    try { return JSON.parse(t); } catch (e) {}
+    var a = t.indexOf('{'), b = t.lastIndexOf('}');
+    if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch (e) {} }
+    return null;
+  }
+  function runParse() {
+    var m = state.mod, t = ptray(), text = (state.ptext[m.code] || '').trim(), hasAtt = !!(t && t.count());
+    state.perr = '';
+    if (!hasAtt && text.split(/\s+/).length < 40) { state.perr = 'Add some slides or notes first (a few paragraphs at least).'; render(); return; }
+    if (hasAtt && t.busy()) { state.perr = 'Your files are still being prepared. Try again in a moment.'; render(); return; }
+    if (text.length > 60000) text = text.slice(0, 60000);
+    var source = hasAtt ? t.summary() : 'pasted notes';
+    var prompt = 'Turn this lecture material for ' + m.code + ' ' + (m.title || '') + ' (' + U().short + ', ' + (m.department || '') + ') into structured revision micro-units for a student.\n\n' +
+      (text ? '<material>\n' + text + '\n</material>\n\n' : '') + (hasAtt ? 'The material is ' + (text ? 'also ' : '') + 'in the attached files.\n\n' : '') +
+      'Rules:\n- 4 to 10 units, in the order the material teaches them. Each unit covers one idea, model, case, method or argument.\n- "title" under 8 words. "summary" one sentence under 30 words. "points" = 3 to 6 key points the student must know, each under 25 words, exam-useful (definitions, mechanisms, conditions, key evidence, common confusions).\n- "cards" = 2 or 3 flashcards per unit: "front" a short question (under 20 words), "back" the answer (under 40 words).\n- Use what is in the material, plus only well-established facts needed to make it clear. Never invent cases, studies, statistics or quotations.\n- If the material is not study material, return {"units": []}.\n\nReturn one JSON object: {"units": [{"title": "...", "summary": "...", "points": ["..."], "cards": [{"front": "...", "back": "..."}]}]}';
+    state.pbusy = true; render(); track('parse_start');
+    token().then(function (tk) {
+      if (!tk) { var e = new Error('signin'); e.signin = true; throw e; }
+      return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: prompt, kind: 'notes', json: true, cache: false, stream: false, attachments: hasAtt ? t.payload() : undefined }) });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (b) { if (!r.ok) { var e = new Error(b.message || 'That didn’t work. Try again.'); e.upgrade = !!b.upgrade; throw e; } return b; });
+    }).then(function (b) {
+      state.pbusy = false;
+      var out = parseJsonText(b.text), units = out && Array.isArray(out.units) ? out.units : null;
+      if (!units) { state.perr = 'We couldn’t read the result. Try again.'; render(); return; }
+      units = units.filter(function (x) { return x && x.title; }).slice(0, 12).map(function (x) {
+        return { title: String(x.title).slice(0, 120), summary: String(x.summary || '').slice(0, 300), points: (Array.isArray(x.points) ? x.points : []).slice(0, 8).map(function (p) { return String(p).slice(0, 300); }),
+          cards: (Array.isArray(x.cards) ? x.cards : []).filter(function (c) { return c && c.front && c.back; }).slice(0, 4).map(function (c) { return { front: String(c.front).slice(0, 300), back: String(c.back).slice(0, 600) }; }) };
+      });
+      if (!units.length) { state.perr = 'That doesn’t look like lecture material. Try your slides or notes.'; render(); return; }
+      unitsSet(m.code, { at: Date.now(), source: source, units: units });
+      if (t) t.clear(); state.ptext[m.code] = '';
+      track('parse_done'); render();
+    }).catch(function (e) {
+      state.pbusy = false;
+      if (e.signin) { location.href = signinUrl(); return; }
+      state.perr = esc(e.message) + (e.upgrade ? ' <a href="/pricing">See Pro</a>' : ''); render();
+    });
+  }
+  function addUnitCards() {
+    var m = state.mod, u = unitsGet(m.code); if (!u) return;
+    var rows = []; u.units.forEach(function (x) { if (!x.added) (x.cards || []).forEach(function (c) { rows.push({ user_id: uid(), code: m.code, topic_pos: null, front: c.front, back: c.back }); }); });
+    if (!rows.length) return;
+    rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: rows }).then(function () {
+      u.units.forEach(function (x) { x.added = true; }); unitsSet(m.code, u); track('parse_cards'); changed(); render();
+    }).catch(function (e) { state.perr = esc(e.message); render(); });
+  }
+
   function recallItem(q) {
     var shown = !!state.shown[q.id], last = (state.recalls || []).filter(function (r) { return r.question_id === q.id; })[0];
     return '<li><p class="mk-rq">' + esc(q.question) + (last ? ' <span class="mk-rlast ' + (last.got ? 'ok' : 'no') + '">' + (last.got ? '✓ Got it' : '✗ Not yet') + '</span>' : '') + '</p>' +
@@ -438,67 +532,152 @@
       return '<li><span class="mk-cls ' + clsSlug(r.class) + '">' + esc(r.class || '?') + '</span><span class="mk-hq">' + esc(String(x.question).slice(0, 140)) + (String(x.question).length > 140 ? '…' : '') + '</span><span class="mk-hm">' + (r.mark_low != null ? r.mark_low + '–' + r.mark_high : '') + ' · ' + new Date(x.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + '</span><button type="button" class="mk-x" data-del="' + x.id + '" aria-label="Delete this marked answer">×</button></li>';
     }).join('') + '</ul></section>';
   }
+  // ---------- maths / code formatting toolbar for the answer box ----------
+  var SUP = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾', n: 'ⁿ', i: 'ⁱ', x: 'ˣ', t: 'ᵗ', k: 'ᵏ', a: 'ᵃ', b: 'ᵇ', T: 'ᵀ' };
+  var SUB = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉', '+': '₊', '-': '₋', '=': '₌', '(': '₍', ')': '₎', t: 'ₜ', i: 'ᵢ', n: 'ₙ', x: 'ₓ', k: 'ₖ', a: 'ₐ', e: 'ₑ', j: 'ⱼ' };
+  var FMT = [
+    ['Maths', [['sup', 'xⁿ', 'Superscript (select text first)'], ['sub', 'xₙ', 'Subscript (select text first)'], ['frac', 'a⁄b', 'Fraction'], ['√', '√', 'Square root'], ['±', '±'], ['×', '×'], ['÷', '÷'], ['≤', '≤'], ['≥', '≥'], ['≠', '≠'], ['≈', '≈'], ['∞', '∞'], ['Σ', 'Σ', 'Sum'], ['∫', '∫', 'Integral'], ['∂', '∂', 'Partial'], ['→', '→'], ['⇒', '⇒'], ['∴', '∴', 'Therefore']]],
+    ['Greek', [['α', 'α'], ['β', 'β'], ['γ', 'γ'], ['δ', 'δ'], ['Δ', 'Δ'], ['ε', 'ε'], ['θ', 'θ'], ['λ', 'λ'], ['μ', 'μ'], ['π', 'π'], ['ρ', 'ρ'], ['σ', 'σ'], ['ω', 'ω']]],
+    ['Code', [['code', '`x`', 'Inline code'], ['block', '{ }', 'Code block'], ['mono', 'Mono', 'Monospace answer box']]],
+    ['Structure', [['bullet', '•', 'Bullet point'], ['num', '1.', 'Numbered point']]]
+  ];
+  function toolbarHtml() {
+    return '<div class="mk-fmt" role="toolbar" aria-label="Maths and code formatting">' + FMT.map(function (g) {
+      return '<div class="mk-fg"><span class="mk-fgl">' + g[0] + '</span>' + g[1].map(function (b) { return '<button type="button" data-fmt="' + esc(b[0]) + '" title="' + esc(b[2] || b[1]) + '"' + (b[0] === 'mono' ? ' aria-pressed="' + state.mono + '"' : '') + '>' + esc(b[1]) + '</button>'; }).join('') + '</div>';
+    }).join('') + '</div>';
+  }
+  function applyFmt(kind) {
+    var ta = document.getElementById('mk-answer'); if (!ta) return;
+    if (kind === 'mono') { state.mono = !state.mono; ta.classList.toggle('mono', state.mono); var mb = root.querySelector('[data-fmt="mono"]'); if (mb) mb.setAttribute('aria-pressed', state.mono); return; }
+    var s = ta.selectionStart, e = ta.selectionEnd, sel = ta.value.slice(s, e), ins = kind, caret = null;
+    var map = function (m, txt) { var ok = txt.split('').every(function (ch) { return m[ch]; }); return ok ? txt.split('').map(function (ch) { return m[ch]; }).join('') : null; };
+    var lineStart = ta.value.lastIndexOf('\n', s - 1) + 1, atLine = s === lineStart;
+    if (kind === 'sup') { ins = sel ? (map(SUP, sel) || '^(' + sel + ')') : '^()'; if (!sel) caret = 2; }
+    else if (kind === 'sub') { ins = sel ? (map(SUB, sel) || '_(' + sel + ')') : '_()'; if (!sel) caret = 2; }
+    else if (kind === 'frac') { ins = sel ? '(' + sel + ')/()' : '()/()'; caret = sel ? ins.length - 1 : 1; }
+    else if (kind === '√') { ins = '√(' + sel + ')'; if (!sel) caret = 2; }
+    else if (kind === 'Σ') ins = sel ? 'Σ(' + sel + ')' : 'Σ';
+    else if (kind === 'code') { ins = '`' + sel + '`'; if (!sel) caret = 1; }
+    else if (kind === 'block') { ins = (atLine ? '' : '\n') + '```\n' + (sel || '') + '\n```\n'; if (!sel) caret = (atLine ? 0 : 1) + 4; }
+    else if (kind === 'bullet') ins = (atLine ? '' : '\n') + '• ' + sel;
+    else if (kind === 'num') ins = (atLine ? '' : '\n') + '1. ' + sel;
+    else if (sel) ins = kind + sel;
+    ta.focus(); ta.setRangeText(ins, s, e, 'end');
+    if (caret != null) { ta.selectionStart = ta.selectionEnd = s + caret; }
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    track('fmt_' + (kind.length > 2 ? kind : 'sym'));
+  }
+
+  // ---------- the inspector: evaluation, mark scheme / allocation, model answer, examiner warnings ----------
+  var BANDS = [['Fail', 0, 40, 'fail'], ['Third', 40, 50, 'third'], ['2:2', 50, 60, 'l2'], ['2:1', 60, 70, 'u2'], ['First', 70, 100, 'first']];
+  function scaleHtml(lo, hi) {
+    var pos = function (v) { return Math.max(0, Math.min(100, (v - 25) / 60 * 100)); };
+    return '<div class="mk-scale" aria-hidden="true"><div class="mk-sbar">' + BANDS.map(function (b) { return '<span class="' + b[3] + '" style="left:' + pos(b[1]) + '%;width:' + (pos(b[2]) - pos(b[1])) + '%"></span>'; }).join('') +
+      (lo != null ? '<i class="mk-srange" style="left:' + pos(lo) + '%;width:' + Math.max(1.5, pos(hi) - pos(lo)) + '%"></i>' : '') + '</div><div class="mk-slab">' + BANDS.map(function (b) { return '<span style="left:' + pos(b[1] === 0 ? 25 : b[1]) + '%">' + (b[1] ? b[1] : '') + '</span>'; }).join('') + '</div></div>';
+  }
+  function itabs(list) {
+    return '<div class="mk-itabs" role="tablist">' + list.map(function (t) { return '<button type="button" role="tab" data-itab="' + t[0] + '" aria-selected="' + (state.itab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+  }
+  function warnHtml(list, label) {
+    return list.map(function (w) { return '<p class="mk-wcall"><b>' + (label || 'Examiner warning') + '</b>' + esc(w) + '</p>'; }).join('');
+  }
+  function prevForCur() { var c = state.cur; return c && c.id ? (state.attempts || []).filter(function (a) { return a.question_id === c.id && a.result; }) : []; }
+  function inspectorBefore() {
+    var c = state.cur, q = c && c.id ? (state.questions || []).filter(function (x) { return x.id === c.id; })[0] : null, ex = !!state.exam;
+    var prev = prevForCur(), best = null;
+    prev.forEach(function (a) { var m = (a.result.mark_low + a.result.mark_high) / 2; if (!best || m > (best.result.mark_low + best.result.mark_high) / 2) best = a; });
+    var html = '<aside class="mk-insp" aria-label="Mark scheme and feedback"><div class="mk-eval wait"><span class="mk-ilab">Evaluation</span>' +
+      (best ? '<p class="mk-ebest">Your best so far <span class="mk-cls ' + clsSlug(best.result.class) + '">' + esc(best.result.class) + '</span> ' + best.result.mark_low + '–' + best.result.mark_high + '</p>' : '<p class="mk-epl">Your grade band and mark range appear here when it’s marked.</p>') +
+      scaleHtml(best ? best.result.mark_low : null, best ? best.result.mark_high : null) + '</div>';
+    if (ex) return html + '<div class="mk-ibody"><div class="mk-exlock"><b>Exam conditions</b><p>The mark scheme, model answer and examiner warnings unlock when your answer is marked.</p></div></div></aside>';
+    if (['scheme', 'model', 'warn'].indexOf(state.itab) < 0) state.itab = 'scheme';
+    var warns = []; prev.forEach(function (a) { (a.result.warnings || []).forEach(function (w) { if (warns.indexOf(w) < 0) warns.push(w); }); });
+    html += itabs([['scheme', 'Mark scheme'], ['model', 'Model answer'], ['warn', 'Warnings' + (warns.length ? ' (' + warns.length + ')' : '')]]) + '<div class="mk-ibody">';
+    if (state.itab === 'scheme') {
+      if (q && q.guide) html += '<p class="mk-fine">What each band needs on this question:</p><dl class="mk-guide2"><dt><span class="mk-cls first">First</span></dt><dd>' + esc(q.guide.first) + '</dd><dt><span class="mk-cls u2">2:1</span></dt><dd>' + esc(q.guide.two_one) + '</dd><dt><span class="mk-cls l2">2:2</span></dt><dd>' + esc(q.guide.two_two) + '</dd></dl>';
+      else html += '<p class="mk-fine">Marked against ' + (state.mod.department ? esc(state.mod.department) + '’s published criteria (where it has them) and ' : '') + U().poss + ' grade bands for ' + esc(levelName(state.mod.level)) + '.</p>';
+      html += '<p class="mk-fine">You get a line-by-line mark allocation with your result.</p>';
+    } else if (state.itab === 'model') {
+      var ma = c && c.id ? modelAnswers[c.id] : null;
+      html += ma ? '<details class="mk-acc"><summary>Reveal the First-class model answer <small>(spoiler)</small></summary><p class="mk-author">By ' + esc(ma.author_name) + (ma.author_mark ? ', who scored ' + ma.author_mark : '') + '.</p><div class="mk-prose">' + paras(ma.answer) + '</div></details>'
+        : '<p class="mk-fine">A First-class plan and a model paragraph for your weakest part come back with your marking. Try it yourself first.</p>';
+    } else html += warns.length ? warnHtml(warns) : '<p class="mk-fine">Examiner warnings for this question (the traps students most often fall into) appear after your first marking.</p>';
+    return html + '</div></aside>';
+  }
+  function inspectorAfter(r, q, ma) {
+    var lost = r.lost || [], al = r.allocation || [], warns = r.warnings || [];
+    if (['alloc', 'model', 'warn'].indexOf(state.itab) < 0) state.itab = 'alloc';
+    var html = '<aside class="mk-insp" aria-label="Your evaluation"><div class="mk-eval ' + clsSlug(r.class) + '"><span class="mk-ilab">Evaluation</span><div class="mk-everd"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark range</span></div></div>' + scaleHtml(r.mark_low, r.mark_high);
+    if (r.prev && r.prev.mark_low != null) {
+      var dm = (r.mark_low + r.mark_high) / 2 - (r.prev.mark_low + r.prev.mark_high) / 2;
+      html += '<p class="mk-delta ' + (dm > 0 ? 'up' : dm < 0 ? 'down' : '') + '">' + (dm > 0 ? '▲ Up ' + plural(Math.round(dm), 'mark') : dm < 0 ? '▼ Down ' + plural(Math.round(-dm), 'mark') : 'Same mark') + ' from ' + r.prev.mark_low + '–' + r.prev.mark_high + '</p>';
+    }
+    html += '<p class="mk-efine">Practice estimate against ' + (r.rubric && !/-wide$/.test(r.rubric) ? esc(r.rubric) + ' criteria and ' : '') + U().poss + ' grade bands. Not an official mark.</p></div>';
+    html += itabs([['alloc', 'Mark allocation'], ['model', '1st Class model'], ['warn', 'Warnings' + ((warns.length || lost.length) ? ' (' + (warns.length || lost.length) + ')' : '')]]) + '<div class="mk-ibody">';
+    if (state.itab === 'alloc') {
+      if (al.length) {
+        var got = al.reduce(function (t, a) { return t + a.awarded; }, 0), avail = al.reduce(function (t, a) { return t + a.available; }, 0);
+        html += '<ul class="mk-alloc">' + al.map(function (a) { var p = Math.round(a.awarded / a.available * 100); return '<li><span class="it">' + esc(a.item) + '</span><span class="sc"><b>' + a.awarded + '</b>/' + a.available + '</span><span class="ab' + (p < 50 ? ' low' : '') + '"><i style="width:' + p + '%"></i></span>' + (a.awarded < a.available ? '<span class="ms">−' + (a.available - a.awarded) + ' missed</span>' : '<span class="ms ok">Full marks</span>') + '</li>'; }).join('') + '</ul><p class="mk-atot"><span>Total</span><b>' + got + ' / ' + avail + '</b></p>';
+      } else html += '<p class="mk-fine">Answers marked from now on also get a line-by-line allocation of the marks. Here’s how each criterion went:</p>';
+      if (r.criteria && r.criteria.length) html += '<h4 class="mk-ih">By criterion</h4><ul class="mk-crit2">' + r.criteria.map(function (c) { return '<li><details><summary><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><b>' + esc(c.name) + '</b></summary><p>' + esc(c.comment) + '</p></details></li>'; }).join('') + '</ul>';
+    } else if (state.itab === 'model') {
+      var acc = function (title, body, open) { return '<details class="mk-acc"' + (open ? ' open' : '') + '><summary>' + title + '</summary>' + body + '</details>'; };
+      var any = false;
+      if (r.model_plan && r.model_plan.length) { any = true; html += acc('First-class plan', '<ul class="mk-plan">' + r.model_plan.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>', true); }
+      if (r.model_paragraph) { any = true; html += acc('Model paragraph <small>your weakest part, at First standard</small>', '<div class="mk-prose mk-modelp">' + paras(r.model_paragraph) + '</div>'); }
+      if (r.example_answer) { any = true; html += acc('Example First-class answer', '<div class="mk-prose">' + paras(r.example_answer) + '</div>'); }
+      if (ma) { any = true; html += acc('Model answer by a student who got a First', '<p class="mk-author">Written by ' + esc(ma.author_name) + (ma.author_role ? ', ' + esc(ma.author_role) : '') + (ma.author_mark ? ', who scored ' + ma.author_mark + ' in this module' : '') + (ma.checked_by ? '. Checked by ' + esc(ma.checked_by) : '') + '.</p><div class="mk-prose">' + paras(ma.answer) + '</div>'); }
+      if (q && q.guide) { any = true; html += acc('Marking guide for this question', '<dl class="mk-guide2"><dt><span class="mk-cls first">First</span></dt><dd>' + esc(q.guide.first) + '</dd><dt><span class="mk-cls u2">2:1</span></dt><dd>' + esc(q.guide.two_one) + '</dd><dt><span class="mk-cls l2">2:2</span></dt><dd>' + esc(q.guide.two_two) + '</dd></dl>'); }
+      if (!any) html += '<p class="mk-fine">No model answer came back with this marking.</p>';
+      html += '<p class="mk-fine">Use these to see the level, not to copy.</p>';
+    } else {
+      if (warns.length) html += warnHtml(warns);
+      else if (lost.length) html += warnHtml(lost.map(function (l) { return l.issue; }), 'Where this answer slipped');
+      else html += '<p class="mk-fine">No warnings for this one.</p>';
+    }
+    return html + '</div></aside>';
+  }
+
   function viewAnswer() {
-    var m = state.mod, c = state.cur, d = drafts()[draftKey()];
+    var m = state.mod, c = state.cur, d = drafts()[draftKey()], ex = !!state.exam;
     var topic = !c.own && c.topic_pos != null && state.topics ? state.topics.filter(function (t) { return t.position === c.topic_pos; })[0] : null;
     var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
-    var html = head() + '<section class="mk-card mk-answer"><span class="mk-topic">' + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
+    var html = head() + '<div class="mk-ws"><section class="mk-card mk-answer' + (ex ? ' exam' : '') + '"><span class="mk-topic">' + (ex ? '<b class="mk-exbadge">Exam simulator</b> ' : '') + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
     if (rw) html += '<div class="mk-rwbox"><b>Rewrite challenge</b><p>Last time: <span class="mk-cls ' + clsSlug(rw.cls) + '">' + esc(rw.cls) + '</span> ' + rw.mark_low + '–' + rw.mark_high + '.' + (rw.quote ? ' Rewrite the paragraph starting “' + esc(rw.quote) + '…”' : '') + (rw.task ? ' ' + esc(rw.task) : '') + ' Then mark it again to see your new mark.</p><button type="button" class="mk-clear" data-act="norewrite">Cancel the challenge</button></div>';
     if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
     else html += '<h2 class="mk-question">' + esc(c.question) + '</h2>';
-    if (c.steps && c.steps.length) {
+    if (c.steps && c.steps.length && !ex) {
       var n = state.steps[c.id] || 0;
       html += '<div class="mk-steps"><p class="mk-lab">Stuck? Work through it one step at a time</p>' + (n ? '<ol>' + c.steps.slice(0, n).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') +
         (n < c.steps.length ? '<button type="button" class="btn line small" data-act="step">' + (n ? 'Show step ' + (n + 1) + ' of ' + c.steps.length : 'Show step 1 of ' + c.steps.length) + '</button>' : '<p class="mk-fine">That’s the full worked solution. Now write it up in your own words below.</p>') + '</div>';
     }
     html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
-      '<label class="mk-lab" for="mk-answer">Your answer</label><textarea id="mk-answer" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea>' +
+      '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
-      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against ' + U().poss + ' criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : 'Mark my answer') : 'Sign up free to get it marked') + '</button>') + '</div>' +
-      '<p class="mk-fine">Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>';
+      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against ' + U().poss + ' criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big td-go" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : ex ? 'Hand it in' : 'Mark my answer') : 'Sign up free to get it marked') + '<span class="arr" aria-hidden="true">→</span></button>') + '</div>' +
+      '<p class="mk-fine">Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>' + inspectorBefore() + '</div>';
     return html;
   }
   function viewResult() {
     var r = state.result, m = state.mod, ma = state.cur && state.cur.id ? modelAnswers[state.cur.id] : null, q = state.cur && state.cur.id ? (state.questions || []).filter(function (x) { return x.id === state.cur.id; })[0] : null;
-    var lost = r.lost || [], tab = state.rtab;
-    var delta = '';
-    if (r.prev && r.prev.mark_low != null) {
-      var dm = (r.mark_low + r.mark_high) / 2 - (r.prev.mark_low + r.prev.mark_high) / 2;
-      delta = '<p class="mk-delta ' + (dm > 0 ? 'up' : dm < 0 ? 'down' : '') + '">' + (dm > 0 ? '▲ Up ' + plural(Math.round(dm), 'mark') : dm < 0 ? '▼ Down ' + plural(Math.round(-dm), 'mark') : 'Same mark') + ' from your last try (' + r.prev.mark_low + '–' + r.prev.mark_high + ' → ' + r.mark_low + '–' + r.mark_high + ')</p>';
-    }
-    var html = head() + '<section class="mk-card mk-result"><div class="mk-verdict ' + clsSlug(r.class) + '"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark range</span></div></div>' + delta +
+    var lost = r.lost || [];
+    var html = head() + '<div class="mk-ws res"><div class="mk-wsmain"><section class="mk-card mk-result"><span class="mk-topic">' + esc(m.code) + ' · Your marked answer</span><h2 class="mk-question sm">' + esc(r.question || (state.cur && state.cur.question) || '') + '</h2>' +
       '<p class="mk-headline">' + esc(r.headline) + '</p>' +
-      (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’ll come up in <a href="/dashboard">Today</a>.</p>' : '') +
-      '<div class="mk-tabs" role="tablist">' + [['breakdown', 'Mark breakdown'], ['lost', 'Where you lost marks' + (lost.length ? ' (' + lost.length + ')' : '')], ['improve', 'Improve it']].map(function (t) { return '<button type="button" role="tab" aria-selected="' + (tab === t[0]) + '" data-rtab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
-    if (tab === 'breakdown') {
-      html += '<p class="mk-fine">Marked against ' + (r.rubric && !/-wide$/.test(r.rubric) ? 'the published criteria of ' + U().short + ' ' + esc(r.rubric) + ' and ' : '') + U().poss + ' grade bands for ' + esc(levelName(m.level)) + '. A practice estimate, not an official mark.</p>';
-      if (r.criteria && r.criteria.length) html += '<h3>Criterion by criterion</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>';
-      if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
-      html += '<div class="mk-row end"><button type="button" class="btn dark" data-rtab="lost">See where you lost marks →</button></div>';
-    } else if (tab === 'lost') {
-      if (!lost.length) html += '<p class="mk-hint">This marking didn’t point to specific sentences. See “Improve it” for the changes that would raise your mark.</p>';
-      else {
-        var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
-        html += '<p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
-          '<ol class="mk-lostlist">' + lost.map(function (l, i) { return '<li id="mk-li' + (i + 1) + '" data-lostli="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>';
-      }
-      html += '<div class="mk-row end"><button type="button" class="btn dark" data-rtab="improve">How to improve it →</button></div>';
-    } else {
-      if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
-      if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
-      if (r.model_plan && r.model_plan.length) html += '<h3>A First-class plan</h3><ul class="mk-plan">' + r.model_plan.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
-      if (r.model_paragraph) html += '<h3>Model paragraph</h3><p class="mk-fine">Your weakest part, written at First-class standard by your tutor. Use it to see the level, not to copy.</p><div class="mk-prose mk-modelp">' + paras(r.model_paragraph) + '</div>';
-      if (r.example_answer) html += '<details class="mk-det"><summary>Example First-class answer</summary><div class="mk-prose">' + paras(r.example_answer) + '</div></details>';
-      if (q && q.guide) html += '<details class="mk-det"><summary>Marking guide for this question</summary><dl class="mk-guide"><dt>First</dt><dd>' + esc(q.guide.first) + '</dd><dt>2:1</dt><dd>' + esc(q.guide.two_one) + '</dd><dt>2:2</dt><dd>' + esc(q.guide.two_two) + '</dd></dl></details>';
-    }
+      (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
+    var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
+    if (lost.length) {
+      html += '<h3>Where you lost marks</h3><p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
+        '<ol class="mk-lostlist">' + lost.map(function (l, i) { return '<li id="mk-li' + (i + 1) + '" data-lostli="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>';
+    } else html += '<details class="mk-det" open><summary>Your answer</summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
+    if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
+    if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
+    if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
     html += '<div class="mk-row"><a class="btn line small" href="' + MBASE + m.code + (r.topic_pos != null ? '?t=' + r.topic_pos : '') + '" data-go="mod">Back to the Module Map</a></div></section>';
-    if (ma) html += '<section class="mk-card"><h2>First-class model answer</h2><p class="mk-author">Written by ' + esc(ma.author_name) + (ma.author_role ? ', ' + esc(ma.author_role) : '') + (ma.author_mark ? ', who scored ' + ma.author_mark + ' in this module' : '') + (ma.checked_by ? '. Checked by ' + esc(ma.checked_by) : '') + '.</p><div class="mk-prose">' + paras(ma.answer) + '</div></section>';
     if (r.id) html += '<section class="mk-card mk-realbox"><h3>Got a real mark for a similar answer?</h3><p>Tell us and we’ll use it to check the marker stays accurate for ' + esc(m.code) + '.</p><div class="mk-row start"><input id="mk-real" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64" aria-label="Your real mark"><button type="button" class="btn line small" data-real="' + r.id + '">Save</button></div><p id="mk-real-done" class="mk-fine"></p></section>';
-    if (tab !== 'lost') html += '<details class="mk-card"><summary><h2>Your answer</h2></summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
-    return html;
+    return html + '</div>' + inspectorAfter(r, q, ma) + '</div>';
   }
 
   function render() {
@@ -512,6 +691,7 @@
     if (focusId && document.activeElement.selectionStart != null) { selS = document.activeElement.selectionStart; selE = document.activeElement.selectionEnd; }
     root.innerHTML = html;
     if (r.v === 'answer' && tray()) tray().mount();
+    if (state.mod && !state.mod.loading && !state.mod.missing && !r.v && state.wmode === 'parse' && HOOKS && ptray()) ptray().mount();
     if (!state.mod) renderList();
     if (focusId) { var el = document.getElementById(focusId); if (el) { el.focus(); try { if (selS != null) el.setSelectionRange(selS, selE); } catch (e) {} } }
     if (timer.on) tick();
@@ -524,11 +704,13 @@
     if (t.id === 'mk-q') search(t.value);
     if (t.id === 'mk-answer') { saveDraft(draftKey(), t.value); var wc = document.getElementById('mk-wc'); if (wc) wc.textContent = words(t.value) + ' words'; }
     if (t.id === 'mk-qtext' && state.cur) state.cur.question = t.value;
+    if (t.id === 'mk-ptext' && state.mod) state.ptext[state.mod.code] = t.value;
   });
   root.addEventListener('change', function (e) {
     if (e.target.id === 'mk-ugonly') { state.ug = e.target.checked; search(state.q); }
     if (e.target.id === 'mk-exd' && HOOKS && HOOKS.setExamDate) { HOOKS.setExamDate(state.mod.code, e.target.value || null).then(render).catch(function () {}); track('exam_date'); }
   });
+  root.addEventListener('mousedown', function (e) { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
   root.addEventListener('keydown', function (e) { if (e.target.id === 'mk-real' && e.key === 'Enter') { var b = root.querySelector('[data-real]'); if (b) saveReal(b.getAttribute('data-real')); } });
   root.addEventListener('click', function (e) {
     var hl = e.target.closest('mark[data-lost]');
@@ -543,7 +725,10 @@
     if (a.hasAttribute('data-rag')) { var pos = +a.getAttribute('data-pos'), k = a.getAttribute('data-rag'); rate(pos, k); return; }
     if (a.hasAttribute('data-show')) { state.shown[a.getAttribute('data-show')] = true; render(); return; }
     if (a.hasAttribute('data-recall')) { var qid = a.getAttribute('data-recall'); recall(qid, a.getAttribute('data-got') === '1'); state.shown[qid] = false; render(); return; }
-    if (a.hasAttribute('data-rtab')) { state.rtab = a.getAttribute('data-rtab'); render(); var tb = root.querySelector('.mk-tabs'); if (tb && tb.getBoundingClientRect().top < 0) tb.scrollIntoView({ block: 'start' }); return; }
+    if (a.hasAttribute('data-itab')) { state.itab = a.getAttribute('data-itab'); render(); track('itab_' + state.itab); return; }
+    if (a.hasAttribute('data-fmt')) { applyFmt(a.getAttribute('data-fmt')); return; }
+    if (a.hasAttribute('data-wmode')) { state.wmode = a.getAttribute('data-wmode'); state.perr = ''; track('wmode_' + state.wmode); render(); return; }
+    if (a.hasAttribute('data-tierf')) { state.tierF = a.getAttribute('data-tierf'); if (state.tierF && state.topics) state.topics.forEach(function (t) { state.open[t.position] = true; }); track('tierf_' + (state.tierF || 'all')); render(); var tl = root.querySelector('.mk-tiers'); if (tl && tl.getBoundingClientRect().top < 0) tl.scrollIntoView({ block: 'start' }); return; }
     if (a.hasAttribute('data-q')) { var id = a.getAttribute('data-q'); state.cur = (state.questions || []).filter(function (x) { return x.id === id; })[0]; state.err = ''; go({ m: state.mod.code, q: id, v: 'answer' }); return; }
     if (a.hasAttribute('data-del')) { deleteAttempt(a.getAttribute('data-del')); return; }
     if (a.hasAttribute('data-real')) { saveReal(a.getAttribute('data-real')); return; }
@@ -557,6 +742,9 @@
     else if (act === 'star' && HOOKS) { HOOKS.toggle(state.mod).then(render); }
     else if (act === 'rewrite') startRewrite();
     else if (act === 'norewrite') { state.rewrite = null; render(); }
+    else if (act === 'parse') runParse();
+    else if (act === 'ucards') addUnitCards();
+    else if (act === 'uclear') { if (confirm('Remove these study units? Flashcards already in your deck stay there.')) { unitsSet(state.mod.code, null); render(); } }
   });
   function inScope() { var p = location.pathname.replace(/\/$/, ''); return p === BASE.replace(/\/$/, '') || MODRE.test(location.pathname); }
   window.addEventListener('popstate', function () { if (inScope()) route(); });

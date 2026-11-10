@@ -73,6 +73,14 @@
     return n < 0 ? 'Exam done' : n === 0 ? 'Exam today' : n === 1 ? 'Exam tomorrow' : n + ' days to go';
   }
   var RAG = { r: 'Not confident', a: 'Getting there', g: 'Confident' };
+  /* One red/amber/green status per topic, used for the sidebar dots and the global R/A/G filter:
+     from practice results once the topic is started (under 40% weak, under 70% medium, else mastered),
+     otherwise from the student's own rating; '' if neither. */
+  function ragStatus(ms, rating) {
+    if (ms && ms.started) return ms.pct < 40 ? 'r' : ms.pct < 70 ? 'a' : 'g';
+    return rating === 'r' || rating === 'a' || rating === 'g' ? rating : '';
+  }
+  var RAGF = { r: 'Weak', a: 'Medium', g: 'Mastered' };
 
-  window.UnizyStudy = { topicMastery: topicMastery, moduleMastery: moduleMastery, index: index, topicOf: topicOf, schedule: schedule, daysUntil: daysUntil, countdown: countdown, today: todayStr, mid: mid, RAG: RAG };
+  window.UnizyStudy = { topicMastery: topicMastery, moduleMastery: moduleMastery, index: index, topicOf: topicOf, schedule: schedule, daysUntil: daysUntil, countdown: countdown, today: todayStr, mid: mid, RAG: RAG, ragStatus: ragStatus, RAGF: RAGF };
 })();

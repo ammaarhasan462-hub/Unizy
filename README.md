@@ -43,3 +43,12 @@ Study website for UK university students: pick your uni, degree and modules, the
 The home page is a Next.js app in `web/` (Tailwind CSS, React Three Fiber, GSAP ScrollTrigger, Framer Motion), exported as static files.
 Pushing changes under `web/` runs `.github/workflows/build-landing.yml`, which builds it and commits `site/index.html` and `site/_next/`
 back to the same branch for Cloudflare Pages. The last build log is in `.ci/landing-build.txt`.
+
+## Dashboard workspace (Nov 2026)
+- **Top bar** (`dashboard.js`): command palette (Ctrl/⌘ K or `/`) over your modules, their topics, pages and the catalogue; `CODE W3` / `CODE T3` jumps to topic 3. Flashcards-due badge, plan chip, and a global R/A/G filter (Weak / Medium / Mastered) that highlights matching topics in the sidebar and every Module Map (`html[data-rag]` + `[data-rs]`). A topic's status comes from `UnizyStudy.ragStatus`: practice mastery once started (<40 weak, <70 medium), else the student's own rating.
+- **Sidebar**: University → Module → Topic tree with R/A/G dots and mastery %; Revision mode switch (Flashcards `/dashboard/cards`, Topic arena `/dashboard/practice`, Exam simulator `/dashboard/exam`). Module links open in the current mode.
+- **Flashcards**: a deck per module (`review_cards`), review with keys (Space, 1/2/3), browse and delete.
+- **Exam simulator**: random unanswered exam-style or First-class question, strict countdown (`?exam=MIN` on the answer view), no steps / mark scheme / warnings until marked.
+- **Module page** (`mark.js`): Study mode / Parse mode. Parse mode sends slides, transcripts or notes to the `ai` function (`kind: notes`, `json: true`, counts as tutor actions) and gets study units with flashcards; units are kept in localStorage `unizy:units:CODE` and cards can be added to the deck. Sticky tier pills: Pass (50%) = quick recall, Merit (60%) = exam-style, 1st Class (70%+) = stretch.
+- **Answer view**: maths / Greek / code formatting toolbar; right-hand inspector with the band scale, the question's mark scheme, model answer (spoiler) and examiner warnings from earlier markings.
+- **Result view**: annotated answer on the left; inspector on the right with the evaluation card, **Mark allocation** (`result.allocation`: line items worth 100, awarded/available), 1st Class model answer accordions and **Examiner warnings** (`result.warnings`). Both fields are written by the `marker` function from v11; older results fall back to criteria and lost-mark notes.
