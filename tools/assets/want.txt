@@ -1,1 +1,16 @@
-# Poly Haven asset ids to download (one per line, then a comment)
+# Poly Haven asset ids to download (CC0). Models become site/assets/models/<id>.glb; textures and HDRIs are copied.
+dining_chair_02          # reading-room chairs (tufted leather)
+Chandelier_03            # crystal chandeliers
+marble_bust_01           # busts along the aisle
+book_encyclopedia_set_01 # books on the tables and the desk
+decorative_book_set_01   # loose books
+fancy_picture_frame_01   # oil paintings in gilt frames
+fancy_picture_frame_02
+round_spectacles         # on the desk beside the paper
+potted_plant_01          # entrance
+ballroom                 # indoor HDRI for reflections in the reading room
+wood_floor               # reading-room floor
+dark_wood                # shelves
+wood_table_001           # tables and the desk
+painted_plaster_wall     # wall panels
+brown_leather            # desk inlay
