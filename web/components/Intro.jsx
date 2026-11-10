@@ -38,11 +38,11 @@ const COPY = {
   },
   imperial: {
     kicker: 'Imperial College London',
-    sub: 'Imperial modules are on their way to Unizy',
+    sub: 'Exam practice and marking for Imperial modules',
     ch: {
       '01': { s: 'At school you had mark schemes. At Imperial you get past papers, and nothing to check your answers against.' },
-      '02': { t: 'Imperial is *next*.', s: 'Imperial’s modules are being added from its official programme specifications, and checked one by one.' },
-      '03': { s: 'Answers will be marked against Imperial’s grade bands and the criteria your department publishes.' },
+      '02': { t: 'Imperial’s *modules*.', s: '1,180 modules from Imperial’s official programme specifications, across 18 departments.' },
+      '03': { s: 'Answers are marked against Imperial’s grade bands and, where your department publishes them, its own criteria.' },
     },
   },
 };
@@ -348,7 +348,7 @@ export default function Intro() {
             </h2>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a href={authed ? '/dashboard/practice' : '/signup'} onClick={() => track(authed ? 'intro_dashboard' : 'intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
-                {authed ? 'Practise in my dashboard' : uni === 'imperial' ? 'Create my free account' : 'Get my first answer marked, free'}
+                {authed ? 'Practise in my dashboard' : 'Get my first answer marked, free'}
               </a>
               <button type="button" onClick={() => finish('enter')} className="rounded-full border border-[#efe9dd]/25 bg-white/[.05] px-6 py-3.5 text-[15px] font-medium text-[#efe9dd] backdrop-blur hover:border-[#efe9dd]/45" data-testid="intro-enter">
                 Enter Unizy ↓
@@ -358,10 +358,10 @@ export default function Intro() {
           {uni === 'imperial' ? (
             <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
               <div className="flex items-center gap-4">
-                <span className="grid size-14 place-items-center rounded-2xl bg-[#0b2f5c] font-display text-[15px] font-bold tracking-wide text-white">Soon</span>
+                <span className="grid size-14 place-items-center rounded-2xl bg-[#0b2f5c] font-display text-[13px] font-bold tracking-wide text-white">1,180</span>
                 <div>
                   <p className="font-display text-[24px] font-semibold leading-tight">Imperial modules</p>
-                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">Added from the official programme specifications</p>
+                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">From Imperial’s official programme specifications</p>
                 </div>
               </div>
               <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">What every marked answer shows</p>

@@ -198,7 +198,7 @@
       for (var y = 1; y <= years; y++) html += '<button type="button" class="db-course' + (st.year === y ? ' on' : '') + '" data-year="' + y + '">Year ' + y + '</button>';
       html += '</div><div class="db-setup-act"><button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="next2"' + (st.year ? '' : ' disabled') + '>Continue</button></div>';
     } else {
-      html += '<h1>Pick your modules</h1><p class="lead">These stay in your sidebar so you can practise them in one click. Compulsory modules are ticked for you.</p>';
+      html += '<h1>Pick your modules</h1><p class="lead">These stay in your sidebar so you can practise them in one click. ' + (st.uni === 'imperial' ? 'Here are your department’s modules for that year: tick the ones you take.' : 'Compulsory modules are ticked for you.') + '</p>';
       if (st.sugg === null) html += '<p class="mk-hint">Finding your modules…</p>';
       else if (!st.sugg.length) html += '<p class="mk-hint">We couldn’t suggest modules for that year. Search for them below.</p>';
       else html += '<ul class="db-picks">' + st.sugg.map(function (m) { return '<li><label><input type="checkbox" data-pick="' + m.code + '"' + (st.picks[m.code] ? ' checked' : '') + '><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + (m.compulsory ? ' <em>Compulsory</em>' : '') + '</span></label></li>'; }).join('') + '</ul>';
