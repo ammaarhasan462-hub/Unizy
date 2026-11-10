@@ -357,7 +357,16 @@ def bake(site):
     else:
         # origin on the anchor building (Queen's Tower, Queens' Building, ...), true north = +x
         cfg = SITES[site]
-        qt = [el for n in cfg['anchor'] for el in named.get(n, [])]
+        # names repeat across London ("Old Building"): take the match nearest the site centre, within 400 m
+        qt = []
+        for n in cfg['anchor']:
+            for el in named.get(n, []):
+                ps = el_pts(el, tmp.enu)
+                if ps:
+                    d = math.hypot(sum(p[0] for p in ps) / len(ps), sum(p[1] for p in ps) / len(ps))
+                    if d < 400:
+                        qt.append((d, el))
+        qt = [el for _, el in sorted(qt, key=lambda t: t[0])]
         pts = el_pts(qt[0], tmp.enu) if qt else []
         if pts:
             e = sum(p[0] for p in pts) / len(pts)

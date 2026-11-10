@@ -415,6 +415,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
   return {
     state,
+    debug: { scene, composer, get gtao() { return gtao; } },
     jump(p) { state.p = state.target = p; },
     begin() { if (state.beginAt == null) state.beginAt = state.time; },
     dispose() {
