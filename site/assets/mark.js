@@ -1,23 +1,30 @@
-/* The marker: find any UCL module, practise an exam-style question, get it marked against UCL's grade bands
-   and the department's criteria, compare with a First-class answer, rewrite and track your class over time. */
+/* The marker: find any UCL module, see its Module Map (topics, red/amber/green, mastery), practise at three levels
+   (Foundation quick recall, Exam-style, First-class stretch), get answers marked against UCL's grade bands and the
+   department's criteria, see exactly where marks were lost, rewrite and re-mark. Progress maths lives in study.js. */
 (function () {
   'use strict';
   var CFG = window.UNIZY_CONFIG, BRAND = (window.SITE_BRAND || {}).name || 'Unizy';
   var SKEY = 'unizy.session', DKEY = 'mark:drafts', root = document.getElementById('mk');
   if (!root) return;
+  var ST = window.UnizyStudy;
   // Base paths: the public marker lives at /mark and /modules/CODE; inside the dashboard it lives under /dashboard/practice.
   var BASE = root.getAttribute('data-base') || '/mark', MBASE = root.getAttribute('data-modbase') || '/modules/';
-  var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove
+  var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove, exam dates
   // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
   function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
   var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4})\\/?$');
-  var state = { q: '', ug: true, results: [], mod: null, questions: null, qsBusy: false, cur: null, result: null, attempts: null, busy: false, err: '' };
+  var state = {
+    q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
+    attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, rtab: 'breakdown', rewrite: null, busy: false, err: ''
+  };
 
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function paras(s) { return esc(s).split(/\n{2,}/).map(function (p) { return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join(''); }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
   function words(s) { var m = String(s || '').trim().match(/\S+/g); return m ? m.length : 0; }
   function getSession() { try { return JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { return null; } }
+  function uid() { var s = getSession(); return s && s.user && s.user.id; }
   function track(ev) {
     try {
       if (navigator.webdriver || localStorage.getItem('unizy:notrack') === '1') return;
@@ -44,7 +51,7 @@
       if (t && opts.auth) h.Authorization = 'Bearer ' + t;
       if (opts.prefer) h.Prefer = opts.prefer;
       return fetch(CFG.supabaseUrl + '/rest/v1/' + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
-        .then(function (r) { return r.ok ? (r.status === 204 ? null : r.json()) : Promise.reject(new Error('Couldn’t load that. Check your connection and try again.')); });
+        .then(function (r) { return r.ok ? (r.status === 204 || r.status === 201 ? null : r.json()) : Promise.reject(new Error('Couldn’t load that. Check your connection and try again.')); });
     });
   }
   function marker(body) {
@@ -53,7 +60,7 @@
       return fetch(CFG.supabaseUrl + '/functions/v1/marker', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
         .then(function (r) {
           return r.json().catch(function () { return {}; }).then(function (b) {
-            if (r.ok) return b;
+            if (r.ok) { b.status = r.status; return b; }
             var e = new Error(b.message || 'Something went wrong. Try again.'); e.status = r.status; e.upgrade = !!b.upgrade; e.signin = r.status === 401; throw e;
           });
         }, function () { throw new Error('Couldn’t reach the marker. Check your connection.'); });
@@ -65,12 +72,15 @@
   function signinUrl() { return '/signup?next=' + encodeURIComponent(location.pathname + location.search); }
   function levelName(l) { return l === 4 ? 'Year 1 (Level 4)' : l === 5 ? 'Year 2 (Level 5)' : l === 6 ? 'Final year (Level 6)' : l === 7 ? 'Level 7 (Master’s)' : 'Level ' + (l || '?'); }
   function clsSlug(c) { return c === 'First' ? 'first' : c === '2:1' ? 'u2' : c === '2:2' ? 'l2' : c === 'Third' ? 'third' : 'fail'; }
+  function tierName(t) { return t === 'first' ? 'First-class stretch' : t === 'foundation' ? 'Quick recall' : 'Exam-style'; }
+  function kindName(k) { return k === 'problem' ? 'Problem' : k === 'short' ? 'Short answers' : 'Essay'; }
+  function studyData() { return { questions: state.questions || [], attempts: state.attempts || [], recalls: state.recalls || [] }; }
 
   // ---------- routing ----------
   function go(params, replace) {
     var u = new URL(location.href);
-    ['m', 'q', 'v'].forEach(function (k) { u.searchParams.delete(k); });
-    Object.keys(params || {}).forEach(function (k) { if (params[k]) u.searchParams.set(k, params[k]); });
+    ['m', 'q', 'v', 't'].forEach(function (k) { u.searchParams.delete(k); });
+    Object.keys(params || {}).forEach(function (k) { if (params[k] != null && params[k] !== '') u.searchParams.set(k, params[k]); });
     var path = params && params.m ? MBASE + params.m : BASE;
     u.searchParams.delete('m');
     var href = path + (u.search || '');
@@ -79,7 +89,7 @@
   }
   function routeParams() {
     var p = new URLSearchParams(location.search), m = MODRE.exec(location.pathname);
-    return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '' };
+    return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '', t: p.get('t') };
   }
   function route() {
     var r = routeParams();
@@ -88,18 +98,21 @@
     var after = function () {
       if (r.v === 'answer') {
         if (r.q === 'own') state.cur = { id: null, own: true, question: (state.cur && state.cur.own && state.cur.question) || '' };
-        else if (state.questions) state.cur = state.questions.filter(function (x) { return x.id === r.q; })[0] || null;
-        else { render(); return; } // questions still loading; loadQuestions() routes again
+        else if (state.questions) state.cur = state.questions.filter(function (x) { return x.id === r.q && x.tier !== 'foundation'; })[0] || null;
+        else { render(); return; } // questions still loading; loadMap() routes again
         if (!state.cur) { go({ m: r.m }, true); return; }
       } else if (r.v !== 'result') { state.cur = null; state.result = null; }
       if (r.v === 'result' && !state.result) { go({ m: r.m }, true); return; }
-      render(); setTitle(); window.scrollTo(0, 0);
+      if (!r.v && r.t != null && r.t !== '') state.open[+r.t] = true;
+      render(); setTitle();
+      var tEl = !r.v && r.t != null && r.t !== '' && document.getElementById('mk-t' + r.t);
+      if (tEl) tEl.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
     };
     if (state.mod && state.mod.code === r.m) { after(); return; }
-    state.mod = { code: r.m, loading: true }; state.questions = null; state.attempts = null; render();
+    state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
     rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,faculty,department,term,summary,url').then(function (rows) {
       if (!rows || !rows.length) { state.mod = { code: r.m, missing: true }; render(); return; }
-      state.mod = rows[0]; loadQuestions(); loadAttempts(); after();
+      state.mod = rows[0]; loadMap(); loadMine(); after();
     }).catch(function (e) { state.err = e.message; render(); });
   }
   function setTitle() {
@@ -123,42 +136,91 @@
       }).catch(function () { if (seq === searchSeq) { state.results = null; renderList(); } });
     }, 180);
   }
-  function loadQuestions() {
+  // The Module Map: topics + questions (saved for everyone). If a module has none yet, ask the marker to write them and wait.
+  function fetchMap(code) {
+    return Promise.all([
+      rest('module_topics?code=eq.' + code + '&select=position,title,summary&order=position.asc'),
+      rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position&order=position.asc')
+    ]);
+  }
+  function loadMap() {
     var code = state.mod.code;
-    rest('module_questions?code=eq.' + code + '&select=id,topic,kind,question,guide,position&order=position.asc').then(function (rows) {
+    fetchMap(code).then(function (res) {
       if (!state.mod || state.mod.code !== code) return;
-      state.questions = rows || [];
+      state.topics = res[0] || []; state.questions = res[1] || [];
       var r = routeParams();
       if (r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) route(); else render();
       if (state.questions.length) loadModelAnswers();
-    }).catch(function () { state.questions = []; render(); });
+      if (!state.topics.length && getSession()) startMap();
+    }).catch(function () { state.topics = []; state.questions = []; render(); });
+  }
+  function startMap() {
+    var code = state.mod.code;
+    state.mapBusy = true; state.mapMsg = ''; render();
+    track('map_start');
+    marker({ action: 'questions', code: code }).then(function (b) {
+      if (!state.mod || state.mod.code !== code) return;
+      if (b.topics && b.topics.length) { state.mapBusy = false; state.topics = b.topics; state.questions = b.questions || []; render(); loadModelAnswers(); return; }
+      poll(code, Date.now());
+    }).catch(function (e) {
+      if (!state.mod || state.mod.code !== code) return;
+      state.mapBusy = false; state.mapMsg = e.signin ? '' : e.message; render();
+    });
+  }
+  var pollId = null;
+  function stopPoll() { clearTimeout(pollId); pollId = null; }
+  function poll(code, t0) {
+    stopPoll();
+    pollId = setTimeout(function () {
+      if (!state.mod || state.mod.code !== code) return;
+      fetchMap(code).then(function (res) {
+        if (!state.mod || state.mod.code !== code) return;
+        if (res[0] && res[0].length) { state.mapBusy = false; state.topics = res[0]; state.questions = res[1] || []; track('map_ready'); render(); loadModelAnswers(); return; }
+        if (Date.now() - t0 > 210e3) { state.mapBusy = false; state.mapMsg = 'This is taking longer than usual.'; state.mapRetry = true; render(); return; }
+        poll(code, t0);
+      }).catch(function () { poll(code, t0); });
+    }, 6000);
   }
   var modelAnswers = {};
   function loadModelAnswers() {
-    var ids = state.questions.map(function (q) { return q.id; });
+    var ids = (state.questions || []).filter(function (q) { return q.tier !== 'foundation'; }).map(function (q) { return q.id; });
     if (!ids.length) return;
     rest('model_answers?question_id=in.(' + ids.join(',') + ')&select=question_id,author_name,author_mark,author_role,answer,checked_by').then(function (rows) {
       (rows || []).forEach(function (a) { modelAnswers[a.question_id] = a; }); render();
     }).catch(function () {});
   }
-  function loadAttempts() {
+  // the student's own progress on this module: marked answers, recall results, red/amber/green
+  function loadMine() {
     if (!getSession()) { state.attempts = []; return; }
     var code = state.mod.code;
-    rest('mark_attempts?code=eq.' + code + '&select=id,question,question_id,result,real_mark,created_at,minutes&order=created_at.desc&limit=50', { auth: true }).then(function (rows) {
+    rest('mark_attempts?code=eq.' + code + '&select=id,question,question_id,topic_pos,tier,prev_id,result,real_mark,created_at,minutes&order=created_at.desc&limit=80', { auth: true }).then(function (rows) {
       if (state.mod && state.mod.code === code) { state.attempts = rows || []; render(); }
     }).catch(function () { state.attempts = []; });
+    rest('recall_log?code=eq.' + code + '&select=question_id,topic_pos,got,created_at&order=created_at.desc&limit=400', { auth: true }).then(function (rows) {
+      if (state.mod && state.mod.code === code) { state.recalls = rows || []; render(); }
+    }).catch(function () {});
+    rest('topic_ratings?code=eq.' + code + '&select=topic_pos,rating', { auth: true }).then(function (rows) {
+      if (!state.mod || state.mod.code !== code) return;
+      state.ratings = {}; (rows || []).forEach(function (r) { state.ratings[r.topic_pos] = r.rating; }); render();
+    }).catch(function () {});
   }
-  function getQuestions() {
+  function rate(pos, rating) {
     if (!getSession()) { location.href = signinUrl(); return; }
-    state.qsBusy = true; state.err = ''; render();
-    track('mark_questions');
-    marker({ action: 'questions', code: state.mod.code }).then(function (b) {
-      state.qsBusy = false; state.questions = b.questions || []; render(); loadModelAnswers();
-    }).catch(function (e) {
-      state.qsBusy = false;
-      if (e.signin) { location.href = signinUrl(); return; }
-      state.err = e.message; render();
-    });
+    var code = state.mod.code, was = state.ratings[pos];
+    state.ratings[pos] = rating; render();
+    rest('topic_ratings', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: pos, rating: rating, updated_at: new Date().toISOString() } })
+      .then(function () { track('rag_' + rating); })
+      .catch(function () { state.ratings[pos] = was; render(); });
+  }
+  function recall(qid, got) {
+    if (!getSession()) { location.href = signinUrl(); return; }
+    var q = (state.questions || []).filter(function (x) { return x.id === qid; })[0]; if (!q) return;
+    var code = state.mod.code, row = { question_id: qid, topic_pos: q.topic_pos, got: got, created_at: new Date().toISOString() };
+    state.recalls.unshift(row); render();
+    rest('recall_log', { method: 'POST', auth: true, prefer: 'return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, question_id: qid, got: got } }).catch(function () {});
+    track(got ? 'recall_got' : 'recall_miss');
+    // a missed recall question becomes a flashcard in "Due today"
+    if (!got && q.answer) rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, front: q.question.slice(0, 600), back: q.answer.slice(0, 1200) } }).catch(function () {});
   }
 
   // ---------- timer ----------
@@ -187,21 +249,33 @@
     if (!getSession()) { location.href = signinUrl(); return; }
     if (state.cur.own) state.cur.question = question;
     state.busy = true; state.busyAtt = hasAtt; render();
-    track(hasAtt ? 'mark_submit_att' : 'mark_submit');
+    var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
+    track(rw ? 'mark_rewrite' : hasAtt ? 'mark_submit_att' : 'mark_submit');
     var body = { action: 'mark', code: state.mod.code, question: question, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true };
+    if (rw) body.prev_id = rw.id;
     if (hasAtt) body.attachments = t.payload();
     marker(body).then(function (b) {
       state.busy = false; stopTimer(); timer.on = false;
       if (b.refused) { state.err = b.message; render(); return; }
       state.result = b; state.result.question = question; state.result.answer = b.answer || answer;
+      state.rewrite = null; state.rtab = 'breakdown';
       track('mark_done');
-      loadAttempts();
+      loadMine();
       go({ m: state.mod.code, q: state.cur.id || 'own', v: 'result' });
     }).catch(function (e) {
       state.busy = false;
       if (e.signin) { location.href = signinUrl(); return; }
       state.err = e.message; state.upgrade = e.upgrade; render();
     });
+  }
+  function startRewrite() {
+    var r = state.result;
+    state.rewrite = { id: r.id, qkey: draftKey(), mark_low: r.mark_low, mark_high: r.mark_high, cls: r.class, quote: r.rewrite && r.rewrite.quote, task: r.rewrite && r.rewrite.task };
+    // start from the answer that was just marked, so only the weak paragraph needs rewriting
+    var cur = drafts()[draftKey()];
+    if ((!cur || !cur.t) && r.answer && !/^\[Attached:/m.test(r.answer)) saveDraft(draftKey(), r.answer);
+    state.err = ''; track('rewrite_start');
+    go({ m: state.mod.code, q: state.cur.id || 'own', v: 'answer' });
   }
   function saveReal(id) {
     var el = document.getElementById('mk-real'), v = el ? parseInt(el.value, 10) : NaN;
@@ -213,7 +287,41 @@
   }
   function deleteAttempt(id) {
     if (!confirm('Delete this marked answer?')) return;
-    rest('mark_attempts?id=eq.' + id, { method: 'DELETE', auth: true, prefer: 'return=minimal' }).then(loadAttempts).catch(function () {});
+    rest('mark_attempts?id=eq.' + id, { method: 'DELETE', auth: true, prefer: 'return=minimal' }).then(loadMine).catch(function () {});
+  }
+
+  // ---------- "where you lost marks": find each quoted sentence in the answer and highlight it ----------
+  function findQuote(text, quote) {
+    var w = String(quote || '').replace(/[“”"‘’'…]/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (w.length < 3) return null;
+    var tries = [w, w.slice(0, 8), w.slice(-8)];
+    for (var i = 0; i < tries.length; i++) {
+      if (tries[i].length < 3) continue;
+      var re = new RegExp(tries[i].map(function (x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('[\\s“”"‘’\'…]+'), 'i');
+      var m = re.exec(text);
+      if (m && !/\n\s*\n/.test(m[0])) {
+        if (i === 0) return [m.index, m.index + m[0].length];
+        // only part of the quote matched: extend to the end (or start) of that sentence
+        var s = m.index, e = m.index + m[0].length;
+        if (i === 1) { var stop = text.slice(e).search(/[.!?](\s|$)|\n/); e = stop < 0 ? text.length : e + stop + 1; }
+        else { var back = text.slice(0, s).search(/[^.!?\n]*$/); s = back < 0 ? s : back; }
+        return [s, e];
+      }
+    }
+    return null;
+  }
+  function annotated(text, lost) {
+    var ranges = [];
+    lost.forEach(function (l, i) { var r = findQuote(text, l.quote); if (r) ranges.push({ s: r[0], e: r[1], n: i + 1 }); l.found = !!r; });
+    ranges.sort(function (a, b) { return a.s - b.s; });
+    var out = '', at = 0;
+    ranges.forEach(function (r) {
+      if (r.s < at) return; // overlapping quote: keep the first
+      out += esc(text.slice(at, r.s)) + '<mark class="mk-lost" id="mk-lm' + r.n + '" data-lost="' + r.n + '" title="' + esc(lost[r.n - 1].issue) + '"><sup>' + r.n + '</sup>' + esc(text.slice(r.s, r.e)) + '</mark>';
+      at = r.e;
+    });
+    out += esc(text.slice(at));
+    return out.split(/\n{2,}/).map(function (p) { return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join('');
   }
 
   // ---------- views ----------
@@ -223,9 +331,9 @@
   function viewSearch() {
     var mine = HOOKS ? HOOKS.myModules() : [];
     var picks = mine.length ? '<div class="mk-mine"><p class="mk-lab">Your modules</p><ul class="mk-results">' + mine.map(function (m) { return '<li><a href="' + MBASE + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + '</span></a></li>'; }).join('') + '</ul></div>' : '';
-    if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, answer an exam-style question and get it marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
+    if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
     return '<section class="mk-hero"><span class="kicker">All ' + '6,682' + ' UCL modules</span><h1>Find your module.</h1>' +
-      '<p class="lead">Search by module code, title or department. Pick a practice question, write your answer, and get it marked the way your department marks.</p>' +
+      '<p class="lead">Search by module code, title or department. Work through each topic at three levels, write an answer, and get it marked the way your department marks.</p>' +
       '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
       '<div id="mk-list" aria-live="polite"></div></section>';
@@ -238,29 +346,76 @@
       return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + '</span></a></li>';
     }).join('') + '</ul>';
   }
+  function bar(pct, cls) { return '<span class="mk-bar' + (cls ? ' ' + cls : '') + '" role="img" aria-label="' + pct + '% mastered"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></span>'; }
+  function examRow(m) {
+    if (!HOOKS || !HOOKS.has(m.code) || !HOOKS.examDate) return '';
+    var d = HOOKS.examDate(m.code);
+    return '<p class="mk-exam"><label for="mk-exd">Exam date</label><input type="date" id="mk-exd" value="' + esc(d || '') + '">' + (d ? '<b>' + esc(ST.countdown(d)) + '</b>' : '<span>Add it for a countdown on your dashboard</span>') + '</p>';
+  }
   function viewModule() {
     var m = state.mod;
     if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in UCL’s module catalogue. Check the code and <a href="' + BASE + '" data-go="home">search again</a>.</p></section>';
     if (m.loading) return head() + '<section class="mk-card"><p class="mk-hint">Loading module…</p></section>';
-    var qs = state.questions, html = head();
+    var html = head();
+    var mm = state.topics && state.topics.length ? ST.moduleMastery(state.topics, studyData()) : null, signed = !!getSession();
     html += '<section class="mk-modhead"><span class="mk-code big">' + esc(m.code) + '</span><h1>' + esc(m.title) + '</h1>' +
       '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
       (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
+      examRow(m) +
       (m.summary ? '<p class="mk-sum">' + esc(m.summary.replace(/\.\.\.$/, '…')) + ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Full description on UCL’s catalogue</a></p>' : '') + '</section>';
-    html += '<section class="mk-card"><div class="mk-row"><h2>Practice questions</h2><button type="button" class="btn line small" data-act="own">Use my own past-paper question</button></div>';
-    if (qs === null) html += '<p class="mk-hint">Loading…</p>';
-    else if (!qs.length) {
-      html += '<p>No practice questions for this module yet. We’ll write 6 exam-style questions from the module’s official description, in the style your department examines. They’re saved for everyone taking ' + esc(m.code) + '.</p>' +
-        (state.qsBusy ? '<p class="mk-busy"><span class="spin"></span>Writing questions for ' + esc(m.code) + '. This takes about a minute…</p>' : '<button type="button" class="btn primary" data-act="genq">' + (getSession() ? 'Write practice questions' : 'Sign up free to get questions') + '</button>');
-    } else {
-      html += '<ol class="mk-qs">' + qs.map(function (q) {
-        var ma = modelAnswers[q.id];
-        return '<li><div><span class="mk-topic">' + esc(q.topic || '') + (q.kind ? ' · ' + (q.kind === 'problem' ? 'Problem' : q.kind === 'short' ? 'Short answers' : 'Essay') : '') + (ma ? ' · <b class="mk-badge">First-class model answer</b>' : '') + '</span><p>' + esc(q.question) + '</p></div><button type="button" class="btn dark small" data-q="' + q.id + '">Answer this</button></li>';
-      }).join('') + '</ol><p class="mk-fine">Exam-style questions written for revision from the module’s public description. They are not taken from UCL exam papers.</p>';
-    }
-    html += '</section>';
+    if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.</p></section>';
+    html += mapHtml();
     html += attemptsHtml();
     return html;
+  }
+  function mapHtml() {
+    var m = state.mod, topics = state.topics, qs = state.questions || [], signed = !!getSession();
+    var own = '<div class="mk-own"><div><b>Got a past-paper question?</b><span>Paste any question from a UCL past paper or problem sheet and get your answer marked.</span></div><button type="button" class="btn line small" data-act="own">Use my own question</button></div>';
+    var html = '<section class="mk-card mk-map"><div class="mk-row"><h2>Module Map</h2>' + (topics && topics.length && signed ? '<span class="mk-legend"><i class="r"></i>Not confident <i class="a"></i>Getting there <i class="g"></i>Confident</span>' : '') + '</div>';
+    if (topics === null) return html + '<p class="mk-hint">Loading…</p></section>';
+    if (!topics.length) {
+      if (state.mapBusy) html += '<div class="mk-writing"><span class="spin"></span><div><b>Writing the Module Map for ' + esc(m.code) + '</b><p>Topics in teaching order, each with quick-recall, exam-style and First-class questions. This takes about a minute and is saved for everyone taking ' + esc(m.code) + '. You can paste your own question below in the meantime.</p></div></div>';
+      else if (!signed) html += '<p>Sign up free and we’ll set out ' + esc(m.code) + ' topic by topic, with practice questions at three levels: quick recall, exam-style and First-class.</p><a class="btn primary" href="' + esc(signinUrl()) + '">Sign up free to see the questions</a>';
+      else html += '<p>' + esc(state.mapMsg || 'The questions for this module aren’t ready yet.') + '</p><button type="button" class="btn primary" data-act="genq">' + (state.mapRetry ? 'Try again' : 'Write the practice questions') + '</button>';
+      // older modules may still have a few questions without topics
+      var loose0 = qs.filter(function (q) { return q.topic_pos == null && q.tier !== 'foundation'; });
+      if (loose0.length) html += '<h3>Practice questions</h3>' + qList(loose0);
+      return html + own + '</section>';
+    }
+    var d = studyData(); d.qById = ST.index(qs);
+    html += '<ol class="mk-topics">' + topics.map(function (t) {
+      var pos = t.position, open = !!state.open[pos], ms = ST.topicMastery(pos, d), rg = state.ratings[pos];
+      var tq = qs.filter(function (q) { return q.topic_pos === pos; });
+      var warn = signed && rg === 'g' && ms.started && ms.pct < 50 ? '<p class="mk-warn">You rated this green, but you’re at ' + ms.pct + '%. Try the exam-style question to check.</p>' : signed && rg === 'r' && ms.pct >= 70 ? '<p class="mk-good">You rated this red, but you’re at ' + ms.pct + '%. You know more than you think.</p>' : '';
+      var top = '<div class="mk-thead"><button type="button" class="mk-ttog" data-topic="' + pos + '" aria-expanded="' + open + '"><span class="mk-tnum">' + (pos + 1) + '</span><span class="mk-ttl"><b>' + esc(t.title) + '</b>' + (t.summary ? '<span>' + esc(t.summary) + '</span>' : '') + '</span><span class="mk-tpct">' + (signed ? (ms.started ? ms.pct + '%' : 'Not started') : tq.length + ' questions') + (signed ? bar(ms.pct) : '') + '</span><span class="mk-chev" aria-hidden="true"></span></button>' +
+        (signed ? '<div class="mk-rag" role="group" aria-label="How confident are you on ' + esc(t.title) + '?">' + ['r', 'a', 'g'].map(function (k) { return '<button type="button" class="' + k + (rg === k ? ' on' : '') + '" data-rag="' + k + '" data-pos="' + pos + '" aria-pressed="' + (rg === k) + '" title="' + ST.RAG[k] + '"><span class="sr">' + ST.RAG[k] + '</span></button>'; }).join('') + '</div>' : '') + '</div>';
+      var body = '';
+      if (open) {
+        var rec = tq.filter(function (q) { return q.tier === 'foundation'; }), ex = tq.filter(function (q) { return q.tier === 'exam'; }), fc = tq.filter(function (q) { return q.tier === 'first'; });
+        body = '<div class="mk-tbody">' + warn +
+          (rec.length ? '<div class="mk-tier"><h4><span class="mk-tag f">Foundation</span> Quick recall <small>Check yourself, then say how you did. Misses become flashcards.</small></h4><ul class="mk-recall">' + rec.map(recallItem).join('') + '</ul></div>' : '') +
+          (ex.length ? '<div class="mk-tier"><h4><span class="mk-tag e">Exam-style</span> Answer under exam conditions <small>Marked against your department’s criteria.</small></h4>' + qList(ex) + '</div>' : '') +
+          (fc.length ? '<div class="mk-tier"><h4><span class="mk-tag x">First-Class</span> Stretch question <small>Links topics, weighs arguments or pushes the hard case. This is where 70+ comes from.</small></h4>' + qList(fc) + '</div>' : '') +
+          '</div>';
+      } else if (warn) body = '<div class="mk-tbody slim">' + warn + '</div>';
+      return '<li class="mk-tp' + (open ? ' open' : '') + (rg ? ' rg-' + rg : '') + '" id="mk-t' + pos + '">' + top + body + '</li>';
+    }).join('') + '</ol>';
+    var loose = qs.filter(function (q) { return q.topic_pos == null && q.tier !== 'foundation'; });
+    if (loose.length) html += '<details class="mk-more"><summary>More practice questions (' + loose.length + ')</summary>' + qList(loose) + '</details>';
+    html += own + '<p class="mk-fine">Questions are written for revision from the module’s public description, in the style your department examines. They are not taken from UCL exam papers.</p></section>';
+    return html;
+  }
+  function recallItem(q) {
+    var shown = !!state.shown[q.id], last = (state.recalls || []).filter(function (r) { return r.question_id === q.id; })[0];
+    return '<li><p class="mk-rq">' + esc(q.question) + (last ? ' <span class="mk-rlast ' + (last.got ? 'ok' : 'no') + '">' + (last.got ? '✓ Got it' : '✗ Not yet') + '</span>' : '') + '</p>' +
+      (shown ? '<div class="mk-ra"><p>' + esc(q.answer || '') + '</p><div class="mk-row start"><span class="mk-rhow">How did you do?</span><button type="button" class="btn dark small" data-recall="' + q.id + '" data-got="1">Got it</button><button type="button" class="btn line small" data-recall="' + q.id + '" data-got="0">Not yet</button></div></div>'
+        : '<button type="button" class="mk-reveal" data-show="' + q.id + '">Show answer</button>') + '</li>';
+  }
+  function qList(list) {
+    return '<ol class="mk-qs">' + list.map(function (q) {
+      var ma = modelAnswers[q.id], mine = (state.attempts || []).filter(function (a) { return a.question_id === q.id; })[0];
+      return '<li><div><span class="mk-topic">' + esc(kindName(q.kind)) + (q.steps && q.steps.length ? ' · step-by-step help' : '') + (ma ? ' · <b class="mk-badge">First-class model answer</b>' : '') + (mine && mine.result ? ' · your best so far <span class="mk-cls ' + clsSlug(mine.result.class) + '">' + esc(mine.result.class) + '</span>' : '') + '</span><p>' + esc(q.question) + '</p></div><button type="button" class="btn dark small" data-q="' + q.id + '">' + (mine ? 'Try again' : 'Answer this') + '</button></li>';
+    }).join('') + '</ol>';
   }
   function attemptsHtml() {
     var a = state.attempts;
@@ -279,33 +434,64 @@
   }
   function viewAnswer() {
     var m = state.mod, c = state.cur, d = drafts()[draftKey()];
-    var html = head() + '<section class="mk-card mk-answer"><span class="mk-topic">' + esc(m.code) + ' · ' + esc(m.title) + '</span>';
+    var topic = !c.own && c.topic_pos != null && state.topics ? state.topics.filter(function (t) { return t.position === c.topic_pos; })[0] : null;
+    var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
+    var html = head() + '<section class="mk-card mk-answer"><span class="mk-topic">' + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
+    if (rw) html += '<div class="mk-rwbox"><b>Rewrite challenge</b><p>Last time: <span class="mk-cls ' + clsSlug(rw.cls) + '">' + esc(rw.cls) + '</span> ' + rw.mark_low + '–' + rw.mark_high + '.' + (rw.quote ? ' Rewrite the paragraph starting “' + esc(rw.quote) + '…”' : '') + (rw.task ? ' ' + esc(rw.task) : '') + ' Then mark it again to see your new mark.</p><button type="button" class="mk-clear" data-act="norewrite">Cancel the challenge</button></div>';
     if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
     else html += '<h2 class="mk-question">' + esc(c.question) + '</h2>';
+    if (c.steps && c.steps.length) {
+      var n = state.steps[c.id] || 0;
+      html += '<div class="mk-steps"><p class="mk-lab">Stuck? Work through it one step at a time</p>' + (n ? '<ol>' + c.steps.slice(0, n).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') +
+        (n < c.steps.length ? '<button type="button" class="btn line small" data-act="step">' + (n ? 'Show step ' + (n + 1) + ' of ' + c.steps.length : 'Show step 1 of ' + c.steps.length) + '</button>' : '<p class="mk-fine">That’s the full worked solution. Now write it up in your own words below.</p>') + '</div>';
+    }
     html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
       '<label class="mk-lab" for="mk-answer">Your answer</label><textarea id="mk-answer" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea>' +
       (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
-      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against UCL’s criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? 'Mark my answer' : 'Sign up free to get it marked') + '</button>') + '</div>' +
+      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against UCL’s criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : 'Mark my answer') : 'Sign up free to get it marked') + '</button>') + '</div>' +
       '<p class="mk-fine">Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>';
     return html;
   }
   function viewResult() {
     var r = state.result, m = state.mod, ma = state.cur && state.cur.id ? modelAnswers[state.cur.id] : null, q = state.cur && state.cur.id ? (state.questions || []).filter(function (x) { return x.id === state.cur.id; })[0] : null;
-    var html = head() + '<section class="mk-card mk-result"><div class="mk-verdict ' + clsSlug(r.class) + '"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark range</span></div></div>' +
+    var lost = r.lost || [], tab = state.rtab;
+    var delta = '';
+    if (r.prev && r.prev.mark_low != null) {
+      var dm = (r.mark_low + r.mark_high) / 2 - (r.prev.mark_low + r.prev.mark_high) / 2;
+      delta = '<p class="mk-delta ' + (dm > 0 ? 'up' : dm < 0 ? 'down' : '') + '">' + (dm > 0 ? '▲ Up ' + plural(Math.round(dm), 'mark') : dm < 0 ? '▼ Down ' + plural(Math.round(-dm), 'mark') : 'Same mark') + ' from your last try (' + r.prev.mark_low + '–' + r.prev.mark_high + ' → ' + r.mark_low + '–' + r.mark_high + ')</p>';
+    }
+    var html = head() + '<section class="mk-card mk-result"><div class="mk-verdict ' + clsSlug(r.class) + '"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark range</span></div></div>' + delta +
       '<p class="mk-headline">' + esc(r.headline) + '</p>' +
-      '<p class="mk-fine">Marked against ' + (r.rubric && r.rubric !== 'UCL-wide' ? 'the published grade descriptors of UCL ' + esc(r.rubric) + ' and ' : '') + 'UCL’s grade bands for ' + esc(levelName(m.level)) + '. A practice estimate, not an official mark.</p>';
-    if (r.criteria && r.criteria.length) html += '<h3>Criterion by criterion</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>';
-    if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
-    if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
-    html += '<div class="mk-row"><button type="button" class="btn primary" data-act="rewrite">Rewrite and resubmit</button><a class="btn line small" href="/modules/' + m.code + '" data-go="mod">Try another question</a></div></section>';
+      (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’ll come up in <a href="/dashboard">Today</a>.</p>' : '') +
+      '<div class="mk-tabs" role="tablist">' + [['breakdown', 'Mark breakdown'], ['lost', 'Where you lost marks' + (lost.length ? ' (' + lost.length + ')' : '')], ['improve', 'Improve it']].map(function (t) { return '<button type="button" role="tab" aria-selected="' + (tab === t[0]) + '" data-rtab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
+    if (tab === 'breakdown') {
+      html += '<p class="mk-fine">Marked against ' + (r.rubric && r.rubric !== 'UCL-wide' ? 'the published grade descriptors of UCL ' + esc(r.rubric) + ' and ' : '') + 'UCL’s grade bands for ' + esc(levelName(m.level)) + '. A practice estimate, not an official mark.</p>';
+      if (r.criteria && r.criteria.length) html += '<h3>Criterion by criterion</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>';
+      if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
+      html += '<div class="mk-row end"><button type="button" class="btn dark" data-rtab="lost">See where you lost marks →</button></div>';
+    } else if (tab === 'lost') {
+      if (!lost.length) html += '<p class="mk-hint">This marking didn’t point to specific sentences. See “Improve it” for the changes that would raise your mark.</p>';
+      else {
+        var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
+        html += '<p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
+          '<ol class="mk-lostlist">' + lost.map(function (l, i) { return '<li id="mk-li' + (i + 1) + '" data-lostli="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>';
+      }
+      html += '<div class="mk-row end"><button type="button" class="btn dark" data-rtab="improve">How to improve it →</button></div>';
+    } else {
+      if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
+      if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
+      if (r.model_plan && r.model_plan.length) html += '<h3>A First-class plan</h3><ul class="mk-plan">' + r.model_plan.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+      if (r.model_paragraph) html += '<h3>Model paragraph</h3><p class="mk-fine">Your weakest part, written at First-class standard by your tutor. Use it to see the level, not to copy.</p><div class="mk-prose mk-modelp">' + paras(r.model_paragraph) + '</div>';
+      if (r.example_answer) html += '<details class="mk-det"><summary>Example First-class answer</summary><div class="mk-prose">' + paras(r.example_answer) + '</div></details>';
+      if (q && q.guide) html += '<details class="mk-det"><summary>Marking guide for this question</summary><dl class="mk-guide"><dt>First</dt><dd>' + esc(q.guide.first) + '</dd><dt>2:1</dt><dd>' + esc(q.guide.two_one) + '</dd><dt>2:2</dt><dd>' + esc(q.guide.two_two) + '</dd></dl></details>';
+    }
+    html += '<div class="mk-row"><a class="btn line small" href="' + MBASE + m.code + (r.topic_pos != null ? '?t=' + r.topic_pos : '') + '" data-go="mod">Back to the Module Map</a></div></section>';
     if (ma) html += '<section class="mk-card"><h2>First-class model answer</h2><p class="mk-author">Written by ' + esc(ma.author_name) + (ma.author_role ? ', ' + esc(ma.author_role) : '') + (ma.author_mark ? ', who scored ' + ma.author_mark + ' in this module' : '') + (ma.checked_by ? '. Checked by ' + esc(ma.checked_by) : '') + '.</p><div class="mk-prose">' + paras(ma.answer) + '</div></section>';
-    if (r.example_answer) html += '<details class="mk-card mk-example"' + (ma ? '' : ' open') + '><summary><h2>Example First-class answer</h2><span>Written by your tutor for this question, for comparison. Not from a UCL paper.</span></summary><div class="mk-prose">' + paras(r.example_answer) + '</div></details>';
-    if (q && q.guide) html += '<details class="mk-card"><summary><h2>Marking guide for this question</h2></summary><dl class="mk-guide"><dt>First</dt><dd>' + esc(q.guide.first) + '</dd><dt>2:1</dt><dd>' + esc(q.guide.two_one) + '</dd><dt>2:2</dt><dd>' + esc(q.guide.two_two) + '</dd></dl></details>';
     if (r.id) html += '<section class="mk-card mk-realbox"><h3>Got a real mark for a similar answer?</h3><p>Tell us and we’ll use it to check the marker stays accurate for ' + esc(m.code) + '.</p><div class="mk-row start"><input id="mk-real" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64" aria-label="Your real mark"><button type="button" class="btn line small" data-real="' + r.id + '">Save</button></div><p id="mk-real-done" class="mk-fine"></p></section>';
-    html += '<details class="mk-card"><summary><h2>Your answer</h2></summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
+    if (tab !== 'lost') html += '<details class="mk-card"><summary><h2>Your answer</h2></summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
     return html;
   }
 
@@ -333,24 +519,38 @@
     if (t.id === 'mk-answer') { saveDraft(draftKey(), t.value); var wc = document.getElementById('mk-wc'); if (wc) wc.textContent = words(t.value) + ' words'; }
     if (t.id === 'mk-qtext' && state.cur) state.cur.question = t.value;
   });
-  root.addEventListener('change', function (e) { if (e.target.id === 'mk-ugonly') { state.ug = e.target.checked; search(state.q); } });
+  root.addEventListener('change', function (e) {
+    if (e.target.id === 'mk-ugonly') { state.ug = e.target.checked; search(state.q); }
+    if (e.target.id === 'mk-exd' && HOOKS && HOOKS.setExamDate) { HOOKS.setExamDate(state.mod.code, e.target.value || null).then(render).catch(function () {}); track('exam_date'); }
+  });
   root.addEventListener('keydown', function (e) { if (e.target.id === 'mk-real' && e.key === 'Enter') { var b = root.querySelector('[data-real]'); if (b) saveReal(b.getAttribute('data-real')); } });
   root.addEventListener('click', function (e) {
+    var hl = e.target.closest('mark[data-lost]');
+    if (hl) { var li = document.getElementById('mk-li' + hl.getAttribute('data-lost')); if (li) { li.scrollIntoView({ block: 'center', behavior: 'smooth' }); li.classList.add('flash'); setTimeout(function () { li.classList.remove('flash'); }, 1200); } return; }
+    var lli = e.target.closest('[data-lostli]');
+    if (lli && !e.target.closest('a,button')) { var mk = document.getElementById('mk-lm' + lli.getAttribute('data-lostli')); if (mk) { mk.scrollIntoView({ block: 'center', behavior: 'smooth' }); mk.classList.add('flash'); setTimeout(function () { mk.classList.remove('flash'); }, 1200); } return; }
     var a = e.target.closest('a,button'); if (!a) return;
     if (a.hasAttribute('data-code')) { e.preventDefault(); go({ m: a.getAttribute('data-code') }); return; }
     if (a.getAttribute('data-go') === 'home') { e.preventDefault(); go({}); return; }
-    if (a.getAttribute('data-go') === 'mod') { e.preventDefault(); state.result = null; go({ m: state.mod.code }); return; }
+    if (a.getAttribute('data-go') === 'mod') { e.preventDefault(); var tp = state.result && state.result.topic_pos; state.result = null; go({ m: state.mod.code, t: tp != null ? tp : null }); return; }
+    if (a.hasAttribute('data-topic')) { var p = +a.getAttribute('data-topic'); state.open[p] = !state.open[p]; if (state.open[p]) track('topic_open'); render(); return; }
+    if (a.hasAttribute('data-rag')) { var pos = +a.getAttribute('data-pos'), k = a.getAttribute('data-rag'); rate(pos, k); return; }
+    if (a.hasAttribute('data-show')) { state.shown[a.getAttribute('data-show')] = true; render(); return; }
+    if (a.hasAttribute('data-recall')) { var qid = a.getAttribute('data-recall'); recall(qid, a.getAttribute('data-got') === '1'); state.shown[qid] = false; render(); return; }
+    if (a.hasAttribute('data-rtab')) { state.rtab = a.getAttribute('data-rtab'); render(); var tb = root.querySelector('.mk-tabs'); if (tb && tb.getBoundingClientRect().top < 0) tb.scrollIntoView({ block: 'start' }); return; }
     if (a.hasAttribute('data-q')) { var id = a.getAttribute('data-q'); state.cur = (state.questions || []).filter(function (x) { return x.id === id; })[0]; state.err = ''; go({ m: state.mod.code, q: id, v: 'answer' }); return; }
     if (a.hasAttribute('data-del')) { deleteAttempt(a.getAttribute('data-del')); return; }
     if (a.hasAttribute('data-real')) { saveReal(a.getAttribute('data-real')); return; }
     var act = a.getAttribute('data-act');
     if (act === 'own') { state.cur = { id: null, own: true, question: '' }; state.err = ''; go({ m: state.mod.code, q: 'own', v: 'answer' }); }
-    else if (act === 'genq') getQuestions();
+    else if (act === 'genq') { if (!getSession()) { location.href = signinUrl(); return; } state.mapRetry = false; startMap(); }
     else if (act === 'timer') { startTimer(); render(); }
+    else if (act === 'step') { state.steps[state.cur.id] = (state.steps[state.cur.id] || 0) + 1; track('step_reveal'); render(); }
     else if (act === 'submit') submit();
     else if (act === 'clear') { if (confirm('Clear your answer? This can’t be undone.')) { saveDraft(draftKey(), ''); render(); } }
     else if (act === 'star' && HOOKS) { HOOKS.toggle(state.mod).then(render); }
-    else if (act === 'rewrite') { state.err = ''; go({ m: state.mod.code, q: state.cur.id || 'own', v: 'answer' }); }
+    else if (act === 'rewrite') startRewrite();
+    else if (act === 'norewrite') { state.rewrite = null; render(); }
   });
   function inScope() { var p = location.pathname.replace(/\/$/, ''); return p === BASE.replace(/\/$/, '') || MODRE.test(location.pathname); }
   window.addEventListener('popstate', function () { if (inScope()) route(); });

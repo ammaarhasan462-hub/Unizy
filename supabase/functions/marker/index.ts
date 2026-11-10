@@ -1,14 +1,19 @@
-// The marker: exam-style practice questions for any UCL module, and marking of a student's practice answer
-// against UCL's grade bands and the department's own published criteria.
+// The marker: a Module Map (topics + practice questions at three levels) for any UCL module, and marking of a
+// student's practice answer against UCL's grade bands and the department's own published criteria.
 //
-// POST { action: "questions", code }                     -> generates and caches practice questions (signed in)
+// POST { action: "questions", code }                     -> topics + questions; starts writing them if the module has none yet
+//                                                           (signed in; returns { pending: true } while they are being written)
+// POST { action: "warm", code }  + header x-warm-key     -> background batch: writes a module's questions (no user)
 // POST { action: "mark", code, question, answer, ... }   -> marks one practice answer (signed in, counts as an Assess marking)
+//      question_id?, topic_pos?, tier?, prev_id? (the attempt this one rewrites)
 //      attachments?: photos / video frames / PDFs / document text holding (part of) the answer — see attach.ts
 //
-// Practice questions are written fresh in the style of each module. They are never copied from real UCL papers.
+// Tiers: foundation = quick-recall questions with a short answer the student checks themselves (never sent for marking);
+// exam = exam-style; first = First-class stretch (synoptic / evaluative / harder). Questions are written fresh in the
+// style of each module. They are never copied from real UCL papers.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { BUDGET_MSG, PAUSED_MSG, budgetReached, handleAccountProblem, isAccountProblem, recordSpend } from "./common.ts";
+import { BUDGET_MSG, PAUSED_MSG, budgetReached, costUsd, handleAccountProblem, isAccountProblem, recordSpend } from "./common.ts";
 import { MAX_BODY, attachmentError, parseAttachments } from "./attach.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
@@ -22,6 +27,8 @@ const SONNET = "claude-sonnet-5-5";
 const MAX_ANSWER = 14_000; // characters, roughly 2,300 words
 const MAX_QUESTION = 3_000;
 const CODE_RE = /^[A-Z]{4}[0-9]{4}$/;
+const UUID_RE = /^[0-9a-f-]{36}$/;
+const OPENS_PER_DAY = 15; // new modules one student can have written per day (each costs a few pence)
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { ...CORS, "Content-Type": "application/json" } });
@@ -75,11 +82,18 @@ function parseJson(text: string): any {
   const a = t.indexOf("{"), b = t.lastIndexOf("}"), c = t.indexOf("["), d = t.lastIndexOf("]");
   if (c >= 0 && d > c && (a < 0 || c < a)) { try { return JSON.parse(t.slice(c, d + 1)); } catch { /* ignore */ } }
   if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch { /* ignore */ } }
-  // a cut-off array: keep the complete objects
-  if (c >= 0 && (a < 0 || c < a)) {
-    for (let end = t.lastIndexOf("}"); end > c; end = t.lastIndexOf("}", end - 1)) {
-      try { const v = JSON.parse(t.slice(c, end + 1) + "]"); if (Array.isArray(v) && v.length) return v; } catch { /* keep trying */ }
-    }
+  return null;
+}
+
+// A Module Map cut off by the length limit: keep every complete topic.
+function parseTopics(text: string): any[] | null {
+  const whole = parseJson(text);
+  if (whole && Array.isArray(whole.topics)) return whole.topics;
+  if (Array.isArray(whole)) return whole;
+  const t = text.trim(), c = t.indexOf("[");
+  if (c < 0) return null;
+  for (let end = t.lastIndexOf("}"); end > c; end = t.lastIndexOf("}", end - 1)) {
+    try { const v = JSON.parse(t.slice(c, end + 1) + "]"); if (Array.isArray(v) && v.length) return v; } catch { /* keep trying */ }
   }
   return null;
 }
@@ -100,46 +114,26 @@ async function callClaude(apiKey: string, system: string, user: string | any[], 
   return { ok: true as const, text, usage: data.usage, truncated: data.stop_reason === "max_tokens" };
 }
 
-const SYSTEM = "You are the examiner inside a revision website for UCL students. You write exam-style practice questions and mark practice answers the way an experienced, fair UCL examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real UCL paper; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.";
+const SYSTEM = "You are the examiner inside a revision website for UCL students. You write exam-style practice questions and mark practice answers the way an experienced, fair UCL examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real UCL paper; never name lecturers; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.";
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method !== "POST") return json(405, { code: "invalid_request", message: "POST only" });
-  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
-  if (!apiKey) return json(503, { code: "ai_paused", message: PAUSED_MSG });
+const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+const KINDS = ["essay", "problem", "short"];
 
-  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-  const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-  const { data: userData } = await service.auth.getUser(token);
-  const user = userData?.user;
-  if (!user) return json(401, { code: "session_expired", message: "Please sign in to continue." });
+async function loadMap(service: any, code: string) {
+  const [{ data: topics }, { data: questions }] = await Promise.all([
+    service.from("module_topics").select("position, title, summary").eq("code", code).order("position"),
+    service.from("module_questions").select("id, topic, kind, tier, topic_pos, question, answer, guide, steps, position").eq("code", code).order("position"),
+  ]);
+  return { topics: topics || [], questions: questions || [] };
+}
 
-  let body: any;
+// Write a module's topics and questions (one call), save them, and mark the job done or failed.
+async function writeMap(service: any, apiKey: string, mod: any, source: "open" | "batch") {
+  const code = mod.code;
+  const fail = (error: string) => service.from("question_jobs").update({ status: "failed", finished_at: new Date().toISOString(), error: error.slice(0, 500) }).eq("code", code);
   try {
-    const raw = await req.text();
-    if (raw.length > MAX_BODY) return json(413, { code: "prompt_too_large", message: "Those attachments are too large to send at once. Try fewer or smaller files." });
-    body = JSON.parse(raw);
-  } catch { return json(400, { code: "invalid_request", message: "Bad request." }); }
-  const code = String(body.code || "").toUpperCase().trim();
-  if (!CODE_RE.test(code)) return json(400, { code: "invalid_request", message: "Pick a module first." });
-  const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
-  if (!mod) return json(404, { code: "not_found", message: "We couldn’t find that module." });
-
-  // ---------- practice questions for a module ----------
-  if (body.action === "questions") {
-    const { data: existing } = await service.from("module_questions").select("id, topic, kind, question, guide, position").eq("code", code).order("position");
-    if (existing && existing.length) return json(200, { questions: existing, cached: true });
-
-    // generation uses the shared daily £ budget but not the student's own allowance (questions are cached for everyone)
-    const day = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
-    const [{ data: st }, { data: sp }] = await Promise.all([
-      service.from("ai_settings").select("daily_budget_gbp, usd_per_gbp").eq("id", true).maybeSingle(),
-      service.from("ai_spend").select("usd").eq("day", day).maybeSingle(),
-    ]);
-    if (st && sp && +sp.usd >= +st.daily_budget_gbp * +st.usd_per_gbp) return json(503, { code: "ai_paused", message: BUDGET_MSG });
-
     const details = await moduleDetails(service, mod);
-    const prompt = `Write 6 exam-style practice questions for this UCL module, in the style UCL examiners in this department typically set.
+    const prompt = `Build a revision Module Map for this UCL module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
 
 MODULE: ${mod.code} ${mod.title}
 Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${mod.credits ?? "?"} credits · ${mod.term || ""}
@@ -149,36 +143,129 @@ ${details.slice(0, 5000)}
 """
 
 Rules:
-- Cover different topics from the description, roughly in teaching order. Stay strictly within what the description says the module covers; if it is thin, keep questions to the core of the subject at this level.
-- Match the discipline: essay questions for humanities and social sciences; problem / calculation / "derive and explain" questions for quantitative subjects; short structured questions (with marks in brackets) where that is the norm (e.g. sciences, medicine). For a dissertation, project, language-skills or placement module, write questions that practise the kind of written work it assesses.
-- Each question must be answerable in about 45 minutes in exam conditions, without notes. Keep each question under 110 words (multi-part questions included).
-- Do not copy or claim to reproduce real UCL exam questions.
-- For each question give an indicative marking guide: one sentence (under 35 words) each on what a First, a 2:1 and a 2:2 answer does for THIS question.
+- 8 topics (6 if the description is thin, up to 10 for a broad module). "title" under 8 words; "summary" one sentence under 25 words on what the topic covers. Stay within what the description says the module covers; where it is thin, use the standard core of this subject at this level.
+- For each topic write:
+  • "recall": 2 Foundation questions on core definitions, key terms, principles, key cases / thinkers / equations. Each has a model "a" (answer) under 45 words that a student can check themselves against.
+  • "exam": 1 exam-style question at the standard of a typical UCL exam for this module.
+  • "first": 1 harder First-class stretch question on the same topic: synoptic (links to another topic of this module), evaluative, a counter-argument to assess, or an edge case / harder calculation.
+- Match the discipline's exam format: essay questions for humanities and social sciences; for law, a mix of essay questions and problem questions (a short fact scenario to advise on); calculation / derivation questions for quantitative subjects; short structured questions with marks in brackets for sciences and medicine. Language, project, dissertation or placement modules: practise the kind of written work they assess. Exam and First questions should be answerable in about 45 minutes without notes.
+- For "exam" and "first": "kind" is "essay" | "problem" | "short"; "guide" has one sentence (under 30 words) each on what a First, a 2:1 and a 2:2 answer does for THIS question; and ONLY for a calculation, derivation or other worked numerical / formal problem, "steps" = 3-6 worked-solution steps (each under 50 words, the last giving the final answer). No "steps" for essays or law problem questions.
+- Every question under 110 words. Never copy or claim to reproduce real UCL exam questions. Only mention cases, statutes, authors or studies that are real and well established.
 
-Return a JSON array of 6 objects: {"topic": short topic name, "kind": "essay" | "problem" | "short", "question": the full question text, "guide": {"first": "...", "two_one": "...", "two_two": "..."}}`;
-    const res = await callClaude(apiKey, SYSTEM, prompt, 8000);
+Return one JSON object:
+{"topics": [{"title": "...", "summary": "...", "recall": [{"q": "...", "a": "..."}, {"q": "...", "a": "..."}], "exam": {"kind": "essay", "question": "...", "guide": {"first": "...", "two_one": "...", "two_two": "..."}}, "first": {"kind": "essay", "question": "...", "guide": {...}}}]}`;
+    const res = await callClaude(apiKey, SYSTEM, prompt, 12000);
     if (!res.ok) {
-      console.error("questions upstream", code, res.status, res.text.slice(0, 300));
-      if (isAccountProblem(res.status, res.text)) { EdgeRuntime.waitUntil(handleAccountProblem(service, res.status, res.text)); return json(503, { code: "ai_paused", message: PAUSED_MSG }); }
-      return json(502, { code: "upstream_error", message: "Couldn’t write questions just now. Try again in a moment." });
+      console.error("map upstream", code, res.status, res.text.slice(0, 300));
+      if (isAccountProblem(res.status, res.text)) await handleAccountProblem(service, res.status, res.text);
+      await fail("upstream " + res.status + ": " + res.text);
+      return;
     }
-    EdgeRuntime.waitUntil(recordSpend(service, SONNET, res.usage));
-    const arr = parseJson(res.text);
-    if (!Array.isArray(arr) || !arr.length) console.error("questions parse", code, res.truncated, res.text.slice(0, 300));
-    if (!Array.isArray(arr) || !arr.length) return json(502, { code: "upstream_error", message: "Couldn’t write questions just now. Try again." });
-    // someone else may have generated them meanwhile
-    const { data: again } = await service.from("module_questions").select("id").eq("code", code).limit(1);
-    if (!again || !again.length) {
-      const rows = arr.slice(0, 10).filter((q: any) => q && typeof q.question === "string" && q.question.trim()).map((q: any, i: number) => ({
-        code, position: i, topic: String(q.topic || "").slice(0, 120) || null,
-        kind: ["essay", "problem", "short"].includes(q.kind) ? q.kind : "essay",
-        question: String(q.question).slice(0, MAX_QUESTION),
-        guide: q.guide && typeof q.guide === "object" ? { first: String(q.guide.first || ""), two_one: String(q.guide.two_one || ""), two_two: String(q.guide.two_two || "") } : null,
-      }));
-      await service.from("module_questions").insert(rows);
-    }
-    const { data: saved } = await service.from("module_questions").select("id, topic, kind, question, guide, position").eq("code", code).order("position");
-    return json(200, { questions: saved || [] });
+    if (source === "batch") await service.rpc("ai_add_batch_spend", { p_usd: costUsd(SONNET, res.usage) });
+    else await recordSpend(service, SONNET, res.usage);
+    const topics = (parseTopics(res.text) || []).filter((t: any) => t && t.title && (t.exam || t.recall));
+    if (topics.length < 3) { console.error("map parse", code, res.truncated, res.text.slice(0, 300)); await fail("parse"); return; }
+
+    // someone else may have written them meanwhile
+    const { data: again } = await service.from("module_topics").select("position").eq("code", code).limit(1);
+    if (again && again.length) { await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString() }).eq("code", code); return; }
+    const { data: last } = await service.from("module_questions").select("position").eq("code", code).order("position", { ascending: false }).limit(1);
+    let pos = last && last.length ? (last[0].position ?? 0) + 1 : 0;
+
+    const trows = topics.slice(0, 10).map((t: any, i: number) => ({ code, position: i, title: s(t.title, 120), summary: s(t.summary, 300) || null }));
+    const qrows: any[] = [];
+    const marked = (q: any, tier: string, i: number, title: string) => {
+      if (!q || typeof q.question !== "string" || !q.question.trim()) return;
+      const steps = Array.isArray(q.steps) ? q.steps.map((x: any) => s(x, 400)).filter(Boolean).slice(0, 8) : [];
+      const g = q.guide && typeof q.guide === "object" ? q.guide : null;
+      qrows.push({
+        code, position: pos++, topic_pos: i, topic: title, tier, kind: KINDS.includes(q.kind) ? q.kind : "essay",
+        question: s(q.question, MAX_QUESTION),
+        guide: g ? { first: s(g.first, 400), two_one: s(g.two_one, 400), two_two: s(g.two_two, 400) } : null,
+        steps: steps.length >= 2 ? steps : null,
+      });
+    };
+    topics.slice(0, 10).forEach((t: any, i: number) => {
+      const title = s(t.title, 120);
+      (Array.isArray(t.recall) ? t.recall : []).slice(0, 3).forEach((r: any) => {
+        if (r && r.q && r.a) qrows.push({ code, position: pos++, topic_pos: i, topic: title, tier: "foundation", kind: "recall", question: s(r.q, 600), answer: s(r.a, 800) });
+      });
+      marked(t.exam, "exam", i, title);
+      marked(t.first, "first", i, title);
+    });
+    const { error: e1 } = await service.from("module_topics").insert(trows);
+    if (e1) { await fail("topics insert: " + e1.message); return; }
+    const { error: e2 } = await service.from("module_questions").insert(qrows);
+    if (e2) { await service.from("module_topics").delete().eq("code", code); await fail("questions insert: " + e2.message); return; }
+    await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString(), error: null }).eq("code", code);
+  } catch (e) {
+    console.error("map error", code, String(e));
+    await fail(String(e));
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (req.method !== "POST") return json(405, { code: "invalid_request", message: "POST only" });
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) return json(503, { code: "ai_paused", message: PAUSED_MSG });
+
+  const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
+  let body: any;
+  try {
+    const raw = await req.text();
+    if (raw.length > MAX_BODY) return json(413, { code: "prompt_too_large", message: "Those attachments are too large to send at once. Try fewer or smaller files." });
+    body = JSON.parse(raw);
+  } catch { return json(400, { code: "invalid_request", message: "Bad request." }); }
+
+  // ---------- background batch (no user; secret key) ----------
+  if (body.action === "warm") {
+    const key = Deno.env.get("WARM_KEY");
+    if (!key || req.headers.get("x-warm-key") !== key) return json(401, { code: "invalid_request", message: "No." });
+    const code = String(body.code || "").toUpperCase().trim();
+    const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
+    if (!mod) return json(404, { code: "not_found" });
+    const { data: has } = await service.from("module_topics").select("position").eq("code", code).limit(1);
+    if (has && has.length) { await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString() }).eq("code", code); return json(200, { done: true }); }
+    const { data: claimed } = await service.rpc("claim_question_job", { p_code: code, p_source: "batch", p_user: null });
+    if (!claimed) return json(202, { pending: true });
+    EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "batch"));
+    return json(202, { pending: true, started: true });
+  }
+
+  const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  const { data: userData } = await service.auth.getUser(token);
+  const user = userData?.user;
+  if (!user) return json(401, { code: "session_expired", message: "Please sign in to continue." });
+
+  const code = String(body.code || "").toUpperCase().trim();
+  if (!CODE_RE.test(code)) return json(400, { code: "invalid_request", message: "Pick a module first." });
+  const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
+  if (!mod) return json(404, { code: "not_found", message: "We couldn’t find that module." });
+
+  // ---------- Module Map: topics + questions ----------
+  if (body.action === "questions") {
+    const map = await loadMap(service, code);
+    if (map.topics.length) return json(200, { ...map, cached: true });
+
+    const { data: job } = await service.from("question_jobs").select("status, started_at, tries").eq("code", code).maybeSingle();
+    if (job && job.status === "running" && Date.now() - Date.parse(job.started_at) < 3 * 60e3) return json(202, { ...map, pending: true });
+    if (job && job.status === "failed" && job.tries >= 4) return json(502, { ...map, code: "upstream_error", message: "We couldn’t write questions for this module. Use your own past-paper question below for now." });
+
+    // writing uses the shared daily £ budget but not the student's own allowance (questions are saved for everyone)
+    const day = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+    const since = new Date(Date.now() - 864e5).toISOString();
+    const [{ data: st }, { data: sp }, { count: mine }] = await Promise.all([
+      service.from("ai_settings").select("daily_budget_gbp, usd_per_gbp").eq("id", true).maybeSingle(),
+      service.from("ai_spend").select("usd").eq("day", day).maybeSingle(),
+      service.from("question_jobs").select("code", { count: "exact", head: true }).eq("requested_by", user.id).eq("source", "open").gte("started_at", since),
+    ]);
+    if (st && sp && +sp.usd >= +st.daily_budget_gbp * +st.usd_per_gbp) return json(503, { ...map, code: "ai_paused", message: "Questions for this module will be written tomorrow. For now, use your own past-paper question below." });
+    if ((mine || 0) >= OPENS_PER_DAY) return json(429, { ...map, code: "rate_limited", message: "You’ve opened a lot of new modules today. Questions for this one will be ready tomorrow; you can use your own past-paper question now." });
+
+    const { data: claimed } = await service.rpc("claim_question_job", { p_code: code, p_source: "open", p_user: user.id });
+    if (claimed) EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "open"));
+    return json(202, { ...map, pending: true });
   }
 
   // ---------- mark a practice answer ----------
@@ -186,7 +273,8 @@ Return a JSON array of 6 objects: {"topic": short topic name, "kind": "essay" | 
     const question = String(body.question || "").trim();
     const answer = String(body.answer || "").trim();
     const minutes = Number.isFinite(+body.minutes) && +body.minutes > 0 ? Math.min(600, Math.round(+body.minutes)) : null;
-    const questionId = typeof body.question_id === "string" && /^[0-9a-f-]{36}$/.test(body.question_id) ? body.question_id : null;
+    const questionId = typeof body.question_id === "string" && UUID_RE.test(body.question_id) ? body.question_id : null;
+    const prevId = typeof body.prev_id === "string" && UUID_RE.test(body.prev_id) ? body.prev_id : null;
     if (!body.practice) return json(400, { code: "invalid_request", message: "Please confirm this is exam practice, not work you’re submitting." });
     if (question.length < 10) return json(400, { code: "invalid_request", message: "Add the question you’re answering." });
     if (question.length > MAX_QUESTION) return json(413, { code: "prompt_too_large", message: "That question is too long. Paste just the question." });
@@ -212,12 +300,24 @@ Return a JSON array of 6 objects: {"topic": short topic name, "kind": "essay" | 
     }
     const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: 2, p_kind: "assess", p_tier: take.tier });
 
-    const [details, rubric] = await Promise.all([moduleDetails(service, mod), rubricFor(service, mod.department)]);
-    let guide = "";
+    const [details, rubric, { data: topics }] = await Promise.all([
+      moduleDetails(service, mod), rubricFor(service, mod.department),
+      service.from("module_topics").select("position, title").eq("code", code).order("position"),
+    ]);
+    let guide = "", tier: string | null = null, topicPos: number | null = null;
     if (questionId) {
-      const { data: q } = await service.from("module_questions").select("guide").eq("id", questionId).maybeSingle();
+      const { data: q } = await service.from("module_questions").select("guide, tier, topic_pos").eq("id", questionId).eq("code", code).maybeSingle();
       if (q?.guide) guide = `Indicative guide for this question — First: ${q.guide.first} | 2:1: ${q.guide.two_one} | 2:2: ${q.guide.two_two}`;
+      if (q) { tier = q.tier || "exam"; topicPos = q.topic_pos ?? null; }
     }
+    const tlist = (topics || []) as any[];
+    const askTopic = topicPos == null && tlist.length > 0;
+    let prev: any = null;
+    if (prevId) {
+      const { data: p } = await service.from("mark_attempts").select("id, result").eq("id", prevId).eq("user_id", user.id).maybeSingle();
+      if (p?.result) prev = { id: p.id, mark_low: p.result.mark_low, mark_high: p.result.mark_high, class: p.result.class };
+    }
+    const src = hasAtt ? "the student's answer (for attachments, as you transcribe it)" : "the student's answer";
     const prompt = `Mark this practice exam answer as a UCL examiner in ${mod.department || "this department"} would.
 
 MODULE: ${mod.code} ${mod.title} · ${levelWord(mod.level)} · Department: ${mod.department || "unknown"}
@@ -225,7 +325,7 @@ Module description: """${details.slice(0, 2500)}"""
 
 MARKING CRITERIA:
 ${rubric}
-${guide ? "\n" + guide + "\n" : ""}
+${guide ? "\n" + guide + "\n" : ""}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
 QUESTION: """${question}"""
 ${minutes ? `Written in ${minutes} minutes (exam conditions).` : "Time taken not given."}
 
@@ -238,14 +338,18 @@ Instructions:
 - Give a mark range no wider than 5 marks (e.g. 62-66) and the class it falls in.
 - Feedback must quote or point to specific parts of the student's answer.
 - "changes" = the three changes that would most raise the mark, most important first, each concrete enough to act on in the next attempt. Keep each "change" under 70 words and each "why" under 40 words.
-${hasAtt ? `- If the attachments do not contain an answer to this question (blank, unreadable, or about something else), do not mark: set "refused": true and say briefly what's wrong in "refuse_reason" (e.g. which photo can't be read). If only part is unreadable, mark the rest and say which part in the headline.
+- "lost" = 2 to 5 places where marks were lost, in the order they appear. "quote" = 6 to 30 consecutive words copied EXACTLY, character for character, from ${src} (if the problem is something missing, quote the sentence where it should have gone). "issue" = what is wrong or missing there (under 35 words). "fix" = what would have earned the marks (under 35 words).
+- "model_plan" = a First-class plan for this question: 3 to 6 short bullet points.
+- "model_paragraph" = one paragraph (120-200 words) showing the weakest part of the student's answer done at First-class standard. Use only well-established material; no invented citations.
+- "rewrite" = the paragraph the student should rewrite first: "quote" = its first 6 to 12 words copied exactly from ${src}; "task" = what to change in it (under 40 words).
+- "cards" = 2 to 4 flashcards on knowledge the student got wrong or left out: "front" a short question (under 25 words), "back" the answer (under 45 words). Only well-established facts.
+${askTopic ? `- "topic_pos" = the number of the module topic this question mostly belongs to, from: ${tlist.map((t) => t.position + " = " + t.title).join("; ")}. Use -1 if none fits.\n` : ""}${hasAtt ? `- If the attachments do not contain an answer to this question (blank, unreadable, or about something else), do not mark: set "refused": true and say briefly what's wrong in "refuse_reason" (e.g. which photo can't be read). If only part is unreadable, mark the rest and say which part in the headline.
 - "transcript" = a faithful transcription of the answer content in the attachments, in order, so the student has a typed copy (keep their wording and mistakes; mark unreadable words as [unclear]; max 2,000 words).
-` : ""}- "example_answer" = a concise First-class answer to the same question (400-650 words) for comparison, written at this level; use only well-established material, no invented citations. Start with a one-line plan.
-
+` : ""}
 Return one JSON object:
-{"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": what to do, "why": how it maps to the criteria}, x3], "example_answer": "..."}`;
+{"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}]${askTopic ? ', "topic_pos": int' : ""}}`;
 
-    const res = await callClaude(apiKey, SYSTEM, hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 6000);
+    const res = await callClaude(apiKey, SYSTEM, hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 7000);
     if (!res.ok) {
       console.error("mark upstream", code, res.status, res.text.slice(0, 300));
       await refund();
@@ -267,24 +371,34 @@ Return one JSON object:
     if (hi - lo > 6) hi = lo + 5;
     const mid = (lo + hi) / 2;
     const cls = mid >= 70 ? "First" : mid >= 60 ? "2:1" : mid >= 50 ? "2:2" : mid >= 40 ? "Third" : "Fail";
+    if (askTopic && Number.isInteger(+out.topic_pos) && tlist.some((t) => t.position === +out.topic_pos)) topicPos = +out.topic_pos;
+    const cards = Array.isArray(out.cards) ? out.cards.map((c: any) => ({ front: s(c?.front, 300), back: s(c?.back, 600) })).filter((c: any) => c.front.length >= 3 && c.back).slice(0, 4) : [];
     const result = {
       class: cls,
       mark_low: lo, mark_high: hi,
-      headline: String(out.headline || "").slice(0, 400),
-      criteria: Array.isArray(out.criteria) ? out.criteria.slice(0, 6).map((c: any) => ({ name: String(c?.name || "").slice(0, 80), band: classes.includes(c?.band) ? c.band : "", comment: String(c?.comment || "").slice(0, 800) })) : [],
-      strengths: Array.isArray(out.strengths) ? out.strengths.slice(0, 4).map((s: any) => String(s).slice(0, 300)) : [],
-      changes: Array.isArray(out.changes) ? out.changes.slice(0, 3).map((c: any) => ({ change: String(c?.change || c || "").slice(0, 1200), why: String(c?.why || "").slice(0, 800) })) : [],
-      example_answer: String(out.example_answer || "").slice(0, 8000),
+      headline: s(out.headline, 400),
+      criteria: Array.isArray(out.criteria) ? out.criteria.slice(0, 6).map((c: any) => ({ name: s(c?.name, 80), band: classes.includes(c?.band) ? c.band : "", comment: s(c?.comment, 800) })) : [],
+      strengths: Array.isArray(out.strengths) ? out.strengths.slice(0, 4).map((x: any) => s(x, 300)) : [],
+      changes: Array.isArray(out.changes) ? out.changes.slice(0, 3).map((c: any) => ({ change: s(c?.change || c, 1200), why: s(c?.why, 800) })) : [],
+      lost: Array.isArray(out.lost) ? out.lost.slice(0, 6).map((l: any) => ({ quote: s(l?.quote, 400), issue: s(l?.issue, 400), fix: s(l?.fix, 400) })).filter((l: any) => l.issue) : [],
+      model_plan: Array.isArray(out.model_plan) ? out.model_plan.slice(0, 7).map((x: any) => s(x, 300)).filter(Boolean) : [],
+      model_paragraph: s(out.model_paragraph, 2500),
+      rewrite: out.rewrite && typeof out.rewrite === "object" ? { quote: s(out.rewrite.quote, 300), task: s(out.rewrite.task, 400) } : null,
+      cards: cards.length,
       rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : "UCL-wide",
     };
     // with attachments, keep a typed copy of what was marked so history shows the answer
     let stored = answer;
     if (hasAtt) {
-      const transcript = String(out.transcript || "").trim().slice(0, 16000);
+      const transcript = s(out.transcript, 16000);
       stored = [answer, `[Attached: ${att.summary}]`, transcript].filter(Boolean).join("\n\n");
     }
-    const { data: saved } = await service.from("mark_attempts").insert({ user_id: user.id, code, question_id: questionId, question, answer: stored, minutes, result }).select("id, created_at").single();
-    return json(200, { ...result, answer: stored, id: saved?.id, created_at: saved?.created_at, left: take.left, tier: take.tier });
+    const { data: saved } = await service.from("mark_attempts").insert({ user_id: user.id, code, question_id: questionId, question, answer: stored, minutes, result, topic_pos: topicPos, tier: questionId ? tier : "own", prev_id: prev ? prev.id : null }).select("id, created_at").single();
+    // flashcards from what was missed; they show up in "Due today" on the dashboard
+    if (cards.length) {
+      EdgeRuntime.waitUntil(service.from("review_cards").upsert(cards.map((c: any) => ({ user_id: user.id, code, topic_pos: topicPos, front: c.front, back: c.back, attempt_id: saved?.id || null })), { onConflict: "user_id,code,front", ignoreDuplicates: true }));
+    }
+    return json(200, { ...result, answer: stored, id: saved?.id, created_at: saved?.created_at, topic_pos: topicPos, tier: questionId ? tier : "own", prev, left: take.left, plan: take.tier });
   }
 
   return json(400, { code: "invalid_request", message: "Unknown action." });

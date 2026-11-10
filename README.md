@@ -29,6 +29,14 @@ Study website for UK university students: pick your uni, degree and modules, the
 - Play, Campus, Plan and friend groups are hidden from the app navigation (code kept).
 - Attachments (Nov 2026): in the dashboard, Practice & marking answers and Tutor questions can include files, photos and videos (`site/assets/attach.js`). Limits: 10 photos, 2 videos, 5 files (PDF, .docx, .txt/.md); only shown if exceeded. The browser resizes photos to JPEG (1568px), turns each video into 3–8 still frames (no sound), and extracts text from .docx. The server checks the same limits in `supabase/functions/{marker,ai}/attach.ts` (keep the two copies identical). The marker accepts an answer that is only photos/attachments and saves a typed transcript in `mark_attempts.answer`; tutor attachments count as tutor actions (1 unit per 5 images, 1 per PDF), not as Assess markings. Attachments live in memory while the dashboard is open (kept across tabs, removed with ×; not kept after a reload).
 
+## Study area (Nov 2026)
+- **Module Map** (`site/assets/mark.js`, module page): each module is split into 6–10 topics (`module_topics`). Every topic has 2 Foundation quick-recall questions (self-checked, with a short answer; "Not yet" adds a flashcard), 1 Exam-style and 1 First-class stretch question (`module_questions.tier`, `topic_pos`; `steps` holds a worked solution revealed one step at a time for quantitative questions). Students rate each topic red/amber/green (`topic_ratings`) and see a mastery % worked out in `site/assets/study.js`.
+- Questions are written by the `marker` function the first time a signed-in student opens a module (one call, about 4p, inside the daily £ budget, max 15 new modules per student per day; `question_jobs` stops two students triggering it twice). The page polls until the topics appear.
+- Background batch: `POST marker {action:"warm", code}` with header `x-warm-key: $WARM_KEY` writes a module with no user. Its spend goes to `ai_batch_spend`, not `ai_spend`, so it never uses up students' daily budget.
+- **Marking** now also returns `lost` (exact quotes from the answer with why/fix, highlighted in the "Where you lost marks" tab), `model_plan`, `model_paragraph` (replaces the full example answer), `rewrite` (the paragraph to rewrite first) and 2–4 flashcards saved to `review_cards`. Resubmitting a rewrite sends `prev_id`, and the result shows the change in mark.
+- **Today** (dashboard home, `site/assets/dashboard.js`): exam countdowns (`my_modules.exam_date`, set on the module page), the next question to do (nearest exam → weakest topic → recall first if under 25%), flashcards due (light SM-2 in `study.js`), and mastery per module.
+- Tables and RPCs: `supabase/sql/study.sql`.
+
 ## Landing page (web/)
 
 The home page is a Next.js app in `web/` (Tailwind CSS, React Three Fiber, GSAP ScrollTrigger, Framer Motion), exported as static files.

@@ -12,7 +12,8 @@
     { id: 'history', label: 'Marked answers', path: '/dashboard/history', icon: 'M5 4h14v16H5zM8 9h8M8 13h8M8 17h5' },
     { id: 'account', label: 'Account', path: '/dashboard/account', icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0' }
   ];
-  var S = { session: null, profile: undefined, mods: [], attempts: null, plan: null, courses: null, depts: null, setup: null, tutorBusy: false, histOpen: {}, histMod: '' };
+  var S = { session: null, profile: undefined, mods: [], attempts: null, plan: null, courses: null, depts: null, setup: null, tutorBusy: false, histOpen: {}, histMod: '', today: null, cards: null, card: { i: 0, show: false } };
+  var ST = window.UnizyStudy;
   var $ = function (id) { return document.getElementById(id); };
 
   // ---------- helpers ----------
@@ -117,12 +118,12 @@
 
   // ---------- data ----------
   function loadMods() {
-    return rest('my_modules?select=code,added_at,ucl_modules(code,title,level,credits,department,summary)&order=added_at.asc').then(function (rows) {
-      S.mods = (rows || []).map(function (r) { return r.ucl_modules || { code: r.code, title: r.code }; });
+    return rest('my_modules?select=code,added_at,exam_date,ucl_modules(code,title,level,credits,department,summary)&order=added_at.asc').then(function (rows) {
+      S.mods = (rows || []).map(function (r) { var m = r.ucl_modules || { code: r.code, title: r.code }; m.exam_date = r.exam_date || null; return m; });
     });
   }
   function loadAttempts() {
-    return rest('mark_attempts?select=id,code,question,question_id,answer,minutes,result,real_mark,created_at&order=created_at.desc&limit=300').then(function (rows) { S.attempts = rows || []; return S.attempts; });
+    return rest('mark_attempts?select=id,code,question,question_id,topic_pos,tier,answer,minutes,result,real_mark,created_at&order=created_at.desc&limit=300').then(function (rows) { S.attempts = rows || []; return S.attempts; });
   }
   function loadPlan() {
     return rest('rpc/my_plan', { method: 'POST', body: '{}' }).then(function (d) { S.plan = d; }).catch(function () { S.plan = null; });
@@ -141,7 +142,12 @@
   window.MarkHooks = {
     myModules: function () { return S.mods; },
     has: hasMod,
-    toggle: function (mod) { return hasMod(mod.code) ? removeMod(mod.code) : addMods([mod]); }
+    toggle: function (mod) { return hasMod(mod.code) ? removeMod(mod.code) : addMods([mod]); },
+    examDate: function (code) { var m = S.mods.filter(function (x) { return x.code === code; })[0]; return m ? m.exam_date : null; },
+    setExamDate: function (code, date) {
+      return rest('my_modules?code=eq.' + encodeURIComponent(code), { method: 'PATCH', prefer: 'return=minimal', body: { exam_date: date || null } })
+        .then(function () { S.mods.forEach(function (m) { if (m.code === code) m.exam_date = date || null; }); });
+    }
   };
 
   // ---------- sidebar ----------
@@ -282,34 +288,122 @@
     if (e.target.id === 'db-cname') S.setup.name = e.target.value;
   });
 
-  // ---------- Home ----------
+  // ---------- Home: Today ----------
   function stats(list) {
     var marks = list.map(function (a) { return mid(a.result); }).filter(function (x) { return x != null; });
     var avg = marks.length ? marks.reduce(function (s, x) { return s + x; }, 0) / marks.length : null;
     return { n: list.length, avg: avg, best: marks.length ? Math.max.apply(null, marks) : null };
   }
+  // everything Today needs for the student's modules: topics, questions, recall results, ratings, due flashcards
+  function loadToday() {
+    var codes = S.mods.map(function (m) { return m.code; });
+    var cards = rest('review_cards?due=lte.' + ST.today() + '&select=id,code,topic_pos,front,back,interval_days,ease,reps,due&order=due.asc,created_at.asc&limit=60').catch(function () { return []; });
+    if (!codes.length) return Promise.all([cards]).then(function (r) { S.today = { topics: [], qs: [], recalls: [], ratings: [] }; S.cards = r[0] || []; });
+    var inList = 'code=in.(' + codes.join(',') + ')';
+    return Promise.all([
+      rest('module_topics?' + inList + '&select=code,position,title&order=code.asc,position.asc'),
+      rest('module_questions?' + inList + '&select=id,code,tier,topic_pos,question,kind&order=position.asc'),
+      rest('recall_log?select=code,question_id,topic_pos,got,created_at&order=created_at.desc&limit=1000').catch(function () { return []; }),
+      rest('topic_ratings?select=code,topic_pos,rating').catch(function () { return []; }),
+      cards
+    ]).then(function (r) { S.today = { topics: r[0] || [], qs: r[1] || [], recalls: r[2] || [], ratings: r[3] || [] }; S.cards = r[4] || []; });
+  }
+  function modData(code) {
+    var t = S.today || { topics: [], qs: [], recalls: [], ratings: [] };
+    var by = function (x) { return x.code === code; };
+    return { topics: t.topics.filter(by), questions: t.qs.filter(by), recalls: t.recalls.filter(by), attempts: (S.attempts || []).filter(by), ratings: t.ratings.filter(by) };
+  }
+  function masteryOf(code) { var d = modData(code); return d.topics.length ? ST.moduleMastery(d.topics, d) : null; }
+  // the one question to do next: the nearest exam (or weakest module), its weakest topic, and the right level for it
+  function nextUp() {
+    var mods = S.mods.filter(function (m) { return masteryOf(m.code); });
+    if (!mods.length) return S.mods.length ? { none: true, mod: S.mods[0] } : null;
+    mods.sort(function (a, b) {
+      var da = ST.daysUntil(a.exam_date), db = ST.daysUntil(b.exam_date);
+      da = da != null && da >= 0 ? da : 1e4; db = db != null && db >= 0 ? db : 1e4;
+      return da - db || masteryOf(a.code).pct - masteryOf(b.code).pct;
+    });
+    var mod = mods[0], d = modData(mod.code); d.qById = ST.index(d.questions);
+    var rg = {}; d.ratings.forEach(function (r) { rg[r.topic_pos] = r.rating; });
+    var best = null;
+    d.topics.forEach(function (t) {
+      var ms = ST.topicMastery(t.position, d), score = ms.pct + (rg[t.position] === 'r' ? -15 : rg[t.position] === 'a' ? -5 : rg[t.position] === 'g' ? 10 : 0);
+      if (!best || score < best.score) best = { t: t, ms: ms, score: score };
+    });
+    var t = best.t, tq = d.questions.filter(function (q) { return q.topic_pos === t.position; });
+    var days = ST.daysUntil(mod.exam_date);
+    var why = days != null && days >= 0 ? 'Nearest exam · ' + ST.countdown(mod.exam_date) : rg[t.position] === 'r' ? 'You rated this topic red' : best.ms.started ? 'Your weakest topic in ' + mod.code : 'Next topic to start in ' + mod.code;
+    var done = {}; (S.attempts || []).forEach(function (a) { if (a.question_id) done[a.question_id] = true; });
+    var latest = {}; d.recalls.forEach(function (r) { if (!(r.question_id in latest)) latest[r.question_id] = r.got; });
+    var rec = tq.filter(function (q) { return q.tier === 'foundation' && latest[q.id] !== true; });
+    if (best.ms.pct < 25 && rec.length) return { mod: mod, topic: t, why: why, recall: rec.length, href: '/dashboard/practice/' + mod.code + '?t=' + t.position };
+    var pick = tq.filter(function (q) { return q.tier === 'exam' && !done[q.id]; })[0] || tq.filter(function (q) { return q.tier === 'first' && !done[q.id]; })[0] || tq.filter(function (q) { return q.tier === 'first'; })[0] || tq.filter(function (q) { return q.tier === 'exam'; })[0];
+    if (!pick) return { mod: mod, topic: t, why: why, href: '/dashboard/practice/' + mod.code + '?t=' + t.position };
+    return { mod: mod, topic: t, why: why, q: pick, href: '/dashboard/practice/' + mod.code + '?q=' + pick.id + '&v=answer' };
+  }
+  function nextHtml(n) {
+    if (!n) return '<div class="td-card td-next"><span class="td-why">Start here</span><h2>Add your modules</h2><p class="sub">Pick the modules you’re taking and Today will tell you what to practise next.</p><a class="btn primary" href="/dashboard/practice">Find a module</a></div>';
+    if (n.none) return '<div class="td-card td-next"><span class="td-why">Start here</span><h2>Open ' + esc(n.mod.code) + '</h2><p class="sub">Open ' + esc(n.mod.title) + ' to see its Module Map: every topic, with practice questions at three levels.</p><a class="btn primary" href="/dashboard/practice/' + n.mod.code + '">Open ' + esc(n.mod.code) + '</a></div>';
+    var html = '<div class="td-card td-next"><span class="td-why">' + esc(n.why) + '</span><h2>Next up: ' + esc(n.topic.title) + '</h2><p class="sub">' + esc(n.mod.code) + ' ' + esc(n.mod.title) + '</p>';
+    if (n.recall) html += '<p class="q">Warm up with ' + n.recall + ' quick-recall question' + (n.recall === 1 ? '' : 's') + ' on this topic, then try the exam-style question.</p><a class="btn primary" href="' + n.href + '">Start quick recall</a>';
+    else if (n.q) html += '<p class="q">' + esc(String(n.q.question).slice(0, 260)) + (String(n.q.question).length > 260 ? '…' : '') + '</p><a class="btn primary" href="' + n.href + '">' + (n.q.tier === 'first' ? 'Try the First-class question' : 'Answer this') + '</a>';
+    else html += '<a class="btn primary" href="' + n.href + '">Open the topic</a>';
+    return html + '</div>';
+  }
+  function cardsHtml() {
+    var list = S.cards;
+    var html = '<div class="td-card td-cards" id="td-cards"><h2>Flashcards due</h2>';
+    if (list === null) return html + '<p class="sub">Loading…</p></div>';
+    if (!list.length) return html + '<p class="sub">Nothing due today.</p><p class="mk-fine">Every mark you lose and every quick-recall question you miss becomes a flashcard here, then comes back just before you’d forget it.</p></div>';
+    var c = list[S.card.i] || list[0], m = S.mods.filter(function (x) { return x.code === c.code; })[0];
+    html += '<p class="sub">' + list.length + ' left today</p><div class="td-fc"><span class="meta">' + esc(c.code) + (m ? ' · ' + esc(m.title) : '') + '</span><div class="front">' + esc(c.front) + '</div>' +
+      (S.card.show ? '<div class="back">' + esc(c.back) + '</div><div class="td-grades"><button type="button" class="btn line small" data-grade="again">Again</button><button type="button" class="btn dark small" data-grade="good">Good</button><button type="button" class="btn line small" data-grade="easy">Easy</button></div>'
+        : '<div><button type="button" class="btn dark small" data-flip="1">Show answer</button></div>') + '</div></div>';
+    return html;
+  }
+  function gradeCard(grade) {
+    var c = S.cards[S.card.i]; if (!c) return;
+    var n = ST.schedule(c, grade);
+    S.cards.splice(S.card.i, 1);
+    if (grade === 'again') S.cards.push(Object.assign({}, c, n)); // see it again before the end of today's session
+    if (S.card.i >= S.cards.length) S.card.i = 0;
+    S.card.show = false;
+    track('card_' + grade);
+    rest('review_cards?id=eq.' + c.id, { method: 'PATCH', prefer: 'return=minimal', body: n }).catch(function () {});
+    var box = $('td-cards'); if (box) box.outerHTML = cardsHtml();
+  }
+  function progressHtml() {
+    if (!S.mods.length) return '';
+    return '<section class="db-sec"><div class="mk-row"><h2>Your modules</h2><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div><ul class="td-prog">' + S.mods.map(function (m) {
+      var ms = masteryOf(m.code), cd = m.exam_date ? ST.countdown(m.exam_date) : '';
+      return '<li><div class="t"><b>' + esc(m.code) + '</b><span>' + esc(m.title) + '</span></div><div class="p">' + (ms ? '<span>' + ms.pct + '% mastered · ' + ms.started + '/' + ms.total + ' topics</span><span class="mk-bar"><i style="width:' + ms.pct + '%"></i></span>' : '<span>' + (S.today ? 'Not opened yet' : '…') + '</span>') + (cd ? '<span>' + esc(cd) + '</span>' : '') + '</div><div class="a"><a class="btn dark small" href="/dashboard/practice/' + m.code + '">Practise</a><a class="btn line small" href="/dashboard/tutor?m=' + m.code + '">Tutor</a></div></li>';
+    }).join('') + '</ul></section>';
+  }
   function renderHome() {
     var el = $('db-home');
     var draw = function () {
       var a = S.attempts || [], st = stats(a), p = S.profile || {};
-      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Your dashboard') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : ''].filter(Boolean).join(' · ') || 'UCL') + planChip() + '</p></header>';
-      html += '<div class="db-stats"><div><b>' + st.n + '</b><span>answers marked</span></div><div><b>' + (st.avg != null ? clsOf(st.avg) : '–') + '</b><span>average class' + (st.avg != null ? ' (' + Math.round(st.avg) + ')' : '') + '</span></div><div><b>' + (st.best != null ? Math.round(st.best) : '–') + '</b><span>best mark</span></div><div><b>' + S.mods.length + '</b><span>modules</span></div></div>';
-      if (!S.mods.length) html += '<section class="mk-card"><h2>Add your modules</h2><p>Pick the modules you’re taking and they’ll stay in your sidebar.</p><a class="btn primary" href="/dashboard/practice">Find a module</a></section>';
-      else {
-        html += '<section class="db-sec"><div class="mk-row"><h2>Your modules</h2><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div><ul class="db-cards">' + S.mods.map(function (m) {
-          var mine = a.filter(function (x) { return x.code === m.code; }), last = mine[0] && mine[0].result;
-          return '<li class="db-card"><span class="db-mcode">' + esc(m.code) + '</span><h3>' + esc(m.title) + '</h3><p class="db-cmeta">' + (mine.length ? mine.length + ' marked · latest <span class="mk-cls ' + clsSlug(last.class) + '">' + esc(last.class) + '</span>' : 'Not practised yet') + '</p><div class="db-cact"><a class="btn dark small" href="/dashboard/practice/' + m.code + '">Practise</a><a class="btn line small" href="/dashboard/tutor?m=' + m.code + '">Ask tutor</a></div></li>';
-        }).join('') + '</ul></section>';
-      }
+      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : ''].filter(Boolean).join(' · ') || 'UCL') + planChip() + '</p></header>';
+      var exams = S.mods.filter(function (m) { var d = ST.daysUntil(m.exam_date); return d != null && d >= 0; }).sort(function (x, y) { return ST.daysUntil(x.exam_date) - ST.daysUntil(y.exam_date); });
+      if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
+      else if (S.mods.length) html += '<p class="db-more" style="margin:0 0 14px">Add your exam dates on each module’s page for a countdown here.</p>';
+      html += '<div class="td-grid">' + (S.today ? nextHtml(nextUp()) : '<div class="td-card td-next"><span class="td-why">Today</span><h2>Finding your next question…</h2></div>') + cardsHtml() + '</div>';
+      html += '<div class="db-stats"><div><b>' + st.n + '</b><span>answers marked</span></div><div><b>' + (st.avg != null ? clsOf(st.avg) : '–') + '</b><span>average class' + (st.avg != null ? ' (' + Math.round(st.avg) + ')' : '') + '</span></div><div><b>' + (st.best != null ? Math.round(st.best) : '–') + '</b><span>best mark</span></div><div><b>' + (S.cards ? S.cards.length : '–') + '</b><span>cards due</span></div></div>';
+      html += progressHtml();
       if (a.length) {
         html += '<section class="db-sec"><div class="mk-row"><h2>Recent marked answers</h2><a class="btn line small" href="/dashboard/history">See all</a></div><ul class="mk-hist">' + a.slice(0, 5).map(histRow).join('') + '</ul></section>';
       }
       html += '<a class="db-play-banner" href="/dashboard/play"><span class="ic" aria-hidden="true">☕</span><span class="tx"><b>Done for today? Unwind.</b><span>Easy questions reveal the letters of today’s hidden word. Can you guess it?</span></span><span class="go">Play →</span></a>';
-      html += '<p class="db-more">Looking for notes and flashcards? <a href="/app">Open the study tools</a>.</p>';
       el.innerHTML = html;
     };
     draw();
-    loadAttempts().then(function () { if (tabOf(location.pathname) === 'home') draw(); }).catch(function () {});
+    el.onclick = function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
+      if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
+    };
+    Promise.all([loadAttempts().catch(function () {}), loadToday().catch(function () { S.today = S.today || { topics: [], qs: [], recalls: [], ratings: [] }; S.cards = S.cards || []; })])
+      .then(function () { if (tabOf(location.pathname) === 'home') draw(); });
   }
   function planChip() {
     var p = S.plan; if (!p) return '';
@@ -354,6 +448,8 @@
         var body = on ? '<div class="db-hbody"><p class="mk-headline">' + esc(r.headline || '') + '</p>' +
           (r.criteria && r.criteria.length ? '<ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>' : '') +
           (r.changes && r.changes.length ? '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>' : '') +
+          (r.lost && r.lost.length ? '<h3>Where you lost marks</h3><ol class="mk-lostlist">' + r.lost.map(function (l, i) { return '<li><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>' : '') +
+          (r.model_plan && r.model_plan.length ? '<details class="db-det"><summary>A First-class plan</summary><ul class="mk-plan">' + r.model_plan.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' + (r.model_paragraph ? '<div class="mk-prose mk-modelp">' + paras(r.model_paragraph) + '</div>' : '') + '</details>' : '') +
           '<details class="db-det"><summary>Your answer</summary><div class="mk-prose">' + paras(x.answer || '') + '</div></details>' +
           (r.example_answer ? '<details class="db-det"><summary>Example First-class answer</summary><div class="mk-prose">' + paras(r.example_answer) + '</div></details>' : '') +
           '<div class="mk-row start"><a class="btn dark small" href="/dashboard/practice/' + x.code + (x.question_id ? '?q=' + x.question_id + '&v=answer' : '') + '">Try it again</a><button type="button" class="btn line small" data-hdel="' + x.id + '">Delete</button></div></div>' : '';
