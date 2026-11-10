@@ -38,6 +38,9 @@ Keep to these limits:
 
 ## Backlog (top = next)
 
+> 10-11 Nov: a live session is reworking the facades in city.js (windows with depth and rooms behind them) and the UCL library interior (scanned CC0 models). Until that lands on main, take items that don't touch facade shading or library.js: the Thames, heights from LiDAR, trees, or street furniture.
+
+
 - [ ] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
   - use OSM `shop=*` and `amenity=*` nodes inside or next to a footprint to flag the building;
   - draw glazed fronts with fascia bands and warm interiors.
