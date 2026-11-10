@@ -86,13 +86,13 @@ function facade(fam, T) {
   m.userData.patch = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec4 aB; varying vec4 vB; varying vec2 vW; varying vec2 vTexUv;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvB = aB; vW = uv; vTexUv = uv * uTexSc;')
+      .replace('#include <common>', '#include <common>\nattribute vec4 aB; varying vec4 vB; varying vec2 vW; varying vec2 vTexUv; varying vec3 vWN;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvB = aB; vW = uv; vTexUv = uv * uTexSc; vWN = normal;')
       .replace('#include <common>', '#include <common>\nuniform float uTexSc;');
     const N = STYLES.length;
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec4 vB; varying vec2 vW; varying vec2 vTexUv;
+        varying vec4 vB; varying vec2 vW; varying vec2 vTexUv; varying vec3 vWN;
         uniform float uFloor[${N}], uBay[${N}], uWinW[${N}], uWinH[${N}], uSash[${N}], uLit[${N}], uGlassR[${N}];
         uniform vec3 uFrame[${N}];
         uniform float uHasTex;
@@ -132,9 +132,60 @@ function facade(fam, T) {
           gl *= 1.0 - uSash[st] * step(abs(fy - 0.5), 0.014);
           float aa = clamp(1.0 - max(fwidth(bu), fwidth(yy / flo)) * 2.0, 0.0, 1.0);
           float hs = fh(vec2(floor(bu), fl) + seed);
-          vec3 glass = mix(vec3(0.026, 0.03, 0.036), vec3(0.1, 0.095, 0.085), step(0.8, hs));
-          // net curtains and blinds in some sash windows
-          glass = mix(glass, vec3(0.33, 0.31, 0.28), step(0.9, fh(vec2(hs, fl))) * uSash[st] * step(fy, 0.5));
+          float bLit = step(0.45, fract(seed * 4.5313));
+          float roomLit = step(1.0 - uLit[st], hs) * bLit;
+          // ---- the room behind each window (interior mapping): follow the view ray into a box room the width of
+          // the bay and one storey high, and shade whichever wall, floor or ceiling it reaches
+          vec3 glass = vec3(0.03);
+          vec3 roomE = vec3(0.0);
+          if (gl * aa > 0.001) {
+            vec3 Vd = normalize(vAtmoW - cameraPosition);
+            vec3 Nw = normalize(vWN);
+            vec3 Tw = vec3(-Nw.z, 0.0, Nw.x);
+            float du = dot(Vd, Tw), dv = Vd.y, dn = max(-dot(Vd, Nw), 0.06);
+            float rw = wl / nb, rh = flo, rd = 4.5 + 4.0 * fh(vec2(hs, 7.1));
+            float px = fx * rw, py = fy * rh;
+            float tx = du > 0.0 ? (rw - px) / max(du, 1e-4) : px / max(-du, 1e-4);
+            float ty = dv > 0.0 ? (rh - 0.15 - py) / max(dv, 1e-4) : py / max(-dv, 1e-4);
+            float tz = rd / dn;
+            float tt = min(min(tx, ty), tz);
+            vec3 hp = vec3(px + du * tt, py + dv * tt, dn * tt);
+            float rk = fh(vec2(hs, 3.3));
+            vec3 wallC = mix(vec3(0.58, 0.53, 0.46), vec3(0.66, 0.65, 0.62), rk);
+            if (st == 3 || st == 5) wallC = mix(vec3(0.62, 0.63, 0.64), vec3(0.5, 0.52, 0.55), rk);
+            vec3 rc = wallC;
+            float isCeil = 0.0;
+            if (tt == ty && dv > 0.0) { rc = vec3(0.8, 0.78, 0.74); isCeil = 1.0; }
+            else if (tt == ty) { rc = mix(vec3(0.3, 0.21, 0.14), vec3(0.42, 0.4, 0.38), step(0.5, rk)); }
+            else if (tt == tz) {
+              rc = wallC * 0.9;
+              // furniture against the back wall: a bookcase or a desk, a picture or a door
+              float k2 = fh(vec2(hs, 9.7));
+              float x0 = 0.15 + 0.3 * k2;
+              rc *= 1.0 - 0.55 * step(x0 * rw, hp.x) * step(hp.x, (x0 + 0.35) * rw) * step(hp.y, (k2 > 0.5 ? 2.0 : 0.85));
+              rc = mix(rc, vec3(0.2, 0.17, 0.14), step(0.7, k2) * step(0.62 * rw, hp.x) * step(hp.x, 0.86 * rw) * step(1.3, hp.y) * step(hp.y, 2.0));
+            }
+            // light falls off away from the window; lit rooms glow from a ceiling light near the middle
+            float dep = clamp(hp.z / rd, 0.0, 1.0);
+            rc *= mix(1.0, 0.4, dep);
+            float lamp = exp(-dot(hp.xz - vec2(rw * 0.5, rd * 0.45), hp.xz - vec2(rw * 0.5, rd * 0.45)) * 0.08);
+            // curtains or blinds in some windows (lit from behind when the room is on)
+            float cur = 0.0;
+            float ck = fh(vec2(hs, fl + 5.0));
+            if (ck > 0.62) { float cw = 0.12 + 0.18 * fh(vec2(ck, 1.0)); float wx = (fx - (0.5 - ww * 0.5)) / ww; cur = step(wx, cw) + step(1.0 - cw, wx); }
+            if (ck < 0.18) { float wy = (fy - (0.5 - wh * 0.5)) / wh; cur = step(1.0 - 0.25 - 0.5 * ck, wy); }
+            cur = clamp(cur, 0.0, 1.0);
+            vec3 curC = mix(vec3(0.62, 0.55, 0.44), vec3(0.36, 0.14, 0.12), step(0.5, fh(vec2(ck, 2.0))));
+            // the window reveal throws the top of the glass into shadow
+            float rev = 1.0 - 0.45 * smoothstep(0.5 + wh * 0.5 - 0.09, 0.5 + wh * 0.5 - 0.035, fy);
+            glass = mix(rc * 0.11, curC * 0.16, cur) * rev;
+            roomE = roomLit * mix(rc * (0.35 + 1.4 * lamp + 0.8 * isCeil), curC * 0.9, cur) * rev;
+          }
+          // sills and lintels in stone or render on the older brick fronts
+          float sillT = 0.5 - wh * 0.5, linT = 0.5 + wh * 0.5;
+          float band = uSash[st] * step(0.5 - ww * 0.5 - 0.03, fx) * step(fx, 0.5 + ww * 0.5 + 0.03) * step(gnd, yy) * step(yy, bh - 1.1) * step(3.2, wl)
+                     * (step(sillT - 0.045, fy) * step(fy, sillT) + (st == 0 || st == 4 ? step(linT, fy) * step(fy, linT + 0.05) : 0.0));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.83, 0.76), band * aa);
           vec3 pc = mix(diffuseColor.rgb, uFrame[st], frameM);
           pc = mix(pc, glass, gl);
           float avgW = ww * wh * 0.75;
@@ -142,10 +193,10 @@ function facade(fam, T) {
           diffuseColor.rgb = mix(avgc, pc, aa);
           fWin = gl * aa + avgW * 0.5 * (1.0 - aa);
           fGR = uGlassR[st];
-          float bLit = step(0.45, fract(seed * 4.5313));
-          fLit = (step(1.0 - uLit[st], hs) * gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6) * bLit;
-          litC = mix(vec3(1.0, 0.66, 0.36), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, seed))));
+          litC = mix(vec3(1.0, 0.7, 0.42), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, seed))));
           litC *= 0.6 + 0.8 * fh(vec2(fl, seed + 1.0));
+          fLit = gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6 * bLit;
+          roomE = mix(vec3(1.0), roomE, aa);
           // coping band and parapet shadow at the top, plinth and grime near the pavement
           diffuseColor.rgb *= 1.0 - 0.2 * step(bh - 0.8, yy) * step(yy, bh - 0.5);
           diffuseColor.rgb = mix(diffuseColor.rgb, uFrame[st] * 0.9, step(bh - 0.45, yy) * (1.0 - step(3.0, float(st)) * 0.0) * 0.6);
@@ -154,7 +205,7 @@ function facade(fam, T) {
           diffuseColor.rgb *= 1.0 - 0.08 * uSash[st] * step(0.5 - ww*0.5, fx) * step(fx, 0.5 + ww*0.5) * smoothstep(0.5 - wh*0.5, 0.0, fy) * step(gnd, yy);
         }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, fGR, fWin);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * 2.4;');
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * roomE * 2.6;');
   };
   return atmo(m);
 }

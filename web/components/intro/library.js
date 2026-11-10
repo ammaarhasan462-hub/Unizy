@@ -172,7 +172,8 @@ export function globeTex() {
 // ------------------------------------------------------------------ build
 export function furnishLibrary(lib, { mobile }) {
   const r = rng(2026);
-  const out = { lights: [] };
+  // proc: the hand-built pieces a scanned model can replace; place: where they stand (see realism.js)
+  const out = { lights: [], proc: { chairs: [], people: [], chand: [], busts: [], paintings: [], stacks: [] }, place: { chairs: [], chand: [], busts: [], paintings: [], F } };
   const F = 1.21; // floor
   const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); lib.add(m); return m; };
   const brass = plainMaterial({ color: '#b58a3c', roughness: 0.28, metalness: 1 }, 'brass');
@@ -199,6 +200,7 @@ export function furnishLibrary(lib, { mobile }) {
   const chZ = [-11, -21, -31, -41];
   chZ.forEach((cz) => {
     const cy = 12.4;
+    out.place.chand.push([0, cy, cz]);
     stems.push(M(0, cy + 0.2, cz, 0.06, 6.2, 0.06));
     [[1.5, 0], [0.95, 0.75]].forEach(([rad, dy], tier) => {
       rings.push(M(0, cy + dy, cz, rad, rad, rad, Math.PI / 2));
@@ -219,11 +221,12 @@ export function furnishLibrary(lib, { mobile }) {
     lib.add(pl);
     out.lights.push([pl, 85]);
   });
-  addInst(lib, new THREE.TorusGeometry(1, 0.025, 8, 48), brass, rings);
-  addInst(lib, limbGeo, brass, arms);
-  addInst(lib, new THREE.CylinderGeometry(1, 0.8, 1, 12), brass, cups);
-  addInst(lib, new THREE.SphereGeometry(1, 10, 8), flame, flames);
-  addInst(lib, new THREE.OctahedronGeometry(1, 0), crystalMat, crystals);
+  out.proc.chand.push(
+    addInst(lib, new THREE.TorusGeometry(1, 0.025, 8, 48), brass, rings),
+    addInst(lib, limbGeo, brass, arms),
+    addInst(lib, new THREE.CylinderGeometry(1, 0.8, 1, 12), brass, cups),
+    addInst(lib, new THREE.SphereGeometry(1, 10, 8), flame, flames),
+    addInst(lib, new THREE.OctahedronGeometry(1, 0), crystalMat, crystals));
   addInst(lib, new THREE.CylinderGeometry(1, 1, 1, 8).translate(0, 0.5, 0), brass, stems);
 
   // reading tables: chairs, students, laptops, books
@@ -271,6 +274,7 @@ export function furnishLibrary(lib, { mobile }) {
       for (const dz of [-2.7, -0.9, 0.9, 2.7]) {
         const cx = tx + s * 1.25, cz = tz + dz;
         const f = -s;
+        out.place.chairs.push([cx, cz, s]);
         chairSeat.push(M(cx, F + 0.46, cz, 0.44, 0.05, 0.44));
         chairBack.push(M(cx + s * 0.21, F + 0.75, cz, 0.04, 0.55, 0.42, 0, 0, s * 0.08));
         for (const lx of [-0.18, 0.18]) for (const lz of [-0.18, 0.18]) chairLeg.push(M(cx + lx, F + 0.22, cz + lz, 0.035, 0.46, 0.035));
@@ -296,20 +300,23 @@ export function furnishLibrary(lib, { mobile }) {
       limbs.push({ m: between(new THREE.Vector3(x, F + 1.46, z + side * 0.22), side > 0 && i % 3 === 0 ? new THREE.Vector3(x + s * 0.35, F + 1.9, z + 0.3) : new THREE.Vector3(x + s * 0.05, F + 0.9, z + side * 0.26), 0.045), c: cloth });
     }
   }
-  addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairSeat);
-  addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairBack);
-  addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairLeg);
+  out.proc.chairs.push(
+    addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairSeat),
+    addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairBack),
+    addInst(lib, new THREE.BoxGeometry(1, 1, 1), wood, chairLeg));
   const cloth = plainMaterial({ roughness: 0.85 }, 'cloth');
-  addInst(lib, new THREE.CapsuleGeometry(1, 1.2, 6, 16), cloth, torso, { color: true });
-  addInst(lib, new THREE.SphereGeometry(1, 20, 14), plainMaterial({ roughness: 0.6 }, 'skin'), heads, { color: true });
-  addInst(lib, new THREE.SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), plainMaterial({ roughness: 0.75 }, 'hair'), hair, { color: true });
-  addInst(lib, limbGeo, cloth, limbs, { color: true });
-  addInst(lib, limbGeo, cloth, legs, { color: true });
-  addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ color: '#141210', roughness: 0.4 }, 'shoe'), shoes);
+  out.proc.people.push(
+    addInst(lib, new THREE.CapsuleGeometry(1, 1.2, 6, 16), cloth, torso, { color: true }),
+    addInst(lib, new THREE.SphereGeometry(1, 20, 14), plainMaterial({ roughness: 0.6 }, 'skin'), heads, { color: true }),
+    addInst(lib, new THREE.SphereGeometry(1, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.62), plainMaterial({ roughness: 0.75 }, 'hair'), hair, { color: true }),
+    addInst(lib, limbGeo, cloth, limbs, { color: true }),
+    addInst(lib, limbGeo, cloth, legs, { color: true }),
+    addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ color: '#141210', roughness: 0.4 }, 'shoe'), shoes));
   addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ color: '#2f3237', roughness: 0.35, metalness: 0.7 }, 'laptop'), laptopB);
   addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ color: '#222', emissive: '#c9d8ff', emissiveIntensity: 0.9, roughness: 0.2 }, 'screen'), laptopS);
   addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ color: '#f0ebe0', roughness: 0.9 }, 'pages'), pagesL);
-  addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ roughness: 0.75 }, 'stack'), bookStack, { color: true });
+  out.proc.stacks.push(addInst(lib, new THREE.BoxGeometry(1, 1, 1), plainMaterial({ roughness: 0.75 }, 'stack'), bookStack, { color: true }));
+  out.place.stacks = bookStack.map((b) => b.m);
 
   // oil paintings in gilt frames, between the high windows and on the end wall
   const frameMat = plainMaterial({ color: '#a8823b', roughness: 0.32, metalness: 1 }, 'frame');
@@ -317,6 +324,8 @@ export function furnishLibrary(lib, { mobile }) {
     const p = add(new THREE.PlaneGeometry(w, h), plainMaterial({ map: paintingTex(kind, seed), roughness: 0.7 }, 'paint' + seed), x, y, z);
     p.rotation.y = ry;
     const g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = ry; lib.add(g);
+    out.proc.paintings.push(p, g);
+    out.place.paintings.push([x, y, z, w, h, ry, seed]);
     const t = 0.14;
     [[0, h / 2 + t / 2, w + 2 * t, t], [0, -h / 2 - t / 2, w + 2 * t, t], [w / 2 + t / 2, 0, t, h], [-w / 2 - t / 2, 0, t, h]].forEach(([fx, fy, fw, fh]) => {
       const b = new THREE.Mesh(new THREE.BoxGeometry(fw, fh, 0.1), frameMat); b.position.set(fx, fy, 0.02); g.add(b);
@@ -332,9 +341,11 @@ export function furnishLibrary(lib, { mobile }) {
     add(new THREE.BoxGeometry(0.62, 1.25, 0.62), marble, x, F + 0.62, z);
     add(new THREE.BoxGeometry(0.75, 0.08, 0.75), marble, x, F + 1.29, z);
     const sh = add(new THREE.SphereGeometry(1, 20, 12), marble, x, F + 1.48, z); sh.scale.set(0.27, 0.16, 0.16);
-    add(new THREE.CylinderGeometry(0.065, 0.075, 0.16, 12), marble, x, F + 1.6, z);
+    const nk = add(new THREE.CylinderGeometry(0.065, 0.075, 0.16, 12), marble, x, F + 1.6, z);
     const hd = add(new THREE.SphereGeometry(1, 24, 18), marble, x, F + 1.77, z); hd.scale.set(0.11, 0.135, 0.12);
     hd.rotation.y = (i % 2 ? 1 : -1) * 0.5;
+    out.proc.busts.push(sh, nk, hd);
+    out.place.busts.push([x, F + 1.33, z, (i % 2 ? 1 : -1) * 0.5]);
   });
 
   // rolling ladders against the lower shelves
@@ -373,6 +384,7 @@ export function furnishLibrary(lib, { mobile }) {
   tool.rotation.x = -Math.PI / 2;
 
   out.watch = addWatch(lib, -0.2, F + 0.756, -45.92, 0.12);
+  out.place.desk = [0, F + 0.752, -46.1];
   return out;
 }
 
