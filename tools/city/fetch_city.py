@@ -110,7 +110,7 @@ out tags geom qt;"""
 
 # ------------------------------------------------------------------ CC0 textures (Poly Haven)
 if not only or 'tex' in only:
-    want = {'brick': 4, 'roofing': 2, 'road': 2, 'concrete': 2, 'plaster-concrete': 2, 'grass': 2, 'cobblestone': 1, 'stone': 2}
+    want = {'brick': 2, 'concrete': 1, 'plaster-concrete': 2}
     picked = {}
     for cat, n in want.items():
         try:
@@ -137,6 +137,35 @@ if not only or 'tex' in only:
         except Exception as e:  # noqa: BLE001
             log(f'tex {cat} failed: {str(e)[:160]}')
             ok = False
+    # named searches across every texture: roof slates and tiles, smooth render, pale ashlar
+    try:
+        req = urllib.request.Request('https://api.polyhaven.com/assets?type=textures', headers=UA)
+        allt = json.loads(urllib.request.urlopen(req, timeout=60).read())
+        log('all textures:', len(allt))
+        terms = {'slate': 4, 'roof': 6, 'plaster': 4, 'stucco': 2, 'ashlar': 2, 'limestone': 2, 'sandstone': 2, 'paving': 3, 'grass': 2}
+        for term, n in terms.items():
+            hits = sorted([kv for kv in allt.items() if term in kv[0] or term in ' '.join(kv[1].get('tags', [])).lower() or term in (kv[1].get('name') or '').lower()], key=lambda kv: -kv[1].get('download_count', 0))
+            log(f'search {term}:', ', '.join(k for k, _ in hits[:12]))
+            for aid, meta in hits[:n]:
+                if aid in picked:
+                    continue
+                req = urllib.request.Request(f'https://api.polyhaven.com/files/{aid}', headers=UA)
+                files = json.loads(urllib.request.urlopen(req, timeout=60).read())
+                got = {}
+                for mp, key in (('Diffuse', 'diff'), ('nor_gl', 'nor')):
+                    try:
+                        u = files[mp]['1k']['jpg']['url']
+                    except KeyError:
+                        continue
+                    fn = f'{aid}_{key}_1k.jpg'
+                    data = urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=120).read()
+                    with open(os.path.join(OUT, 'tex', fn), 'wb') as f:
+                        f.write(data)
+                    got[key] = fn
+                picked[aid] = {'cat': term, 'name': meta.get('name'), 'dims_mm': meta.get('dimensions'), 'files': got}
+                log(f'tex {term}: {aid} {meta.get("name")} dims={meta.get("dimensions")}')
+    except Exception as e:  # noqa: BLE001
+        log(f'search failed: {str(e)[:160]}')
     with open(os.path.join(OUT, 'tex', 'index.json'), 'w') as f:
         json.dump(picked, f, indent=1)
 
