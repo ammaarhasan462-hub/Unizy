@@ -335,8 +335,8 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   const S = A.T;
   const floorM = surface(S.wood_floor, { rough: 0.35, key: 'rl-floor', nScale: 0.6 });
   [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set(35 / 1.1, 57.5 / 1.1));
-  const shelfM = surface(S.dark_wood, { color: '#a08070', rough: 0.55, tri: 0.45, key: 'rl-wood' });
-  const tableM = surface(S.wood_table_001, { color: '#d0b8a8', rough: 0.3, tri: 0.5, key: 'rl-table' });
+  const shelfM = surface(S.dark_wood, { color: '#a08070', rough: 0.55, tri: 0.9, key: 'rl-wood' });
+  const tableM = surface(S.wood_table_001, { color: '#b49c8c', rough: 0.32, tri: 1.1, key: 'rl-table' });
   const plasterM = surface(S.painted_plaster_wall, { color: '#ffffff', rough: 0.8, key: 'rl-plaster' });
   [plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(57.5 / 2, 17.6 / 2));
   // painted panelling: fielded panels between pilasters, a picture rail and a frieze under the cornice
@@ -505,7 +505,7 @@ export function upgradeHall(renderer, ucl, A, { mobile }) {
   const S = A.T;
   const floorM = surface(S.wood_floor, { rough: 0.32, key: 'rlh-floor', nScale: 0.6 });
   [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set((2 * P.hw) / 1.1, P.len / 1.1));
-  const deskM = surface(S.wood_table_001, { color: '#e0c8b0', rough: 0.35, tri: 0.6, key: 'rlh-desk' });
+  const deskM = surface(S.wood_table_001, { color: '#b89a80', rough: 0.4, tri: 2.2, key: 'rlh-desk' });
   const plasterM = surface(S.painted_plaster_wall, { color: '#e2dccf', rough: 0.9, key: 'rlh-plaster' });
   [plasterM.map, plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(20, 6));
   lib.traverse((o) => {
