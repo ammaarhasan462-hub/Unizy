@@ -336,7 +336,7 @@ export default function Intro() {
                   <div className="relative flex h-[104px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/45 p-4 text-left backdrop-blur-xl sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
                     <span className="opacity-40 grayscale">
                       <span className="block text-[22px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
-                      <span className="mt-1.5 block text-[11.5px] leading-snug text-white/65 sm:text-[12.5px]">{u.name}</span>
+                      <span className="mt-1.5 hidden text-[12.5px] leading-snug text-white/65 sm:block">{u.name}</span>
                     </span>
                     <span className="pointer-events-none absolute left-[-25%] right-[-25%] top-[19%] -translate-y-1/2 rotate-[-7deg] sm:top-[24%] sm:rotate-[-9deg] border-y border-[#d9b46c]/45 bg-[#07090d]/85 py-1.5 text-center font-mono text-[10.5px] uppercase tracking-[.34em] text-[#d9b46c] shadow-[0_8px_30px_rgba(0,0,0,.45)] sm:py-2 sm:text-[11px]">
                       In Progress
