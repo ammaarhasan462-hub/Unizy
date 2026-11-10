@@ -28,14 +28,16 @@ export function loadInterior() {
       t.anisotropy = 8;
       return t;
     }).catch(() => null);
-    const [models, surfs, hdr] = await Promise.all([
+    const city = (f) => tl.loadAsync(`/assets/city/tex/${f}`).then((t) => { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; }).catch(() => null);
+    const [models, surfs, hdr, stone] = await Promise.all([
       Promise.all(MODELS.map(model)),
       Promise.all(SURF.map(async (id) => ({ diff: await tex(id, 'diff'), nor: await tex(id, 'nor'), rough: await tex(id, 'rough') }))),
       new RGBELoader().loadAsync(`${BASE}ballroom_1k.hdr?v=${V}`).catch(() => null),
+      city('sandstone_blocks_05_diff_512.jpg'),
     ]);
     const m = {}; MODELS.forEach((id, i) => { m[id] = models[i]; });
     const T = {}; SURF.forEach((id, i) => { T[id] = surfs[i]; });
-    return { m, T, hdr };
+    return { m, T, hdr, stone };
   })();
   return cache;
 }
@@ -274,6 +276,48 @@ function blobTex() {
   });
 }
 
+// dressed stone on the hand-built exteriors: photo-scanned ashlar mapped in world space at true scale, its colour
+// taken from the building (Portland stone, brick) and its texture kept
+export function stoneExterior(root, tex, { skip = null, scale = 1 / 3 } = {}) {
+  if (!tex) return;
+  const done = new Set();
+  root.traverse((o) => {
+    if (skip && (o === skip || (o.parent && isUnder(o, skip)))) return;
+    if (!o.isMesh || !o.material || done.has(o.material)) return;
+    const m = o.material, k = (m.userData && m.userData.key) || '';
+    if (!/^(stone|stone2|colstone|facade|h-stone|h-brick|qt-|i-stone|i-brick)/.test(k)) return;
+    done.add(m);
+    const prev = m.userData.patch;
+    m.map = tex;
+    m.userData.key = k + '-ash';
+    m.customProgramCacheKey = () => 'atmo' + k + '-ash';
+    m.userData.patch = (shader) => {
+      if (prev) prev(shader);
+      shader.uniforms.uAsh = { value: scale };
+      shader.vertexShader = shader.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vAshN;')
+        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+          #ifdef USE_INSTANCING
+            vAshN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * objectNormal);
+          #else
+            vAshN = normalize(mat3(modelMatrix) * objectNormal);
+          #endif`);
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vAshN; uniform float uAsh;')
+        .replace('#include <map_fragment>', `#ifdef USE_MAP
+          {
+            vec3 w = pow(abs(vAshN), vec3(4.0)); w /= dot(w, vec3(1.0));
+            vec3 tx = texture2D(map, vAtmoW.zy * uAsh).rgb * w.x + texture2D(map, vAtmoW.xz * uAsh).rgb * w.y + texture2D(map, vAtmoW.xy * uAsh).rgb * w.z;
+            float tl = dot(tx, vec3(0.299, 0.587, 0.114));
+            diffuseColor.rgb *= mix(vec3(1.0), vec3(tl) * 1.9, 0.75);
+          }
+          #endif`);
+    };
+    m.needsUpdate = true;
+  });
+}
+function isUnder(o, root) { for (let p = o.parent; p; p = p.parent) if (p === root) return true; return false; }
+
 export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   const lib = ucl.lib, furn = ucl.furn;
   if (!lib || !furn || !furn.place) return null;
@@ -289,12 +333,37 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   [floorM.map, floorM.roughnessMap, floorM.normalMap].forEach((t) => t && t.repeat.set(35 / 1.1, 57.5 / 1.1));
   const shelfM = surface(S.dark_wood, { color: '#a08070', rough: 0.55, tri: 0.45, key: 'rl-wood' });
   const tableM = surface(S.wood_table_001, { color: '#d0b8a8', rough: 0.3, tri: 0.5, key: 'rl-table' });
-  const plasterM = surface(S.painted_plaster_wall, { color: '#3e6b55', rough: 0.85, key: 'rl-plaster' });
-  [plasterM.map, plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(57.5 / 2, 17.6 / 2));
+  const plasterM = surface(S.painted_plaster_wall, { color: '#ffffff', rough: 0.8, key: 'rl-plaster' });
+  [plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(57.5 / 2, 17.6 / 2));
+  // painted panelling: fielded panels between pilasters, a picture rail and a frieze under the cornice
+  plasterM.map = canvasTex(2048, 640, (ctx, W, H) => {
+    const r = rng(12);
+    ctx.fillStyle = '#284a3b'; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 26000; i++) { ctx.fillStyle = `rgba(${r() < 0.5 ? '0,0,0' : '200,230,210'},${r() * 0.05})`; ctx.fillRect(r() * W, r() * H, 1 + r() * 3, 1 + r() * 3); }
+    const bays = 19, bw = W / bays;
+    for (let b = 0; b < bays; b++) {
+      const x = b * bw;
+      // pilaster
+      ctx.fillStyle = '#2f5544'; ctx.fillRect(x, 0, bw * 0.12, H);
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x + bw * 0.12, 0, 3, H);
+      ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, 0, 2, H);
+      // two fielded panels
+      for (const [y0, y1] of [[H * 0.12, H * 0.46], [H * 0.54, H * 0.92]]) {
+        const px = x + bw * 0.22, pw = bw * 0.68;
+        ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 4; ctx.strokeRect(px, y0, pw, y1 - y0);
+        ctx.strokeStyle = 'rgba(210,235,220,.1)'; ctx.lineWidth = 2; ctx.strokeRect(px + 4, y0 + 4, pw - 8, y1 - y0 - 8);
+        ctx.strokeStyle = 'rgba(180,140,70,.35)'; ctx.lineWidth = 1.5; ctx.strokeRect(px + 9, y0 + 9, pw - 18, y1 - y0 - 18);
+      }
+    }
+    // frieze and picture rail
+    ctx.fillStyle = '#1f3b2f'; ctx.fillRect(0, 0, W, H * 0.07);
+    ctx.fillStyle = 'rgba(190,150,80,.45)'; ctx.fillRect(0, H * 0.07, W, 3); ctx.fillRect(0, H * 0.5, W, 3);
+    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fillRect(0, H * 0.5 + 3, W, 4);
+  });
   const leatherM = surface(S.brown_leather, { color: '#4f8a63', rough: 0.55, key: 'rl-leather' });
   const rugM = surface(S.painted_plaster_wall, { rough: 1, key: 'rl-rug', nScale: 0.9 });
   rugM.map = rugTex2();
-  const marbleM = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: marbleTex(), roughness: 0.16, color: '#f2efe8' }), { userData: { key: 'rl-marble' } }));
+  const marbleM = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: marbleTex(), roughness: 0.18, color: '#d6d0c4' }), { userData: { key: 'rl-marble' } }));
   const winTex = windowTex2();
   const winM = atmo(Object.assign(new THREE.MeshStandardMaterial({ map: winTex, emissiveMap: winTex, emissive: '#ffffff', emissiveIntensity: 0.95, transparent: true, roughness: 0.08, metalness: 0 }), { userData: { key: 'rl-win' } }));
   const legs = [];
@@ -343,7 +412,7 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
   sh.forEach((m, i) => shM.setMatrixAt(i, m));
   shM.frustumCulled = false; shM.renderOrder = 1;
   lib.add(shM); added.push(shM);
-  const poolM = new THREE.MeshBasicMaterial({ map: blob, color: new THREE.Color(1.0, 0.62, 0.3), transparent: true, opacity: 0.38, blending: THREE.AdditiveBlending, depthWrite: false });
+  const poolM = new THREE.MeshBasicMaterial({ map: blob, color: new THREE.Color(1.0, 0.58, 0.26), transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
   const pools = [];
   for (const x of [-11.5, -5, 5, 11.5]) for (let z = -11; z > -41; z -= 9.5) for (const lz of [-2.2, 0, 2.2]) pools.push(new THREE.Matrix4().compose(new THREE.Vector3(x, 2.032, z + lz), new THREE.Quaternion(), new THREE.Vector3(1.7, 1, 1.5)));
   pools.push(new THREE.Matrix4().compose(new THREE.Vector3(0.3, 1.966, -46.15), new THREE.Quaternion(), new THREE.Vector3(1.2, 1, 0.9)));
@@ -419,6 +488,6 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
     pm.dispose();
     A.hdr.dispose();
   }
-  ucl.dustK = 0.3;
+  ucl.dustK = 0.1;
   return { env, added };
 }
