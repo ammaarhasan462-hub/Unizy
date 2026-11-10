@@ -101,7 +101,7 @@ const GRADE = {
     }`,
 };
 
-export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni = 'ucl' } = {}) {
+export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni = 'ucl', city = null } = {}) {
   // one world per university: UCL (Bloomsbury) or Imperial (South Kensington)
   const imp = uni === 'imperial';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
@@ -141,7 +141,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const cloudRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: false });
   cloudRT.texture.minFilter = cloudRT.texture.magFilter = THREE.LinearFilter;
 
-  const london = imp ? buildSouthKen(renderer, { mobile }) : buildLondon(renderer, { mobile });
+  const london = imp ? buildSouthKen(renderer, { mobile, city }) : buildLondon(renderer, { mobile, city });
   scene.add(london.group);
   const ucl = imp ? buildImperial({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
