@@ -173,8 +173,8 @@ export function globeTex() {
 export function furnishLibrary(lib, { mobile }) {
   const r = rng(2026);
   // proc: the hand-built pieces a scanned model can replace; place: where they stand (see realism.js)
-  const out = { lights: [], proc: { chairs: [], people: [], chand: [], busts: [], paintings: [], stacks: [] }, place: { chairs: [], chand: [], busts: [], paintings: [], F } };
   const F = 1.21; // floor
+  const out = { lights: [], proc: { chairs: [], people: [], chand: [], busts: [], paintings: [], stacks: [] }, place: { chairs: [], chand: [], busts: [], paintings: [], F } };
   const add = (geo, mat, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); lib.add(m); return m; };
   const brass = plainMaterial({ color: '#b58a3c', roughness: 0.28, metalness: 1 }, 'brass');
   const wood = plainMaterial({ color: '#2b1a10', roughness: 0.5 }, 'wood2');
