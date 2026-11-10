@@ -35,7 +35,8 @@ jobs:
           set -e
           mkdir -p tools/city/raw
           cd /tmp
-          F="nwr/building nwr/building:part w/highway w/area:highway nwr/leisure nwr/landuse nwr/natural nwr/water nwr/waterway nwr/amenity=parking,fountain w/railway nwr/man_made=tower,bridge"
+          F="nwr/building nwr/building:part w/highway w/area:highway nwr/leisure nwr/landuse nwr/natural nwr/water nwr/waterway nwr/amenity=parking,fountain w/railway nwr/man_made=tower,bridge n/shop n/disused:shop n/amenity=restaurant,cafe,fast_food,ice_cream,food_court,pub,bar,nightclub,biergarten,bank,pharmacy,bureau_de_change,post_office,cinema,theatre,dentist,doctors,veterinary,money_transfer,betting,casino,clinic,library,arts_centre,internet_cafe,gambling"
+          # (shop, cafe, pub and bank nodes flag the ground-floor shopfronts)
           ex() { # name minlon minlat maxlon maxlat
             osmium extract -s smart -b "$2,$3,$4,$5" london.osm.pbf -o "$1-box.osm.pbf" --overwrite
             osmium tags-filter "$1-box.osm.pbf" $F -o "$1-f.osm.pbf" --overwrite
