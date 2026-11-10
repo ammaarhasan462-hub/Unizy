@@ -1,0 +1,440 @@
+{
+ "site": "ucl",
+ "buildings": 13570,
+ "heights": {
+  "h": 583,
+  "lv": 7219,
+  "guess": 5768
+ },
+ "styles": {
+  "stock": 6795,
+  "concrete": 1303,
+  "redbrick": 1512,
+  "glass": 670,
+  "stone": 1190,
+  "stucco": 1475,
+  "shed": 541,
+  "church": 84
+ },
+ "roads": 18942,
+ "areas": 1267,
+ "rails": 404,
+ "trees": 3819,
+ "skyline": 1716,
+ "landmarks": {
+  "BT Tower": [
+   -101.6,
+   -305.0
+  ],
+  "The Shard": [
+   -3695.2,
+   1660.4
+  ],
+  "30 St Mary Axe": [
+   -2993.9,
+   2634.4
+  ]
+ },
+ "bytes": 2552855,
+ "wilkins": {
+  "x": [
+   -71.1,
+   65.6
+  ],
+  "z": [
+   5.3,
+   71.0
+  ]
+ },
+ "rot_deg": -33.7,
+ "gower_z_raw": -57.3,
+ "portico_x_raw": -2.7,
+ "places": {
+  "Gower Street": {
+   "x": [
+    -618,
+    160
+   ],
+   "z": [
+    103,
+    157
+   ]
+  },
+  "Gordon Square": {
+   "x": [
+    -229,
+    -48
+   ],
+   "z": [
+    182,
+    441
+   ]
+  },
+  "Russell Square": {
+   "x": [
+    -661,
+    -430
+   ],
+   "z": [
+    261,
+    544
+   ]
+  },
+  "Senate House": {
+   "x": [
+    -528,
+    -528
+   ],
+   "z": [
+    246,
+    246
+   ]
+  },
+  "British Museum": {
+   "x": [
+    -757,
+    -757
+   ],
+   "z": [
+    250,
+    250
+   ]
+  },
+  "Euston Road": {
+   "x": [
+    104,
+    356
+   ],
+   "z": [
+    -461,
+    1204
+   ]
+  },
+  "Tottenham Court Road": {
+   "x": [
+    -891,
+    195
+   ],
+   "z": [
+    -130,
+    -40
+   ]
+  }
+ }
+}
+{
+ "site": "imperial",
+ "buildings": 11285,
+ "heights": {
+  "h": 14,
+  "lv": 9948,
+  "guess": 1323
+ },
+ "styles": {
+  "stock": 895,
+  "redbrick": 4266,
+  "stucco": 5168,
+  "shed": 457,
+  "stone": 97,
+  "glass": 143,
+  "church": 63,
+  "concrete": 196
+ },
+ "roads": 8180,
+ "areas": 1259,
+ "rails": 94,
+ "trees": 2831,
+ "skyline": 1771,
+ "landmarks": {
+  "Queen's Tower": [
+   -0.0,
+   -0.0
+  ],
+  "BT Tower": [
+   2570.0,
+   2640.2
+  ],
+  "The Shard": [
+   670.7,
+   6271.3
+  ],
+  "30 St Mary Axe": [
+   1794.5,
+   6692.8
+  ]
+ },
+ "bytes": 2142490,
+ "anchor": [
+  "Queen's Tower",
+  51.498354,
+  -0.176896,
+  true
+ ],
+ "places": {
+  "Exhibition Road": {
+   "x": [
+    -425,
+    377
+   ],
+   "z": [
+    161,
+    248
+   ]
+  },
+  "Queen's Gate": {
+   "x": [
+    -699,
+    374
+   ],
+   "z": [
+    -246,
+    -82
+   ]
+  },
+  "Prince Consort Road": {
+   "x": [
+    141,
+    191
+   ],
+   "z": [
+    -215,
+    170
+   ]
+  },
+  "Imperial College Road": {
+   "x": [
+    -66,
+    -19
+   ],
+   "z": [
+    -187,
+    198
+   ]
+  },
+  "Cromwell Road": {
+   "x": [
+    -618,
+    -287
+   ],
+   "z": [
+    -1632,
+    222
+   ]
+  },
+  "Kensington Gore": {
+   "x": [
+    179,
+    432
+   ],
+   "z": [
+    -179,
+    161
+   ]
+  },
+  "Royal Albert Hall": {
+   "x": [
+    245,
+    347
+   ],
+   "z": [
+    -82,
+    11
+   ]
+  },
+  "Natural History Museum": {
+   "x": [
+    -278,
+    -144
+   ],
+   "z": [
+    -81,
+    202
+   ]
+  },
+  "Science Museum": {
+   "x": [
+    -156,
+    -57
+   ],
+   "z": [
+    -99,
+    192
+   ]
+  }
+ }
+}
+{
+ "site": "qmul",
+ "buildings": 10486,
+ "heights": {
+  "h": 95,
+  "lv": 5758,
+  "guess": 4633
+ },
+ "styles": {
+  "stucco": 1016,
+  "church": 74,
+  "redbrick": 1102,
+  "stock": 6490,
+  "stone": 276,
+  "concrete": 847,
+  "glass": 217,
+  "shed": 464
+ },
+ "roads": 12628,
+ "areas": 4332,
+ "rails": 286,
+ "trees": 2485,
+ "skyline": 1732,
+ "landmarks": {
+  "BT Tower": [
+   -244.1,
+   -6794.0
+  ],
+  "The Shard": [
+   -2143.4,
+   -3165.0
+  ],
+  "30 St Mary Axe": [
+   -1019.6,
+   -2743.8
+  ]
+ },
+ "bytes": 2305462,
+ "anchor": [
+  "Queens' Building",
+  51.523634,
+  -0.040706,
+  true
+ ],
+ "places": {
+  "Queen's Gate": {
+   "x": [
+    1977,
+    1983
+   ],
+   "z": [
+    186,
+    188
+   ]
+  }
+ }
+}
+{
+ "site": "lse",
+ "buildings": 11139,
+ "heights": {
+  "h": 898,
+  "lv": 6227,
+  "guess": 4014
+ },
+ "styles": {
+  "glass": 617,
+  "stock": 5522,
+  "concrete": 875,
+  "stucco": 1255,
+  "stone": 1233,
+  "redbrick": 1267,
+  "church": 101,
+  "shed": 269
+ },
+ "roads": 15455,
+ "areas": 1140,
+ "rails": 133,
+ "trees": 3240,
+ "skyline": 1692,
+ "landmarks": {
+  "BT Tower": [
+   -79.1,
+   -679.3
+  ],
+  "The Shard": [
+   -1978.6,
+   2950.5
+  ],
+  "30 St Mary Axe": [
+   -854.8,
+   3371.7
+  ]
+ },
+ "bytes": 2094647,
+ "anchor": [
+  "Old Building",
+  51.522154,
+  -0.129,
+  true
+ ],
+ "places": {
+  "Gower Street": {
+   "x": [
+    -275,
+    395
+   ],
+   "z": [
+    -483,
+    -41
+   ]
+  },
+  "Gordon Square": {
+   "x": [
+    142,
+    317
+   ],
+   "z": [
+    -290,
+    10
+   ]
+  },
+  "Russell Square": {
+   "x": [
+    -176,
+    154
+   ],
+   "z": [
+    -21,
+    337
+   ]
+  },
+  "Senate House": {
+   "x": [
+    -199,
+    -57
+   ],
+   "z": [
+    -53,
+    86
+   ]
+  },
+  "British Museum": {
+   "x": [
+    -455,
+    -177
+   ],
+   "z": [
+    8,
+    347
+   ]
+  },
+  "Euston Road": {
+   "x": [
+    193,
+    958
+   ],
+   "z": [
+    -1055,
+    448
+   ]
+  },
+  "Tottenham Court Road": {
+   "x": [
+    -795,
+    313
+   ],
+   "z": [
+    -633,
+    -61
+   ]
+  }
+ }
+}
+textures ['brick', 'plaster', 'stone', 'concrete', 'roof']
