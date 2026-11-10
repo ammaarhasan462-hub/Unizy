@@ -21,7 +21,7 @@ The workflow runs monthly, so newly mapped buildings arrive on their own.
 1. Pick the top unticked item below.
 2. Branch from main.
 3. Implement the change, then rebake if needed with `python3 tools/city/bake_city.py`.
-4. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `/home/claude/test/test_intro.py` for UCL, and with `UNI=imperial`.
+4. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial` (needs Playwright and Chrome; frames go to `/tmp/shots`).
 5. Compare against the previous night's renders, which are kept in `tools/city/renders/`.
 6. Merge to main only if the change is clearly better and nothing broke:
    - no console errors;
