@@ -20,6 +20,15 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
+ "shop_points": 0,
+ "shopfronts": [
+  906,
+  604,
+  312,
+  241,
+  125
+ ],
+ "shopfront_fill": 286,
  "skyline": 1716,
  "landmarks": {
   "BT Tower": [
@@ -35,7 +44,7 @@
    2634.4
   ]
  },
- "bytes": 2552855,
+ "bytes": 2572714,
  "wilkins": {
   "x": [
    -71.1,
@@ -144,6 +153,15 @@
  "areas": 1259,
  "rails": 94,
  "trees": 2831,
+ "shop_points": 0,
+ "shopfronts": [
+  125,
+  62,
+  126,
+  78,
+  7
+ ],
+ "shopfront_fill": 21,
  "skyline": 1771,
  "landmarks": {
   "Queen's Tower": [
@@ -163,7 +181,7 @@
    6692.8
   ]
  },
- "bytes": 2142490,
+ "bytes": 2146130,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -285,6 +303,15 @@
  "areas": 4332,
  "rails": 286,
  "trees": 2485,
+ "shop_points": 1115,
+ "shopfronts": [
+  641,
+  330,
+  119,
+  130,
+  36
+ ],
+ "shopfront_fill": 118,
  "skyline": 1732,
  "landmarks": {
   "BT Tower": [
@@ -300,7 +327,7 @@
    -2743.8
   ]
  },
- "bytes": 2305462,
+ "bytes": 2316731,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -342,6 +369,15 @@
  "areas": 2127,
  "rails": 350,
  "trees": 6274,
+ "shop_points": 4966,
+ "shopfronts": [
+  1728,
+  1662,
+  599,
+  434,
+  203
+ ],
+ "shopfront_fill": 473,
  "skyline": 1487,
  "landmarks": {
   "BT Tower": [
@@ -357,7 +393,7 @@
    2509.8
   ]
  },
- "bytes": 2901455,
+ "bytes": 2943190,
  "anchor": [
   "Old Building",
   51.51432,
