@@ -7,7 +7,7 @@ import { canvasTex, plainMaterial, rng } from './materials';
 
 const up = new THREE.Vector3(0, 1, 0);
 
-function addInst(parent, geo, mat, items, { cast = false, color = false } = {}) {
+export function addInst(parent, geo, mat, items, { cast = false, color = false } = {}) {
   if (!items.length) return null;
   const im = new THREE.InstancedMesh(geo, mat, items.length);
   items.forEach((it, i) => {
@@ -24,13 +24,13 @@ function addInst(parent, geo, mat, items, { cast = false, color = false } = {}) 
 }
 
 // a unit cylinder from y=0 to y=1 placed between two points
-const limbGeo = new THREE.CylinderGeometry(1, 1, 1, 10).translate(0, 0.5, 0);
-function between(a, b, r) {
+export const limbGeo = new THREE.CylinderGeometry(1, 1, 1, 10).translate(0, 0.5, 0);
+export function between(a, b, r) {
   const d = new THREE.Vector3().subVectors(b, a);
   const q = new THREE.Quaternion().setFromUnitVectors(up, d.clone().normalize());
   return new THREE.Matrix4().compose(a, q, new THREE.Vector3(r, d.length(), r));
 }
-const M = (x, y, z, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) =>
+export const M = (x, y, z, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) =>
   new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
 
 // ------------------------------------------------------------------ textures
@@ -52,7 +52,7 @@ export function cofferTex() {
   }, { repeat: [8, 13] });
 }
 
-function rugTex() {
+export function rugTex() {
   return canvasTex(256, 2048, (ctx, W, H) => {
     const r = rng(17);
     ctx.fillStyle = '#5a1418'; ctx.fillRect(0, 0, W, H);
@@ -70,7 +70,7 @@ function rugTex() {
   });
 }
 
-function paintingTex(kind, seed) {
+export function paintingTex(kind, seed) {
   return canvasTex(384, 512, (ctx, W, H) => {
     const r = rng(seed);
     const stroke = (x, y, w, h, c, a = 0.5) => { ctx.fillStyle = c; ctx.globalAlpha = a; ctx.beginPath(); ctx.ellipse(x, y, w, h, r() * 3, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1; };
@@ -102,7 +102,7 @@ function paintingTex(kind, seed) {
   });
 }
 
-function clockTex() {
+export function clockTex() {
   return canvasTex(1024, 1024, (ctx, W) => {
     const c = W / 2;
     const g = ctx.createRadialGradient(c, c, 50, c, c, c);
@@ -118,7 +118,7 @@ function clockTex() {
   });
 }
 
-function dialTex() {
+export function dialTex() {
   return canvasTex(1024, 1024, (ctx, W) => {
     const c = W / 2;
     const g = ctx.createRadialGradient(c, c, 10, c, c, c);
@@ -152,7 +152,7 @@ function dialTex() {
   });
 }
 
-function globeTex() {
+export function globeTex() {
   return canvasTex(1024, 512, (ctx, W, H) => {
     const r = rng(8);
     ctx.fillStyle = '#c7b48a'; ctx.fillRect(0, 0, W, H);
@@ -372,11 +372,17 @@ export function furnishLibrary(lib, { mobile }) {
   const tool = add(new THREE.PlaneGeometry(1.5, 0.75), plainMaterial({ color: '#8f7136', roughness: 0.4, metalness: 0.8 }, 'tool'), 0, F + 0.7503, -46.1);
   tool.rotation.x = -Math.PI / 2;
 
+  out.watch = addWatch(lib, -0.2, F + 0.756, -45.92, 0.12);
+  return out;
+}
+
+// the wristwatch (dial-up, 12 o'clock towards -z), shared by every university's desk
+export function addWatch(parent, x, y, z, ry) {
   // the wristwatch, lying dial-up beside the marked answer (12 o'clock away from the viewer)
   const W = new THREE.Group();
-  W.position.set(-0.2, F + 0.756, -45.92);
-  W.rotation.y = 0.12;
-  lib.add(W);
+  W.position.set(x, y, z);
+  W.rotation.y = ry;
+  parent.add(W);
   const steel = plainMaterial({ color: '#dfe3e8', roughness: 0.16, metalness: 1 }, 'steel');
   const brushed = plainMaterial({ color: '#c8cdd3', roughness: 0.38, metalness: 1 }, 'brushed');
   const caseM = new THREE.Mesh(new THREE.CylinderGeometry(0.0205, 0.021, 0.011, 96), steel); caseM.position.y = 0.0075; W.add(caseM);
@@ -410,8 +416,7 @@ export function furnishLibrary(lib, { mobile }) {
   }
   addInst(W, new THREE.BoxGeometry(1, 1, 1), steel, linksC);
   addInst(W, new THREE.BoxGeometry(1, 1, 1), brushed, linksO);
-  out.watch = { hourH, minH, secH };
-  return out;
+  return { hourH, minH, secH };
 }
 
 // set clock and watch hands to the visitor's local time

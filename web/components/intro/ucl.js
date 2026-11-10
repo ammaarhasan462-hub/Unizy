@@ -11,7 +11,7 @@ export { tickLibrary };
 export const PODIUM = 4.5; // Portico and library floor height
 const IN = PODIUM - 1.2; // the library interior was modelled with its floor at 1.2
 
-function stoneTex(rep = [14, 7]) {
+export function stoneTex(rep = [14, 7]) {
   return canvasTex(512, 512, (ctx, W, H) => {
     const r = rng(9);
     ctx.fillStyle = '#c9bfab';
@@ -35,7 +35,7 @@ function stoneTex(rep = [14, 7]) {
   }, { repeat: rep });
 }
 
-function ribTex() {
+export function ribTex() {
   return canvasTex(512, 256, (ctx, W, H) => {
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, '#7d8381');
@@ -49,7 +49,7 @@ function ribTex() {
   });
 }
 
-function woodTex() {
+export function woodTex() {
   return canvasTex(1024, 1024, (ctx, W, H) => {
     const r = rng(3);
     ctx.fillStyle = '#2a1a10';
@@ -75,7 +75,7 @@ function woodTex() {
   }, { repeat: [5, 8] });
 }
 
-function windowTex() {
+export function windowTex() {
   return canvasTex(256, 512, (ctx, W, H) => {
     ctx.clearRect(0, 0, W, H);
     ctx.save();
@@ -95,7 +95,7 @@ function windowTex() {
   });
 }
 
-function shaftTex() {
+export function shaftTex() {
   return canvasTex(64, 256, (ctx, W, H) => {
     const g = ctx.createLinearGradient(0, 0, W, 0);
     g.addColorStop(0, 'rgba(255,255,255,0)');
@@ -126,7 +126,7 @@ const ANSWER = [
   'the demand curve.',
 ];
 
-function paperTex() {
+export function paperTex() {
   return canvasTex(1240, 1754, (ctx, W, H) => {
     ctx.fillStyle = '#f5f1e8';
     ctx.fillRect(0, 0, W, H);

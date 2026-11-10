@@ -150,6 +150,7 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
 #intro-root { display: none; }
 html.intro #intro-root { display: block; }
 html.intro, html.intro body { overflow: hidden; overscroll-behavior: none; }
+@keyframes introload { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 @keyframes introline { 0% { transform: translateY(-100%); } 100% { transform: translateY(260%); } }
 
 @media (prefers-reduced-motion: reduce) {

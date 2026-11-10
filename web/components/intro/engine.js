@@ -14,6 +14,8 @@ import { CLOUD_BOTTOM, CLOUD_FS, QUAD_VS } from './shaders';
 import { ATMO, makeSky, SUN_DIR, sunTransmittance } from './atmo';
 import { buildLondon } from './london';
 import { buildUCL, tickLibrary } from './ucl';
+import { buildSouthKen, RIVER_GLSL } from './southken';
+import { buildImperial, IMPERIAL_KEYS } from './imperial';
 
 // [progress, camera position, look-at target]
 const KEYS = [
@@ -38,10 +40,10 @@ const KEYS = [
 ];
 
 // monotone cubic (Fritsch–Carlson) per component, keyed on progress: smooth, no overshoot
-function makeTrack(idx) {
-  const t = KEYS.map((k) => k[0]);
+function makeTrack(keys, idx) {
+  const t = keys.map((k) => k[0]);
   const comps = [0, 1, 2].map((c) => {
-    const y = KEYS.map((k) => k[idx][c]);
+    const y = keys.map((k) => k[idx][c]);
     const n = y.length;
     const d = [];
     for (let i = 0; i < n - 1; i++) d.push((y[i + 1] - y[i]) / (t[i + 1] - t[i]));
@@ -99,7 +101,9 @@ const GRADE = {
     }`,
 };
 
-export function createIntro(canvas, { mobile = false, onFrame, hold = false } = {}) {
+export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni = 'ucl' } = {}) {
+  // one world per university: UCL (Bloomsbury) or Imperial (South Kensington)
+  const imp = uni === 'imperial';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
   let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.6);
   renderer.setPixelRatio(pr);
@@ -137,9 +141,9 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
   const cloudRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: false });
   cloudRT.texture.minFilter = cloudRT.texture.magFilter = THREE.LinearFilter;
 
-  const london = buildLondon(renderer, { mobile });
+  const london = imp ? buildSouthKen(renderer, { mobile }) : buildLondon(renderer, { mobile });
   scene.add(london.group);
-  const ucl = buildUCL({ mobile });
+  const ucl = imp ? buildImperial({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
 
   const cloudU = {
@@ -161,7 +165,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
   };
   const cloudScene = new THREE.Scene();
   const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: CLOUD_FS, uniforms: cloudU, depthTest: false, depthWrite: false }));
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: imp ? CLOUD_FS.replace(/float riverX\(float z\)\{[^\n]*\}/, RIVER_GLSL) : CLOUD_FS, uniforms: cloudU, depthTest: false, depthWrite: false }));
   quad.frustumCulled = false;
   cloudScene.add(quad);
   scene.background = cloudRT.texture;
@@ -216,15 +220,17 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
     scene.add(l);
     return l;
   };
+  const so = imp ? new THREE.Vector3(2300, 0, 1600) : new THREE.Vector3(); // strikes sit ahead of the opening camera
   const strikes = [
-    { t: 1.25, bolt: makeBolt(new THREE.Vector3(-1500, 2900, 2300), new THREE.Vector3(-1150, 1120, 2650), 7), pos: new THREE.Vector3(-1150, 1000, 2650) },
-    { t: 3.0, bolt: makeBolt(new THREE.Vector3(1300, 2700, 1500), new THREE.Vector3(1050, 1120, 1900), 31), pos: new THREE.Vector3(1050, 980, 1900) },
+    { t: 1.25, bolt: makeBolt(new THREE.Vector3(-1500, 2900, 2300).add(so), new THREE.Vector3(-1150, 1120, 2650).add(so), 7), pos: new THREE.Vector3(-1150, 1000, 2650).add(so) },
+    { t: 3.0, bolt: makeBolt(new THREE.Vector3(1300, 2700, 1500).add(so), new THREE.Vector3(1050, 1120, 1900).add(so), 31), pos: new THREE.Vector3(1050, 980, 1900).add(so) },
   ];
   const pulse = (x, w) => Math.exp(-(x * x) / (w * w));
   let flashesDone = false;
 
-  const posAt = makeTrack(1);
-  const lookAt = makeTrack(2);
+  const keys = imp ? IMPERIAL_KEYS : KEYS;
+  const posAt = makeTrack(keys, 1);
+  const lookAt = makeTrack(keys, 2);
   const pos = new THREE.Vector3();
   const look = new THREE.Vector3();
   const tmp = new THREE.Vector3();
@@ -331,7 +337,8 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
     london.trafficU.uTime.value = time;
     london.trafficU.uCam.value.copy(camera.position);
     if (london.avMat) london.avMat.color.setRGB(6 * (0.15 + 0.85 * (Math.sin(time * 3) > 0.6 ? 1 : 0)), 0.3, 0.15);
-    ucl.ext.forEach(([l, i]) => { l.intensity = i * (1 - inside); });
+    // Imperial's exam hall looks out through glass at the floodlit tower, so the floodlights stay on
+    ucl.ext.forEach(([l, i]) => { l.intensity = i * (imp ? 1 : 1 - inside); });
     tickLibrary(ucl.furn);
     // shallow focus for the close-ups on the desk
     bokeh.enabled = p > 0.85;
@@ -350,8 +357,10 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
     const zone = p < 0.42 ? 0 : p < 0.6 ? 1 : 2;
     if (zone !== shadowZone) {
       shadowZone = zone;
-      const half = zone === 0 ? 1100 : zone === 1 ? 260 : 85;
-      const cen = zone === 0 ? new THREE.Vector3(0, 0, -150) : zone === 1 ? new THREE.Vector3(0, 0, 0) : new THREE.Vector3(0, 8, 25);
+      const half = imp ? (zone === 0 ? 1100 : zone === 1 ? 320 : 115) : zone === 0 ? 1100 : zone === 1 ? 260 : 85;
+      const cen = imp
+        ? (zone === 0 ? new THREE.Vector3(400, 0, 0) : zone === 1 ? new THREE.Vector3(250, 0, -10) : new THREE.Vector3(50, 10, -6))
+        : zone === 0 ? new THREE.Vector3(0, 0, -150) : zone === 1 ? new THREE.Vector3(0, 0, 0) : new THREE.Vector3(0, 8, 25);
       const cam = sun.shadow.camera;
       cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
       cam.updateProjectionMatrix();
@@ -364,12 +373,12 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false } = 
     if (zone === 2 && inside > 0.5) setAO(0.5, 0.5);
 
     const below = camera.position.y < CLOUD_BOTTOM - 5;
-    london.group.visible = below && inside < 1;
+    london.group.visible = below && (imp ? p < 0.97 : inside < 1);
     ucl.group.visible = below;
     sun.castShadow = below;
     if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
-    if (p < 0.76) {
+    if (p < (imp ? 0.97 : 0.76)) {
       cloudU.uTime.value = time;
       cloudU.uCam.value.copy(camera.position);
       cloudU.uInvProj.value.copy(camera.projectionMatrixInverse);

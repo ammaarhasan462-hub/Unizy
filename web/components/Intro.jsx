@@ -29,12 +29,29 @@ const CH = [
   { a: 0.96, b: 1.2, n: '06', mode: 'end' },
 ];
 const RAIL = CH.filter((c) => c.n);
-// the university picker that opens the intro: only UCL is live so far
+// wording that changes with the university picked (chapter text by chapter number)
+const COPY = {
+  ucl: {
+    kicker: 'University College London',
+    sub: 'Exam practice and marking for every UCL module',
+    ch: {},
+  },
+  imperial: {
+    kicker: 'Imperial College London',
+    sub: 'Imperial modules are on their way to Unizy',
+    ch: {
+      '01': { s: 'At school you had mark schemes. At Imperial you get past papers, and nothing to check your answers against.' },
+      '02': { t: 'Imperial is *next*.', s: 'Imperial’s modules are being added from its official programme specifications, and checked one by one.' },
+      '03': { s: 'Answers will be marked against Imperial’s grade bands and the criteria your department publishes.' },
+    },
+  },
+};
+// the university picker that opens the intro
 const UNIS = [
   { id: 'ucl', short: 'UCL', name: 'University College London', live: true },
   { id: 'qmul', short: 'Queen Mary', name: 'Queen Mary University of London' },
   { id: 'lse', short: 'LSE', name: 'London School of Economics' },
-  { id: 'imperial', short: 'Imperial', name: 'Imperial College London' },
+  { id: 'imperial', short: 'Imperial', name: 'Imperial College London', live: true },
   { id: 'kcl', short: 'King’s', name: 'King’s College London' },
 ];
 const LABELS = ['The problem', 'Coverage', 'The standard', 'Practice', 'Conditions', 'Marked'];
@@ -62,6 +79,11 @@ export default function Intro() {
   const [authed, setAuthed] = useState(false);
   const [picked, setPicked] = useState(false);
   const [pickerGone, setPickerGone] = useState(false);
+  const [uni, setUni] = useState('ucl');
+  const [switching, setSwitching] = useState(false);
+  const switchingRef = useRef(false);
+  const firstFrameRef = useRef(null);
+  const stage = useRef(null);
   const pickedRef = useRef(false);
   const beginRef = useRef(0);
   const pickRef = useRef(null);
@@ -110,21 +132,59 @@ export default function Intro() {
     };
     window.__smgIntroFinish = finish;
 
-    // choosing a university starts the intro: lightning first, then scrolling flies you in
+    // a fresh canvas for each world (a disposed renderer loses its WebGL context)
+    const newCanvas = () => {
+      const c = document.createElement('canvas');
+      c.className = 'absolute inset-0 block h-full w-full';
+      if (stage.current) { stage.current.innerHTML = ''; stage.current.appendChild(c); }
+      canvas.current = c;
+      return c;
+    };
+    const startEngine = async (u) => {
+      const { createIntro } = await import('./intro/engine');
+      if (cancelled) return;
+      engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u });
+      engineRef.current = engine;
+      window.__smgIntro = engine;
+    };
+
+    // choosing a university starts the intro: lightning first, then scrolling flies you in.
+    // UCL's world is already running behind the picker; Imperial's is built behind a short dark title card.
     const pick = (id = 'ucl') => {
       if (pickedRef.current || doneRef.current || !engine) return;
+      const u = UNIS.find((x) => x.id === id && x.live) ? id : 'ucl';
       pickedRef.current = true;
-      beginRef.current = engine.state.time;
-      engine.begin();
-      track('intro_pick_' + id);
+      track('intro_pick_' + u);
       setPicked(true);
       setTimeout(() => setPickerGone(true), 900);
+      setUni(u);
+      if (u === 'ucl') {
+        beginRef.current = engine.state.time;
+        engine.begin();
+        return;
+      }
+      switchingRef.current = true;
+      setSwitching(true);
+      setTimeout(async () => {
+        if (cancelled || doneRef.current) return;
+        const old = engine;
+        engine = null;
+        engineRef.current = null;
+        if (old) old.dispose();
+        firstFrameRef.current = () => {
+          beginRef.current = engine.state.time;
+          engine.begin();
+          switchingRef.current = false;
+          setSwitching(false);
+        };
+        try { await startEngine(u); } catch (err) { console.error(err); finish('skip'); }
+      }, 700);
     };
     pickRef.current = pick;
     window.__smgIntroPick = pick;
 
     const add = (v) => {
-      if (!engine || doneRef.current || !pickedRef.current) return;
+      if (!engine || doneRef.current || !pickedRef.current || switchingRef.current) return;
       const st = engine.state;
       st.target = Math.min(1.06, Math.max(0, st.target + v));
           };
@@ -161,6 +221,7 @@ export default function Intro() {
 
     const onFrame = (p, target, time = 0) => {
       if (!readyRef.current) { readyRef.current = true; setReady(true); }
+      if (firstFrameRef.current && engine) { const f = firstFrameRef.current; firstFrameRef.current = null; f(); }
       const tb = pickedRef.current ? time - beginRef.current : -1;
       CH.forEach((c, i) => {
         const el = chap.current[i];
@@ -192,11 +253,7 @@ export default function Intro() {
     // let the loader paint, then build the world
     const t = setTimeout(async () => {
       try {
-        const { createIntro } = await import('./intro/engine');
-        if (cancelled) return;
-        engine = createIntro(canvas.current, { mobile, onFrame, hold: true });
-        engineRef.current = engine;
-        window.__smgIntro = engine;
+        await startEngine('ucl');
         track('intro_view');
       } catch (err) {
         console.error(err);
@@ -226,10 +283,20 @@ export default function Intro() {
 
   if (!on) return null;
   const finish = (m) => window.__smgIntroFinish && window.__smgIntroFinish(m);
+  const copy = COPY[uni] || COPY.ucl;
+  const chText = (c) => ({ ...c, ...(copy.ch[c.n] || {}) });
 
   return (
     <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="Unizy intro">
-      <canvas ref={canvas} className="absolute inset-0 block h-full w-full" />
+      <div ref={stage} className="absolute inset-0" />
+      {/* the short title card while another university's world is built */}
+      <div className={`pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#05070b] transition-opacity duration-700 ${switching ? 'opacity-100' : 'opacity-0'}`} aria-hidden={!switching}>
+        <div className="px-6 text-center">
+          <p className="intro-kicker text-[10.5px] text-white/60">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/35" /> {copy.kicker}</p>
+          <p className="intro-title mt-5 text-[clamp(34px,4.6vw,64px)]"><T s="South *Kensington*" /></p>
+          <span className="mx-auto mt-7 block h-px w-24 overflow-hidden bg-white/15"><span className="block h-full w-1/2 animate-[introload_1.1s_ease-in-out_infinite] bg-[#d9b46c]/80" /></span>
+        </div>
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(0,0,0,.4)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[48vh] bg-[linear-gradient(to_top,rgba(6,8,12,.62),rgba(6,8,12,0))]" />
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
@@ -250,13 +317,13 @@ export default function Intro() {
 
       {/* chapters */}
       <div ref={(el) => (chap.current[0] = el)} className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-        <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> University College London</p>
+        <p className="intro-kicker text-[10.5px] text-white/70">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/40" /> {copy.kicker}</p>
         <h1 className="intro-title mt-7 max-w-[1150px] text-[clamp(40px,6.6vw,104px)]">
           <T s="The mark scheme your uni *never gave you.*" />
         </h1>
-        <p className="intro-body mt-7 text-[14px] font-light tracking-[.04em] text-white/60">Exam practice and marking for every UCL module</p>
+        <p className="intro-body mt-7 text-[14px] font-light tracking-[.04em] text-white/60">{copy.sub}</p>
       </div>
-      {CH.map((c, i) => (c.mode === 'mark' ? (
+      {CH.map(chText).map((c, i) => (c.mode === 'mark' ? (
         <div key="mark" ref={(el) => (chap.current[i] = el)} className="pointer-events-none invisible absolute inset-0 grid place-items-center" style={{ opacity: 0 }}>
           <span className="intro-title intro-mark select-none text-[clamp(84px,19vw,300px)] tracking-[.02em]">UNIZY</span>
         </div>
@@ -281,28 +348,46 @@ export default function Intro() {
             </h2>
             <div className="mt-7 flex flex-wrap items-center gap-3">
               <a href={authed ? '/dashboard/practice' : '/signup'} onClick={() => track(authed ? 'intro_dashboard' : 'intro_signup')} className="rounded-full bg-[#f3eee4] px-6 py-3.5 text-[15px] font-semibold text-[#17302A] shadow-[0_10px_40px_-10px_rgba(217,180,108,.7)] transition-transform hover:scale-[1.03]">
-                {authed ? 'Practise in my dashboard' : 'Get my first answer marked, free'}
+                {authed ? 'Practise in my dashboard' : uni === 'imperial' ? 'Create my free account' : 'Get my first answer marked, free'}
               </a>
               <button type="button" onClick={() => finish('enter')} className="rounded-full border border-[#efe9dd]/25 bg-white/[.05] px-6 py-3.5 text-[15px] font-medium text-[#efe9dd] backdrop-blur hover:border-[#efe9dd]/45" data-testid="intro-enter">
                 Enter Unizy ↓
               </button>
             </div>
           </div>
-          <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
-            <div className="flex items-center gap-4">
-              <span className="grid size-14 place-items-center rounded-2xl bg-[#3E6B5C] font-display text-[20px] font-bold text-white">2:1</span>
-              <div>
-                <p className="font-display text-[30px] font-semibold leading-none">62–66</p>
-                <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">ECON0013 · UCL Economics criteria</p>
+          {uni === 'imperial' ? (
+            <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
+              <div className="flex items-center gap-4">
+                <span className="grid size-14 place-items-center rounded-2xl bg-[#0b2f5c] font-display text-[15px] font-bold tracking-wide text-white">Soon</span>
+                <div>
+                  <p className="font-display text-[24px] font-semibold leading-tight">Imperial modules</p>
+                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">Added from the official programme specifications</p>
+                </div>
               </div>
+              <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">What every marked answer shows</p>
+              <ol className="mt-2 space-y-1.5 text-[13.5px] text-[#efe9dd]/85">
+                <li>1. Your class and a mark range</li>
+                <li>2. The criteria behind the mark</li>
+                <li>3. Three changes to move up a class</li>
+              </ol>
             </div>
-            <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">3 changes to move up a class</p>
-            <ol className="mt-2 space-y-1.5 text-[13.5px] text-[#efe9dd]/85">
-              <li>1. Derive MR = P(1 + 1/ε) before using it</li>
-              <li>2. Add the labelled diagram</li>
-              <li>3. Finish with the intuition</li>
-            </ol>
-          </div>
+          ) : (
+            <div className="w-full max-w-[360px] rounded-3xl border border-white/12 bg-[#0b0f14]/55 p-5 backdrop-blur-xl">
+              <div className="flex items-center gap-4">
+                <span className="grid size-14 place-items-center rounded-2xl bg-[#3E6B5C] font-display text-[20px] font-bold text-white">2:1</span>
+                <div>
+                  <p className="font-display text-[30px] font-semibold leading-none">62–66</p>
+                  <p className="mt-1 text-[12.5px] text-[#efe9dd]/60">ECON0013 · UCL Economics criteria</p>
+                </div>
+              </div>
+              <p className="mt-4 font-mono text-[10.5px] uppercase tracking-[.2em] text-[#d9b46c]/85">3 changes to move up a class</p>
+              <ol className="mt-2 space-y-1.5 text-[13.5px] text-[#efe9dd]/85">
+                <li>1. Derive MR = P(1 + 1/ε) before using it</li>
+                <li>2. Add the labelled diagram</li>
+                <li>3. Finish with the intuition</li>
+              </ol>
+            </div>
+          )}
         </div>
       </div>
 
@@ -317,13 +402,13 @@ export default function Intro() {
           <p className="intro-body mt-5 max-w-[540px] text-[14px] font-light tracking-[.03em] text-white/60">Pick your university to begin. More London universities are on the way.</p>
           <ul className="mt-9 grid w-full max-w-[1120px] grid-cols-2 gap-2.5 sm:mt-11 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
             {UNIS.map((u) => (
-              <li key={u.id} className={u.live ? 'col-span-2 sm:col-span-1' : ''}>
+              <li key={u.id}>
                 {u.live ? (
                   <button
                     type="button"
                     onClick={() => pickRef.current && pickRef.current(u.id)}
                     className="group relative flex h-[118px] w-full flex-col justify-end overflow-hidden rounded-2xl border border-[#d9b46c]/55 bg-[#0b0f14]/55 p-4 text-left shadow-[0_0_0_1px_rgba(217,180,108,.08),0_18px_60px_-20px_rgba(217,180,108,.45)] backdrop-blur-xl transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[#d9b46c] hover:bg-[#0b0f14]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9b46c] sm:h-[164px] sm:p-5"
-                    data-testid="pick-ucl"
+                    data-testid={`pick-${u.id}`}
                   >
                     <span className="absolute left-4 top-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.24em] text-[#d9b46c] sm:left-5 sm:top-5">
                       <span className="size-1.5 rounded-full bg-[#7fd1a8] shadow-[0_0_10px_#7fd1a8]" /> Open now
@@ -333,7 +418,7 @@ export default function Intro() {
                     <span className="mt-1.5 block text-[12.5px] text-white/65">{u.name}</span>
                   </button>
                 ) : (
-                  <div className="relative flex h-[104px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/45 p-4 text-left backdrop-blur-xl sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
+                  <div className="relative flex h-[118px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/45 p-4 text-left backdrop-blur-xl sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
                     <span className="opacity-40 grayscale">
                       <span className="block text-[22px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
                       <span className="mt-1.5 hidden text-[12.5px] leading-snug text-white/65 sm:block">{u.name}</span>
