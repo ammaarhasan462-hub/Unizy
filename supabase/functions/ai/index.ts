@@ -2,6 +2,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { BUDGET_MSG, PAUSED_MSG, budgetReached, handleAccountProblem, isAccountProblem, recordSpend } from "./common.ts";
+import { MAX_BODY, attachmentError, parseAttachments } from "./attach.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
   let body: any;
   try {
     const raw = await req.text();
-    if (raw.length > MAX_INPUT_BYTES + MAX_IMAGES * MAX_IMAGE_B64) return json(413, { code: "prompt_too_large", message: "That’s too much to send at once." });
+    if (raw.length > Math.max(MAX_BODY, MAX_INPUT_BYTES + MAX_IMAGES * MAX_IMAGE_B64)) return json(413, { code: "prompt_too_large", message: "That’s too much to send at once." });
     body = JSON.parse(raw);
   } catch {
     return json(400, { code: "invalid_request", message: "Bad request." });
@@ -59,10 +60,15 @@ Deno.serve(async (req) => {
     if (!im || !IMAGE_TYPES.has(im.media_type) || typeof im.data !== "string" || im.data.length > MAX_IMAGE_B64) return json(400, { code: "image_rejected", message: "One of the photos couldn’t be used. Try a smaller JPEG or PNG." });
   }
 
+  // dashboard attachments (files, photos, video stills): they go with the student's latest message
+  const att = parseAttachments(body.attachments);
+  if ("error" in att) return json(400, { code: "attachment_rejected", message: att.error });
+
   let kind = typeof body.kind === "string" && MAX_TOKENS[body.kind] ? body.kind : "other";
   // marking work (typed or photographed) always counts as an Assess marking, whatever the client says
   if (images.length || /Mark it as a|Student’s typed work/.test(lastText)) kind = "assess";
-  const units = 1 + Math.floor(inputBytes / 30000) + images.length + (kind === "assess" ? 1 : 0);
+  const units = 1 + Math.floor(inputBytes / 30000) + images.length + (kind === "assess" ? 1 : 0) +
+    Math.ceil(att.images / 5) + att.pdfs + Math.floor(att.textChars / 30000);
 
   const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: units, p_kind: kind });
   if (takeErr || !take) return json(500, { code: "upstream_error", message: "Couldn’t check your tutor allowance. Try again." });
@@ -94,6 +100,7 @@ Deno.serve(async (req) => {
     else msgs.push({ role: t.role, content: [{ type: "text", text: t.content }] });
   }
   while (msgs.length && msgs[0].role !== "user") msgs.shift();
+  if (att.blocks.length) msgs[msgs.length - 1].content.unshift({ type: "text", text: "The student attached: " + att.summary + "." }, ...att.blocks);
   if (images.length) msgs[msgs.length - 1].content.unshift(...images.map((im: any) => ({ type: "image", source: { type: "base64", media_type: im.media_type, data: im.data } })));
 
   const system = "You are the study assistant inside Unizy, a study website for UK university students. Follow the instructions in the user's message exactly. Be accurate; never invent cases, statutes, studies, statistics or quotations; never give drug doses." +
@@ -121,6 +128,7 @@ Deno.serve(async (req) => {
       return json(503, { code: "ai_paused", message: PAUSED_MSG });
     }
     if (status === 429 || status === 529) return json(429, { code: "rate_limited", message: "Your tutor is busy right now. Try again in a minute." });
+    if (status === 400 && att.blocks.length && attachmentError(text)) return json(400, { code: "attachment_rejected", message: attachmentError(text) });
     if (status === 400) return json(400, { code: "invalid_request", message: "Your tutor couldn’t take that request" + (detail ? " (" + detail + ")" : "") + "." });
     return json(502, { code: "upstream_error", message: "Your tutor had a problem. Try again." });
   }

@@ -3,11 +3,13 @@
 //
 // POST { action: "questions", code }                     -> generates and caches practice questions (signed in)
 // POST { action: "mark", code, question, answer, ... }   -> marks one practice answer (signed in, counts as an Assess marking)
+//      attachments?: photos / video frames / PDFs / document text holding (part of) the answer — see attach.ts
 //
 // Practice questions are written fresh in the style of each module. They are never copied from real UCL papers.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { BUDGET_MSG, PAUSED_MSG, budgetReached, handleAccountProblem, isAccountProblem, recordSpend } from "./common.ts";
+import { MAX_BODY, attachmentError, parseAttachments } from "./attach.ts";
 
 declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void };
 
@@ -82,7 +84,7 @@ function parseJson(text: string): any {
   return null;
 }
 
-async function callClaude(apiKey: string, system: string, user: string, maxTokens: number) {
+async function callClaude(apiKey: string, system: string, user: string | any[], maxTokens: number) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
@@ -113,7 +115,11 @@ Deno.serve(async (req) => {
   if (!user) return json(401, { code: "session_expired", message: "Please sign in to continue." });
 
   let body: any;
-  try { body = JSON.parse(await req.text()); } catch { return json(400, { code: "invalid_request", message: "Bad request." }); }
+  try {
+    const raw = await req.text();
+    if (raw.length > MAX_BODY) return json(413, { code: "prompt_too_large", message: "Those attachments are too large to send at once. Try fewer or smaller files." });
+    body = JSON.parse(raw);
+  } catch { return json(400, { code: "invalid_request", message: "Bad request." }); }
   const code = String(body.code || "").toUpperCase().trim();
   if (!CODE_RE.test(code)) return json(400, { code: "invalid_request", message: "Pick a module first." });
   const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
@@ -184,7 +190,10 @@ Return a JSON array of 6 objects: {"topic": short topic name, "kind": "essay" | 
     if (!body.practice) return json(400, { code: "invalid_request", message: "Please confirm this is exam practice, not work you’re submitting." });
     if (question.length < 10) return json(400, { code: "invalid_request", message: "Add the question you’re answering." });
     if (question.length > MAX_QUESTION) return json(413, { code: "prompt_too_large", message: "That question is too long. Paste just the question." });
-    if (answer.split(/\s+/).length < 40) return json(400, { code: "invalid_request", message: "Write at least a paragraph or two so there’s something to mark." });
+    const att = parseAttachments(body.attachments);
+    if ("error" in att) return json(400, { code: "attachment_rejected", message: att.error });
+    const hasAtt = att.blocks.length > 0;
+    if (!hasAtt && answer.split(/\s+/).length < 40) return json(400, { code: "invalid_request", message: "Write at least a paragraph or two so there’s something to mark." });
     if (answer.length > MAX_ANSWER) return json(413, { code: "prompt_too_large", message: "That answer is too long to mark in one go (about 2,300 words max)." });
 
     const { data: take, error: takeErr } = await service.rpc("ai_take_plan", { p_user: user.id, p_units: 2, p_kind: "assess" });
@@ -221,9 +230,7 @@ QUESTION: """${question}"""
 ${minutes ? `Written in ${minutes} minutes (exam conditions).` : "Time taken not given."}
 
 STUDENT'S ANSWER:
-"""
-${answer}
-"""
+${hasAtt ? `The answer is ${answer ? "partly typed below and partly " : ""}in the attachments sent before this message: ${att.summary}. Read handwriting, photographed pages, video stills and documents carefully; together with any typed text they make up one answer, in the order given. Ignore anything that is clearly not part of the answer.\n` : ""}${answer ? `"""\n${answer}\n"""` : "(No typed text: the whole answer is in the attachments.)"}
 
 Instructions:
 - This is a revision tool for exam practice only. If the answer or question makes clear it is assessed coursework the student intends to submit (an essay assignment, dissertation chapter, take-home assessment they will hand in), do not mark it: set "refused": true and explain briefly in "refuse_reason".
@@ -231,15 +238,18 @@ Instructions:
 - Give a mark range no wider than 5 marks (e.g. 62-66) and the class it falls in.
 - Feedback must quote or point to specific parts of the student's answer.
 - "changes" = the three changes that would most raise the mark, most important first, each concrete enough to act on in the next attempt. Keep each "change" under 70 words and each "why" under 40 words.
-- "example_answer" = a concise First-class answer to the same question (400-650 words) for comparison, written at this level; use only well-established material, no invented citations. Start with a one-line plan.
+${hasAtt ? `- If the attachments do not contain an answer to this question (blank, unreadable, or about something else), do not mark: set "refused": true and say briefly what's wrong in "refuse_reason" (e.g. which photo can't be read). If only part is unreadable, mark the rest and say which part in the headline.
+- "transcript" = a faithful transcription of the answer content in the attachments, in order, so the student has a typed copy (keep their wording and mistakes; mark unreadable words as [unclear]; max 2,000 words).
+` : ""}- "example_answer" = a concise First-class answer to the same question (400-650 words) for comparison, written at this level; use only well-established material, no invented citations. Start with a one-line plan.
 
 Return one JSON object:
-{"refused": false, "refuse_reason": "", "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": what to do, "why": how it maps to the criteria}, x3], "example_answer": "..."}`;
+{"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": what to do, "why": how it maps to the criteria}, x3], "example_answer": "..."}`;
 
-    const res = await callClaude(apiKey, SYSTEM, prompt, 6000);
+    const res = await callClaude(apiKey, SYSTEM, hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 6000);
     if (!res.ok) {
       console.error("mark upstream", code, res.status, res.text.slice(0, 300));
       await refund();
+      if (hasAtt && res.status === 400 && attachmentError(res.text)) return json(400, { code: "attachment_rejected", message: attachmentError(res.text) });
       if (isAccountProblem(res.status, res.text)) { EdgeRuntime.waitUntil(handleAccountProblem(service, res.status, res.text)); return json(503, { code: "ai_paused", message: PAUSED_MSG }); }
       if (res.status === 429 || res.status === 529) return json(429, { code: "rate_limited", message: "The marker is busy right now. Try again in a minute." });
       return json(502, { code: "upstream_error", message: "The marker had a problem. Try again." });
@@ -267,8 +277,14 @@ Return one JSON object:
       example_answer: String(out.example_answer || "").slice(0, 8000),
       rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : "UCL-wide",
     };
-    const { data: saved } = await service.from("mark_attempts").insert({ user_id: user.id, code, question_id: questionId, question, answer, minutes, result }).select("id, created_at").single();
-    return json(200, { ...result, id: saved?.id, created_at: saved?.created_at, left: take.left, tier: take.tier });
+    // with attachments, keep a typed copy of what was marked so history shows the answer
+    let stored = answer;
+    if (hasAtt) {
+      const transcript = String(out.transcript || "").trim().slice(0, 16000);
+      stored = [answer, `[Attached: ${att.summary}]`, transcript].filter(Boolean).join("\n\n");
+    }
+    const { data: saved } = await service.from("mark_attempts").insert({ user_id: user.id, code, question_id: questionId, question, answer: stored, minutes, result }).select("id, created_at").single();
+    return json(200, { ...result, answer: stored, id: saved?.id, created_at: saved?.created_at, left: take.left, tier: take.tier });
   }
 
   return json(400, { code: "invalid_request", message: "Unknown action." });

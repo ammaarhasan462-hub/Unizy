@@ -8,6 +8,8 @@
   // Base paths: the public marker lives at /mark and /modules/CODE; inside the dashboard it lives under /dashboard/practice.
   var BASE = root.getAttribute('data-base') || '/mark', MBASE = root.getAttribute('data-modbase') || '/modules/';
   var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove
+  // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
+  function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
   var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4})\\/?$');
   var state = { q: '', ug: true, results: [], mod: null, questions: null, qsBusy: false, cur: null, result: null, attempts: null, busy: false, err: '' };
 
@@ -176,19 +178,22 @@
   function submit() {
     var qEl = document.getElementById('mk-qtext'), aEl = document.getElementById('mk-answer'), ok = document.getElementById('mk-practice');
     var question = state.cur.own ? (qEl ? qEl.value.trim() : '') : state.cur.question;
-    var answer = aEl ? aEl.value : '';
+    var answer = aEl ? aEl.value : '', t = tray(), hasAtt = !!(t && t.count());
     state.err = '';
     if (state.cur.own && question.length < 10) { state.err = 'Paste the question you’re answering first.'; render(); return; }
-    if (words(answer) < 40) { state.err = 'Write at least a paragraph or two so there’s something to mark.'; render(); return; }
+    if (hasAtt && t.busy()) { state.err = 'Your attachments are still being prepared. Try again in a moment.'; render(); return; }
+    if (!hasAtt && words(answer) < 40) { state.err = 'Write at least a paragraph or two, or add photos of your answer, so there’s something to mark.'; render(); return; }
     if (!ok || !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
     if (!getSession()) { location.href = signinUrl(); return; }
     if (state.cur.own) state.cur.question = question;
-    state.busy = true; render();
-    track('mark_submit');
-    marker({ action: 'mark', code: state.mod.code, question: question, question_id: state.cur.id, answer: answer, minutes: elapsedMin(), practice: true }).then(function (b) {
+    state.busy = true; state.busyAtt = hasAtt; render();
+    track(hasAtt ? 'mark_submit_att' : 'mark_submit');
+    var body = { action: 'mark', code: state.mod.code, question: question, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true };
+    if (hasAtt) body.attachments = t.payload();
+    marker(body).then(function (b) {
       state.busy = false; stopTimer(); timer.on = false;
       if (b.refused) { state.err = b.message; render(); return; }
-      state.result = b; state.result.question = question; state.result.answer = answer;
+      state.result = b; state.result.question = question; state.result.answer = b.answer || answer;
       track('mark_done');
       loadAttempts();
       go({ m: state.mod.code, q: state.cur.id || 'own', v: 'result' });
@@ -278,11 +283,12 @@
     if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
     else html += '<h2 class="mk-question">' + esc(c.question) + '</h2>';
     html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
-      '<label class="mk-lab" for="mk-answer">Your answer</label><textarea id="mk-answer" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.">' + esc(d ? d.t : '') + '</textarea>' +
+      '<label class="mk-lab" for="mk-answer">Your answer</label><textarea id="mk-answer" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea>' +
+      (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
-      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against UCL’s criteria… about 30 seconds</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? 'Mark my answer' : 'Sign up free to get it marked') + '</button>') + '</div>' +
+      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against UCL’s criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? 'Mark my answer' : 'Sign up free to get it marked') + '</button>') + '</div>' +
       '<p class="mk-fine">Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>';
     return html;
   }
@@ -313,6 +319,7 @@
     var focusId = document.activeElement && document.activeElement.id, selS, selE;
     if (focusId && document.activeElement.selectionStart != null) { selS = document.activeElement.selectionStart; selE = document.activeElement.selectionEnd; }
     root.innerHTML = html;
+    if (r.v === 'answer' && tray()) tray().mount();
     if (!state.mod) renderList();
     if (focusId) { var el = document.getElementById(focusId); if (el) { el.focus(); try { if (selS != null) el.setSelectionRange(selS, selE); } catch (e) {} } }
     if (timer.on) tick();

@@ -27,6 +27,7 @@ Study website for UK university students: pick your uni, degree and modules, the
 - `supabase/functions/marker/`: writes 8 exam-style practice questions per module on first open (cached for everyone, uses the daily £ budget only) and marks answers against UCL grade bands + department rubrics (counts as an Assess marking). Deploy with verify_jwt off (it checks the user itself).
 - Tables in `supabase/sql/marker.sql`. Department rubrics live in `marking_rubrics` (one UCL-wide default plus departments that publish criteria). Real First-class model answers go in `model_answers` (set `published` once checked).
 - Play, Campus, Plan and friend groups are hidden from the app navigation (code kept).
+- Attachments (Nov 2026): in the dashboard, Practice & marking answers and Tutor questions can include files, photos and videos (`site/assets/attach.js`). Limits: 10 photos, 2 videos, 5 files (PDF, .docx, .txt/.md); only shown if exceeded. The browser resizes photos to JPEG (1568px), turns each video into 3–8 still frames (no sound), and extracts text from .docx. The server checks the same limits in `supabase/functions/{marker,ai}/attach.ts` (keep the two copies identical). The marker accepts an answer that is only photos/attachments and saves a typed transcript in `mark_attempts.answer`; tutor attachments count as tutor actions (1 unit per 5 images, 1 per PDF), not as Assess markings. Attachments live in memory while the dashboard is open (kept across tabs, removed with ×; not kept after a reload).
 
 ## Landing page (web/)
 

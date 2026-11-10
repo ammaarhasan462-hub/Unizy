@@ -401,7 +401,8 @@
     var html = '<header class="db-hello"><h1>' + esc(name) + '</h1><p>Your tutor for ' + esc(mod.code) + ' ' + esc(mod.title) + '. Ask about anything in the module, or how to approach an exam question.</p></header>';
     html += '<div class="db-tmods">' + S.mods.map(function (m) { return '<a href="/dashboard/tutor?m=' + m.code + '" class="db-tmod' + (m.code === mod.code ? ' on' : '') + '">' + esc(m.code) + '</a>'; }).join('') + '</div>';
     html += '<div class="db-chat" id="db-chat">' + (chat.length ? chat.map(msgHtml).join('') : '<div class="db-msg tutor"><div class="db-bubble"><p>Hi! I’m ' + esc(name) + '. Ask me to explain a topic from ' + esc(mod.title) + ', check your understanding, or plan an answer to an exam question.</p></div></div>') + (S.tutorBusy ? '<div class="db-msg tutor"><div class="db-bubble"><p class="mk-busy"><span class="spin"></span>Thinking…</p></div></div>' : '') + '</div>';
-    html += '<form class="db-ask" id="db-ask"><textarea id="db-q" rows="2" placeholder="Ask ' + esc(name) + ' about ' + esc(mod.code) + '… (Enter to send, Shift+Enter for a new line)"' + (S.tutorBusy ? ' disabled' : '') + '></textarea><button class="btn primary" type="submit"' + (S.tutorBusy ? ' disabled' : '') + '>Send</button></form>';
+    var tr = ttray(mod);
+    html += '<form class="db-ask" id="db-ask"><textarea id="db-q" rows="2" placeholder="Ask ' + esc(name) + ' about ' + esc(mod.code) + '… (Enter to send, Shift+Enter for a new line)"' + (S.tutorBusy ? ' disabled' : '') + '></textarea><button class="btn primary" type="submit"' + (S.tutorBusy ? ' disabled' : '') + '>Send</button></form>' + (tr ? tr.html() : '');
     html += '<div class="mk-row"><p class="db-err" id="db-terr" hidden></p>' + (chat.length ? '<button type="button" class="mk-clear" id="db-tclear">× Clear this chat</button>' : '') + '</div>';
     var draft = $('db-q') ? $('db-q').value : '';
     el.innerHTML = html;
@@ -409,26 +410,34 @@
     var c = $('db-chat'); c.scrollTop = c.scrollHeight;
     $('db-ask').onsubmit = function (e) { e.preventDefault(); askTutor(mod); };
     $('db-q').onkeydown = function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); askTutor(mod); } };
+    if (tr) tr.mount();
     if ($('db-tclear')) $('db-tclear').onclick = function () { if (confirm('Clear this chat?')) { chatSet(mod.code, []); renderTutor(); } };
   }
-  function msgHtml(m) { return '<div class="db-msg ' + (m.role === 'user' ? 'me' : 'tutor') + '"><div class="db-bubble">' + (m.role === 'user' ? paras(m.content) : md(m.content)) + '</div></div>'; }
+  function msgHtml(m) { return '<div class="db-msg ' + (m.role === 'user' ? 'me' : 'tutor') + '"><div class="db-bubble">' + (m.role === 'user' ? paras(m.content) : md(m.content)) + (m.att ? '<div class="ua-chips">' + m.att.split(', ').map(function (a) { return '<span class="ua-chip">📎 ' + esc(a) + '</span>'; }).join('') + '</div>' : '') + '</div></div>'; }
+  // files, photos and videos sent with a tutor question (attach.js); one tray per module, kept while the dashboard is open
+  function ttray(mod) { return window.UnizyAttach ? window.UnizyAttach.tray('tutor:' + mod.code) : null; }
   var detailCache = {};
   function moduleContext(mod) {
     if (detailCache[mod.code]) return Promise.resolve(detailCache[mod.code]);
     return rest('ucl_modules?select=details,summary&code=eq.' + mod.code).then(function (r) { var d = (r && r[0]) || {}; detailCache[mod.code] = (d.details || d.summary || '').slice(0, 3500); return detailCache[mod.code]; }).catch(function () { return mod.summary || ''; });
   }
   function askTutor(mod) {
-    var q = ($('db-q').value || '').trim(); if (!q || S.tutorBusy) return;
-    var chat = chatGet(mod.code); chat.push({ role: 'user', content: q }); chatSet(mod.code, chat);
+    var q = ($('db-q').value || '').trim(), tr = ttray(mod), hasAtt = !!(tr && tr.count());
+    if ((!q && !hasAtt) || S.tutorBusy) return;
+    if (hasAtt && tr.busy()) { var eb = $('db-terr'); if (eb) { eb.hidden = false; eb.textContent = 'Your attachments are still being prepared. Send again in a moment.'; } return; }
+    var attachments = hasAtt ? tr.payload() : null, attSum = hasAtt ? tr.summary() : '';
+    if (!q) q = 'Can you take a look at what I’ve attached?';
+    var msg = { role: 'user', content: q }; if (hasAtt) msg.att = attSum;
+    var chat = chatGet(mod.code); chat.push(msg); chatSet(mod.code, chat);
     $('db-q').value = ''; S.tutorBusy = true; renderTutor();
     track('tutor_ask');
     var name = tutorName(mod.department), p = S.profile || {};
     moduleContext(mod).then(function (desc) {
       var intro = 'You are ' + name + ', a friendly, expert tutor on ' + BRAND + ' for UCL students. The student is studying ' + mod.code + ' ' + mod.title + ' (' + (mod.department || 'UCL') + (levelName(mod.level) ? ', ' + levelName(mod.level) : '') + ')' + (p.course ? ' on the ' + p.course + ' course' : '') + '.\n\nModule description from UCL’s public catalogue:\n"""' + desc + '"""\n\nHow to tutor: explain clearly at the right level for this module, use short examples, check understanding with a quick question when useful, and show how ideas would earn marks in a UCL exam answer. Keep replies under about 250 words unless the student asks for more. Use short paragraphs and "- " bullet lists; no headings or tables. Never write coursework or assessed essays for the student to submit; for coursework, give guidance and feedback only. Refer to yourself as ' + name + ' and don’t mention the technology behind you unless the student sincerely asks what you are, in which case be honest. Never invent sources, cases, statistics or quotations.';
-      var turns = [{ role: 'user', content: intro }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(chat.slice(-16));
+      var turns = [{ role: 'user', content: intro }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(chat.slice(-16).map(function (m) { return { role: m.role, content: m.att ? m.content + '\n\n[Attached: ' + m.att + ']' : m.content }; }));
       return token().then(function (t) {
         if (!t) { toLogin(); throw new Error('signin'); }
-        return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: turns, kind: 'tutor', cache: false, stream: false }) });
+        return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: turns, kind: 'tutor', cache: false, stream: false, attachments: attachments || undefined }) });
       });
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (b) {
@@ -437,6 +446,7 @@
       });
     }).then(function (b) {
       var c2 = chatGet(mod.code); c2.push({ role: 'assistant', content: b.text || '…' }); chatSet(mod.code, c2);
+      if (hasAtt) tr.clear();
       S.tutorBusy = false; if (tabOf(location.pathname) === 'tutor') renderTutor();
     }).catch(function (e) {
       S.tutorBusy = false;
