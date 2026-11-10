@@ -13,12 +13,12 @@ const cache = {};
 
 // facade styles, in the order bake_city.py numbers them
 export const STYLES = [
-  { k: 'stock', fam: 'brick', floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, frame: '#efebe2', sash: 1, lit: 0.22, tint: ['#c2a57b', '#b39770', '#a98d68', '#c9ae86', '#9f8462'] },
-  { k: 'stucco', fam: 'plaster', floor: 3.6, bay: 2.9, winW: 0.4, winH: 0.6, frame: '#f6f4ee', sash: 1, lit: 0.22, tint: ['#eeeae0', '#e8e2d4', '#f1eee6', '#e3dccb'] },
-  { k: 'stone', fam: 'stone', floor: 3.9, bay: 3.0, winW: 0.44, winH: 0.58, frame: '#e4ddcf', sash: 1, lit: 0.18, tint: ['#ddd4c1', '#d3cab6', '#cbc2ae', '#e2dacb'] },
-  { k: 'glass', fam: 'concrete', floor: 3.9, bay: 1.6, winW: 0.88, winH: 0.72, frame: '#40464c', sash: 0, lit: 0.32, glass: 0.03, tint: ['#9aa3a8', '#8b949a', '#b3b6b5', '#7f8b93'] },
-  { k: 'redbrick', fam: 'brick', floor: 3.3, bay: 2.6, winW: 0.42, winH: 0.6, frame: '#f0ece4', sash: 1, lit: 0.22, tint: ['#9a5440', '#8c4a39', '#a35d47', '#7f4535', '#a8664d'] },
-  { k: 'concrete', fam: 'concrete', floor: 3.6, bay: 2.2, winW: 0.7, winH: 0.6, frame: '#55595d', sash: 0, lit: 0.28, tint: ['#b0aea8', '#a19f99', '#bcb8ae', '#959790'] },
+  { k: 'stock', fam: 'brick', floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, frame: '#efebe2', sash: 1, lit: 0.1, tint: ['#c2a57b', '#b39770', '#a98d68', '#c9ae86', '#9f8462'] },
+  { k: 'stucco', fam: 'plaster', floor: 3.6, bay: 2.9, winW: 0.4, winH: 0.6, frame: '#f6f4ee', sash: 1, lit: 0.1, tint: ['#eeeae0', '#e8e2d4', '#f1eee6', '#e3dccb'] },
+  { k: 'stone', fam: 'stone', floor: 3.9, bay: 3.0, winW: 0.44, winH: 0.58, frame: '#e4ddcf', sash: 1, lit: 0.12, tint: ['#ddd4c1', '#d3cab6', '#cbc2ae', '#e2dacb'] },
+  { k: 'glass', fam: 'concrete', floor: 3.9, bay: 1.6, winW: 0.88, winH: 0.72, frame: '#40464c', sash: 0, lit: 0.22, glass: 0.03, tint: ['#9aa3a8', '#8b949a', '#b3b6b5', '#7f8b93'] },
+  { k: 'redbrick', fam: 'brick', floor: 3.3, bay: 2.6, winW: 0.42, winH: 0.6, frame: '#f0ece4', sash: 1, lit: 0.1, tint: ['#9a5440', '#8c4a39', '#a35d47', '#7f4535', '#a8664d'] },
+  { k: 'concrete', fam: 'concrete', floor: 3.6, bay: 2.2, winW: 0.7, winH: 0.6, frame: '#55595d', sash: 0, lit: 0.18, tint: ['#b0aea8', '#a19f99', '#bcb8ae', '#959790'] },
   { k: 'church', fam: 'stone', floor: 8.0, bay: 4.2, winW: 0.32, winH: 0.72, frame: '#b9b2a4', sash: 0, lit: 0.08, tint: ['#cfc6b2', '#c4bba8', '#b7ae9b'] },
   { k: 'shed', fam: 'concrete', floor: 9.0, bay: 9.0, winW: 0.0, winH: 0.0, frame: '#777', sash: 0, lit: 0, tint: ['#8c8a85', '#7b7a76', '#9a958c'] },
 ];
@@ -108,7 +108,7 @@ function facade(fam, T) {
       .replace('#include <normal_fragment_maps>', `
         #ifdef USE_NORMALMAP_TANGENTSPACE
           vec3 mapN = texture2D(normalMap, vTexUv).xyz * 2.0 - 1.0;
-          mapN.xy *= normalScale;
+          mapN.xy *= normalScale * (1.0 - fWin);
           normal = normalize(tbn * mapN);
         #endif`)
       .replace('#include <color_fragment>', `#include <color_fragment>
@@ -141,7 +141,7 @@ function facade(fam, T) {
           diffuseColor.rgb = mix(avgc, pc, aa);
           fWin = gl * aa + avgW * 0.5 * (1.0 - aa);
           fGR = uGlassR[st];
-          float bLit = step(0.3, fract(seed * 7.13));
+          float bLit = step(0.45, fract(seed * 7.13));
           fLit = (step(1.0 - uLit[st], hs) * gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6) * bLit;
           litC = mix(vec3(1.0, 0.66, 0.36), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, seed))));
           litC *= 0.6 + 0.8 * fh(vec2(fl, seed + 1.0));
@@ -498,7 +498,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
         while (acc < L) {
           const t = acc / L, off = (rd.w / 2 + 1.5) * side;
           const x = x0 + (x1 - x0) * t + nx * off, z = z0 + (z1 - z0) * t + nz * off;
-          if (keep(x, z)) lamp(x, z, major ? 11 : 8, major ? 0.82 : 0.6, major ? led : warm);
+          if (keep(x, z)) lamp(x, z, major ? 10 : 7, major ? 0.55 : 0.42, major ? led : warm);
           side = -side; acc += step / 2;
         }
         acc -= L;
