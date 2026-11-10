@@ -1,0 +1,39 @@
+# Downloads the free source data for the intro cities (OpenStreetMap via Overpass, CC0 textures from Poly Haven)
+# into tools/city/raw/ and commits it, so the bake step can run offline. Re-run any time to refresh the map data.
+name: Fetch city data
+
+on:
+  push:
+    paths:
+      - 'tools/city/fetch_city.py'
+      - '.github/workflows/fetch-city.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 1 * *' # monthly refresh: picks up newly mapped buildings and heights
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-city
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch
+        run: python tools/city/fetch_city.py
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "city-fetch"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A tools/city/raw
+          git commit -m "Fetch city data" || exit 0
+          for i in 1 2 3 4; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done
