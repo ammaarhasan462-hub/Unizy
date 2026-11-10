@@ -1,0 +1,55 @@
+# CC0 models, HDRIs and textures from Poly Haven for the intro interiors.
+# tools/assets/want.txt lists the asset ids to download; editing it (or this file) runs the job.
+# Downloads are optimised for the web with glTF-Transform (WebP textures, quantised meshes) into site/assets/models.
+name: Fetch interior assets
+
+on:
+  push:
+    paths:
+      - 'tools/assets/want.txt'
+      - 'tools/assets/fetch_assets.py'
+      - '.github/workflows/fetch-assets.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-assets
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Catalogue and downloads
+        run: |
+          pip install -q pillow
+          [ -d tools/assets/catalogue ] || python3 tools/assets/fetch_assets.py catalogue
+          IDS=$(grep -v '^#' tools/assets/want.txt 2>/dev/null | awk '{print $1}' | tr '\n' ' ')
+          if [ -n "$IDS" ]; then python3 tools/assets/fetch_assets.py get $IDS; fi
+      - name: Optimise models
+        run: |
+          set -e
+          mkdir -p site/assets/models
+          for g in tools/assets/raw/*/*.gltf; do
+            [ -f "$g" ] || continue
+            id=$(basename "$g" .gltf)
+            npx -y @gltf-transform/cli@4 optimize "$g" "site/assets/models/$id.glb" --compress quantize --texture-compress webp --texture-size 1024 --simplify false 2>&1 | tail -n 3
+          done
+          for h in tools/assets/raw/*/*.hdr; do [ -f "$h" ] && cp "$h" site/assets/models/; done
+          for t in tools/assets/raw/*/*_1k.jpg; do [ -f "$t" ] && python3 -c "import sys;from PIL import Image;i=Image.open(sys.argv[1]).convert('RGB');i.save(sys.argv[2],quality=86,optimize=True,progressive=True)" "$t" "site/assets/models/$(basename "$t")"; done
+          ls -la site/assets/models | head -80
+          du -sh site/assets/models
+      - name: Commit
+        run: |
+          git config user.name "asset-fetch"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A tools/assets/catalogue tools/assets/want.txt site/assets/models
+          git commit -m "Fetch interior assets" || exit 0
+          for i in 1 2 3 4; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done
