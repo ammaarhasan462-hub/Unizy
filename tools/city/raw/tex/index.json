@@ -42,149 +42,6 @@
    "brown"
   ]
  },
- "medieval_blocks_03": {
-  "cat": "brick",
-  "name": "Medieval Blocks 03",
-  "dims_mm": [
-   2000,
-   2000
-  ],
-  "files": {
-   "diff": "medieval_blocks_03_diff_1k.jpg",
-   "nor": "medieval_blocks_03_nor_1k.jpg",
-   "rough": "medieval_blocks_03_rough_1k.jpg",
-   "ao": "medieval_blocks_03_ao_1k.jpg"
-  },
-  "tags": [
-   "blocks",
-   "large",
-   "old",
-   "rough"
-  ]
- },
- "cracked_concrete_wall": {
-  "cat": "brick",
-  "name": "Cracked Concrete Wall",
-  "dims_mm": [
-   1000,
-   1000
-  ],
-  "files": {
-   "diff": "cracked_concrete_wall_diff_1k.jpg",
-   "nor": "cracked_concrete_wall_nor_1k.jpg",
-   "rough": "cracked_concrete_wall_rough_1k.jpg",
-   "ao": "cracked_concrete_wall_ao_1k.jpg"
-  },
-  "tags": [
-   "rough",
-   "uneven",
-   "old",
-   "weathered",
-   "wall",
-   "worn",
-   "discolored",
-   "cracked",
-   "chipped",
-   "stained",
-   "dirty",
-   "beige"
-  ]
- },
- "factory_wall": {
-  "cat": "roofing",
-  "name": "Factory Wall",
-  "dims_mm": [
-   3000,
-   3000
-  ],
-  "files": {
-   "diff": "factory_wall_diff_1k.jpg",
-   "nor": "factory_wall_nor_1k.jpg",
-   "rough": "factory_wall_rough_1k.jpg",
-   "ao": "factory_wall_ao_1k.jpg"
-  },
-  "tags": [
-   "wall",
-   "fence",
-   "industrial",
-   "corrugated"
-  ]
- },
- "corrugated_iron": {
-  "cat": "roofing",
-  "name": "Corrugated Iron",
-  "dims_mm": [
-   1120.0000047683716,
-   1120.0000047683716
-  ],
-  "files": {
-   "diff": "corrugated_iron_diff_1k.jpg",
-   "nor": "corrugated_iron_nor_1k.jpg",
-   "rough": "corrugated_iron_rough_1k.jpg",
-   "ao": "corrugated_iron_ao_1k.jpg"
-  },
-  "tags": [
-   "metal",
-   "corrugated",
-   "roof",
-   "roofing",
-   "steel",
-   "metallic",
-   "sheet",
-   "metal sheet",
-   "weathered",
-   "rusty",
-   "iron",
-   "galvanized"
-  ]
- },
- "asphalt_02": {
-  "cat": "road",
-  "name": "Asphalt 02",
-  "dims_mm": [
-   3000.000238418579,
-   3000
-  ],
-  "files": {
-   "diff": "asphalt_02_diff_1k.jpg",
-   "nor": "asphalt_02_nor_1k.jpg",
-   "rough": "asphalt_02_rough_1k.jpg",
-   "ao": "asphalt_02_ao_1k.jpg"
-  },
-  "tags": [
-   "asphalt",
-   "cracked",
-   "flat",
-   "road",
-   "asphalt road",
-   "tarmac road",
-   "gritty",
-   "weathered",
-   "grey",
-   "cracking",
-   "tar",
-   "cracks"
-  ]
- },
- "aerial_asphalt_01": {
-  "cat": "road",
-  "name": "Aerial Asphalt 01",
-  "dims_mm": [
-   30000,
-   30000
-  ],
-  "files": {
-   "diff": "aerial_asphalt_01_diff_1k.jpg",
-   "nor": "aerial_asphalt_01_nor_1k.jpg",
-   "rough": "aerial_asphalt_01_rough_1k.jpg",
-   "ao": "aerial_asphalt_01_ao_1k.jpg"
-  },
-  "tags": [
-   "road",
-   "flat",
-   "cracked"
-  ]
- },
  "concrete_floor_worn_001": {
   "cat": "plaster-concrete",
   "name": "Concrete Floor Worn 001",
@@ -206,25 +63,6 @@
    "weathered",
    "bare",
    "discolored"
-  ]
- },
- "concrete_floor_02": {
-  "cat": "concrete",
-  "name": "Concrete Floor 02",
-  "dims_mm": [
-   2000,
-   2000
-  ],
-  "files": {
-   "diff": "concrete_floor_02_diff_1k.jpg",
-   "nor": "concrete_floor_02_nor_1k.jpg",
-   "rough": "concrete_floor_02_rough_1k.jpg",
-   "ao": "concrete_floor_02_ao_1k.jpg"
-  },
-  "tags": [
-   "rough",
-   "moss",
-   "plain"
   ]
  },
  "beige_wall_001": {
@@ -249,24 +87,256 @@
    "home"
   ]
  },
- "cobblestone_floor_04": {
-  "cat": "cobblestone",
-  "name": "Cobblestone Floor 04",
+ "stone_tiles_02": {
+  "cat": "slate",
+  "name": "Stone Tiles 02",
   "dims_mm": [
-   1500,
-   1500
+   2000,
+   2000
   ],
   "files": {
-   "diff": "cobblestone_floor_04_diff_1k.jpg",
-   "nor": "cobblestone_floor_04_nor_1k.jpg",
-   "rough": "cobblestone_floor_04_rough_1k.jpg",
-   "ao": "cobblestone_floor_04_ao_1k.jpg"
-  },
-  "tags": [
-   "cobblestone",
-   "moss",
-   "damp",
-   "wet"
-  ]
+   "diff": "stone_tiles_02_diff_1k.jpg",
+   "nor": "stone_tiles_02_nor_1k.jpg"
+  }
+ },
+ "castle_wall_slates": {
+  "cat": "slate",
+  "name": "Castle Wall Slates",
+  "dims_mm": [
+   2500,
+   2500
+  ],
+  "files": {
+   "diff": "castle_wall_slates_diff_1k.jpg",
+   "nor": "castle_wall_slates_nor_1k.jpg"
+  }
+ },
+ "roof_slates_03": {
+  "cat": "slate",
+  "name": "Roof Slates 03",
+  "dims_mm": [
+   3000,
+   3000
+  ],
+  "files": {
+   "diff": "roof_slates_03_diff_1k.jpg",
+   "nor": "roof_slates_03_nor_1k.jpg"
+  }
+ },
+ "grey_roof_01": {
+  "cat": "slate",
+  "name": "Grey Roof 01",
+  "dims_mm": [
+   8000,
+   8000
+  ],
+  "files": {
+   "diff": "grey_roof_01_diff_1k.jpg",
+   "nor": "grey_roof_01_nor_1k.jpg"
+  }
+ },
+ "rubber_tiles": {
+  "cat": "roof",
+  "name": "Rubber Tiles",
+  "dims_mm": [
+   1999.9996423721313,
+   1999.9996423721313
+  ],
+  "files": {
+   "diff": "rubber_tiles_diff_1k.jpg",
+   "nor": "rubber_tiles_nor_1k.jpg"
+  }
+ },
+ "corrugated_iron": {
+  "cat": "roof",
+  "name": "Corrugated Iron",
+  "dims_mm": [
+   1120.0000047683716,
+   1120.0000047683716
+  ],
+  "files": {
+   "diff": "corrugated_iron_diff_1k.jpg",
+   "nor": "corrugated_iron_nor_1k.jpg"
+  }
+ },
+ "roof_09": {
+  "cat": "roof",
+  "name": "Roof 09",
+  "dims_mm": [
+   4000,
+   4000
+  ],
+  "files": {
+   "diff": "roof_09_diff_1k.jpg",
+   "nor": "roof_09_nor_1k.jpg"
+  }
+ },
+ "corrugated_iron_02": {
+  "cat": "roof",
+  "name": "Corrugated Iron 02",
+  "dims_mm": [
+   2700.000047683716,
+   2700.000047683716
+  ],
+  "files": {
+   "diff": "corrugated_iron_02_diff_1k.jpg",
+   "nor": "corrugated_iron_02_nor_1k.jpg"
+  }
+ },
+ "painted_plaster_wall": {
+  "cat": "plaster",
+  "name": "Painted Plaster Wall",
+  "dims_mm": [
+   2000,
+   2000
+  ],
+  "files": {
+   "diff": "painted_plaster_wall_diff_1k.jpg",
+   "nor": "painted_plaster_wall_nor_1k.jpg"
+  }
+ },
+ "white_plaster_02": {
+  "cat": "plaster",
+  "name": "White Plaster 02",
+  "dims_mm": [
+   1000,
+   1000
+  ],
+  "files": {
+   "diff": "white_plaster_02_diff_1k.jpg",
+   "nor": "white_plaster_02_nor_1k.jpg"
+  }
+ },
+ "concrete_layers_02": {
+  "cat": "plaster",
+  "name": "Concrete Layers 02",
+  "dims_mm": [
+   2000,
+   2000
+  ],
+  "files": {
+   "diff": "concrete_layers_02_diff_1k.jpg",
+   "nor": "concrete_layers_02_nor_1k.jpg"
+  }
+ },
+ "cracked_concrete_wall": {
+  "cat": "plaster",
+  "name": "Cracked Concrete Wall",
+  "dims_mm": [
+   1000,
+   1000
+  ],
+  "files": {
+   "diff": "cracked_concrete_wall_diff_1k.jpg",
+   "nor": "cracked_concrete_wall_nor_1k.jpg"
+  }
+ },
+ "white_stucco": {
+  "cat": "stucco",
+  "name": "White Stucco",
+  "dims_mm": [
+   1998.0629682540894,
+   1998.0640411376953
+  ],
+  "files": {
+   "diff": "white_stucco_diff_1k.jpg",
+   "nor": "white_stucco_nor_1k.jpg"
+  }
+ },
+ "white_stucco_02": {
+  "cat": "stucco",
+  "name": "White Stucco 02",
+  "dims_mm": [
+   7.868050033721374e-05,
+   1800.0000715255737
+  ],
+  "files": {
+   "diff": "white_stucco_02_diff_1k.jpg",
+   "nor": "white_stucco_02_nor_1k.jpg"
+  }
+ },
+ "sandstone_cracks": {
+  "cat": "sandstone",
+  "name": "Sandstone Cracks",
+  "dims_mm": [
+   2000,
+   2000
+  ],
+  "files": {
+   "diff": "sandstone_cracks_diff_1k.jpg",
+   "nor": "sandstone_cracks_nor_1k.jpg"
+  }
+ },
+ "sandstone_blocks_05": {
+  "cat": "sandstone",
+  "name": "Sandstone Blocks 05",
+  "dims_mm": [
+   3000,
+   3000
+  ],
+  "files": {
+   "diff": "sandstone_blocks_05_diff_1k.jpg",
+   "nor": "sandstone_blocks_05_nor_1k.jpg"
+  }
+ },
+ "rock_tile_floor": {
+  "cat": "paving",
+  "name": "Rock Tile Floor",
+  "dims_mm": [
+   1960.0000381469727,
+   1960.0000381469727
+  ],
+  "files": {
+   "diff": "rock_tile_floor_diff_1k.jpg",
+   "nor": "rock_tile_floor_nor_1k.jpg"
+  }
+ },
+ "pavement_02": {
+  "cat": "paving",
+  "name": "Pavement 02",
+  "dims_mm": [
+   2119.999647140503,
+   2119.999885559082
+  ],
+  "files": {
+   "diff": "pavement_02_diff_1k.jpg",
+   "nor": "pavement_02_nor_1k.jpg"
+  }
+ },
+ "hexagonal_concrete_paving": {
+  "cat": "paving",
+  "name": "Hexagonal Concrete Paving",
+  "dims_mm": [
+   1600.0003814697266,
+   1600.0001430511475
+  ],
+  "files": {
+   "diff": "hexagonal_concrete_paving_diff_1k.jpg",
+   "nor": "hexagonal_concrete_paving_nor_1k.jpg"
+  }
+ },
+ "coast_sand_rocks_02": {
+  "cat": "grass",
+  "name": "Coast Sand Rocks 02",
+  "dims_mm": [
+   15000,
+   15000
+  ],
+  "files": {
+   "diff": "coast_sand_rocks_02_diff_1k.jpg",
+   "nor": "coast_sand_rocks_02_nor_1k.jpg"
+  }
+ },
+ "brown_mud_leaves_01": {
+  "cat": "grass",
+  "name": "Brown Mud Leaves 01",
+  "dims_mm": [
+   1299.9998331069946,
+   1299.9998331069946
+  ],
+  "files": {
+   "diff": "brown_mud_leaves_01_diff_1k.jpg",
+   "nor": "brown_mud_leaves_01_nor_1k.jpg"
+  }
  }
 }

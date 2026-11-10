@@ -1,14 +1,37 @@
 tex brick: red_brick Red Brick dims=[1399.999976158142, 1399.999976158142] maps=['diff', 'nor', 'rough', 'ao']
 tex brick: red_brick_03 Red Brick 03 dims=[1000, 1000] maps=['diff', 'nor', 'rough', 'ao']
-tex brick: medieval_blocks_03 Medieval Blocks 03 dims=[2000, 2000] maps=['diff', 'nor', 'rough', 'ao']
-tex brick: cracked_concrete_wall Cracked Concrete Wall dims=[1000, 1000] maps=['diff', 'nor', 'rough', 'ao']
-tex roofing: factory_wall Factory Wall dims=[3000, 3000] maps=['diff', 'nor', 'rough', 'ao']
-tex roofing: corrugated_iron Corrugated Iron dims=[1120.0000047683716, 1120.0000047683716] maps=['diff', 'nor', 'rough', 'ao']
-tex road: asphalt_02 Asphalt 02 dims=[3000.000238418579, 3000] maps=['diff', 'nor', 'rough', 'ao']
-tex road: aerial_asphalt_01 Aerial Asphalt 01 dims=[30000, 30000] maps=['diff', 'nor', 'rough', 'ao']
 tex concrete: concrete_floor_worn_001 Concrete Floor Worn 001 dims=[3000, 3000.000238418579] maps=['diff', 'nor', 'rough', 'ao']
-tex concrete: concrete_floor_02 Concrete Floor 02 dims=[2000, 2000] maps=['diff', 'nor', 'rough', 'ao']
 tex plaster-concrete: concrete_floor_worn_001 Concrete Floor Worn 001 dims=[3000, 3000.000238418579] maps=['diff', 'nor', 'rough', 'ao']
 tex plaster-concrete: beige_wall_001 Beige Wall 001 dims=[3000, 3000.000238418579] maps=['diff', 'nor', 'rough', 'ao']
-tex cobblestone: cobblestone_floor_04 Cobblestone Floor 04 dims=[1500, 1500] maps=['diff', 'nor', 'rough', 'ao']
+all textures: 869
+search slate: stone_tiles_02, castle_wall_slates, roof_slates_03, grey_roof_01, slab_tiles, grey_roof_tiles_02, monastery_stone_floor, roof_slates_02, stone_pathway, red_slate_roof_tiles_01, slate_driveway, slate_floor
+tex slate: stone_tiles_02 Stone Tiles 02 dims=[2000, 2000]
+tex slate: castle_wall_slates Castle Wall Slates dims=[2500, 2500]
+tex slate: roof_slates_03 Roof Slates 03 dims=[3000, 3000]
+tex slate: grey_roof_01 Grey Roof 01 dims=[8000, 8000]
+search roof: rubber_tiles, corrugated_iron, roof_09, corrugated_iron_02, roof_slates_03, grey_roof_01, ceramic_roof_01, grey_roof_tiles_02, clay_roof_tiles_02, roof_tiles_14, box_profile_metal_sheet, roof_slates_02
+tex roof: rubber_tiles Rubber Tiles dims=[1999.9996423721313, 1999.9996423721313]
+tex roof: corrugated_iron Corrugated Iron dims=[1120.0000047683716, 1120.0000047683716]
+tex roof: roof_09 Roof 09 dims=[4000, 4000]
+tex roof: corrugated_iron_02 Corrugated Iron 02 dims=[2700.000047683716, 2700.000047683716]
+search plaster: painted_plaster_wall, white_plaster_02, concrete_layers_02, cracked_concrete_wall, grey_plaster, plaster_grey_04, sandstone_cracks, sand_01, plastered_wall, concrete_wall_007, white_rough_plaster, plastered_stone_wall
+tex plaster: painted_plaster_wall Painted Plaster Wall dims=[2000, 2000]
+tex plaster: white_plaster_02 White Plaster 02 dims=[1000, 1000]
+tex plaster: concrete_layers_02 Concrete Layers 02 dims=[2000, 2000]
+tex plaster: cracked_concrete_wall Cracked Concrete Wall dims=[1000, 1000]
+search stucco: white_stucco, white_stucco_02
+tex stucco: white_stucco White Stucco dims=[1998.0629682540894, 1998.0640411376953]
+tex stucco: white_stucco_02 White Stucco 02 dims=[7.868050033721374e-05, 1800.0000715255737]
+search ashlar: 
+search limestone: 
+search sandstone: sandstone_cracks, sandstone_blocks_05, sandstone_blocks_08, white_sandstone_blocks_02, large_sandstone_blocks_01, white_sandstone_bricks_03, seaworn_sandstone_brick, sandstone_blocks_04, white_sandstone_bricks, medieval_blocks_02, red_sandstone_pavement, large_sandstone_blocks
+tex sandstone: sandstone_cracks Sandstone Cracks dims=[2000, 2000]
+tex sandstone: sandstone_blocks_05 Sandstone Blocks 05 dims=[3000, 3000]
+search paving: rock_tile_floor, pavement_02, hexagonal_concrete_paving, brick_floor, scuffed_cement, floor_pattern_02, patterned_brick_floor_02, brick_pavement_03, pavement_05, square_tiles_03, short_bricks_floor, stenciled_brick_floor
+tex paving: rock_tile_floor Rock Tile Floor dims=[1960.0000381469727, 1960.0000381469727]
+tex paving: pavement_02 Pavement 02 dims=[2119.999647140503, 2119.999885559082]
+tex paving: hexagonal_concrete_paving Hexagonal Concrete Paving dims=[1600.0003814697266, 1600.0001430511475]
+search grass: coast_sand_rocks_02, brown_mud_leaves_01, aerial_grass_rock, forrest_ground_01, rocky_terrain_02, leafy_grass, rocky_terrain, grass_path_2, grassy_cobblestone, thatch_roof_angled, sparse_grass, burned_ground_01
+tex grass: coast_sand_rocks_02 Coast Sand Rocks 02 dims=[15000, 15000]
+tex grass: brown_mud_leaves_01 Brown Mud Leaves 01 dims=[1299.9998331069946, 1299.9998331069946]
 ok: True
