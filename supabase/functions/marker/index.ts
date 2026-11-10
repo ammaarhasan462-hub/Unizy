@@ -1,4 +1,4 @@
-// The marker: a Module Map (topics + practice questions at three levels) for any UCL module, and marking of a
+// The marker: a Module Map (topics + practice questions at three levels) for any UCL or Imperial module, and marking of a
 // student's practice answer against UCL's grade bands and the department's own published criteria.
 //
 // POST { action: "questions", code }                     -> topics + questions; starts writing them if the module has none yet
@@ -26,7 +26,14 @@ const CORS = {
 const SONNET = "claude-sonnet-5-5";
 const MAX_ANSWER = 14_000; // characters, roughly 2,300 words
 const MAX_QUESTION = 3_000;
-const CODE_RE = /^[A-Z]{4}[0-9]{4}$/;
+const CODE_RE = /^[A-Z]{4}[0-9]{4,5}$/; // UCL codes have 4 digits, Imperial codes 5
+
+// Universities. Modules carry a `uni`; everything the examiner says follows it.
+const UNIS: Record<string, { name: string; long: string; source: string }> = {
+  ucl: { name: "UCL", long: "UCL", source: "UCL's public module catalogue" },
+  imperial: { name: "Imperial", long: "Imperial College London", source: "Imperial College London's official programme specifications" },
+};
+const uniOf = (mod: any) => UNIS[mod?.uni] || UNIS.ucl;
 const UUID_RE = /^[0-9a-f-]{36}$/;
 const OPENS_PER_DAY = 15; // new modules one student can have written per day (each costs a few pence)
 
@@ -47,6 +54,17 @@ function stripHtml(html: string): string {
 
 // The full description from the module's public UCL catalogue page, cached on the module row.
 async function moduleDetails(service: any, mod: any): Promise<string> {
+  if (mod.uni === "imperial") {
+    // Imperial publishes modules in programme specifications (PDF), not a catalogue page: describe the module from them
+    const facts = [
+      `${mod.code} ${mod.title} is an Imperial College London module in ${mod.department || "its department"}${mod.faculty ? " (" + mod.faculty + ")" : ""}.`,
+      [mod.ects ? `${mod.ects} ECTS` : "", mod.year_of_study ? `usually taken in Year ${mod.year_of_study}` : "", mod.mtype ? mod.mtype : "", mod.term ? `term: ${mod.term}` : ""].filter(Boolean).join(", "),
+      Array.isArray(mod.programmes) && mod.programmes.length ? `Programmes: ${mod.programmes.join("; ")}.` : "",
+      mod.status ? mod.status + "." : "",
+      mod.summary || mod.details || "",
+    ].filter(Boolean).join("\n");
+    return facts;
+  }
   if (mod.details && mod.details_at && Date.now() - Date.parse(mod.details_at) < 120 * 864e5) return mod.details;
   if (!mod.url || !/^https:\/\/www\.ucl\.ac\.uk\/module-catalogue\//.test(mod.url)) return mod.summary || "";
   try {
@@ -64,12 +82,13 @@ async function moduleDetails(service: any, mod: any): Promise<string> {
   return mod.summary || "";
 }
 
-async function rubricFor(service: any, department: string | null): Promise<string> {
-  const { data } = await service.from("marking_rubrics").select("key, department, title, body");
+async function rubricFor(service: any, department: string | null, uni = "ucl"): Promise<string> {
+  const { data } = await service.from("marking_rubrics").select("key, department, title, body").eq("uni", uni);
   const rows = (data || []) as any[];
   const dept = rows.find((r) => r.department && r.department === department);
   const base = rows.find((r) => !r.department);
-  return [dept ? `DEPARTMENT CRITERIA (${dept.title}) — apply these first:\n${dept.body.trim()}` : "", base ? `UCL-WIDE CRITERIA (${base.title}):\n${base.body.trim()}` : ""].filter(Boolean).join("\n\n");
+  const U = UNIS[uni] || UNIS.ucl;
+  return [dept ? `DEPARTMENT CRITERIA (${dept.title}) — apply these first:\n${dept.body.trim()}` : "", base ? `${U.name.toUpperCase()}-WIDE CRITERIA (${base.title}):\n${base.body.trim()}` : ""].filter(Boolean).join("\n\n");
 }
 
 function levelWord(level: number | null) {
@@ -114,7 +133,7 @@ async function callClaude(apiKey: string, system: string, user: string | any[], 
   return { ok: true as const, text, usage: data.usage, truncated: data.stop_reason === "max_tokens" };
 }
 
-const SYSTEM = "You are the examiner inside a revision website for UCL students. You write exam-style practice questions and mark practice answers the way an experienced, fair UCL examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real UCL paper; never name lecturers; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.";
+const systemFor = (U: { name: string; long: string }) => `You are the examiner inside a revision website for ${U.long} students. You write exam-style practice questions and mark practice answers the way an experienced, fair ${U.long} examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real ${U.name} paper; never name lecturers; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.`;
 
 const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 const KINDS = ["essay", "problem", "short"];
@@ -133,11 +152,12 @@ async function writeMap(service: any, apiKey: string, mod: any, source: "open" |
   const fail = (error: string) => service.from("question_jobs").update({ status: "failed", finished_at: new Date().toISOString(), error: error.slice(0, 500) }).eq("code", code);
   try {
     const details = await moduleDetails(service, mod);
-    const prompt = `Build a revision Module Map for this UCL module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
+    const U = uniOf(mod);
+    const prompt = `Build a revision Module Map for this ${U.long} module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
 
 MODULE: ${mod.code} ${mod.title}
-Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${mod.credits ?? "?"} credits · ${mod.term || ""}
-Catalogue description (from UCL's public module catalogue):
+Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${mod.credits ? mod.credits + " credits" : mod.ects ? mod.ects + " ECTS" : "? credits"} · ${mod.term || ""}
+Description (from ${U.source}):
 """
 ${details.slice(0, 5000)}
 """
@@ -146,15 +166,15 @@ Rules:
 - 8 topics (6 if the description is thin, up to 10 for a broad module). "title" under 8 words; "summary" one sentence under 25 words on what the topic covers. Stay within what the description says the module covers; where it is thin, use the standard core of this subject at this level.
 - For each topic write:
   • "recall": 2 Foundation questions on core definitions, key terms, principles, key cases / thinkers / equations. Each has a model "a" (answer) under 45 words that a student can check themselves against.
-  • "exam": 1 exam-style question at the standard of a typical UCL exam for this module.
+  • "exam": 1 exam-style question at the standard of a typical ${U.long} exam for this module.
   • "first": 1 harder First-class stretch question on the same topic: synoptic (links to another topic of this module), evaluative, a counter-argument to assess, or an edge case / harder calculation.
 - Match the discipline's exam format: essay questions for humanities and social sciences; for law, a mix of essay questions and problem questions (a short fact scenario to advise on); calculation / derivation questions for quantitative subjects; short structured questions with marks in brackets for sciences and medicine. Language, project, dissertation or placement modules: practise the kind of written work they assess. Exam and First questions should be answerable in about 45 minutes without notes.
 - For "exam" and "first": "kind" is "essay" | "problem" | "short"; "guide" has one sentence (under 30 words) each on what a First, a 2:1 and a 2:2 answer does for THIS question; and ONLY for a calculation, derivation or other worked numerical / formal problem, "steps" = 3-6 worked-solution steps (each under 50 words, the last giving the final answer). No "steps" for essays or law problem questions.
-- Every question under 110 words. Never copy or claim to reproduce real UCL exam questions. Only mention cases, statutes, authors or studies that are real and well established.
+- Every question under 110 words. Never copy or claim to reproduce real ${U.name} exam questions. Only mention cases, statutes, authors or studies that are real and well established.
 
 Return one JSON object:
 {"topics": [{"title": "...", "summary": "...", "recall": [{"q": "...", "a": "..."}, {"q": "...", "a": "..."}], "exam": {"kind": "essay", "question": "...", "guide": {"first": "...", "two_one": "...", "two_two": "..."}}, "first": {"kind": "essay", "question": "...", "guide": {...}}}]}`;
-    const res = await callClaude(apiKey, SYSTEM, prompt, 12000);
+    const res = await callClaude(apiKey, systemFor(U), prompt, 12000);
     if (!res.ok) {
       console.error("map upstream", code, res.status, res.text.slice(0, 300));
       if (isAccountProblem(res.status, res.text)) await handleAccountProblem(service, res.status, res.text);
@@ -301,7 +321,7 @@ Deno.serve(async (req) => {
     const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: 2, p_kind: "assess", p_tier: take.tier });
 
     const [details, rubric, { data: topics }] = await Promise.all([
-      moduleDetails(service, mod), rubricFor(service, mod.department),
+      moduleDetails(service, mod), rubricFor(service, mod.department, mod.uni || "ucl"),
       service.from("module_topics").select("position, title").eq("code", code).order("position"),
     ]);
     let guide = "", tier: string | null = null, topicPos: number | null = null;
@@ -318,7 +338,8 @@ Deno.serve(async (req) => {
       if (p?.result) prev = { id: p.id, mark_low: p.result.mark_low, mark_high: p.result.mark_high, class: p.result.class };
     }
     const src = hasAtt ? "the student's answer (for attachments, as you transcribe it)" : "the student's answer";
-    const prompt = `Mark this practice exam answer as a UCL examiner in ${mod.department || "this department"} would.
+    const U = uniOf(mod);
+    const prompt = `Mark this practice exam answer as ${U.long === "UCL" ? "a UCL" : "an " + U.long} examiner in ${mod.department || "this department"} would.
 
 MODULE: ${mod.code} ${mod.title} · ${levelWord(mod.level)} · Department: ${mod.department || "unknown"}
 Module description: """${details.slice(0, 2500)}"""
@@ -349,7 +370,7 @@ ${askTopic ? `- "topic_pos" = the number of the module topic this question mostl
 Return one JSON object:
 {"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}]${askTopic ? ', "topic_pos": int' : ""}}`;
 
-    const res = await callClaude(apiKey, SYSTEM, hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 7000);
+    const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 7000);
     if (!res.ok) {
       console.error("mark upstream", code, res.status, res.text.slice(0, 300));
       await refund();
@@ -385,7 +406,7 @@ Return one JSON object:
       model_paragraph: s(out.model_paragraph, 2500),
       rewrite: out.rewrite && typeof out.rewrite === "object" ? { quote: s(out.rewrite.quote, 300), task: s(out.rewrite.task, 400) } : null,
       cards: cards.length,
-      rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : "UCL-wide",
+      rubric: rubric.startsWith("DEPARTMENT CRITERIA") ? mod.department : U.name + "-wide",
     };
     // with attachments, keep a typed copy of what was marked so history shows the answer
     let stored = answer;

@@ -186,6 +186,8 @@ body.sx:has(.db){background:var(--paper)}
 .db-setup-in .lead{margin:0 0 20px}
 .db-steps{display:flex;gap:16px;font-family:var(--mono);font-size:13px;color:var(--muted);margin:0 0 10px}
 .db-steps .on{color:var(--ink);font-weight:500;border-bottom:2px solid var(--accent)}
+.db-unis{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:18px 0 26px}
+.db-sub{font-size:1.25rem;margin:4px 0 2px}
 .db-courses,.db-years{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:18px 0}
 .db-years{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
 .db-course{font:inherit;font-weight:600;text-align:left;padding:16px 18px;border-radius:14px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}

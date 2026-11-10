@@ -1,4 +1,4 @@
-/* The marker: find any UCL module, see its Module Map (topics, red/amber/green, mastery), practise at three levels
+/* The marker: find any UCL or Imperial module, see its Module Map (topics, red/amber/green, mastery), practise at three levels
    (Foundation quick recall, Exam-style, First-class stretch), get answers marked against UCL's grade bands and the
    department's criteria, see exactly where marks were lost, rewrite and re-mark. Progress maths lives in study.js. */
 (function () {
@@ -12,7 +12,13 @@
   var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove, exam dates
   // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
   function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
-  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4})\\/?$');
+  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4,5})\\/?$');
+  // universities: UCL modules (4-digit codes) and Imperial modules (5-digit codes) share one catalogue table
+  var UNIS = { ucl: { short: 'UCL', poss: 'UCL’s', exam: 'a UCL', src: 'Full description on UCL’s catalogue', cat: 'UCL’s module catalogue' },
+    imperial: { short: 'Imperial', poss: 'Imperial’s', exam: 'an Imperial', src: 'Imperial’s programme specification', cat: 'Imperial’s programme specifications' } };
+  function uniId() { return state.mod && state.mod.uni ? state.mod.uni : HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
+  function U() { return UNIS[uniId()] || UNIS.ucl; }
+  function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   var state = {
     q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
     attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, rtab: 'breakdown', rewrite: null, busy: false, err: ''
@@ -110,7 +116,7 @@
     };
     if (state.mod && state.mod.code === r.m) { after(); return; }
     state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
-    rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,faculty,department,term,summary,url').then(function (rows) {
+    rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,ects,faculty,department,term,summary,url,uni,programmes,year_of_study,mtype,status').then(function (rows) {
       if (!rows || !rows.length) { state.mod = { code: r.m, missing: true }; render(); return; }
       state.mod = rows[0]; loadMap(); loadMine(); after();
     }).catch(function (e) { state.err = e.message; render(); });
@@ -118,7 +124,7 @@
   function setTitle() {
     if (HOOKS) return;
     var m = state.mod;
-    document.title = m && m.title ? m.code + ' ' + m.title + ' · practice questions and marking · ' + BRAND : 'Find your UCL module · ' + BRAND;
+    document.title = m && m.title ? m.code + ' ' + m.title + ' · practice questions and marking · ' + BRAND : 'Find your ' + U().short + ' module · ' + BRAND;
   }
 
   // ---------- data ----------
@@ -129,8 +135,8 @@
     if (term.length < 2) { state.results = []; renderList(); return; }
     searchTimer = setTimeout(function () {
       var seq = ++searchSeq, t = term.replace(/[%*,()]/g, ' ').trim();
-      var filt = /^[A-Za-z]{4}\d{0,4}$/.test(t) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
-      rest('ucl_modules?select=code,title,level,credits,department&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
+      var filt = /^[A-Za-z]{4}\d{0,5}$/.test(t) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
+      rest('ucl_modules?select=code,title,level,credits,ects,department,uni&uni=eq.' + listUni() + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
         if (seq !== searchSeq) return;
         state.results = rows || []; renderList();
       }).catch(function () { if (seq === searchSeq) { state.results = null; renderList(); } });
@@ -326,7 +332,7 @@
 
   // ---------- views ----------
   function head() {
-    return '<div class="mk-crumbs"><a href="' + BASE + '" data-go="home">' + (HOOKS ? 'Practice' : 'UCL modules') + '</a>' + (state.mod && state.mod.title ? ' <span>›</span> <a href="' + MBASE + state.mod.code + '" data-go="mod">' + esc(state.mod.code) + '</a>' : '') + '</div>';
+    return '<div class="mk-crumbs"><a href="' + BASE + '" data-go="home">' + (HOOKS ? 'Practice' : U().short + ' modules') + '</a>' + (state.mod && state.mod.title ? ' <span>›</span> <a href="' + MBASE + state.mod.code + '" data-go="mod">' + esc(state.mod.code) + '</a>' : '') + '</div>';
   }
   function viewSearch() {
     var mine = HOOKS ? HOOKS.myModules() : [];
@@ -334,16 +340,16 @@
     if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
     return '<section class="mk-hero"><span class="kicker">All ' + '6,682' + ' UCL modules</span><h1>Find your module.</h1>' +
       '<p class="lead">Search by module code, title or department. Work through each topic at three levels, write an answer, and get it marked the way your department marks.</p>' +
-      '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules">' +
+      '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + U().short + ' modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
       '<div id="mk-list" aria-live="polite"></div></section>';
   }
   function listHtml() {
     if (state.q.trim().length < 2) return '<p class="mk-hint">Start typing a module code (like <b>HIST0003</b>), a title or a department.</p>';
     if (state.results === null) return '<p class="mk-err">Couldn’t search just now. Try again.</p>';
-    if (!state.results.length) return '<p class="mk-hint">No UCL modules match that. Try the module code from your timetable or Moodle.</p>';
+    if (!state.results.length) return '<p class="mk-hint">No ' + UNIS[listUni()].short + ' modules match that. Try the module code from your timetable' + (listUni() === 'ucl' ? ' or Moodle' : '') + '.</p>';
     return '<ul class="mk-results">' + state.results.map(function (m) {
-      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + '</span></a></li>';
+      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.status ? ' · ' + esc(m.status) : '') + '</span></a></li>';
     }).join('') + '</ul>';
   }
   function bar(pct, cls) { return '<span class="mk-bar' + (cls ? ' ' + cls : '') + '" role="img" aria-label="' + pct + '% mastered"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></span>'; }
@@ -354,7 +360,7 @@
   }
   function viewModule() {
     var m = state.mod;
-    if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in UCL’s module catalogue. Check the code and <a href="' + BASE + '" data-go="home">search again</a>.</p></section>';
+    if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in ' + U().cat + '. Check the code and <a href="' + BASE + '" data-go="home">search again</a>.</p></section>';
     if (m.loading) return head() + '<section class="mk-card"><p class="mk-hint">Loading module…</p></section>';
     var html = head();
     var mm = state.topics && state.topics.length ? ST.moduleMastery(state.topics, studyData()) : null, signed = !!getSession();
@@ -362,7 +368,7 @@
       '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
       (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
       examRow(m) +
-      (m.summary ? '<p class="mk-sum">' + esc(m.summary.replace(/\.\.\.$/, '…')) + ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">Full description on UCL’s catalogue</a></p>' : '') + '</section>';
+      (m.summary || m.uni === 'imperial' ? '<p class="mk-sum">' + esc((m.summary || (m.programmes && m.programmes.length ? 'Taught on ' + m.programmes.slice(0, 3).join(', ') + (m.programmes.length > 3 ? ' and ' + (m.programmes.length - 3) + ' more' : '') + '.' : '')).replace(/\.\.\.$/, '…')) + (m.url ? ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + U().src + '</a>' : '') + '</p>' : '') + '</section>';
     if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.</p></section>';
     html += mapHtml();
     html += attemptsHtml();
@@ -370,7 +376,7 @@
   }
   function mapHtml() {
     var m = state.mod, topics = state.topics, qs = state.questions || [], signed = !!getSession();
-    var own = '<div class="mk-own"><div><b>Got a past-paper question?</b><span>Paste any question from a UCL past paper or problem sheet and get your answer marked.</span></div><button type="button" class="btn line small" data-act="own">Use my own question</button></div>';
+    var own = '<div class="mk-own"><div><b>Got a past-paper question?</b><span>Paste any question from ' + U().exam + ' past paper or problem sheet and get your answer marked.</span></div><button type="button" class="btn line small" data-act="own">Use my own question</button></div>';
     var html = '<section class="mk-card mk-map"><div class="mk-row"><h2>Module Map</h2>' + (topics && topics.length && signed ? '<span class="mk-legend"><i class="r"></i>Not confident <i class="a"></i>Getting there <i class="g"></i>Confident</span>' : '') + '</div>';
     if (topics === null) return html + '<p class="mk-hint">Loading…</p></section>';
     if (!topics.length) {
@@ -402,7 +408,7 @@
     }).join('') + '</ol>';
     var loose = qs.filter(function (q) { return q.topic_pos == null && q.tier !== 'foundation'; });
     if (loose.length) html += '<details class="mk-more"><summary>More practice questions (' + loose.length + ')</summary>' + qList(loose) + '</details>';
-    html += own + '<p class="mk-fine">Questions are written for revision from the module’s public description, in the style your department examines. They are not taken from UCL exam papers.</p></section>';
+    html += own + '<p class="mk-fine">Questions are written for revision from the module’s public description, in the style your department examines. They are not taken from ' + U().short + ' exam papers.</p></section>';
     return html;
   }
   function recallItem(q) {
@@ -451,7 +457,7 @@
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
-      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against UCL’s criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : 'Mark my answer') : 'Sign up free to get it marked') + '</button>') + '</div>' +
+      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against ' + U().poss + ' criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : 'Mark my answer') : 'Sign up free to get it marked') + '</button>') + '</div>' +
       '<p class="mk-fine">Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>';
     return html;
   }
@@ -468,7 +474,7 @@
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’ll come up in <a href="/dashboard">Today</a>.</p>' : '') +
       '<div class="mk-tabs" role="tablist">' + [['breakdown', 'Mark breakdown'], ['lost', 'Where you lost marks' + (lost.length ? ' (' + lost.length + ')' : '')], ['improve', 'Improve it']].map(function (t) { return '<button type="button" role="tab" aria-selected="' + (tab === t[0]) + '" data-rtab="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>';
     if (tab === 'breakdown') {
-      html += '<p class="mk-fine">Marked against ' + (r.rubric && r.rubric !== 'UCL-wide' ? 'the published grade descriptors of UCL ' + esc(r.rubric) + ' and ' : '') + 'UCL’s grade bands for ' + esc(levelName(m.level)) + '. A practice estimate, not an official mark.</p>';
+      html += '<p class="mk-fine">Marked against ' + (r.rubric && !/-wide$/.test(r.rubric) ? 'the published criteria of ' + U().short + ' ' + esc(r.rubric) + ' and ' : '') + U().poss + ' grade bands for ' + esc(levelName(m.level)) + '. A practice estimate, not an official mark.</p>';
       if (r.criteria && r.criteria.length) html += '<h3>Criterion by criterion</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band || '–') + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment) + '</p></div></li>'; }).join('') + '</ul>';
       if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
       html += '<div class="mk-row end"><button type="button" class="btn dark" data-rtab="lost">See where you lost marks →</button></div>';
