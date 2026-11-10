@@ -244,8 +244,29 @@
     if (studyP) return studyP;
     if (!force && S.today && Date.now() - studyAt < 8000) return Promise.resolve();
     studyP = Promise.all([loadAttempts().catch(function () {}), loadToday().catch(function () { S.today = S.today || { topics: [], qs: [], recalls: [], ratings: [] }; S.cards = S.cards || []; })])
-      .then(function () { studyAt = Date.now(); studyP = null; renderSide(); renderTop(); var t = tabOf(location.pathname); if (t === 'home' && homeDraw) homeDraw(); if (t === 'exam') renderExam(); });
+      .then(function () { studyAt = Date.now(); studyP = null; renderSide(); renderTop(); var t = tabOf(location.pathname); if (t === 'home' && homeDraw) homeDraw(); if (t === 'exam') renderExam(); if (t === 'home') maybeTour(); });
     return studyP;
+  }
+
+  // ---------- one-time dashboard tour (tour.js): first visit to Home after sign-up and set-up ----------
+  function authUser(method, body) {
+    return token().then(function (t) {
+      if (!t) throw new Error('signin');
+      return fetch(CFG.supabaseUrl + '/auth/v1/user', { method: method || 'GET', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+        .then(function (r) { if (!r.ok) throw new Error('auth'); return r.json(); });
+    });
+  }
+  function tourCtx() {
+    var n = S.today ? nextUp() : null, m = S.mods[0];
+    return { uid: uid(), plan: S.plan, uni: UN().short, tutor: m ? tutorName(m.department, m.uni) : 'Professor ' + UN().short,
+      nextHref: n && n.href ? n.href : n && n.mod ? '/dashboard/practice/' + n.mod.code : '',
+      nav: nav, track: track, auth: authUser, ready: function () { return !!S.today && tabOf(location.pathname) === 'home' && !PAL.open; } };
+  }
+  var tourTried = false;
+  function maybeTour() {
+    if (tourTried || !window.UnizyTour || !S.profile) return;
+    tourTried = true;
+    window.UnizyTour.maybe(tourCtx());
   }
 
   // command palette (Ctrl/⌘ K): any of your modules or topics, any catalogue module, "ECON0002 W3" jumps to topic 3
@@ -866,10 +887,11 @@
     var plan = !pl ? 'Loading…' : pl.tier === 'pro' ? 'Pro until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : pl.tier === 'trial' ? 'Free trial until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) + (pl.assessPerDay ? '. Today: ' + Math.max(0, pl.assessLeft) + ' of ' + pl.assessPerDay + ' markings and ' + Math.max(0, pl.actionsLeft) + ' of ' + pl.actionsPerDay + ' tutor questions left' : '') : 'Free trial ended. Go Pro to keep using marking and the tutor';
     el.innerHTML = '<header class="db-hello"><h1>Account</h1></header>' +
       '<section class="mk-card"><dl class="db-dl"><dt>Name</dt><dd>' + esc(u.name || '–') + '</dd><dt>Email</dt><dd>' + esc(u.email || '') + '</dd><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || '–') + (p.year ? ', Year ' + p.year : '') + ' <button type="button" class="mk-clear" id="db-recourse">Change</button></dd><dt>Plan</dt><dd>' + esc(plan) + '</dd></dl>' +
-      '<div class="mk-row start">' + (pl && pl.tier === 'pro' ? (CFG.stripe && CFG.stripe.portal ? '<a class="btn line small" href="' + esc(CFG.stripe.portal) + '" target="_blank" rel="noopener">Manage billing</a>' : '') : '<a class="btn primary small" href="/pricing">Go Pro</a>') + '<a class="btn line small" href="/reset.html">Change password</a><button type="button" class="btn line small" id="db-logout">Log out</button></div></section>' +
+      '<div class="mk-row start">' + (pl && pl.tier === 'pro' ? (CFG.stripe && CFG.stripe.portal ? '<a class="btn line small" href="' + esc(CFG.stripe.portal) + '" target="_blank" rel="noopener">Manage billing</a>' : '') : '<a class="btn primary small" href="/pricing">Go Pro</a>') + '<a class="btn line small" href="/reset.html">Change password</a><button type="button" class="btn line small" id="db-logout">Log out</button><button type="button" class="btn line small" id="db-tour">Replay the dashboard tour</button></div></section>' +
       '<section class="mk-card"><h2>Your modules</h2><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="mk-x" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">×</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><a class="btn line small" href="/dashboard/practice">+ Add a module</a></section>' +
       '<p class="db-more">Need help? Email <a href="mailto:' + esc(CFG.contactEmail || 'hello@unizy.uk') + '">' + esc(CFG.contactEmail || 'hello@unizy.uk') + '</a>. Notes and flashcards are in the <a href="/app">study tools</a>.</p>';
     $('db-logout').onclick = logout;
+    $('db-tour').onclick = function () { nav('/dashboard'); track('tour_replay'); setTimeout(function () { if (window.UnizyTour) window.UnizyTour.start(tourCtx()); }, 700); };
     $('db-recourse').onclick = function () { S.setup = null; S.profile = null; loadCourses().then(renderSetup); };
     el.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { removeMod(b.getAttribute('data-rm')).then(renderAccount); }; });
   }
