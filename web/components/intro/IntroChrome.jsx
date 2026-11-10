@@ -151,7 +151,7 @@ export function EndCard({ setRef, authed, uni, onEnter, onCta }) {
             <a href={authed ? '/dashboard/practice' : '/signup'} onClick={onCta} className="rounded-full bg-[#ece6da] px-6 py-3 text-[14px] font-medium text-[#121417] transition-colors hover:bg-white">
               {authed ? 'Back to my modules' : 'Mark my first answer'}
             </a>
-            <button type="button" onClick={onEnter} data-testid="intro-enter" className="rounded-full border border-[#ece6da]/20 px-6 py-3 text-[14px] text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/45 hover:text-[#ece6da]">
+            <button type="button" onClick={onEnter} data-testid="intro-enter" className="rounded-full border border-[#ece6da]/20 bg-[#0d0f12]/55 px-6 py-3 backdrop-blur-md text-[14px] text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/45 hover:text-[#ece6da]">
               Enter Unizy ↓
             </button>
           </div>
