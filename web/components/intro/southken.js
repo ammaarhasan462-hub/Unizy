@@ -104,7 +104,7 @@ export function buildSouthKen(renderer, { mobile }) {
     for (let x = -300; x < KENS_GORE; x += 3) for (let z = 197; z < 219; z += 3) { ctx.fillStyle = ((x + z) / 3) % 2 ? '#9d978b' : '#b5ae9f'; road(x, z, x + 3, z + 3); }
     // the park: grass, the Serpentine, the Round Pond, the paths
     const [p0x, p0z] = toPx(PARK_X, -H);
-    ctx.fillStyle = '#62823f';
+    ctx.fillStyle = '#6c8c46';
     ctx.fillRect(p0x, p0z, S - p0x, S);
     for (let i = 0; i < 16000; i++) { ctx.fillStyle = `rgba(${55 + r() * 50},${85 + r() * 50},${30 + r() * 25},.35)`; const [a, b] = toPx(PARK_X + r() * (H - PARK_X), -H + r() * 2 * H); ctx.fillRect(a, b, 6 * k, 6 * k); }
     ctx.strokeStyle = '#c4b89c';
@@ -149,6 +149,9 @@ export function buildSouthKen(renderer, { mobile }) {
     zl.forEach((l) => { const step = l.major ? 22 : 30; for (let x = -H; x < KENS_GORE; x += step) { lamp(x, l.c - l.w / 2 - 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); lamp(x + step / 2, l.c + l.w / 2 + 1.5, l.major ? 11 : 8, l.major ? 0.85 : 0.6, l.major ? led : warm); } });
     // park paths, the Albert Memorial, Imperial's walkways
     for (let x = 430; x < H; x += 26) lamp(x, -55, 6, 0.5, warm);
+    for (let x = 430; x < H; x += 26) lamp(x, -605, 6, 0.45, warm);
+    for (let t = 0; t <= 1; t += 0.05) { lamp(480 + (790 - 480) * t, -55 + (-450 + 55) * t, 5, 0.4, warm); lamp(480 + (801 - 480) * t, -55 + (236 + 55) * t, 5, 0.4, warm); }
+    for (let z = -900; z < 200; z += 28) lamp(440, z, 5, 0.4, warm);
     for (let z = 280; z < H; z += 30) lamp(470, z, 6, 0.45, warm);
     lamp(456, -55, 46, 0.32, warm);
     for (let z = -60; z < 160; z += 12) { lamp(-18, z, 6, 0.75, warm); lamp(26, z, 6, 0.75, warm); }
