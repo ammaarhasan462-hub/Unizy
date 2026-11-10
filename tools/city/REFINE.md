@@ -38,8 +38,6 @@ Keep to these limits:
 
 ## Backlog (top = next)
 
-> 10-11 Nov: a live session is reworking the facades in city.js (windows with depth and rooms behind them) and the UCL library interior (scanned CC0 models). Until that lands on main, take items that don't touch facade shading or library.js: the Thames, heights from LiDAR, trees, or street furniture.
-
 
 - [ ] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
   - use OSM `shop=*` and `amenity=*` nodes inside or next to a footprint to flag the building;
@@ -79,6 +77,15 @@ Keep to these limits:
 
 ## Log
 
+- 2026-11-10 (late): photoreal pass is live.
+  - Rooms behind every window (interior mapping), with curtains, reveals, sills and lintels.
+  - Scanned CC0 furniture from Poly Haven, listed in tools/assets/want.txt and fetched by fetch-assets.yml:
+    - UCL reading room: chairs, chandeliers, busts, paintings, encyclopaedias and spectacles;
+    - Imperial exam hall: stacking chairs.
+  - Oak, mahogany, panelled plaster, a worn runner, veined marble, old glass, an interior HDRI, contact shadows and lamp pools.
+  - Scanned ashlar on the Wilkins Building and the Queen's Tower.
+  - Stand-in figures removed.
+  - Next interior ideas: fluted marble columns with capitals, and more shelving on the end wall.
 - 2026-11-10: Real OSM cities live for UCL and Imperial. They have:
   - 13.6k (UCL) and 11.3k (Imperial) buildings;
   - the real streets, parks and water;
