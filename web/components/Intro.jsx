@@ -228,7 +228,7 @@ export default function Intro() {
       dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
       if (count.current) { const t = `${String(Math.max(0, cur + 1)).padStart(2, '0')} / ${String(RAIL.length).padStart(2, '0')}`; if (count.current.textContent !== t) count.current.textContent = t; }
       if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, tb) * (1 - ss(0.002, 0.03, p))).toFixed(3);
-      if (rail.current) rail.current.style.opacity = ss(0.6, 1.6, tb).toFixed(3);
+      if (rail.current) rail.current.style.opacity = (ss(0.6, 1.6, tb) * (1 - ss(0.95, 0.975, p))).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
       if (target >= 1.04 && p > 0.995) finish('end');
     };

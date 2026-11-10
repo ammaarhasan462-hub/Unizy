@@ -101,7 +101,7 @@ export function Chapter({ c, setRef, side }) {
   return (
     <section
       ref={setRef}
-      className={`pointer-events-none invisible absolute bottom-[11vh] w-full max-w-[640px] px-6 sm:px-14 ${right ? 'right-0 sm:text-right' : 'left-0'}`}
+      className={`pointer-events-none invisible absolute bottom-[11vh] w-full max-w-[680px] px-6 ${right ? 'right-0 sm:pl-14 sm:pr-44 sm:text-right' : 'left-0 sm:px-14'}`}
       style={{ opacity: 0 }}
     >
       <p className={`flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.26em] text-[#d6a35c]/90 ${right ? 'sm:justify-end' : ''}`}>
@@ -142,7 +142,7 @@ export function EndCard({ setRef, authed, uni, onEnter, onCta }) {
     ? { code: 'Practice question', title: 'A uniform rod swinging about one end', crit: 'Imperial class bands', mark: '64', range: '62–66', cls: '2:1', note: 'Correct method, but the small-angle step is asserted, not justified. Two marks.' }
     : { code: 'ECON0013', title: 'Microeconomics', crit: 'UCL Economics criteria', mark: '64', range: '62–66', cls: '2:1', note: 'You describe the model well. The question asked you to evaluate it. That’s the 2:1.' };
   return (
-    <div ref={setRef} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[8vh] sm:px-14" style={{ opacity: 0 }}>
+    <div ref={setRef} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[8vh] sm:pl-14 sm:pr-24" style={{ opacity: 0 }}>
       <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-10 lg:flex-row lg:items-end">
         <div>
           <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.26em] text-[#d6a35c]/90"><span>06</span><span className="h-px w-7 bg-[#d6a35c]/40" /><span className="text-[#ece6da]/55">Marked</span></p>
