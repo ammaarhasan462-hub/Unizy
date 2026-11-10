@@ -17,6 +17,17 @@ os.makedirs(OUT, exist_ok=True)
 R_EARTH = 6378137.0
 DETAIL = 1500.0  # matches MAP_HALF in web/components/intro/shaders.js
 
+# per site: download centre (also the fallback origin), the named building the origin sits on, and the rectangles
+# (x0, x1, z0, z1 in the site frame) left clear for the hand-built campus model
+SITES = {
+    'ucl': {'centre': (51.5246, -0.1339)},  # frame from Gower Street and the Wilkins Building, see bake()
+    'imperial': {'centre': (51.49825, -0.17676), 'anchor': ["Queen's Tower"], 'keep_out': [(-26, 210, -183, 199)]},
+    # Queen Mary (Mile End) and LSE (Aldwych): origins on the Queens' Building and the Old Building. Add keep_out
+    # rectangles once their hand-built campus models exist.
+    'qmul': {'centre': (51.52395, -0.04018), 'anchor': ["Queens' Building", 'Queens Building'], 'keep_out': []},
+    'lse': {'centre': (51.51432, -0.11655), 'anchor': ['Old Building'], 'keep_out': []},
+}
+
 
 def load(name):
     """Overpass JSON (fetch_city.py) or osmium GeoJSON-seq (fetch-city-pbf.yml), as Overpass-style elements."""
@@ -294,7 +305,7 @@ def height_of(t, a, site, seed):
 def bake(site):
     els = load(site)
     # ------------------------------------------------------------------ anchors / frame
-    tmp = Frame(*({'ucl': (51.5246, -0.1339), 'imperial': (51.4982, -0.1768)}[site]))
+    tmp = Frame(*SITES[site]['centre'])
     named = {}
     for el in els:
         n = el.get('tags', {}).get('name')
@@ -341,9 +352,12 @@ def bake(site):
             wx = fr0(51.52467, -0.13395)[0]
         fr = Frame(tmp.lat0, tmp.lon0, rot, wx, gz - 115.0)
         info.update({'rot_deg': round(math.degrees(rot), 2), 'gower_z_raw': round(gz, 1), 'portico_x_raw': round(wx, 1)})
-        keep_out = [(-82, 82, -84, 114), (-95, 95, 114, 250)]
+        # the hand-built Wilkins Building and Main Quad (ucl.js), and the low frontage across Gower Street
+        keep_out = [(-22, 22, -66, 114), (-67, 67, -28, 114), (-95, 95, 114, 250)]
     else:
-        qt = named.get("Queen's Tower", [])
+        # origin on the anchor building (Queen's Tower, Queens' Building, ...), true north = +x
+        cfg = SITES[site]
+        qt = [el for n in cfg['anchor'] for el in named.get(n, [])]
         pts = el_pts(qt[0], tmp.enu) if qt else []
         if pts:
             e = sum(p[0] for p in pts) / len(pts)
@@ -351,10 +365,10 @@ def bake(site):
             lat0 = tmp.lat0 + n / tmp.ky
             lon0 = tmp.lon0 + e / tmp.kx
         else:
-            lat0, lon0 = 51.49825, -0.17676
+            lat0, lon0 = cfg['centre']
         fr = Frame(lat0, lon0, 0.0)
-        info['queens_tower'] = [round(lat0, 6), round(lon0, 6), bool(pts)]
-        keep_out = [(-26, 210, -183, 199)]
+        info['anchor'] = [cfg['anchor'][0], round(lat0, 6), round(lon0, 6), bool(pts)]
+        keep_out = cfg['keep_out']
     for nm in ('Gower Street', 'Gordon Square', 'Russell Square', 'Senate House', 'British Museum', 'Euston Road', 'Tottenham Court Road',
                'Exhibition Road', "Queen's Gate", 'Prince Consort Road', 'Imperial College Road', 'Cromwell Road', 'Kensington Gore', 'Royal Albert Hall', 'Natural History Museum', 'Science Museum'):
         ps = [p for el in named.get(nm, []) for p in el_pts(el, fr)]
@@ -596,6 +610,6 @@ def textures():
 
 
 if __name__ == '__main__':
-    for s in (sys.argv[1:] or ['ucl', 'imperial']):
+    for s in (sys.argv[1:] or [k for k in SITES if os.path.exists(os.path.join(RAW, f'{k}.geojsonseq.gz')) or os.path.exists(os.path.join(RAW, f'{k}.json.gz'))]):
         bake(s)
     textures()

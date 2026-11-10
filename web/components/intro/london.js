@@ -47,13 +47,13 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   const r = rng(1234);
   const group = new THREE.Group();
   // the real Bloomsbury from OpenStreetMap when it has loaded; the hand-built grid below otherwise
-  const keepReal = (x, z) => !inRect(x, z, UCL_RECT, 6) && !inRect(x, z, [-95, 95, 112, 250], 0);
+  const keepReal = (x, z) => !inRect(x, z, [-22, 22, -66, 114], 4) && !inRect(x, z, [-67, 67, -28, 114], 4) && !inRect(x, z, [-95, 95, 112, 250], 0);
   let real = null;
   if (cityData) {
     // the hand-built campus keeps its own ground: the Main Quad's paving, lawns and the Portico's approach
     const paint = (ctx, toPx, k) => {
       const box = (x0, z0, x1, z1) => { const [a, b] = toPx(x0, z0); const [c, d] = toPx(x1, z1); ctx.fillRect(a, b, c - a, d - b); };
-      ctx.fillStyle = '#9d978a'; box(UCL_RECT[0], UCL_RECT[2], UCL_RECT[1], 104);
+      ctx.fillStyle = '#9d978a'; box(-67, -28, 67, 104); box(-22, -66, 22, -28);
       ctx.fillStyle = '#a7a08f'; box(-48, -5, 48, 108);
       ctx.fillStyle = '#64843f'; box(-40, 30, -6, 100); box(6, 30, 40, 100);
       ctx.fillStyle = '#c9c1ad'; box(-6, 14, 6, 108);
