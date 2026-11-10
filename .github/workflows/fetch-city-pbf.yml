@@ -1,0 +1,58 @@
+# Same data as fetch-city.yml, but from the Geofabrik Greater London extract (no Overpass queue):
+# OpenStreetMap (c) OpenStreetMap contributors, ODbL. Writes tools/city/raw/<site>.geojsonseq.gz.
+name: Fetch city data (extract)
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fetch-city-pbf.yml'
+      - 'tools/city/pbf_filter.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '41 4 2 * *' # monthly refresh
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-city-pbf
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download Greater London
+        run: curl -sSfL -o /tmp/london.osm.pbf https://download.geofabrik.de/europe/united-kingdom/england/greater-london-latest.osm.pbf && ls -la /tmp/london.osm.pbf
+      - name: Extract
+        run: |
+          set -e
+          mkdir -p tools/city/raw
+          cd /tmp
+          F="nwr/building nwr/building:part w/highway w/area:highway nwr/leisure nwr/landuse nwr/natural nwr/water nwr/waterway nwr/amenity=parking,fountain w/railway nwr/man_made=tower,bridge"
+          ex() { # name minlon minlat maxlon maxlat
+            osmium extract -s smart -b "$2,$3,$4,$5" london.osm.pbf -o "$1-box.osm.pbf" --overwrite
+            osmium tags-filter "$1-box.osm.pbf" $F -o "$1-f.osm.pbf" --overwrite
+            osmium export "$1-f.osm.pbf" -f geojsonseq -a type,id -u type_id --geometry-types=point,linestring,polygon -o "$1.geojsonseq" --overwrite
+            gzip -9 -c "$1.geojsonseq" > "$GITHUB_WORKSPACE/tools/city/raw/$1.geojsonseq.gz"
+            ls -la "$GITHUB_WORKSPACE/tools/city/raw/$1.geojsonseq.gz"
+          }
+          ex ucl -1.6100e-1 51.5075 -1.0680e-1 51.5417
+          ex imperial -2.0430e-1 51.4811 -1.4930e-1 51.5153
+          # tall buildings and the Thames for the skyline
+          osmium extract -s smart -b "-0.2500,51.4600,0.0300,51.5650" london.osm.pbf -o sky-box.osm.pbf --overwrite
+          osmium tags-filter sky-box.osm.pbf nwr/building nwr/building:part nwr/waterway=river nwr/water=river -o sky-f.osm.pbf --overwrite
+          osmium export sky-f.osm.pbf -f geojsonseq -a type,id -u type_id --geometry-types=linestring,polygon -o sky.geojsonseq --overwrite
+          python3 "$GITHUB_WORKSPACE/tools/city/pbf_filter.py" sky.geojsonseq "$GITHUB_WORKSPACE/tools/city/raw/skyline.geojsonseq.gz"
+          ls -la "$GITHUB_WORKSPACE/tools/city/raw/"
+      - name: Commit
+        run: |
+          git config user.name "city-fetch"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A tools/city/raw
+          git commit -m "Fetch city data (extract)" || exit 0
+          for i in 1 2 3 4; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done
