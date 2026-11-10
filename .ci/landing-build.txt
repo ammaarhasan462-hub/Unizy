@@ -1,5 +1,5 @@
 status: success
-sha: 0d8195baf45380d915251144a869523d11b7c3b6
+sha: cbd6ea58c4142cffb64eb7258c0f087ce3951f23
 --- build
 
 > unizy-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: 0d8195baf45380d915251144a869523d11b7c3b6
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 7.9s
+ ✓ Compiled successfully in 10.2s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -52,4 +52,4 @@ unizy-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 8s
+added 116 packages in 11s
