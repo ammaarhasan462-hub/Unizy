@@ -1,6 +1,6 @@
-# Downloads the free source data for the intro cities (OpenStreetMap via Overpass, CC0 textures from Poly Haven)
-# into tools/city/raw/ and commits it, so the bake step can run offline. Re-run any time to refresh the map data.
-name: Fetch city data
+# Downloads CC0 photo-scanned textures (Poly Haven) for the intro cities into tools/city/raw/tex and commits them.
+# (Map data comes from fetch-city-pbf.yml.)
+name: Fetch city textures
 
 on:
   push:
@@ -8,8 +8,6 @@ on:
       - 'tools/city/fetch_city.py'
       - '.github/workflows/fetch-city.yml'
   workflow_dispatch:
-  schedule:
-    - cron: '17 4 1 * *' # monthly refresh: picks up newly mapped buildings and heights
 
 permissions:
   contents: write
@@ -28,7 +26,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Fetch
-        run: python tools/city/fetch_city.py
+        run: python tools/city/fetch_city.py tex
       - name: Commit
         if: always()
         run: |
