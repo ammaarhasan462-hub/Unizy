@@ -56,10 +56,26 @@ def catalogue():
 
 
 def fetch(ids):
+    want = {}
+    for line in open(os.path.join(HERE, 'want.txt')):
+        if line.strip() and not line.startswith('#'):
+            parts = line.split('#')[0].split()
+            want[parts[0]] = parts[1:]
     for aid in ids:
         files = get(f'https://api.polyhaven.com/files/{aid}')
         d = os.path.join(HERE, 'raw', aid)
         os.makedirs(d, exist_ok=True)
+        if 'tex' in want.get(aid, []):
+            # a surface texture: the full-resolution photo maps, converted to 1024 px WebP for the site
+            from PIL import Image
+            td = os.path.join(HERE, '..', '..', 'site', 'assets', 'models', 'tex')
+            os.makedirs(td, exist_ok=True)
+            for mp, key in (('Diffuse', 'diff'), ('nor_gl', 'nor'), ('Rough', 'rough')):
+                if mp in files and '1k' in files[mp]:
+                    im = Image.open(io.BytesIO(get(files[mp]['1k']['jpg']['url'], True))).convert('RGB').resize((1024, 1024), Image.LANCZOS)
+                    im.save(os.path.join(td, f'{aid}_{key}.webp'), quality=84, method=6)
+            print('texture', aid)
+            continue
         if 'gltf' in files:
             res = '1k' if '1k' in files['gltf'] else sorted(files['gltf'])[0]
             g = files['gltf'][res]['gltf']

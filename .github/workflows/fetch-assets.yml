@@ -40,7 +40,10 @@ jobs:
           for g in tools/assets/raw/*/*.gltf; do
             [ -f "$g" ] || continue
             id=$(basename "$g" .gltf)
-            npx -y @gltf-transform/cli@4 optimize "$g" "site/assets/models/$id.glb" --compress quantize --texture-compress webp --texture-size 512 --simplify false 2>&1 | tail -n 3
+            # optional second column in want.txt: simplify ratio (fraction of triangles to keep)
+            ratio=$(awk -v id="$id" '$1==id && $2 ~ /^[0-9.]+$/ {print $2}' tools/assets/want.txt)
+            if [ -n "$ratio" ]; then simp="--simplify true --simplify-ratio $ratio --simplify-error 0.002"; else simp="--simplify false"; fi
+            npx -y @gltf-transform/cli@4 optimize "$g" "site/assets/models/$id.glb" --compress quantize --texture-compress webp --texture-size 512 $simp 2>&1 | tail -n 3
           done
           for h in tools/assets/raw/*/*.hdr; do [ -f "$h" ] && cp "$h" site/assets/models/; done
           for t in tools/assets/raw/*/*_1k.jpg; do [ -f "$t" ] && python3 -c "import sys;from PIL import Image;i=Image.open(sys.argv[1]).convert('RGB');i.save(sys.argv[2],quality=86,optimize=True,progressive=True)" "$t" "site/assets/models/$(basename "$t")"; done
