@@ -34,7 +34,18 @@ def load(name):
     p = os.path.join(RAW, f'{name}.json.gz')
     if os.path.exists(p):
         with gzip.open(p) as f:
-            return json.load(f)['elements']
+            els = json.load(f)['elements']
+        # the Overpass snapshot has no shop nodes: take those from the monthly extract
+        if os.path.exists(os.path.join(RAW, f'{name}.geojsonseq.gz')):
+            have = {(round(e['lat'], 6), round(e['lon'], 6)) for e in els if e['type'] == 'node'}
+            for e in load_seq(name):
+                if e['type'] == 'node' and shop_kind(e['tags']) is not None and (round(e['lat'], 6), round(e['lon'], 6)) not in have:
+                    els.append(e)
+        return els
+    return load_seq(name)
+
+
+def load_seq(name):
     p = os.path.join(RAW, f'{name}.geojsonseq.gz')
     if not os.path.exists(p):
         raise FileNotFoundError(p)
