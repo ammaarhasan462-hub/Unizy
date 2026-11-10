@@ -1,0 +1,1 @@
+# Poly Haven asset ids to download (one per line, then a comment)
