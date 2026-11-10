@@ -144,7 +144,7 @@ export function drawDashboard(ctx, W, H, f) {
   ctx.fill();
   ctx.strokeStyle = 'rgba(184,134,47,.4)';
   ctx.stroke();
-  text(ctx, 'Pro trial', 60, H - 100, `600 26px ${f.display}`, INK);
+  text(ctx, 'Free trial', 60, H - 100, `600 26px ${f.display}`, INK);
   text(ctx, '6 days left', 60, H - 64, `400 22px ${f.sans}`, GOLD_D);
 
   // main

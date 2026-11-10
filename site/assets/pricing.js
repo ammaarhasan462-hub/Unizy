@@ -25,7 +25,7 @@
     var plan = choice(), url = links[plan];
     var label = { year: 'Get the year pass for £39', monthly: 'Start monthly for £5.99', exam: 'Get the exam pass for £12' }[plan];
     if (!who) { cta.href = '/signup?next=' + encodeURIComponent('/pricing'); cta.textContent = 'Create a free account to get Pro'; cta.removeAttribute('aria-disabled'); return; }
-    if (!url) { cta.removeAttribute('href'); cta.setAttribute('aria-disabled', 'true'); cta.textContent = 'Checkout opens very soon'; note.textContent = 'Payments are being switched on. Your free trial and free plan work in the meantime.'; return; }
+    if (!url) { cta.removeAttribute('href'); cta.setAttribute('aria-disabled', 'true'); cta.textContent = 'Checkout opens very soon'; note.textContent = 'Payments are being switched on. Your free trial works in the meantime.'; return; }
     var q = 'client_reference_id=' + encodeURIComponent(who.id) + (who.email ? '&prefilled_email=' + encodeURIComponent(who.email) : '');
     cta.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + q;
     cta.removeAttribute('aria-disabled');
@@ -45,8 +45,8 @@
       if (!d) return;
       var day = function (iso) { try { return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return ''; } };
       var text = d.tier === 'pro' ? 'You’re on Unizy Pro until ' + day(d.until) + (d.plan === 'monthly' && d.renews ? ' (renews automatically).' : '.') + (d.plan !== 'monthly' ? ' Buying another pass adds the time on.' : '')
-        : d.tier === 'trial' ? 'Your free Pro trial ends on ' + day(d.until) + '. Choose a plan below to keep Pro after that.'
-        : 'You’re on the free plan.';
+        : d.tier === 'trial' ? 'Your free trial ends on ' + day(d.until) + '. Choose a plan below to keep marking and the tutor after that.'
+        : 'Your free trial has ended. Choose a plan below to keep using marking and the tutor.';
       cur.textContent = text; cur.hidden = false;
       if (d.tier === 'pro' && d.plan === 'monthly') { cta.removeAttribute('href'); cta.setAttribute('aria-disabled', 'true'); cta.textContent = 'You’re already on Pro'; }
     });

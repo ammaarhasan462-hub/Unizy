@@ -252,7 +252,8 @@
     label: function () {
       var d = Plan.data; if (!d) return '';
       if (d.tier === 'pro') return 'Unizy Pro' + (d.plan === 'monthly' ? (d.renews ? ', renews ' : ', ends ') + fmtDay(d.until) : ' (' + (d.plan === 'year' ? 'year pass' : 'exam pass') + '), until ' + fmtDay(d.until));
-      if (d.tier === 'trial') return 'Free Pro trial, ends ' + fmtDay(d.until);
+      if (d.tier === 'trial') return 'Free trial, ends ' + fmtDay(d.until) + ': ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerDay + ' markings and ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerDay + ' tutor questions left today';
+      if (d.trialOver) return 'Your free trial has ended. Go Pro to use marking and the tutor.';
       return 'Free plan: ' + Math.max(0, d.actionsLeft) + ' of ' + d.actionsPerWeek + ' tutor actions and ' + Math.max(0, d.assessLeft) + ' of ' + d.assessPerWeek + ' Assess marking left this week';
     }
   };

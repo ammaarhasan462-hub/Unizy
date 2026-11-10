@@ -221,7 +221,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=1"></script><script src="/assets/dashboard.js?v=4"></script><script src="/assets/mark.js?v=4"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=1"></script><script src="/assets/dashboard.js?v=5"></script><script src="/assets/mark.js?v=4"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
 
 if __name__ == "__main__":
     (SITE / "dashboard.html").write_text(DASH_PAGE)

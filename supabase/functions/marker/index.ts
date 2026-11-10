@@ -296,7 +296,7 @@ Deno.serve(async (req) => {
         daily: "You’ve reached today’s marking limit. It resets at midnight (UK time).",
         global: "The marker is very busy today. Please try again tomorrow.",
       };
-      return json(429, { code: "rate_limited", reason: take.reason, upgrade: take.reason === "free_assess", message: msg[take.reason] || msg.daily });
+      return json(429, { code: "rate_limited", reason: take.reason, upgrade: !!take.upgrade || take.reason === "free_assess", message: take.message || msg[take.reason] || msg.daily });
     }
     const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: 2, p_kind: "assess", p_tier: take.tier });
 

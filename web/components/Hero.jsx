@@ -146,7 +146,7 @@ export default function Hero() {
             variants={{ s: { transition: { staggerChildren: 0.08, delayChildren: 1.05 } } }}
             className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-dim"
           >
-            {['All 6,682 UCL modules', 'Free 7-day Pro trial', 'No card needed'].map((t) => (
+            {['All 6,682 UCL modules', 'Free 3-day trial', 'No card needed'].map((t) => (
               <motion.li key={t} variants={{ h: { opacity: 0, y: 8 }, s: { opacity: 1, y: 0 } }} className="flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-cyan shadow-[0_0_10px_#B8862F]" />
                 {t}

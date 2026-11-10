@@ -407,7 +407,7 @@
   }
   function planChip() {
     var p = S.plan; if (!p) return '';
-    return ' <span class="db-chip' + (p.tier === 'free' ? '' : ' pro') + '">' + (p.tier === 'pro' ? 'Pro' : p.tier === 'trial' ? 'Pro trial' : 'Free plan') + '</span>';
+    return ' <span class="db-chip' + (p.tier === 'free' ? '' : ' pro') + '">' + (p.tier === 'pro' ? 'Pro' : p.tier === 'trial' ? 'Free trial' : 'Trial ended') + '</span>';
   }
   function histRow(x) {
     var r = x.result || {};
@@ -556,7 +556,7 @@
   // ---------- Account ----------
   function renderAccount() {
     var el = $('db-account'), s = getSession() || {}, u = s.user || {}, p = S.profile || {}, pl = S.plan;
-    var plan = !pl ? 'Loading…' : pl.tier === 'pro' ? 'Pro until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : pl.tier === 'trial' ? 'Free Pro trial until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'Free plan';
+    var plan = !pl ? 'Loading…' : pl.tier === 'pro' ? 'Pro until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : pl.tier === 'trial' ? 'Free trial until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) + (pl.assessPerDay ? '. Today: ' + Math.max(0, pl.assessLeft) + ' of ' + pl.assessPerDay + ' markings and ' + Math.max(0, pl.actionsLeft) + ' of ' + pl.actionsPerDay + ' tutor questions left' : '') : 'Free trial ended. Go Pro to keep using marking and the tutor';
     el.innerHTML = '<header class="db-hello"><h1>Account</h1></header>' +
       '<section class="mk-card"><dl class="db-dl"><dt>Name</dt><dd>' + esc(u.name || '–') + '</dd><dt>Email</dt><dd>' + esc(u.email || '') + '</dd><dt>Course</dt><dd>' + esc(p.course || '–') + (p.year ? ', Year ' + p.year : '') + ' <button type="button" class="mk-clear" id="db-recourse">Change</button></dd><dt>Plan</dt><dd>' + esc(plan) + '</dd></dl>' +
       '<div class="mk-row start">' + (pl && pl.tier === 'pro' ? (CFG.stripe && CFG.stripe.portal ? '<a class="btn line small" href="' + esc(CFG.stripe.portal) + '" target="_blank" rel="noopener">Manage billing</a>' : '') : '<a class="btn primary small" href="/pricing">Go Pro</a>') + '<a class="btn line small" href="/reset.html">Change password</a><button type="button" class="btn line small" id="db-logout">Log out</button></div></section>' +

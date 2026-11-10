@@ -91,7 +91,7 @@ export function Reviews() {
 }
 
 export function Pricing() {
-  const free = ['7 days of Pro free when you sign up', 'Then 1 answer marked every week', 'Every practice question, every module', 'Your marked answers saved'];
+  const free = ['3 days free when you sign up, no card needed', '3 answers marked a day', '3 tutor questions a day', 'Then go Pro to keep marking'];
   const pro = ['Up to 30 answers marked a day', 'Your tutor for every module', 'Rewrite and resubmit as often as you like', 'Or £39 a year, or £12 for an exam-season pass'];
   const Tick = () => <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 fill-none stroke-cyan stroke-[2.4]"><path d="M5 12l5 5 9-10" /></svg>;
   return (
@@ -102,7 +102,7 @@ export function Pricing() {
         <div className="mt-14 grid max-w-[900px] gap-5 md:grid-cols-2">
           <Reveal>
             <SpotCard className="glass h-full rounded-[30px] p-8">
-              <h3 className="font-display text-[22px] font-semibold">Free</h3>
+              <h3 className="font-display text-[22px] font-semibold">Free trial</h3>
               <p className="mt-3 font-display text-6xl font-bold tracking-tight">£0</p>
               <ul className="mt-7 space-y-3 text-[15px] text-ink/85">{free.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>
               <a href="/signup" onClick={() => track('lp_price_free')} className="btn btn-ghost mt-8 w-full py-3.5">Start free</a>
@@ -114,7 +114,7 @@ export function Pricing() {
               <SpotCard className="relative h-full rounded-[29px] bg-white p-8">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-[22px] font-semibold">Pro</h3>
-                  <span className="rounded-full bg-linear-to-r from-vio to-blue px-3 py-1 text-white font-mono text-[11px] uppercase tracking-wider">7 days free</span>
+                  <span className="rounded-full bg-linear-to-r from-vio to-blue px-3 py-1 text-white font-mono text-[11px] uppercase tracking-wider">Try 3 days free</span>
                 </div>
                 <p className="mt-3 font-display text-6xl font-bold tracking-tight">£5.99<span className="ml-1 text-[17px] font-medium text-mute">/ month</span></p>
                 <ul className="mt-7 space-y-3 text-[15px] text-ink/85">{pro.map((t) => <li key={t} className="flex gap-3"><Tick />{t}</li>)}</ul>

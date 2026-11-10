@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
       daily: "You’ve used today’s tutor allowance. It resets at midnight (UK time). Notes, flashcards and tests still work.",
       global: "Unizy’s tutor is very busy today and has reached its daily limit. Please try again tomorrow.",
     };
-    return json(429, { code: "rate_limited", reason: take.reason, upgrade: take.reason === "free_weekly" || take.reason === "free_assess", message: msg[take.reason] || msg.daily });
+    return json(429, { code: "rate_limited", reason: take.reason, upgrade: !!take.upgrade || take.reason === "free_weekly" || take.reason === "free_assess", message: take.message || msg[take.reason] || msg.daily });
   }
   const left = take.left;
   const refund = () => service.rpc("ai_refund_plan", { p_user: user.id, p_units: units, p_kind: kind, p_tier: take.tier });

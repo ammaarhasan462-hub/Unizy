@@ -100,7 +100,7 @@ const HERO = `
         <a href="/signup" class="uz-btn uz-btn-gold" data-track="lp_hero_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free</span>${ARROW}</a>
         <a href="#how" class="uz-btn uz-btn-line">See how it works</a>
       </div>
-      <ul><li>6,682 UCL modules</li><li>Free 7-day Pro trial</li><li>No card needed</li></ul>
+      <ul><li>6,682 UCL modules</li><li>Free 3-day trial</li><li>No card needed</li></ul>
     </div>
     <div class="uz-info" data-f="1">
       <span class="uz-kick">01 · Practise</span>
@@ -247,7 +247,7 @@ const NUMS = `
     </div>
   </div>
   ${mq(MODS.map(([c, t]) => `<code>${c}</code>${t}`), 'mq-a', 60)}
-  ${mq(['Marked like your department marks', 'Free 7-day Pro trial', 'No card needed', 'Every UCL module', 'Professor UCL'], 'mq-b rev', 34)}
+  ${mq(['Marked like your department marks', 'Free 3-day trial', 'No card needed', 'Every UCL module', 'Professor UCL'], 'mq-b rev', 34)}
 </section>`;
 
 export const STORY_TOP = `<div class="uz" data-uz>${HERO}${SPLIT}${GAP}${UNLOCK}${NUMS}</div>`;

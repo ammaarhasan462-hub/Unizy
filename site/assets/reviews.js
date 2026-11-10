@@ -77,7 +77,7 @@
     var box = $('write'); box.innerHTML = '';
     box.appendChild(el('h2', { text: state.mine ? 'Your review' : 'Leave a review' }));
     if (!state.token) {
-      box.appendChild(el('p', { class: 'muted', text: 'Only students who have a Unizy account and have started their free 7-day trial can leave a review, one per account. No card needed.' }));
+      box.appendChild(el('p', { class: 'muted', text: 'Only students who have a Unizy account and have started their free 3-day trial can leave a review, one per account. No card needed.' }));
       box.appendChild(el('div', { class: 'rv-actions' }, [el('a', { class: 'btn primary', href: '/signup?next=' + encodeURIComponent('/reviews'), text: 'Start free trial' }), el('a', { class: 'btn ghost', href: '/login?next=' + encodeURIComponent('/reviews'), text: 'Log in' })]));
       return;
     }
