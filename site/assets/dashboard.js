@@ -759,7 +759,7 @@
       if (a.length) {
         html += '<section class="db-sec"><div class="mk-row"><h2>Recent marked answers</h2><a class="btn line small" href="/dashboard/history">See all</a></div><ul class="mk-hist">' + a.slice(0, 5).map(histRow).join('') + '</ul></section>';
       }
-      html += '<a class="db-play-banner" href="/dashboard/play"><span class="ic" aria-hidden="true">☕</span><span class="tx"><b>Done for today? Unwind.</b><span>Easy questions reveal the letters of today’s hidden word. Can you guess it?</span></span><span class="go">Play →</span></a>';
+      html += '<a class="db-play-banner" href="/dashboard/play"><span class="ic" aria-hidden="true">☕</span><span class="tx"><b>Done for today? Play.</b><span>Two daily games: find the hidden word in Unwind, or give rare answers to climb into Thin Air.</span></span><span class="go">Play →</span></a>';
       el.innerHTML = html;
     };
     draw();
@@ -890,7 +890,43 @@
         Sync: { rest: function (path, opts) { return rawRest(path, opts); } }
       } };
     }
-    if (window.UnizyPlay) window.UnizyPlay.mount(null, { uniId: uniId(), uniShort: UN().short });
+    // two games: Unwind (play.js) and Thin Air (thinair.js, loaded the first time it's opened)
+    var host = $('uz-play'); if (!host) return;
+    var games = [
+      { id: 'unwind', name: 'Unwind', icon: '☕', sub: 'Find the hidden word' },
+      { id: 'thinair', name: 'Thin Air', icon: '🎈', sub: 'Rare answers climb higher' }
+    ];
+    if (!$('pl-switch')) {
+      host.insertAdjacentHTML('beforebegin', '<nav class="pl-switch" id="pl-switch" aria-label="Choose a game">' + games.map(function (g) {
+        return '<button type="button" data-game="' + g.id + '"><span class="ic" aria-hidden="true">' + g.icon + '</span><span class="tx"><b>' + g.name + '</b><small>' + g.sub + '</small></span></button>';
+      }).join('') + '</nav>');
+      host.insertAdjacentHTML('afterend', '<div id="uz-thinair" class="uz-thinair" hidden></div>');
+      $('pl-switch').onclick = function (e) {
+        var b = e.target.closest('[data-game]'); if (!b) return;
+        var g = b.getAttribute('data-game');
+        try { localStorage.setItem('unizy:playgame', g); } catch (err) { /* ignore */ }
+        history.replaceState(null, '', '/dashboard/play' + (g === 'thinair' ? '?g=thinair' : ''));
+        track('play_switch_' + g);
+        renderPlay();
+      };
+    }
+    var want = new URLSearchParams(location.search).get('g');
+    if (!want) { try { want = localStorage.getItem('unizy:playgame'); } catch (err) { /* ignore */ } }
+    var game = want === 'thinair' ? 'thinair' : 'unwind';
+    [].forEach.call($('pl-switch').querySelectorAll('[data-game]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-game') === game)); });
+    host.hidden = game !== 'unwind';
+    $('uz-thinair').hidden = game !== 'thinair';
+    var kit = { uniId: uniId(), uniShort: UN().short };
+    if (game === 'unwind') { if (window.UnizyPlay) window.UnizyPlay.mount(null, kit); return; }
+    if (window.UnizyThinAir) { window.UnizyThinAir.mount(kit); return; }
+    if (!document.querySelector('link[href^="/assets/thinair.css"]')) document.head.insertAdjacentHTML('beforeend', '<link rel="stylesheet" href="/assets/thinair.css?v=1">');
+    if (!document.querySelector('script[src^="/assets/thinair.js"]')) {
+      $('uz-thinair').innerHTML = '<p class="pl-note">Loading Thin Air…</p>';
+      var sc = document.createElement('script'); sc.src = '/assets/thinair.js?v=1';
+      sc.onload = function () { if (window.UnizyThinAir && !$('uz-thinair').hidden) window.UnizyThinAir.mount(kit); };
+      sc.onerror = function () { $('uz-thinair').innerHTML = '<p class="pl-note">Couldn’t load Thin Air. Check your connection and try again.</p>'; };
+      document.body.appendChild(sc);
+    }
   }
 
   // ---------- Marked answers (history) ----------

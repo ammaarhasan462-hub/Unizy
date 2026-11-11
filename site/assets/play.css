@@ -169,3 +169,14 @@
 .uw-timer span{font-family:var(--mono);font-size:13px;font-weight:500;min-width:2ch;text-align:right;color:#2F6B47}
 .uw-timer.low i::after{background:#D0645A}.uw-timer.low span{color:#9B4A42}
 @media (max-width:640px){.uw-timer{width:104px}}
+
+/* game switcher (Unwind / Thin Air) */
+.pl-switch{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
+.pl-switch button{font:inherit;display:flex;align-items:center;gap:12px;flex:1 1 220px;max-width:340px;text-align:left;padding:12px 16px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .2s}
+.pl-switch button:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(23,48,42,.08)}
+.pl-switch button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+.pl-switch .ic{font-size:24px;line-height:1}
+.pl-switch .tx{display:flex;flex-direction:column;gap:1px;min-width:0}
+.pl-switch b{font-family:var(--serif);font-weight:600;font-size:17px}
+.pl-switch small{font-size:12.5px;color:var(--muted)}
+.pl-switch button[aria-pressed="true"] small{color:#C9D3CE}

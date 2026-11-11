@@ -1,0 +1,95 @@
+/* Unizy Play: "Thin Air" (rare answers lift a balloon). Loaded by the dashboard when the game is opened. */
+.uz-thinair{--ta-ease:cubic-bezier(.3,.7,.2,1);min-height:420px}
+.ta-hero{flex-direction:row;align-items:stretch;gap:24px;grid-column:1/-1;background:linear-gradient(160deg,#FFFFFF 0%,#EEF5FC 60%,#E2EEFA 100%);border-color:#D6E3EF;overflow:hidden}
+.ta-hero-txt{flex:1 1 auto;display:flex;flex-direction:column;gap:14px;min-width:0}
+.ta-hero h2{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(30px,3.8vw,46px);line-height:1.05;letter-spacing:-.02em}
+.ta-hero h2 em{font-style:italic;font-weight:500;color:#3F5FD8}
+.ta-mini{flex:0 0 230px;display:flex}
+.ta-mini .ta-stage{flex:1;min-height:0;border-radius:12px}
+.ta-mini .ta-inner,.ta-mini .ta-hud{display:none}
+.ta-tiers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:560px}
+.ta-tiers span{border-radius:9px;padding:7px 4px;text-align:center;font-size:11.5px;font-weight:600;color:#fff;line-height:1.25}
+.ta-tiers b{display:block;font-family:var(--mono);font-size:14px}
+
+/* the sky */
+.ta-stage{position:relative;overflow:hidden;border-radius:16px;min-height:540px;display:flex;align-items:center;justify-content:center;padding:64px 84px 36px 26px;transition:background 1.4s ease;isolation:isolate}
+.ta-stars,.ta-clouds{position:absolute;inset:0;pointer-events:none;transition:opacity 1.4s ease,transform 1.4s var(--ta-ease)}
+.ta-stars i{position:absolute;border-radius:50%;background:#fff}
+.ta-clouds span{position:absolute;background:#fff;border-radius:999px;filter:blur(1px)}
+.ta-clouds span::before,.ta-clouds span::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.ta-clouds span::before{width:55%;height:160%;left:15%;bottom:20%}
+.ta-clouds span::after{width:40%;height:130%;right:12%;bottom:25%}
+.ta-balloon{position:absolute;left:5%;width:86px;z-index:1;transition:bottom 1.6s var(--ta-ease);animation:ta-bob 4s ease-in-out infinite;pointer-events:none}
+@keyframes ta-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-7px) rotate(1.5deg)}}
+.ta-gauge{position:absolute;right:16px;top:60px;bottom:30px;width:56px;pointer-events:none;z-index:1}
+.ta-rail{position:absolute;right:7px;top:0;bottom:0;width:3px;border-radius:2px;background:rgba(255,255,255,.4)}
+.ta-tick{position:absolute;right:16px;transform:translateY(50%);font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.9);white-space:nowrap}
+.ta-dot{position:absolute;right:2px;width:13px;height:13px;border-radius:50%;background:#FF6B4A;box-shadow:0 0 0 4px rgba(255,107,74,.3);transform:translateY(50%);transition:bottom 1.6s var(--ta-ease)}
+.ta-hud{position:absolute;top:14px;left:20px;right:60px;display:flex;justify-content:space-between;align-items:flex-start;color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.25);font-size:13px;font-weight:600;z-index:2}
+.ta-alt{display:flex;align-items:baseline;gap:3px;flex-wrap:wrap;justify-content:flex-end}
+.ta-alt b{font-family:var(--mono);font-size:22px}
+.ta-alt em{flex-basis:100%;text-align:right;font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+.ta-x{position:absolute;top:12px;right:12px;z-index:3;width:32px;height:32px;font-size:19px;background:rgba(255,255,255,.85)}
+.ta-run .ta-hud{right:56px}
+.ta-inner{position:relative;z-index:2;width:100%;max-width:540px}
+.ta-card{background:rgba(255,255,255,.95);border-radius:16px;padding:22px 22px 20px;box-shadow:0 20px 50px rgba(8,20,40,.25);display:flex;flex-direction:column;gap:12px;animation:ta-rise .4s var(--ta-ease)}
+@keyframes ta-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.ta-card h3{margin:0;font-family:var(--serif);font-weight:600;font-size:clamp(24px,2.6vw,30px);line-height:1.1;letter-spacing:-.015em}
+.ta-timer{position:relative;height:6px;border-radius:3px;background:#E8ECE9;margin-right:30px}
+.ta-timer i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--ink);width:100%}
+.ta-timer.low i{background:#C2412D}
+.ta-timer span{position:absolute;right:-30px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:13px;font-weight:600;color:var(--muted)}
+.ta-timer.low span{color:#C2412D}
+.ta-form{display:flex;gap:8px}
+.ta-form input{flex:1 1 auto;min-width:0;font:inherit;font-size:19px;font-weight:600;padding:12px 14px;border-radius:11px;border:1.5px solid #C8D1CB;background:#fff;color:var(--ink);outline:none}
+.ta-form input:focus{border-color:var(--ink)}
+.ta-shake{animation:ta-shake .35s}
+@keyframes ta-shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.ta-msg{margin:0;font-size:14px;font-weight:600;color:#C2412D}
+.ta-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ta-thermal{font:inherit;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.ta-thermal.on{background:#FFEFE9;border-color:#FF6B4A;color:#B5381A}
+.ta-thermal:disabled{opacity:.4;cursor:default}
+.ta-skip{font-size:14px;color:var(--muted)}
+.ta-res{border-radius:12px;padding:13px 15px;color:#fff;display:flex;flex-direction:column;gap:2px}
+.ta-res.miss{background:#3A4556}
+.ta-res b{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase}
+.ta-res strong{font-family:var(--mono);font-size:22px}
+.ta-res span{font-size:14px;opacity:.95}
+.ta-res i{opacity:.8;font-style:normal}
+.ta-lab{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.ta-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ta-chips span,.ta-more{background:#EEF1EF;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:600;color:var(--ink)}
+.ta-chips span.you{background:var(--ink);color:#fff}
+.ta-more{border:0;font:inherit;font-size:13px;color:var(--muted);cursor:pointer}
+.ta-card .pl-btn{align-self:flex-start}
+
+/* the end */
+.ta-endstage{grid-column:1/-1}
+.ta-endstage .ta-stage{min-height:460px}
+.ta-endcard h2{margin:0;font-family:var(--mono);font-size:48px;line-height:1}
+.ta-endcard h2 small{font-size:18px;color:var(--muted)}
+.ta-grid{font-size:20px;letter-spacing:2px}
+.ta-wide{grid-column:1/-1}
+.ta-ovs{border-top:1px solid var(--line)}
+.ta-ov summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line2)}
+.ta-ov summary::-webkit-details-marker{display:none}
+.ta-ov .q{flex:1;min-width:0;font-weight:600;font-size:15px}
+.ta-ov .q small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ta-ov .chev{font-style:normal;color:var(--muted);transition:transform .2s}
+.ta-ov[open] .chev{transform:rotate(90deg)}
+.ta-ovb{padding:4px 2px 14px;border-bottom:1px solid var(--line2)}
+.ta-ovt{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.ta-pill{align-self:flex-start;font-family:var(--mono);font-size:11px;font-weight:600;color:#fff;border-radius:999px;padding:4px 9px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+
+@media (max-width:960px){.ta-mini{display:none}}
+@media (max-width:640px){
+  .ta-stage{min-height:500px;padding:76px 12px 24px}
+  .ta-gauge{display:none}
+  .ta-balloon{left:auto;right:3%;width:56px;opacity:.9}
+  .ta-hud{right:52px;left:14px}
+  .ta-card{padding:18px 16px 16px}
+  .ta-tiers span{font-size:9.5px}
+  .ta-endcard h2{font-size:40px}
+}
+@media (prefers-reduced-motion:reduce){.ta-balloon{animation:none}.ta-card{animation:none}}

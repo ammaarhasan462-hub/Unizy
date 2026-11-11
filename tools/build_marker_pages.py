@@ -195,7 +195,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 </body></html>
 """
 
-DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard", '<link rel="stylesheet" href="/assets/play.css?v=1">') + f"""
+DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard", '<link rel="stylesheet" href="/assets/play.css?v=3">') + f"""
 <div id="root"><div class="db setup" id="db">
 <aside class="db-side">
 <div class="db-bar"><a class="sx-brand db-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><button class="db-menu" id="db-menu" type="button" aria-label="Menu"><span></span><span></span></button></div>
@@ -234,7 +234,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=2"></script><script src="/assets/tour.js?v=1"></script><script src="/assets/dashboard.js?v=10"></script><script src="/assets/mark.js?v=8"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=2"></script><script src="/assets/tour.js?v=1"></script><script src="/assets/dashboard.js?v=11"></script><script src="/assets/mark.js?v=8"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
 
 if __name__ == "__main__":
     (SITE / "dashboard.html").write_text(DASH_PAGE)
