@@ -173,7 +173,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
           }
           renderer.shadowMap.needsUpdate = true;
         }
-        precompile();
+        precompile(false);
       } catch (e) { console.error(e); }
     })).catch(() => {});
   }
@@ -299,8 +299,25 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     grp.traverse((o) => { if (o.isLight) ls.push(o); });
     ls.forEach((l) => { scene.attach(l); if (l.target && l.target.parent !== scene) scene.attach(l.target); });
   });
+  // draw everything once into a tiny offscreen target (culling off, hidden parts shown, shadows on), so every
+  // buffer and texture is on the GPU before the scroll reaches it instead of uploading mid-flight
+  const warmRT = new THREE.WebGLRenderTarget(16, 16);
+  function warmup() {
+    if (disposed) return;
+    const changed = [];
+    scene.traverse((o) => { changed.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; });
+    const prevRT = renderer.getRenderTarget();
+    try {
+      renderer.shadowMap.needsUpdate = true;
+      renderer.setRenderTarget(warmRT);
+      renderer.render(scene, camera);
+    } catch (e) { /* ignore */ }
+    renderer.setRenderTarget(prevRT);
+    changed.forEach(([o, v, f]) => { o.visible = v; o.frustumCulled = f; });
+    renderer.shadowMap.needsUpdate = true;
+  }
   // compile every shader up front (hidden parts included), so nothing compiles mid-scroll and stutters
-  function precompile() {
+  function precompile(warm = true) {
     const hidden = [];
     scene.traverse((o) => { if (!o.visible && !(o.userData && o.userData.retired)) { hidden.push(o); o.visible = true; } });
     // compile against the composer's buffer: shaders differ (tone mapping, colour space) between screen and target
@@ -308,7 +325,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     try {
       renderer.setRenderTarget(composer.readBuffer);
       const done = renderer.compileAsync ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), null);
-      if (done && done.catch) done.catch(() => {});
+      if (warm) { if (done && done.then) done.then(warmup, () => {}); else warmup(); }
     } catch (e) { /* ignore */ }
     renderer.setRenderTarget(prevRT);
     hidden.forEach((o) => { o.visible = false; });
