@@ -404,13 +404,31 @@ async function nextTopic(service: any, code: string, key: string, left: number) 
     service.from("module_questions").select("topic_pos, tier, answer").eq("code", code),
   ]);
   const planned = new Set((qs || []).filter((q: any) => q.topic_pos != null && q.tier !== "foundation" && q.answer).map((q: any) => q.topic_pos));
+  if (!(tps || []).length) await service.from("module_packs").update({ status: "failed", error: "no module map", finished_at: new Date().toISOString() }).eq("code", code);
   const todo = (tps || []).find((t: any) => !planned.has(t.position));
-  if (!todo) return;
+  if (!todo) { await startQueued(service, key); return; }
   await new Promise((r) => setTimeout(r, 4000)); // a short gap, so a busy API gets a moment before the next try
   await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/marker", {
     method: "POST", headers: { "Content-Type": "application/json", "x-ops-key": key },
     body: JSON.stringify({ action: "deepen", code, topic_pos: todo.position, chain: true, left: left - 1 }),
   }).catch((e) => console.error("chain", code, String(e)));
+}
+
+// When a module is finished, this chain moves on to the next module queued in module_packs (status 'queued'), so a batch
+// keeps the same number of chains running until the queue is empty.
+async function startQueued(service: any, key: string) {
+  for (let i = 0; i < 3; i++) {
+    const { data: nxt } = await service.from("module_packs").select("code").eq("status", "queued").order("code").limit(1);
+    if (!nxt || !nxt.length) return;
+    const c = nxt[0].code;
+    const { data: won } = await service.from("module_packs").update({ status: "running", started_at: new Date().toISOString() }).eq("code", c).eq("status", "queued").select("code");
+    if (!won || !won.length) continue; // another chain took it
+    await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/marker", {
+      method: "POST", headers: { "Content-Type": "application/json", "x-ops-key": key },
+      body: JSON.stringify({ action: "warm", code: c, chain: true }),
+    }).catch((e) => console.error("queue", c, String(e)));
+    return;
+  }
 }
 
 // ---------- signed-out "try one marked answer" ----------
@@ -444,6 +462,14 @@ async function guestTake(service: any, net: string): Promise<{ ok: boolean; reas
   else await service.from("guest_marks").insert({ day, net, n: 1 });
   service.from("guest_marks").delete().lt("day", new Date(Date.now() - 3 * 864e5).toISOString().slice(0, 10)).then(() => {}, () => {});
   return { ok: true };
+}
+// The free result is signed (HMAC with a server-only secret) so that, after sign-up, it can be saved to the new account
+// exactly as it was marked, and can't be made up or edited in the browser. Valid for 7 days.
+async function hmac(text: string) {
+  const secret = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "") + ":guest-claim";
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(sig)).map((x) => x.toString(16).padStart(2, "0")).join("");
 }
 async function guestRefund(service: any, net: string) {
   const day = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
@@ -592,9 +618,13 @@ Deno.serve(async (req) => {
       return json(200, { done: true });
     }
     const { data: claimed } = await service.rpc("claim_question_job", { p_code: code, p_source: "batch", p_user: null });
-    if (!claimed) return json(202, { pending: true });
+    if (!claimed) {
+      // a map already being written (or failed too often): in a chain, don't strand the queue
+      if (body.chain) EdgeRuntime.waitUntil(new Promise((r) => setTimeout(r, 90_000)).then(() => nextTopic(service, code, req.headers.get("x-ops-key") || "", 30)));
+      return json(202, { pending: true });
+    }
     const key = req.headers.get("x-ops-key") || req.headers.get("x-warm-key") || "";
-    EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "batch").then(() => body.chain ? nextTopic(service, code, key, 24) : undefined));
+    EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "batch").then(() => body.chain ? nextTopic(service, code, key, 30) : undefined));
     return json(202, { pending: true, started: true });
   }
 
@@ -636,7 +666,8 @@ Deno.serve(async (req) => {
     const mk = await runMark(service, apiKey, mod, code, { question: q.question, answer, minutes, questionId, prevId: null, userId: null, att: { blocks: [], summary: "" }, hasAtt: false }, refund);
     if (mk.resp) { EdgeRuntime.waitUntil(countEvent(service, "guest_mark_fail")); return mk.resp; }
     EdgeRuntime.waitUntil(countEvent(service, "guest_mark_done"));
-    return json(200, { ...mk.result, answer, guest: true, topic_pos: mk.topicPos, tier: mk.tier, cards: 0 });
+    const claim = JSON.stringify({ code, question_id: questionId, question: q.question, answer, minutes, result: mk.result, topic_pos: mk.topicPos, tier: mk.tier, at: Date.now() });
+    return json(200, { ...mk.result, answer, guest: true, topic_pos: mk.topicPos, tier: mk.tier, cards: 0, claim, claim_sig: await hmac(claim) });
   }
 
   const token = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
@@ -648,6 +679,20 @@ Deno.serve(async (req) => {
   if (!CODE_RE.test(code)) return json(400, { code: "invalid_request", message: "Pick a module first." });
   const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
   if (!mod) return json(404, { code: "not_found", message: "We couldn’t find that module." });
+
+  // ---------- after sign-up: save the free marked answer to the new account ----------
+  if (body.action === "claim_guest") {
+    const raw = typeof body.claim === "string" ? body.claim : "", sig = typeof body.claim_sig === "string" ? body.claim_sig : "";
+    if (!raw || raw.length > 60_000 || !sig || sig !== await hmac(raw)) return json(400, { code: "invalid_request", message: "That result couldn’t be saved." });
+    let c: any; try { c = JSON.parse(raw); } catch { return json(400, { code: "invalid_request", message: "That result couldn’t be saved." }); }
+    if (!c || c.code !== code || Date.now() - (+c.at || 0) > 7 * 864e5) return json(400, { code: "invalid_request", message: "That result is too old to save." });
+    const { data: dup } = await service.from("mark_attempts").select("id").eq("user_id", user.id).eq("question_id", c.question_id).eq("answer", c.answer).limit(1);
+    if (dup && dup.length) return json(200, { saved: true, id: dup[0].id, already: true });
+    const { data: saved, error } = await service.from("mark_attempts").insert({ user_id: user.id, code, question_id: c.question_id, question: c.question, answer: c.answer, minutes: c.minutes ?? null, result: c.result, topic_pos: c.topic_pos ?? null, tier: c.tier || "exam", created_at: new Date(+c.at).toISOString() }).select("id").single();
+    if (error) return json(500, { code: "upstream_error", message: "That result couldn’t be saved." });
+    EdgeRuntime.waitUntil(countEvent(service, "guest_mark_claimed"));
+    return json(200, { saved: true, id: saved?.id });
+  }
 
   // ---------- Module Map: topics + questions ----------
   if (body.action === "questions") {
