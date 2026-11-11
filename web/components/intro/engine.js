@@ -161,6 +161,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
         } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
         const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
         if (res) { intEnv = res.env; renderer.shadowMap.needsUpdate = true; }
+        precompile();
       } catch (e) { console.error(e); }
     })).catch(() => {});
   }
@@ -279,7 +280,17 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   };
   window.addEventListener('pointermove', onMove, { passive: true });
 
-  try { renderer.compile(scene, camera); renderer.compile(cloudScene, quadCam); } catch (e) {}
+  // compile every shader up front (hidden parts included), so nothing compiles mid-scroll and stutters
+  function precompile() {
+    const hidden = [];
+    scene.traverse((o) => { if (!o.visible && !(o.userData && o.userData.retired)) { hidden.push(o); o.visible = true; } });
+    try {
+      const done = renderer.compileAsync ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), null);
+      if (done && done.catch) done.catch(() => {});
+    } catch (e) { /* ignore */ }
+    hidden.forEach((o) => { o.visible = false; });
+  }
+  try { precompile(); renderer.compile(cloudScene, quadCam); } catch (e) {}
 
   let raf = 0;
   let last = performance.now();
