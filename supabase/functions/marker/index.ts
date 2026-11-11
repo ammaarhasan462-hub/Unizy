@@ -129,11 +129,16 @@ function parseTopics(text: string): any[] | null {
   return null;
 }
 
-async function callClaude(apiKey: string, system: string, user: string | any[], maxTokens: number) {
+// Sonnet 5.5 thinks by default and the thinking counts towards max_tokens, so long JSON could be cut off before it started.
+// think: false turns up-front thinking off (thinking: between_tools) for plain writing; checking and marking keep it.
+async function callClaude(apiKey: string, system: string, user: string | any[], maxTokens: number, opts: { think?: boolean; effort?: string } = {}) {
+  const req: any = { model: SONNET, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] };
+  if (opts.think === false) req.thinking = { type: "between_tools" };
+  if (opts.effort) req.output_config = { effort: opts.effort };
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: SONNET, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] }),
+    body: JSON.stringify(req),
   });
   if (!r.ok) {
     let text = "";
@@ -186,7 +191,7 @@ Rules:
 
 Return one JSON object:
 {"topics": [{"title": "...", "summary": "...", "recall": [{"q": "...", "a": "..."}, {"q": "...", "a": "..."}], "exam": {"kind": "essay", "question": "...", "guide": {"first": "...", "two_one": "...", "two_two": "..."}}, "first": {"kind": "essay", "question": "...", "guide": {...}}}]}`;
-    const res = await callClaude(apiKey, systemFor(U), prompt, 12000);
+    const res = await callClaude(apiKey, systemFor(U), prompt, 16000, { think: false });
     if (!res.ok) {
       console.error("map upstream", code, res.status, res.text.slice(0, 300));
       if (isAccountProblem(res.status, res.text)) await handleAccountProblem(service, res.status, res.text);
@@ -303,11 +308,11 @@ Match the discipline's exam format. Never copy or claim to reproduce real ${U.na
 
 Return one JSON object:
 {"recall": [{"q": "...", "a": "..."}], "exam": [{"kind": "essay", "question": "...", "guide": {"first": "...", "two_one": "...", "two_two": "..."}, "steps": []}], "plans": {"E1": ["...", "..."], "N1": ["..."]}}`;
-    const w = await callClaude(apiKey, systemFor(U), write, 6000);
+    const w = await callClaude(apiKey, systemFor(U), write, 10000, { think: false });
     if (!w.ok) { await done("write upstream " + w.status + ": " + w.text); return; }
     await spend(w.usage);
     const wj = parseJson(w.text);
-    if (!wj || typeof wj !== "object") { await done("write parse"); return; }
+    if (!wj || typeof wj !== "object") { console.error("deepen write parse", code, pos, w.truncated, w.text.slice(0, 200)); await done("write parse"); return; }
     const newRecall = (Array.isArray(wj.recall) ? wj.recall : []).filter((r: any) => r && r.q && r.a).slice(0, addRecall);
     const newExam = (Array.isArray(wj.exam) ? wj.exam : []).filter((q: any) => q && typeof q.question === "string" && q.question.trim()).slice(0, addExam);
     const plans = wj.plans && typeof wj.plans === "object" ? wj.plans : {};
@@ -334,7 +339,7 @@ Fix anything wrong or weak by rewriting that field. If an item cannot be fixed, 
 
 Return one JSON object with ONLY the items you changed, each with its ref and the corrected fields, and the refs to drop:
 {"fixes": [{"ref": "E2", "question": "...", "answer": "...", "guide": {...}, "steps": [...], "plan": [...]}], "drop": ["R3"], "notes": "one short sentence on what you changed"}`;
-    const c = await callClaude(apiKey, systemFor(U), check, 6000);
+    const c = await callClaude(apiKey, systemFor(U), check, 20000, { effort: "medium" });
     let fixes: Record<string, any> = {}, drop = new Set<string>();
     if (c.ok) {
       await spend(c.usage);
@@ -486,7 +491,7 @@ ${askTopic ? `- "topic_pos" = the number of the module topic this question mostl
 Return one JSON object:
 {"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}], "allocation": [{"item": "...", "available": int, "awarded": int}], "warnings": ["..."]${askTopic ? ', "topic_pos": int' : ""}}`;
 
-  const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 10000 : 8000);
+  const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 20000 : 16000);
   if (!res.ok) {
     console.error("mark upstream", code, res.status, res.text.slice(0, 300));
     await refund();
