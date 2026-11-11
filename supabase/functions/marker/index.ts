@@ -395,6 +395,24 @@ Return one JSON object with ONLY the items you changed, each with its ref and th
   }
 }
 
+// Chains: a module's pack is built one topic at a time (each finished topic starts the next), so a whole batch of modules
+// only ever has one request per module running at once and stays inside the API's concurrency limit.
+async function nextTopic(service: any, code: string, key: string, left: number) {
+  if (left <= 0) return;
+  const [{ data: tps }, { data: qs }] = await Promise.all([
+    service.from("module_topics").select("position").eq("code", code).order("position"),
+    service.from("module_questions").select("topic_pos, tier, answer").eq("code", code),
+  ]);
+  const planned = new Set((qs || []).filter((q: any) => q.topic_pos != null && q.tier !== "foundation" && q.answer).map((q: any) => q.topic_pos));
+  const todo = (tps || []).find((t: any) => !planned.has(t.position));
+  if (!todo) return;
+  await new Promise((r) => setTimeout(r, 4000)); // a short gap, so a busy API gets a moment before the next try
+  await fetch(Deno.env.get("SUPABASE_URL") + "/functions/v1/marker", {
+    method: "POST", headers: { "Content-Type": "application/json", "x-ops-key": key },
+    body: JSON.stringify({ action: "deepen", code, topic_pos: todo.position, chain: true, left: left - 1 }),
+  }).catch((e) => console.error("chain", code, String(e)));
+}
+
 // ---------- signed-out "try one marked answer" ----------
 const GUEST_PER_NET = 2, GUEST_DAILY = 60, GUEST_MAX_ANSWER = 9_000;
 async function sha256(t: string) {
@@ -568,10 +586,15 @@ Deno.serve(async (req) => {
     const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
     if (!mod) return json(404, { code: "not_found" });
     const { data: has } = await service.from("module_topics").select("position").eq("code", code).limit(1);
-    if (has && has.length) { await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString() }).eq("code", code); return json(200, { done: true }); }
+    if (has && has.length) {
+      await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString() }).eq("code", code);
+      if (body.chain) EdgeRuntime.waitUntil(nextTopic(service, code, req.headers.get("x-ops-key") || req.headers.get("x-warm-key") || "", 24));
+      return json(200, { done: true });
+    }
     const { data: claimed } = await service.rpc("claim_question_job", { p_code: code, p_source: "batch", p_user: null });
     if (!claimed) return json(202, { pending: true });
-    EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "batch"));
+    const key = req.headers.get("x-ops-key") || req.headers.get("x-warm-key") || "";
+    EdgeRuntime.waitUntil(writeMap(service, apiKey, mod, "batch").then(() => body.chain ? nextTopic(service, code, key, 24) : undefined));
     return json(202, { pending: true, started: true });
   }
 
@@ -581,7 +604,8 @@ Deno.serve(async (req) => {
     const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
     if (!mod || !Number.isInteger(pos) || pos < 0) return json(404, { code: "not_found" });
     await service.from("module_packs").upsert({ code, status: "running", started_at: new Date().toISOString() }, { onConflict: "code", ignoreDuplicates: true });
-    EdgeRuntime.waitUntil(deepenTopic(service, apiKey, mod, pos));
+    const left = Number.isInteger(+body.left) ? +body.left : 24, key = req.headers.get("x-ops-key") || "";
+    EdgeRuntime.waitUntil(deepenTopic(service, apiKey, mod, pos).then(() => body.chain ? nextTopic(service, code, key, left) : undefined));
     return json(202, { started: true });
   }
 
