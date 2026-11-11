@@ -1,8 +1,8 @@
 'use client';
 // Opening screen: a full-screen 3D journey. Scrolling, swiping or the arrow keys move the camera
 // instead of the page; at the end it opens onto the landing page. It plays every time someone opens
-// unizy.uk (typed, bookmarked, from a search or a shared link, reloaded), signed in or not. It is skipped
-// only when clicking Home from another Unizy page, with reduced motion, or without WebGL 2.
+// unizy.uk (typed, bookmarked, from a search or a shared link, reloaded), signed in or not, on laptops and desktops. It is skipped on phones,
+// when clicking Home from another Unizy page, with reduced motion, or without WebGL 2.
 // ?intro=1 forces it, ?intro=0 skips it.
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';

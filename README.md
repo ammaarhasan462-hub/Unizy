@@ -62,3 +62,7 @@ back to the same branch for Cloudflare Pages. The last build log is in `.ci/land
 - Hidden to focus on practice, marking and progress: Parse mode and study units on module pages (`SHOW_PARSE` in `mark.js`), links into the old `/app` (still reachable directly; `/app/play` is the public Unwind page). Play stays.
 - The landing page's own event names (`lp_view`, …) are mapped onto the names `track_event` accepts in `web/lib/site.js`. `supabase/sql/deep_packs_guest_mark.sql` also extends `track_event` with the guest-mark events; that part still needs applying (the tables were created).
 - Deployed marker = a stub that imports a pinned commit of `supabase/functions/marker/index.ts` from this (public) repo. To ship a change: push, then redeploy the stub with the new SHA, or deploy the three files directly.
+- Free results carry over: `guest_mark` returns the result plus a signed `claim` (HMAC with a server-only secret, valid 7 days). The page keeps it in localStorage `unizy:guestclaim`; once the visitor is signed in, `mark.js` sends `claim_guest` and the marker saves it as a real `mark_attempts` row.
+- Full-pack queue: rows in `module_packs` with status `queued` are picked up by running chains as they finish a module (8 chains at a time). Insert codes as `queued` and start a few chains with `warm` + `chain: true`.
+- The 3D intro never plays on phones (`web/lib/boot.js`); `?intro=1` still forces it.
+- The old app is retired: `app.html` redirects everything except `/app/play` (signed-out Play) to `/dashboard` (or `/`).

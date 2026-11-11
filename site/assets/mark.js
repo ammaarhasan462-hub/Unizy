@@ -89,7 +89,16 @@
   function planHtml(t) { var pts = String(t || '').split(/\n+/).map(function (x) { return x.replace(/^\s*[•\-*]\s*/, '').trim(); }).filter(Boolean); return '<ul class="mk-plan">' + pts.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>'; }
   function signinUrl() { return '/signup?next=' + encodeURIComponent(location.pathname + location.search); }
   // Signed out: one free marked answer (per browser here; the marker also caps it per network and per day). No account needed.
-  var GKEY = 'unizy:guestmark';
+  var GKEY = 'unizy:guestmark', CKEY = 'unizy:guestclaim';
+  // After sign-up: save the free marked answer to the new account (the server checks its signature), then forget it.
+  function claimGuest() {
+    var c; try { c = JSON.parse(localStorage.getItem(CKEY) || 'null'); } catch (e) { c = null; }
+    if (!c || !c.claim || !getSession()) return;
+    marker({ action: 'claim_guest', code: c.code, claim: c.claim, claim_sig: c.claim_sig }).then(function (b) {
+      try { localStorage.removeItem(CKEY); } catch (e) {}
+      if (b && b.saved && !b.already) { track('guest_mark_claimed'); if (state.mod && state.mod.code === c.code) loadMine(); changed(); }
+    }).catch(function (e) { if (e && e.status === 400) try { localStorage.removeItem(CKEY); } catch (x) {} });
+  }
   function guestUsed() { try { return !!localStorage.getItem(GKEY); } catch (e) { return true; } }
   function canGuest() { return !getSession() && !guestUsed() && !HOOKS; }
   function guestMarker(body) {
@@ -111,10 +120,10 @@
       packs = {}; (rows || []).forEach(function (p) { packs[p.code] = p.questions; }); packList = rows || [];
       if (!packList.length) return;
       render();
-      return rest('ucl_modules?code=in.(' + packList.map(function (p) { return p.code; }).join(',') + ')&select=code,title').then(function (ms) { (ms || []).forEach(function (m) { packTitles[m.code] = m.title; }); render(); });
+      return rest('ucl_modules?code=in.(' + packList.map(function (p) { return p.code; }).join(',') + ')&select=code,title,uni').then(function (ms) { (ms || []).forEach(function (m) { packTitles[m.code] = m.title; packUni[m.code] = m.uni || 'ucl'; }); render(); });
     }).catch(function () {});
   }
-  var packList = [], packTitles = {};
+  var packList = [], packTitles = {}, packUni = {};
   function isPack(code) { return !!(packs && packs[code]); }
   var SHOW_PARSE = false; // Parse mode (slides → study units) is hidden while Unizy focuses on practice, marking and progress
   function levelName(l) { return l === 4 ? 'Year 1 (Level 4)' : l === 5 ? 'Year 2 (Level 5)' : l === 6 ? 'Final year (Level 6)' : l === 7 ? 'Level 7 (Master’s)' : 'Level ' + (l || '?'); }
@@ -306,7 +315,7 @@
       guestMarker({ action: 'guest_mark', code: state.mod.code, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true }).then(function (b) {
         state.busy = false; stopTimer(); timer.on = false;
         if (b.refused) { state.err = b.message; render(); return; }
-        try { localStorage.setItem(GKEY, String(Date.now())); } catch (e) {}
+        try { localStorage.setItem(GKEY, String(Date.now())); if (b.claim && b.claim_sig) localStorage.setItem(CKEY, JSON.stringify({ code: state.mod.code, claim: b.claim, claim_sig: b.claim_sig })); } catch (e) {}
         state.result = b; state.result.question = question; state.result.answer = answer; state.result.guest = true;
         state.itab = 'alloc'; state.exam = 0; timer.limit = 45;
         track('guest_mark_done');
@@ -404,9 +413,10 @@
     var picks = mine.length ? '<div class="mk-mine"><p class="mk-lab">Your modules</p><ul class="mk-results">' + mine.map(function (m) { return '<li><a href="' + MBASE + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + '</span></a></li>'; }).join('') + '</ul></div>' : '';
     if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
     var pn = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary and LSE';
-    var pk = (!pubUni || pubUni === 'ucl') && packList.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + packList.length + ' big UCL first-year modules</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + packList.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
+    var pl = packList.filter(function (p) { return packUni[p.code] && (!pubUni || packUni[p.code] === pubUni); });
+    var pk = pl.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
     return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>Find your module.</h1>' + uniTabs() +
-      '<p class="lead">Search by module code, title or department. ' + (packList.length ? 'Full packs cover ' + packList.length + ' big first-year modules; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
+      '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
       '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
       '<div id="mk-list" aria-live="polite"></div></section>';
@@ -731,7 +741,7 @@
     var html = head() + '<div class="mk-ws res"><div class="mk-wsmain"><section class="mk-card mk-result"><span class="mk-topic">' + esc(m.code) + ' · Your marked answer</span><h2 class="mk-question sm">' + esc(r.question || (state.cur && state.cur.question) || '') + '</h2>' +
       '<p class="mk-headline">' + esc(r.headline) + '</p>' +
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
-    if (r.guest) html += '<div class="mk-guestcta"><div><b>That was your free marked answer.</b><p>Sign up free to save it, rewrite your weakest paragraph and see your mark move, and practise every topic of ' + esc(m.code) + '. 3 days of marking with no card needed.</p></div><a class="btn primary" href="/signup?next=' + encodeURIComponent(MBASE + m.code) + '" data-guestsignup="1">Sign up free</a></div>';
+    if (r.guest) html += '<div class="mk-guestcta"><div><b>That was your free marked answer.</b><p>Sign up free and it’s saved to your account. Then rewrite your weakest paragraph and see your mark move, and practise every topic of ' + esc(m.code) + '. 3 days of marking with no card needed.</p></div><a class="btn primary" href="/signup?next=' + encodeURIComponent(MBASE + m.code) + '" data-guestsignup="1">Sign up free</a></div>';
     var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
     if (lost.length) {
       html += '<h3>Where you lost marks</h3><p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
@@ -785,7 +795,7 @@
       root.querySelectorAll('[data-puni]').forEach(function (b) { var on = b === pu; b.classList.toggle('on', on); if (on) b.setAttribute('aria-selected', 'true'); else b.removeAttribute('aria-selected'); });
       var k = root.querySelector('.mk-hero .kicker');
       if (k) k.textContent = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary and LSE';
-      search(state.q); renderList(); return;
+      render(); search(state.q); renderList(); return; // re-render so the full packs list follows the university
     }
     var hl = e.target.closest('mark[data-lost]');
     if (hl) { var li = document.getElementById('mk-li' + hl.getAttribute('data-lost')); if (li) { li.scrollIntoView({ block: 'center', behavior: 'smooth' }); li.classList.add('flash'); setTimeout(function () { li.classList.remove('flash'); }, 1200); } return; }
@@ -825,5 +835,6 @@
   window.addEventListener('popstate', function () { if (inScope()) route(); });
   window.Marker = { route: function () { if (inScope()) route(); }, render: render, inScope: inScope };
   loadPacks();
+  setTimeout(claimGuest, 600);
   if (inScope()) route();
 })();
