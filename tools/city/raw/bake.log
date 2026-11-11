@@ -20,6 +20,15 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
+ "shop_points": 5014,
+ "shopfronts": [
+  2355,
+  1620,
+  514,
+  410,
+  224
+ ],
+ "shopfront_fill": 564,
  "skyline": 1716,
  "landmarks": {
   "BT Tower": [
@@ -35,7 +44,7 @@
    2634.4
   ]
  },
- "bytes": 2552855,
+ "bytes": 2599237,
  "wilkins": {
   "x": [
    -71.1,
@@ -144,6 +153,15 @@
  "areas": 1259,
  "rails": 94,
  "trees": 2831,
+ "shop_points": 2975,
+ "shopfronts": [
+  926,
+  423,
+  159,
+  173,
+  40
+ ],
+ "shopfront_fill": 153,
  "skyline": 1771,
  "landmarks": {
   "Queen's Tower": [
@@ -163,7 +181,7 @@
    6692.8
   ]
  },
- "bytes": 2142490,
+ "bytes": 2158250,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -265,26 +283,35 @@
 }
 {
  "site": "qmul",
- "buildings": 10486,
+ "buildings": 10493,
  "heights": {
   "h": 95,
   "lv": 5758,
-  "guess": 4633
+  "guess": 4640
  },
  "styles": {
   "stucco": 1016,
   "church": 74,
   "redbrick": 1102,
-  "stock": 6490,
-  "stone": 276,
-  "concrete": 847,
-  "glass": 217,
+  "stock": 6489,
+  "stone": 277,
+  "concrete": 852,
+  "glass": 219,
   "shed": 464
  },
- "roads": 12628,
- "areas": 4332,
+ "roads": 12635,
+ "areas": 4334,
  "rails": 286,
  "trees": 2485,
+ "shop_points": 1108,
+ "shopfronts": [
+  658,
+  330,
+  115,
+  130,
+  36
+ ],
+ "shopfront_fill": 118,
  "skyline": 1732,
  "landmarks": {
   "BT Tower": [
@@ -300,7 +327,7 @@
    -2743.8
   ]
  },
- "bytes": 2305462,
+ "bytes": 2317784,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -322,26 +349,35 @@
 }
 {
  "site": "lse",
- "buildings": 13548,
+ "buildings": 13550,
  "heights": {
-  "h": 1975,
+  "h": 1977,
   "lv": 6820,
   "guess": 4753
  },
  "styles": {
   "church": 156,
-  "glass": 956,
-  "stock": 6359,
+  "glass": 957,
+  "stock": 6360,
   "concrete": 1171,
   "stone": 1626,
   "stucco": 1393,
   "redbrick": 1475,
   "shed": 412
  },
- "roads": 22142,
+ "roads": 22156,
  "areas": 2127,
  "rails": 350,
  "trees": 6274,
+ "shop_points": 4967,
+ "shopfronts": [
+  1729,
+  1662,
+  599,
+  434,
+  203
+ ],
+ "shopfront_fill": 473,
  "skyline": 1487,
  "landmarks": {
   "BT Tower": [
@@ -357,7 +393,7 @@
    2509.8
   ]
  },
- "bytes": 2901455,
+ "bytes": 2943817,
  "anchor": [
   "Old Building",
   51.51432,
