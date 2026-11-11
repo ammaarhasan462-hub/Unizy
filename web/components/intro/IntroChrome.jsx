@@ -63,7 +63,7 @@ COPY.lse = {
   sample: { code: 'EC1A3', title: 'Microeconomics I', crit: 'LSE marking scale', mark: '73', range: '72–75', cls: 'First', note: 'Clean Slutsky decomposition and the right condition. Label both effects on the diagram.' },
   ch: {
     '01': { s: 'Moodle has years of past exam papers for most courses and examiners’ comments for a few. A worked answer at First standard, almost never.' },
-    '02': { t: 'Every course in *the Calendar*.', s: '579 undergraduate courses across 21 departments, each checked against the 2026/27 Calendar’s course guides.', r: ['EC1A3', 'GV100', 'MA100', '576 more'] },
+    '02': { t: 'Every course in *the Calendar*.', s: '579 undergraduate courses from 21 departments and units, each checked against the 2026/27 Calendar’s course guides.', r: ['EC1A3', 'GV100', 'MA100', '576 more'] },
     '03': { s: 'Marked against LSE’s marking scale and, where your department publishes them, its own criteria.' },
   },
 };
