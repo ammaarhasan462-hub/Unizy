@@ -323,7 +323,7 @@ export function buildLSE({ mobile }) {
   pl(0xffe2c8, 26, 0, F + 3.6, -9);
   pl(0xffd8b0, 22, 0, F + 8, AZ);
   pl(0xffd2a0, 0.6, 0.5, F + 1.6, DESK_Z + 0.3);
-  pl(0xffd9b4, 40, 1.2, F + 2.6, DESK_Z + 1.0); // a reading lamp's pool over the desk
+  pl(0xffd9b4, 14, 1.4, F + 3.4, DESK_Z + 1.2); // a reading lamp's pool over the desk
   // floodlights: the globe, the library entrance
   const ext = [];
   const flood = (p, t, i, ang, col = 0xffe2c2) => { const sp = new THREE.SpotLight(col, i, 0, ang, 0.8, 2); sp.position.set(...p); sp.target.position.set(...t); g.add(sp, sp.target); ext.push([sp, i]); };
