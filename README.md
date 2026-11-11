@@ -66,3 +66,4 @@ back to the same branch for Cloudflare Pages. The last build log is in `.ci/land
 - Full-pack queue: rows in `module_packs` with status `queued` are picked up by running chains as they finish a module (8 chains at a time). Insert codes as `queued` and start a few chains with `warm` + `chain: true`.
 - The 3D intro never plays on phones (`web/lib/boot.js`); `?intro=1` still forces it.
 - The old app is retired: `app.html` redirects everything except `/app/play` (signed-out Play) to `/dashboard` (or `/`).
+- Free plan (Nov 2026): after the 3-day trial every account gets 1 marked answer a week (`ai_settings.free_weekly_assess = 1`, resets Monday UK time); the tutor stays Pro-only (`free_weekly_actions = 0`).

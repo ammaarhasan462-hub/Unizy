@@ -91,7 +91,7 @@ export function Reviews() {
 }
 
 export function Pricing() {
-  const free = ['Your first answer marked free, no account needed', 'Then 3 days free when you sign up, no card needed', '3 answers marked and 3 tutor questions a day', 'Practice questions, flashcards and progress stay free'];
+  const free = ['Your first answer marked free, no account needed', 'Then 3 days free when you sign up, no card needed', '3 answers marked and 3 tutor questions a day', 'Then 1 answer marked free every week, for good'];
   const pro = ['Up to 30 answers marked a day', 'Your tutor on your modules', 'Rewrite and resubmit as often as you like', 'Or £39 a year, or £12 for an exam-season pass'];
   const Tick = () => <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 fill-none stroke-cyan stroke-[2.4]"><path d="M5 12l5 5 9-10" /></svg>;
   return (
