@@ -109,7 +109,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   // one world per university: UCL (Bloomsbury) or Imperial (South Kensington)
   const imp = uni === 'imperial';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
-  let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.6);
+  let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.3 : 1.4);
   renderer.setPixelRatio(pr);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -160,7 +160,20 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
           stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^qt-brick/, scale: 1 / 1.4, tint: 0.35 });
         } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
         const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
-        if (res) { intEnv = res.env; renderer.shadowMap.needsUpdate = true; }
+        if (res) {
+          intEnv = res.env;
+          // the reading room reflects the photographed interior; set per material, so the scene's environment
+          // never swaps (a swap would recompile every shader)
+          if (intEnv) {
+            const seen = new Set();
+            ucl.lib.traverse((o) => {
+              const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+              ms.forEach((m) => { if (!seen.has(m) && 'envMap' in m && !m.isShaderMaterial) { seen.add(m); m.envMap = intEnv; m.envMapIntensity = 0.42; m.needsUpdate = true; } });
+            });
+          }
+          renderer.shadowMap.needsUpdate = true;
+        }
+        precompile(false);
       } catch (e) { console.error(e); }
     })).catch(() => {});
   }
@@ -279,7 +292,45 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   };
   window.addEventListener('pointermove', onMove, { passive: true });
 
-  try { renderer.compile(scene, camera); renderer.compile(cloudScene, quadCam); } catch (e) {}
+  // three.js builds a shader per light count: a light inside a group that is switched off changes the count and makes
+  // every material recompile mid-scroll. Lights therefore live directly on the scene and are dimmed, never hidden.
+  [ucl.group, london.group].forEach((grp) => {
+    const ls = [];
+    grp.traverse((o) => { if (o.isLight) ls.push(o); });
+    ls.forEach((l) => { scene.attach(l); if (l.target && l.target.parent !== scene) scene.attach(l.target); });
+  });
+  // draw everything once into a tiny offscreen target (culling off, hidden parts shown, shadows on), so every
+  // buffer and texture is on the GPU before the scroll reaches it instead of uploading mid-flight
+  const warmRT = new THREE.WebGLRenderTarget(16, 16);
+  function warmup() {
+    if (disposed) return;
+    const changed = [];
+    scene.traverse((o) => { changed.push([o, o.visible, o.frustumCulled]); o.visible = true; o.frustumCulled = false; });
+    const prevRT = renderer.getRenderTarget();
+    try {
+      renderer.shadowMap.needsUpdate = true;
+      renderer.setRenderTarget(warmRT);
+      renderer.render(scene, camera);
+    } catch (e) { /* ignore */ }
+    renderer.setRenderTarget(prevRT);
+    changed.forEach(([o, v, f]) => { o.visible = v; o.frustumCulled = f; });
+    renderer.shadowMap.needsUpdate = true;
+  }
+  // compile every shader up front (hidden parts included), so nothing compiles mid-scroll and stutters
+  function precompile(warm = true) {
+    const hidden = [];
+    scene.traverse((o) => { if (!o.visible && !(o.userData && o.userData.retired)) { hidden.push(o); o.visible = true; } });
+    // compile against the composer's buffer: shaders differ (tone mapping, colour space) between screen and target
+    const prevRT = renderer.getRenderTarget();
+    try {
+      renderer.setRenderTarget(composer.readBuffer);
+      const done = renderer.compileAsync ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), null);
+      if (warm) { if (done && done.then) done.then(warmup, () => {}); else warmup(); }
+    } catch (e) { /* ignore */ }
+    renderer.setRenderTarget(prevRT);
+    hidden.forEach((o) => { o.visible = false; });
+  }
+  try { precompile(); renderer.compile(cloudScene, quadCam); } catch (e) {}
 
   let raf = 0;
   let last = performance.now();
@@ -299,12 +350,13 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
     // adaptive quality: drop AO, then resolution, then cloud steps
     frames++;
-    if (frames > 20 && dt > 0.045) slow++;
-    if (frames % 90 === 0) {
-      if (slow > 45 && level < 3) {
+    // anything under ~40 fps counts as slow, so a laptop that is merely sluggish steps down too
+    if (frames > 20 && dt > 0.025) slow++;
+    if (frames % 60 === 0) {
+      if (slow > 24 && level < 3) {
         level++;
         if (level === 1 && gtao) gtao.enabled = false;
-        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(1, pr * 0.8); resize(); }
+        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(0.9, pr * 0.8); resize(); }
         if (level === 3) { cloudU.uSteps.value = Math.round(cloudU.uSteps.value * 0.7); pr = Math.max(0.85, pr * 0.85); resize(); }
       }
       slow = 0;
@@ -368,8 +420,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const inside = ss(0.705, 0.75, p);
     ATMO.uIndoor.value = inside;
     ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
-    scene.environment = intEnv && inside > 0.5 ? intEnv : sky.env;
-    scene.environmentIntensity = intEnv && inside > 0.5 ? lerp(0.3, 0.42, inside) : lerp(2.2, 0.3, inside);
+    scene.environmentIntensity = lerp(2.2, 0.3, inside);
     sun.intensity = 2.2 * (1 - inside);
     renderer.toneMappingExposure = lerp(lerp(0.5, 1.08, ss(0.24, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
     london.trafficU.uTime.value = time;
@@ -413,7 +464,6 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const below = camera.position.y < CLOUD_BOTTOM - 5;
     london.group.visible = below && (imp ? p < 0.97 : inside < 1);
     ucl.group.visible = below;
-    sun.castShadow = below;
     if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
     if (p < (imp ? 0.97 : 0.76)) {

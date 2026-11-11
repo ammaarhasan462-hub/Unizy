@@ -386,8 +386,17 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const { data, tex } = city;
   const group = new THREE.Group();
   const r = rng(site === 'ucl' ? 2024 : 2025);
-  const fam = {}; FAMS.forEach((f) => { fam[f] = new Buf(); });
-  const roofs = new Buf();
+  // geometry is split into 400 m tiles so the camera and the sun's shadow pass only draw the tiles they can see,
+  // and only tiles near the campus cast shadows at all
+  const TILE = 400, CAST_R = 850;
+  const tileOf = (x, z) => Math.floor((x + H) / TILE) * 1000 + Math.floor((z + H) / TILE);
+  const tileC = (k) => [Math.floor(k / 1000) * TILE - H + TILE / 2, (k % 1000) * TILE - H + TILE / 2];
+  const tiles = new Map();
+  const tile = (x, z) => {
+    const k = tileOf(x, z);
+    if (!tiles.has(k)) { const f = {}; FAMS.forEach((n) => { f[n] = new Buf(); }); tiles.set(k, { fam: f, roofs: new Buf() }); }
+    return tiles.get(k);
+  };
   const chim = [];
   const R = mobile ? 1050 : H;
   const m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion();
@@ -404,7 +413,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     const S = STYLES[st] || STYLES[0];
     const seed = ((Math.abs(of[0] * 31 + of[1] * 17) % 9973) / 9973);
     const col = hexCol(colH, S.tint[Math.floor(seed * S.tint.length) % S.tint.length]);
-    const b = fam[S.fam];
+    const T0 = tile(cx, cz);
+    const b = T0.fam[S.fam], roofs = T0.roofs;
     const a = Math.abs(ringArea(outer));
     let rs2 = rs, rh = rhIn;
     const o = (rs2 || ['stock', 'stucco', 'redbrick'].includes(S.k)) ? obb(outer) : null;
@@ -443,29 +453,39 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       });
     }
   });
-  const meshes = [];
-  FAMS.forEach((f) => {
-    if (!fam[f].i.length) return;
-    const m = new THREE.Mesh(fam[f].geo(true), facade(f, tex));
-    m.castShadow = m.receiveShadow = true;
-    m.frustumCulled = false;
-    group.add(m); meshes.push(m);
+  const famMat = {}; FAMS.forEach((f) => { famMat[f] = facade(f, tex); });
+  const roofMat = roofMaterial(tex);
+  const near = (k) => { const [x, z] = tileC(k); return Math.hypot(x, z) < CAST_R; };
+  tiles.forEach((T1, k) => {
+    const cast = near(k);
+    FAMS.forEach((f) => {
+      if (!T1.fam[f].i.length) return;
+      const m = new THREE.Mesh(T1.fam[f].geo(true), famMat[f]);
+      m.castShadow = cast; m.receiveShadow = true;
+      group.add(m);
+    });
+    if (T1.roofs.i.length) {
+      const m = new THREE.Mesh(T1.roofs.geo(false), roofMat);
+      m.castShadow = cast; m.receiveShadow = true;
+      group.add(m);
+    }
   });
-  if (roofs.i.length) {
-    const m = new THREE.Mesh(roofs.geo(false), roofMaterial(tex));
-    m.castShadow = m.receiveShadow = true;
-    m.frustumCulled = false;
-    group.add(m);
-  }
+  // instanced pieces (trees, chimneys) are tiled the same way
   const inst = (geo, mat, list, cast = true) => {
     if (!list.length) return null;
-    const im = new THREE.InstancedMesh(geo, mat, list.length);
-    list.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); im.setColorAt(i, c); });
-    im.instanceMatrix.needsUpdate = true;
-    if (im.instanceColor) im.instanceColor.needsUpdate = true;
-    im.castShadow = cast; im.receiveShadow = true; im.frustumCulled = false;
-    group.add(im);
-    return im;
+    const by = new Map();
+    const pos = new THREE.Vector3();
+    list.forEach((it) => { pos.setFromMatrixPosition(it[0]); const k = tileOf(pos.x, pos.z); if (!by.has(k)) by.set(k, []); by.get(k).push(it); });
+    by.forEach((items, k) => {
+      const im = new THREE.InstancedMesh(geo, mat, items.length);
+      items.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); if (c) im.setColorAt(i, c); });
+      im.instanceMatrix.needsUpdate = true;
+      if (im.instanceColor) im.instanceColor.needsUpdate = true;
+      im.computeBoundingSphere();
+      im.castShadow = cast && near(k); im.receiveShadow = true;
+      group.add(im);
+    });
+    return true;
   };
   const bx = baseBox();
   // chimneys and rooftop plant are centred boxes rotated to the building
@@ -676,8 +696,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       walls(sb, ring, minh, h, col, st, seed);
       try { flatRoof(sb, ring, [], h, col.clone().multiplyScalar(0.6), 0); } catch { /* skip */ }
     });
-    const m = new THREE.Mesh(sb.geo(true), facade('concrete', tex));
-    m.frustumCulled = false;
+    const m = new THREE.Mesh(sb.geo(true), famMat.concrete);
     group.add(m);
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });
