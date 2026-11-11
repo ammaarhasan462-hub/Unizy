@@ -90,7 +90,7 @@
     qmul: { short: 'Queen Mary', tutor: 'QMUL', long: 'Queen Mary University of London', name: 'Queen Mary University of London', exam: 'a Queen Mary exam answer', src: 'Module information from Queen Mary’s official module directory', eg: 'ECN115', course: 'e.g. BSc Economics' },
     lse: { short: 'LSE', long: 'LSE', name: 'London School of Economics', exam: 'an LSE exam answer', src: 'Course information from the LSE Calendar’s course guides', eg: 'EC1A1', course: 'e.g. BSc Economics' } };
   var UNI_ORDER = ['ucl', 'imperial', 'qmul', 'lse'];
-  var CODE_RE = /^[A-Za-z]{2,4}\d[0-9A-Za-z]{1,4}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1
+  var CODE_RE = /^[A-Za-z]{2,4}\d[0-9A-Za-z]{1,5}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1
   function codeSearch(t) { return /^[A-Za-z]{4}\d{0,5}$/.test(t) || CODE_RE.test(t) || /^[A-Za-z]{2,3}\d{1,4}$/.test(t); }
   function uniId() { return (S.profile && S.profile.uni) || (S.setup && S.setup.uni) || 'ucl'; }
   function UN(u) { return UNIS[u || uniId()] || UNIS.ucl; }
@@ -179,7 +179,7 @@
   function ratingOf(code, pos) { var r = S.today && S.today.ratings.filter(function (x) { return x.code === code && x.topic_pos === pos; })[0]; return r ? r.rating : ''; }
   function topicStatus(code, pos, d) { d = d || modData(code); if (!d.qById) d.qById = ST.index(d.questions); return ST.ragStatus(ST.topicMastery(pos, d), ratingOf(code, pos)); }
   function curCode() {
-    var m = /\/dashboard\/practice\/([A-Z]{2,4}[0-9][0-9A-Z]{1,4})/.exec(location.pathname);
+    var m = /\/dashboard\/practice\/([A-Z]{2,4}[0-9][0-9A-Z]{1,5})/.exec(location.pathname);
     if (m) return m[1];
     var t = tabOf(location.pathname);
     return t === 'cards' || t === 'exam' || t === 'tutor' ? new URLSearchParams(location.search).get('m') : null;
@@ -279,7 +279,7 @@
   var ACTIONS = [['Home', '/dashboard', 'Today'], ['Flashcards', '/dashboard/cards', 'Revision mode'], ['Topic arena', '/dashboard/practice', 'Revision mode'], ['Exam simulator', '/dashboard/exam', 'Revision mode'], ['Tutor', '/dashboard/tutor', 'Ask'], ['Marked answers', '/dashboard/history', 'History'], ['Account', '/dashboard/account', 'Settings']];
   function palItems() {
     var q = PAL.q.trim(), out = [], low = q.toLowerCase();
-    var jump = /^([A-Za-z]{2,4}\d[0-9A-Za-z]{1,4})\s*[-·:]?\s*(?:w|wk|week|t|topic|lecture|l)?\s*(\d{1,2})$/i.exec(q);
+    var jump = /^([A-Za-z]{2,4}\d[0-9A-Za-z]{1,5})\s*[-·:]?\s*(?:w|wk|week|t|topic|lecture|l)?\s*(\d{1,2})$/i.exec(q);
     if (jump) {
       var code = jump[1].toUpperCase(), n = +jump[2], t = (topicsOf(code) || []).filter(function (x) { return x.position === n - 1; })[0];
       out.push({ g: 'Jump to', label: code + ' · Topic ' + n, sub: t ? t.title : 'Opens the module at topic ' + n, href: '/dashboard/practice/' + code + '?t=' + (n - 1), rs: t ? topicStatus(code, t.position) : '' });

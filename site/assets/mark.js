@@ -12,7 +12,7 @@
   var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove, exam dates
   // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
   function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
-  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{2,4}[0-9][0-9A-Za-z]{1,4})\\/?$');
+  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{2,4}[0-9][0-9A-Za-z]{1,5})\\/?$');
   // universities: UCL modules (4-digit codes) and Imperial modules (5-digit codes) share one catalogue table
   var UNIS = { ucl: { short: 'UCL', poss: 'UCL’s', exam: 'a UCL', src: 'Full description on UCL’s catalogue', cat: 'UCL’s module catalogue' },
     imperial: { short: 'Imperial', poss: 'Imperial’s', exam: 'an Imperial', src: 'Imperial’s programme specification', cat: 'Imperial’s programme specifications' },

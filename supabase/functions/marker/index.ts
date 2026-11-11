@@ -26,7 +26,7 @@ const CORS = {
 const SONNET = "claude-sonnet-5-5";
 const MAX_ANSWER = 14_000; // characters, roughly 2,300 words
 const MAX_QUESTION = 3_000;
-const CODE_RE = /^[A-Z]{2,4}[0-9][0-9A-Z]{1,4}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1 / LSE100
+const CODE_RE = /^[A-Z]{2,4}[0-9][0-9A-Z]{1,5}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1 / LSE100
 
 // Universities. Modules carry a `uni`; everything the examiner says follows it.
 const UNIS: Record<string, { name: string; long: string; source: string }> = {
