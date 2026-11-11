@@ -165,8 +165,15 @@ export function buildQMUL({ mobile }) {
   // ---- the Octagon: octagonal drum, lead roof rising to a ribbed glass dome and lantern
   const OZ = OCT_Z + HALL_OFF; // in the building frame
   const RC = OCT_A / Math.cos(Math.PI / 8);
-  const drum = add(new THREE.CylinderGeometry(RC, RC, 16, 8, 1, true), back, 0, 8, OZ); drum.rotation.y = Math.PI / 8;
-  drum.material = plainMaterial({ color: '#d9cfbc', roughness: 0.8 }, 'stone2-oct');
+  // seven outer walls; the eighth, facing the corridor, is where the link building joins
+  const drumM = plainMaterial({ color: '#d9cfbc', roughness: 0.8 }, 'stone2-oct');
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    if (i === 0) continue;
+    const side = 2 * OCT_A * Math.tan(Math.PI / 8);
+    const w = add(new THREE.PlaneGeometry(side, 16), drumM, Math.sin(a) * OCT_A, 8, OZ + Math.cos(a) * OCT_A);
+    w.rotation.y = a;
+  }
   const roofG = add(new THREE.CylinderGeometry(6.2, RC + 0.6, 4.5, 8), lead, 0, 18.25, OZ); roofG.rotation.y = Math.PI / 8;
   const domeT = domeGlassTex();
   const glassOut = plainMaterial({ map: domeT, color: '#ffffff', roughness: 0.05, metalness: 0.3, emissive: '#3a2014', emissiveIntensity: 0.25 }, 'qm-domeout');
