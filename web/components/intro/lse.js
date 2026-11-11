@@ -122,7 +122,7 @@ export function buildLSE({ mobile }) {
   lg.rotateX(-Math.PI / 2);
   add(lg, brick, 0, 0, 0);
   // the roof: pale membrane (the extruded cap would carry stretched brick), with plant rooms on it
-  const roofM = plainMaterial({ color: '#8e8a84', roughness: 0.92 }, 'lse-roof');
+  const roofM = plainMaterial({ color: '#aaa59c', roughness: 0.92 }, 'lse-roof');
   const rg = new THREE.ShapeGeometry(shape); rg.rotateX(-Math.PI / 2);
   const roof = add(rg, roofM, 0, LH + 0.04, 0); roof.castShadow = false;
   const inPoly = (x, z) => { let c = false; for (let i = 0, j = LIB_POLY.length - 1; i < LIB_POLY.length; j = i++) { const [xi, zi] = LIB_POLY[i], [xj, zj] = LIB_POLY[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
@@ -323,7 +323,7 @@ export function buildLSE({ mobile }) {
   pl(0xffe2c8, 26, 0, F + 3.6, -9);
   pl(0xffd8b0, 22, 0, F + 8, AZ);
   pl(0xffd2a0, 0.6, 0.5, F + 1.6, DESK_Z + 0.3);
-  pl(0xffd9b4, 7, 1.2, F + 2.8, DESK_Z + 1.2); // a reading lamp's pool over the desk
+  pl(0xffd9b4, 40, 1.2, F + 2.6, DESK_Z + 1.0); // a reading lamp's pool over the desk
   // floodlights: the globe, the library entrance
   const ext = [];
   const flood = (p, t, i, ang, col = 0xffe2c2) => { const sp = new THREE.SpotLight(col, i, 0, ang, 0.8, 2); sp.position.set(...p); sp.target.position.set(...t); g.add(sp, sp.target); ext.push([sp, i]); };

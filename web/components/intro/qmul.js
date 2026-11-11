@@ -35,10 +35,10 @@ export const QMUL_KEYS = [
   [0.52, [-520, 125, 330], [-38, 30, 20]],
   OUT(0.57, [70, 62, 150], [0, 34, 8]),
   OUT(0.615, [-26, 44, 66], [0, 38, 8]),
-  OUT(0.66, [0, 7, 42], [0, 5.5, 0]),
+  OUT(0.66, [0, 5.5, 24], [0, 4.5, 0]),
   LOCAL(0.705, [0, 2.6, 4], [0, 2.5, -20]),
   LOCAL(0.745, [0, 2.6, -34], [0, 2.4, -66]),
-  LOCAL(0.82, [0, 3.3, -73.5], [0, 2.3, -82]),
+  LOCAL(0.82, [0, 3.3, -73.5], [0, 5.5, -86]),
   ...deskTail(LOCAL, DESK_Z),
 ];
 export const QMUL_STRIKE = [-1050, 0, -1850];
@@ -339,6 +339,7 @@ export function buildQMUL({ mobile }) {
   const pl = (c, i, x, y, z) => { const l = new THREE.PointLight(c, i, 0, 2); l.position.set(x, y, z); lib.add(l); int.push([l, i]); };
   pl(0xffb89a, 60, 0, HT + 2, OC);
   pl(0xffd2a0, 18, 0, F + 3.2, OC + 7);
+  pl(0xffe0bc, 34, 0, H1 + 2.5, OC); // the gallery level, so the cases read from the door
   pl(0xffd2a0, 22, 0, F + 3, -20);
   pl(0xffd2a0, 0.6, 0.5, F + 1.6, DESK_Z + 0.3);
 
@@ -349,8 +350,9 @@ export function buildQMUL({ mobile }) {
     sp.position.set(...toW([x, y, z])); sp.target.position.set(...toW([tx, ty, tz]));
     g.add(sp, sp.target); ext.push([sp, i]);
   };
-  flood(-7, 0.6, 30, 0, 30, 4, 7000, 0.35);
-  flood(7, 0.6, 30, 0, 30, 4, 7000, 0.35);
-  flood(0, 0.6, 22, 0, 8, 10, 2500, 0.7, 0xffd6a6);
+  flood(-7, 0.6, 30, 0, 30, 4, 3000, 0.35);
+  flood(7, 0.6, 30, 0, 30, 4, 3000, 0.35);
+  flood(-6, 0.6, 12, 0, 6, 0, 700, 0.6, 0xffd6a6);
+  flood(6, 0.6, 12, 0, 6, 0, 700, 0.6, 0xffd6a6);
   return { group: g, lib, int, ext, furn: out, dust: dustU, shaftMat, clockHands: hands };
 }
