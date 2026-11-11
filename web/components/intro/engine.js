@@ -303,10 +303,14 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   function precompile() {
     const hidden = [];
     scene.traverse((o) => { if (!o.visible && !(o.userData && o.userData.retired)) { hidden.push(o); o.visible = true; } });
+    // compile against the composer's buffer: shaders differ (tone mapping, colour space) between screen and target
+    const prevRT = renderer.getRenderTarget();
     try {
+      renderer.setRenderTarget(composer.readBuffer);
       const done = renderer.compileAsync ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), null);
       if (done && done.catch) done.catch(() => {});
     } catch (e) { /* ignore */ }
+    renderer.setRenderTarget(prevRT);
     hidden.forEach((o) => { o.visible = false; });
   }
   try { precompile(); renderer.compile(cloudScene, quadCam); } catch (e) {}
