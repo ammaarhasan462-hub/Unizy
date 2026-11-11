@@ -121,6 +121,20 @@ export function buildLSE({ mobile }) {
   const lg = new THREE.ExtrudeGeometry(shape, { depth: LH, bevelEnabled: false });
   lg.rotateX(-Math.PI / 2);
   add(lg, brick, 0, 0, 0);
+  // the roof: pale membrane (the extruded cap would carry stretched brick), with plant rooms on it
+  const roofM = plainMaterial({ color: '#8e8a84', roughness: 0.92 }, 'lse-roof');
+  const rg = new THREE.ShapeGeometry(shape); rg.rotateX(-Math.PI / 2);
+  const roof = add(rg, roofM, 0, LH + 0.04, 0); roof.castShadow = false;
+  const inPoly = (x, z) => { let c = false; for (let i = 0, j = LIB_POLY.length - 1; i < LIB_POLY.length; j = i++) { const [xi, zi] = LIB_POLY[i], [xj, zj] = LIB_POLY[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+  const hc = toW([0, 0, AZ + HALL_OFF]);
+  const plant = plainMaterial({ color: '#b9b4ab', roughness: 0.75 }, 'lse-plant');
+  const pr = rng(91);
+  for (let k = 0, n = 0; k < 60 && n < 7; k++) {
+    const x = 44 + (pr() - 0.5) * 70, z = 62 + (pr() - 0.5) * 70, w = 3 + pr() * 5, d = 2.5 + pr() * 4, h = 1.6 + pr() * 2.2;
+    if (![[x - w / 2, z - d / 2], [x + w / 2, z - d / 2], [x - w / 2, z + d / 2], [x + w / 2, z + d / 2]].every(([a, b]) => inPoly(a, b))) continue;
+    if (Math.hypot(x - hc[0], z - hc[2]) < AR + 3 + Math.max(w, d)) continue;
+    add(new THREE.BoxGeometry(w, h, d), plant, x, LH + h / 2, z); n++;
+  }
   // window bands on each face
   for (let i = 0; i < LIB_POLY.length; i++) {
     const [x0, z0] = LIB_POLY[i], [x1, z1] = LIB_POLY[(i + 1) % LIB_POLY.length];
@@ -309,6 +323,7 @@ export function buildLSE({ mobile }) {
   pl(0xffe2c8, 26, 0, F + 3.6, -9);
   pl(0xffd8b0, 22, 0, F + 8, AZ);
   pl(0xffd2a0, 0.6, 0.5, F + 1.6, DESK_Z + 0.3);
+  pl(0xffd9b4, 7, 1.2, F + 2.8, DESK_Z + 1.2); // a reading lamp's pool over the desk
   // floodlights: the globe, the library entrance
   const ext = [];
   const flood = (p, t, i, ang, col = 0xffe2c2) => { const sp = new THREE.SpotLight(col, i, 0, ang, 0.8, 2); sp.position.set(...p); sp.target.position.set(...t); g.add(sp, sp.target); ext.push([sp, i]); };
