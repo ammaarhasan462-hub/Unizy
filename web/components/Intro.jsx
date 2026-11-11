@@ -13,12 +13,6 @@ import { COPY, EndCard, ProgressRail, StartTitle, Chapter, TopBar, chaptersFor, 
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
-export const INTRO_BOOT = `(function(){try{var d=document.documentElement,q=location.search;
-var force=/[?&]intro=1/.test(q),off=/[?&]intro=0/.test(q);
-var inside=false;try{var r=document.referrer;inside=!!r&&new URL(r).host===location.host&&performance.getEntriesByType('navigation')[0].type==='navigate'}catch(e){}
-var rm=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(force||(!off&&!inside&&!rm&&window.WebGL2RenderingContext&&!navigator.webdriver)){d.classList.add('intro');
-setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
 // timings (fractions of the journey) and layout; the words are in intro/IntroChrome.jsx
 const CH = [

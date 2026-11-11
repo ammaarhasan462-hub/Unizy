@@ -1,6 +1,5 @@
 import './globals.css';
-import { INTRO_BOOT } from '@/components/Intro';
-import { UNI_BOOT } from '@/components/story/unis';
+import { INTRO_BOOT, UNI_BOOT } from '@/lib/boot';
 
 const FONTS = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Anton&family=Instrument+Serif:ital@0;1&family=Caveat:wght@500;700&family=Archivo:wdth,wght@100..125,500..900&display=swap';
 

@@ -64,8 +64,6 @@ export function setUni(u) {
   if (typeof document !== 'undefined') document.documentElement.setAttribute('data-uni', u || 'all');
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('unizy:uni', { detail: u }));
 }
-// set before first paint so the page never flashes the wrong colours
-export const UNI_BOOT = `(function(){try{var u=localStorage.getItem('${UNI_KEY}');document.documentElement.setAttribute('data-uni',/^(ucl|imperial|qmul|lse)$/.test(u)?u:'all')}catch(e){}})();`;
 
 // live counts (modules, departments, marking criteria per university)
 let statsP = null;
