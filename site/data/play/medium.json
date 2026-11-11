@@ -1,0 +1,4552 @@
+[
+ {
+  "id": "geo-001",
+  "cat": "geo",
+  "q": "Which city is the capital of Australia?",
+  "options": [
+   "Sydney",
+   "Melbourne",
+   "Canberra",
+   "Perth"
+  ],
+  "answer": 2,
+  "fact": "Canberra was purpose-built as a compromise between rivals Sydney and Melbourne, to a design by American architects Walter Burley Griffin and Marion Mahony Griffin."
+ },
+ {
+  "id": "geo-004",
+  "cat": "geo",
+  "q": "Which strait separates Spain from Morocco?",
+  "options": [
+   "Strait of Gibraltar",
+   "Bosphorus",
+   "Strait of Hormuz",
+   "Strait of Messina"
+  ],
+  "answer": 0,
+  "fact": "At its narrowest point Europe and Africa are only about 14 km apart, close enough to see across on a clear day."
+ },
+ {
+  "id": "geo-007",
+  "cat": "geo",
+  "q": "Which capital city is built across 14 islands where Lake Mälaren meets the Baltic Sea?",
+  "options": [
+   "Copenhagen",
+   "Helsinki",
+   "Stockholm",
+   "Oslo"
+  ],
+  "answer": 2,
+  "fact": "Its metro is nicknamed the world's longest art gallery, with artworks decorating about 90 of its 100 stations."
+ },
+ {
+  "id": "geo-013",
+  "cat": "geo",
+  "q": "Which great river has no bridges across its main channel?",
+  "options": [
+   "Nile",
+   "Amazon",
+   "Mississippi",
+   "Danube"
+  ],
+  "answer": 1,
+  "fact": "Its mouth is so wide that it holds Marajó, an island roughly the size of Switzerland."
+ },
+ {
+  "id": "geo-014",
+  "cat": "geo",
+  "q": "Which mountain range is traditionally seen as the boundary between Europe and Asia?",
+  "options": [
+   "Ural Mountains",
+   "Carpathians",
+   "Altai Mountains",
+   "Pyrenees"
+  ],
+  "answer": 0,
+  "fact": "The range runs for about 2,500 km, from the Arctic coast down to Kazakhstan."
+ },
+ {
+  "id": "geo-017",
+  "cat": "geo",
+  "q": "Which is the smallest country in the world by area?",
+  "options": [
+   "Monaco",
+   "San Marino",
+   "Liechtenstein",
+   "Vatican City"
+  ],
+  "answer": 3,
+  "fact": "At under half a square kilometre, it is only about a third of the size of London's Hyde Park."
+ },
+ {
+  "id": "geo-018",
+  "cat": "geo",
+  "q": "Which city is the capital of Canada?",
+  "options": [
+   "Ottawa",
+   "Toronto",
+   "Montreal",
+   "Vancouver"
+  ],
+  "answer": 0,
+  "fact": "Queen Victoria chose Ottawa as the capital in 1857, partly as a compromise between English- and French-speaking regions."
+ },
+ {
+  "id": "geo-019",
+  "cat": "geo",
+  "q": "Mount Kilimanjaro, Africa's highest mountain, is in which country?",
+  "options": [
+   "Kenya",
+   "Uganda",
+   "Tanzania",
+   "Ethiopia"
+  ],
+  "answer": 2,
+  "fact": "Kilimanjaro is a dormant volcano made up of three volcanic cones: Kibo, Mawenzi and Shira."
+ },
+ {
+  "id": "geo-020",
+  "cat": "geo",
+  "q": "Which country has the world's only non-rectangular national flag?",
+  "options": [
+   "Bhutan",
+   "Nepal",
+   "Mongolia",
+   "Sri Lanka"
+  ],
+  "answer": 1,
+  "fact": "Nepal's constitution includes step-by-step geometric instructions for drawing the flag correctly."
+ },
+ {
+  "id": "geo-022",
+  "cat": "geo",
+  "q": "Which river flows through the centre of Paris?",
+  "options": [
+   "Loire",
+   "Seine",
+   "Rhône",
+   "Thames"
+  ],
+  "answer": 1,
+  "fact": "The banks of the Seine in Paris are a UNESCO World Heritage Site."
+ },
+ {
+  "id": "geo-023",
+  "cat": "geo",
+  "q": "Which river flows through Vienna, Bratislava, Budapest and Belgrade?",
+  "options": [
+   "Rhine",
+   "Elbe",
+   "Danube",
+   "Vistula"
+  ],
+  "answer": 2,
+  "fact": "Its basin is shared by 19 countries, making it the most international river basin in the world."
+ },
+ {
+  "id": "geo-024",
+  "cat": "geo",
+  "q": "Which is the northernmost capital city of a sovereign state?",
+  "options": [
+   "Reykjavík",
+   "Oslo",
+   "Helsinki",
+   "Tallinn"
+  ],
+  "answer": 0,
+  "fact": "Most of its homes are heated with natural hot water from geothermal sources."
+ },
+ {
+  "id": "geo-025",
+  "cat": "geo",
+  "q": "Which is the largest hot desert in the world?",
+  "options": [
+   "Gobi",
+   "Sahara",
+   "Kalahari",
+   "Arabian"
+  ],
+  "answer": 1,
+  "fact": "Covering around 9 million square km, it is almost as big as the United States."
+ },
+ {
+  "id": "geo-026",
+  "cat": "geo",
+  "q": "Most of the Atacama, the driest non-polar desert on Earth, lies in which country?",
+  "options": [
+   "Peru",
+   "Argentina",
+   "Chile",
+   "Bolivia"
+  ],
+  "answer": 2,
+  "fact": "NASA has tested Mars rovers there because its dry soil is so similar to the Martian surface."
+ },
+ {
+  "id": "geo-027",
+  "cat": "geo",
+  "q": "Which country is the world's fourth-largest island?",
+  "options": [
+   "Sri Lanka",
+   "Iceland",
+   "Cuba",
+   "Madagascar"
+  ],
+  "answer": 3,
+  "fact": "Around 90% of its plants and animals, including its famous lemurs, evolved there and are found naturally nowhere else."
+ },
+ {
+  "id": "geo-028",
+  "cat": "geo",
+  "q": "Which is the deepest lake in the world?",
+  "options": [
+   "Lake Superior",
+   "Lake Baikal",
+   "Lake Tanganyika",
+   "Lake Victoria"
+  ],
+  "answer": 1,
+  "fact": "It holds around a fifth of all the unfrozen fresh surface water on the planet."
+ },
+ {
+  "id": "geo-029",
+  "cat": "geo",
+  "q": "Which city is the capital of Turkey?",
+  "options": [
+   "Istanbul",
+   "Ankara",
+   "Izmir",
+   "Antalya"
+  ],
+  "answer": 1,
+  "fact": "Ankara became the capital in 1923, even though Istanbul is far larger and straddles Europe and Asia."
+ },
+ {
+  "id": "geo-030",
+  "cat": "geo",
+  "q": "The Panama Canal links the Pacific Ocean with which other ocean?",
+  "options": [
+   "Indian",
+   "Arctic",
+   "Southern",
+   "Atlantic"
+  ],
+  "answer": 3,
+  "fact": "Thanks to Panama's S-shape, the canal's Pacific entrance actually lies further east than its Atlantic one."
+ },
+ {
+  "id": "geo-031",
+  "cat": "geo",
+  "q": "Mount Everest sits on the border between Nepal and which other country?",
+  "options": [
+   "China",
+   "India",
+   "Bhutan",
+   "Pakistan"
+  ],
+  "answer": 0,
+  "fact": "It was named after surveyor George Everest, who reportedly objected to the honour."
+ },
+ {
+  "id": "geo-033",
+  "cat": "geo",
+  "q": "Which is the largest country in Africa by area?",
+  "options": [
+   "DR Congo",
+   "Sudan",
+   "Algeria",
+   "Libya"
+  ],
+  "answer": 2,
+  "fact": "Algeria took the title in 2011, when South Sudan became independent and Sudan's area shrank."
+ },
+ {
+  "id": "geo-034",
+  "cat": "geo",
+  "q": "Which city is the capital of New Zealand?",
+  "options": [
+   "Auckland",
+   "Christchurch",
+   "Hamilton",
+   "Wellington"
+  ],
+  "answer": 3,
+  "fact": "Wellington is the southernmost capital city of any sovereign state."
+ },
+ {
+  "id": "geo-035",
+  "cat": "geo",
+  "q": "Which city is the capital of Brazil?",
+  "options": [
+   "Brasília",
+   "Rio de Janeiro",
+   "São Paulo",
+   "Salvador"
+  ],
+  "answer": 0,
+  "fact": "Built from scratch and opened in 1960, its city plan resembles an aeroplane or bird when seen from above."
+ },
+ {
+  "id": "geo-036",
+  "cat": "geo",
+  "q": "In which US state is the Grand Canyon?",
+  "options": [
+   "Arizona",
+   "Nevada",
+   "Utah",
+   "New Mexico"
+  ],
+  "answer": 0,
+  "fact": "The canyon was carved over millions of years by the Colorado River."
+ },
+ {
+  "id": "geo-037",
+  "cat": "geo",
+  "q": "Which South American country is named after the imaginary line that runs through it?",
+  "options": [
+   "Colombia",
+   "Peru",
+   "Bolivia",
+   "Ecuador"
+  ],
+  "answer": 3,
+  "fact": "Thanks to Earth's bulge, the summit of its Chimborazo volcano is the point farthest from Earth's centre."
+ },
+ {
+  "id": "geo-038",
+  "cat": "geo",
+  "q": "Lake Titicaca lies on the border between Peru and which country?",
+  "options": [
+   "Chile",
+   "Bolivia",
+   "Ecuador",
+   "Argentina"
+  ],
+  "answer": 1,
+  "fact": "The Uros people live on floating islands they build from totora reeds."
+ },
+ {
+  "id": "geo-040",
+  "cat": "geo",
+  "q": "Which tiny Pyrenean country is ruled jointly by two co-princes?",
+  "options": [
+   "Andorra",
+   "Liechtenstein",
+   "Monaco",
+   "San Marino"
+  ],
+  "answer": 0,
+  "fact": "Its official language is Catalan, rather than Spanish or French."
+ },
+ {
+  "id": "hist-004",
+  "cat": "hist",
+  "q": "Christopher Cockerell tested his idea with a cat food tin, a coffee tin and a vacuum cleaner. What did he invent?",
+  "options": [
+   "The hovercraft",
+   "The jet engine",
+   "The hydrofoil",
+   "The vacuum flask"
+  ],
+  "answer": 0,
+  "fact": "The first full-size hovercraft crossed the Channel on 25 July 1959, 50 years to the day after Blériot's flight."
+ },
+ {
+  "id": "hist-006",
+  "cat": "hist",
+  "q": "Which word did Alexander Graham Bell suggest for answering the telephone?",
+  "options": [
+   "Hello",
+   "Greetings",
+   "Ahoy",
+   "Good morning"
+  ],
+  "answer": 2,
+  "fact": "Thomas Edison is credited with popularising 'hello' instead."
+ },
+ {
+  "id": "hist-008",
+  "cat": "hist",
+  "q": "Which locomotive won the Rainhill Trials in 1829?",
+  "options": [
+   "Puffing Billy",
+   "Mallard",
+   "Rocket",
+   "Flying Scotsman"
+  ],
+  "answer": 2,
+  "fact": "Built by George and Robert Stephenson, it reached a top speed of about 30 mph."
+ },
+ {
+  "id": "hist-010",
+  "cat": "hist",
+  "q": "In which year did the Mayflower sail from Plymouth to North America?",
+  "options": [
+   "1492",
+   "1588",
+   "1776",
+   "1620"
+  ],
+  "answer": 3,
+  "fact": "Before the famous voyage, she was a cargo ship that had spent many years in the wine trade."
+ },
+ {
+  "id": "hist-012",
+  "cat": "hist",
+  "q": "During the Great Fire of London in 1666, what did Samuel Pepys bury in his garden?",
+  "options": [
+   "A Parmesan cheese",
+   "His diary",
+   "His spare wigs",
+   "A chest of tea"
+  ],
+  "answer": 0,
+  "fact": "His diary was written in shorthand and was not deciphered and published until the 1820s."
+ },
+ {
+  "id": "hist-013",
+  "cat": "hist",
+  "q": "Ernő Rubik invented his famous cube in 1974. Which country was he from?",
+  "options": [
+   "Hungary",
+   "Poland",
+   "Austria",
+   "Czechoslovakia"
+  ],
+  "answer": 0,
+  "fact": "It took Rubik more than a month to solve his own puzzle for the first time."
+ },
+ {
+  "id": "hist-014",
+  "cat": "hist",
+  "q": "The Crystal Palace was built in Hyde Park for which event?",
+  "options": [
+   "Queen Victoria's coronation",
+   "The 1908 Olympics",
+   "The Great Exhibition",
+   "The Festival of Britain"
+  ],
+  "answer": 2,
+  "fact": "Its designer, Joseph Paxton, was inspired by the ribbed leaves of a giant water lily."
+ },
+ {
+  "id": "hist-016",
+  "cat": "hist",
+  "q": "Who was the first woman to fly solo across the Atlantic, in 1932?",
+  "options": [
+   "Amy Johnson",
+   "Amelia Earhart",
+   "Bessie Coleman",
+   "Jean Batten"
+  ],
+  "answer": 1,
+  "fact": "She landed in a farmer's field in Northern Ireland rather than her planned destination of Paris."
+ },
+ {
+  "id": "hist-017",
+  "cat": "hist",
+  "q": "Which Wonder of the Ancient World stood at Alexandria in Egypt?",
+  "options": [
+   "The Hanging Gardens",
+   "The Lighthouse",
+   "The Mausoleum",
+   "The Temple of Artemis"
+  ],
+  "answer": 1,
+  "fact": "Known as the Pharos, it gave its name to the word for lighthouse in several languages, such as French 'phare'."
+ },
+ {
+  "id": "hist-018",
+  "cat": "hist",
+  "q": "Which explorer reached the east coast of Australia aboard HMS Endeavour in 1770?",
+  "options": [
+   "Francis Drake",
+   "Ferdinand Magellan",
+   "James Cook",
+   "Abel Tasman"
+  ],
+  "answer": 2,
+  "fact": "To get his wary sailors to eat sauerkraut, Cook had it served at the officers' table so the crew would want it too."
+ },
+ {
+  "id": "hist-019",
+  "cat": "hist",
+  "q": "Ferdinand Magellan's expedition of 1519–1522 was the first to do what?",
+  "options": [
+   "Sail around the world",
+   "Reach the South Pole",
+   "Cross the Pacific by raft",
+   "Find the source of the Nile"
+  ],
+  "answer": 0,
+  "fact": "Of the five ships that set out, only one, the Victoria, made it home."
+ },
+ {
+  "id": "hist-020",
+  "cat": "hist",
+  "q": "Who invented the World Wide Web in 1989?",
+  "options": [
+   "Tim Berners-Lee",
+   "Bill Gates",
+   "Alan Turing",
+   "Steve Jobs"
+  ],
+  "answer": 0,
+  "fact": "His boss at CERN scribbled 'vague but exciting' on the original proposal."
+ },
+ {
+  "id": "hist-021",
+  "cat": "hist",
+  "q": "Which civilisation built Machu Picchu?",
+  "options": [
+   "The Aztecs",
+   "The Maya",
+   "The Inca",
+   "The Olmecs"
+  ],
+  "answer": 2,
+  "fact": "Built in the 15th century, it was little known to the outside world until 1911."
+ },
+ {
+  "id": "hist-022",
+  "cat": "hist",
+  "q": "What did the Romans call London?",
+  "options": [
+   "Eboracum",
+   "Londinium",
+   "Aquae Sulis",
+   "Camulodunum"
+  ],
+  "answer": 1,
+  "fact": "The city was founded around AD 47, just a few years after the Roman invasion of Britain."
+ },
+ {
+  "id": "hist-023",
+  "cat": "hist",
+  "q": "Which Roman emperor ordered a wall to be built from the River Tyne to the Solway Firth?",
+  "options": [
+   "Nero",
+   "Hadrian",
+   "Augustus",
+   "Caligula"
+  ],
+  "answer": 1,
+  "fact": "The wall stretched about 73 miles (117 km) from coast to coast."
+ },
+ {
+  "id": "hist-024",
+  "cat": "hist",
+  "q": "Whose tomb did Howard Carter discover in the Valley of the Kings in 1922?",
+  "options": [
+   "Ramesses II",
+   "Akhenaten",
+   "Seti I",
+   "Tutankhamun"
+  ],
+  "answer": 3,
+  "fact": "Tutankhamun became pharaoh when he was only about nine years old."
+ },
+ {
+  "id": "hist-025",
+  "cat": "hist",
+  "q": "Which emperor, the first to rule a unified China, was buried with the Terracotta Army?",
+  "options": [
+   "Kublai Khan",
+   "Qin Shi Huang",
+   "Genghis Khan",
+   "Puyi"
+  ],
+  "answer": 1,
+  "fact": "The Terracotta Army was discovered in 1974 by farmers digging a well."
+ },
+ {
+  "id": "hist-026",
+  "cat": "hist",
+  "q": "Where did the Wright brothers make their first powered aeroplane flight in 1903?",
+  "options": [
+   "Chicago",
+   "Kitty Hawk",
+   "New York",
+   "San Francisco"
+  ],
+  "answer": 1,
+  "fact": "That first flight lasted just 12 seconds and covered about 120 feet (37 metres)."
+ },
+ {
+  "id": "hist-027",
+  "cat": "hist",
+  "q": "The Rosetta Stone was the key to decoding which writing system?",
+  "options": [
+   "Egyptian hieroglyphs",
+   "Cuneiform",
+   "Linear B",
+   "Norse runes"
+  ],
+  "answer": 0,
+  "fact": "It carries the same decree in three scripts: hieroglyphic, Demotic and Ancient Greek."
+ },
+ {
+  "id": "hist-028",
+  "cat": "hist",
+  "q": "Who led the first expedition to reach the South Pole, in 1911?",
+  "options": [
+   "Robert Falcon Scott",
+   "Ernest Shackleton",
+   "Robert Peary",
+   "Roald Amundsen"
+  ],
+  "answer": 3,
+  "fact": "His team relied on sled dogs and Inuit-style fur clothing to cope with the cold."
+ },
+ {
+  "id": "hist-029",
+  "cat": "hist",
+  "q": "Which British monarch reigned for 63 years, a record later passed by Elizabeth II?",
+  "options": [
+   "George III",
+   "Queen Anne",
+   "Queen Victoria",
+   "Edward VII"
+  ],
+  "answer": 2,
+  "fact": "Her children married into royal families across Europe, earning her the nickname 'grandmother of Europe'."
+ },
+ {
+  "id": "hist-030",
+  "cat": "hist",
+  "q": "What was the name of the ship on which Charles Darwin sailed around the world?",
+  "options": [
+   "HMS Endeavour",
+   "HMS Beagle",
+   "HMS Victory",
+   "HMS Bounty"
+  ],
+  "answer": 1,
+  "fact": "The voyage was planned to last two years but took almost five, from 1831 to 1836."
+ },
+ {
+  "id": "hist-031",
+  "cat": "hist",
+  "q": "Who introduced printing with movable metal type to Europe around 1440?",
+  "options": [
+   "William Caxton",
+   "Leonardo da Vinci",
+   "Galileo Galilei",
+   "Johannes Gutenberg"
+  ],
+  "answer": 3,
+  "fact": "Fewer than 50 copies of the famous Gutenberg Bible are known to survive today."
+ },
+ {
+  "id": "hist-032",
+  "cat": "hist",
+  "q": "Which civilisation built the city of Tenochtitlan on an island in a lake?",
+  "options": [
+   "The Inca",
+   "The Maya",
+   "The Aztecs",
+   "The Olmecs"
+  ],
+  "answer": 2,
+  "fact": "Mexico City now stands on the same site, much of it on the drained lake bed."
+ },
+ {
+  "id": "hist-033",
+  "cat": "hist",
+  "q": "Which Norse explorer reached North America around the year 1000?",
+  "options": [
+   "Erik the Red",
+   "Leif Erikson",
+   "Harald Hardrada",
+   "Ragnar Lodbrok"
+  ],
+  "answer": 1,
+  "fact": "The remains of a Norse settlement at L'Anse aux Meadows in Newfoundland prove the Vikings got there."
+ },
+ {
+  "id": "hist-035",
+  "cat": "hist",
+  "q": "Who reached the summit of Everest with Tenzing Norgay in 1953?",
+  "options": [
+   "George Mallory",
+   "Chris Bonington",
+   "Reinhold Messner",
+   "Edmund Hillary"
+  ],
+  "answer": 3,
+  "fact": "News of their success reached London on the morning of Queen Elizabeth II's coronation."
+ },
+ {
+  "id": "hist-036",
+  "cat": "hist",
+  "q": "Marie Curie was the first woman to win which famous award?",
+  "options": [
+   "An Oscar",
+   "The Victoria Cross",
+   "A Pulitzer Prize",
+   "A Nobel Prize"
+  ],
+  "answer": 3,
+  "fact": "She won Nobel Prizes in two different sciences: physics in 1903 and chemistry in 1911."
+ },
+ {
+  "id": "hist-037",
+  "cat": "hist",
+  "q": "The world's first underground railway opened in 1863 in which city?",
+  "options": [
+   "London",
+   "Paris",
+   "New York",
+   "Berlin"
+  ],
+  "answer": 0,
+  "fact": "Its first trains were pulled by steam locomotives."
+ },
+ {
+  "id": "hist-038",
+  "cat": "hist",
+  "q": "What was the name of the ancient network of trade routes linking China with the Mediterranean?",
+  "options": [
+   "The Spice Way",
+   "The Silk Road",
+   "The Amber Road",
+   "The Jade Trail"
+  ],
+  "answer": 1,
+  "fact": "Despite the name, it carried far more than silk, including spices, glass, horses and the secret of paper-making."
+ },
+ {
+  "id": "hist-039",
+  "cat": "hist",
+  "q": "The Bayeux Tapestry tells the story of the Norman Conquest of England in which year?",
+  "options": [
+   "1215",
+   "1314",
+   "1485",
+   "1066"
+  ],
+  "answer": 3,
+  "fact": "Despite its name, it is embroidered rather than woven, so it isn't technically a tapestry."
+ },
+ {
+  "id": "hist-040",
+  "cat": "hist",
+  "q": "Which English king agreed to Magna Carta in 1215?",
+  "options": [
+   "King John",
+   "Richard I",
+   "Henry II",
+   "Edward I"
+  ],
+  "answer": 0,
+  "fact": "It was sealed at Runnymede, a meadow beside the River Thames in Surrey."
+ },
+ {
+  "id": "sci-001",
+  "cat": "sci",
+  "q": "What is the chemical symbol for gold?",
+  "options": [
+   "Ag",
+   "Au",
+   "Gd",
+   "Go"
+  ],
+  "answer": 1,
+  "fact": "Gold is so malleable that a single gram can be beaten into a sheet covering more than half a square metre."
+ },
+ {
+  "id": "sci-002",
+  "cat": "sci",
+  "q": "Which gas do plants take in from the air to make their food?",
+  "options": [
+   "Oxygen",
+   "Nitrogen",
+   "Hydrogen",
+   "Carbon dioxide"
+  ],
+  "answer": 3,
+  "fact": "The oxygen plants release during photosynthesis comes from splitting water molecules, not from the carbon dioxide."
+ },
+ {
+  "id": "sci-003",
+  "cat": "sci",
+  "q": "How many bones are there in an adult human body?",
+  "options": [
+   "186",
+   "206",
+   "226",
+   "256"
+  ],
+  "answer": 1,
+  "fact": "Babies are born with around 300 bones, but many of them fuse together as they grow."
+ },
+ {
+  "id": "sci-004",
+  "cat": "sci",
+  "q": "In which part of the body is the stapes, the smallest bone?",
+  "options": [
+   "Ear",
+   "Nose",
+   "Toe",
+   "Finger"
+  ],
+  "answer": 0,
+  "fact": "The stapes is roughly the size of a grain of rice, and its name is Latin for 'stirrup', which it resembles."
+ },
+ {
+  "id": "sci-006",
+  "cat": "sci",
+  "q": "Which element has the chemical symbol K?",
+  "options": [
+   "Krypton",
+   "Calcium",
+   "Phosphorus",
+   "Potassium"
+  ],
+  "answer": 3,
+  "fact": "The K comes from 'kalium', a word traced back to the Arabic for plant ashes, where potassium compounds were first found."
+ },
+ {
+  "id": "sci-007",
+  "cat": "sci",
+  "q": "Which scientist developed the theory of general relativity?",
+  "options": [
+   "Isaac Newton",
+   "Niels Bohr",
+   "Albert Einstein",
+   "Stephen Hawking"
+  ],
+  "answer": 2,
+  "fact": "Satellite navigation has to correct for relativity, or GPS positions would drift by roughly 10 km every day."
+ },
+ {
+  "id": "sci-008",
+  "cat": "sci",
+  "q": "What is the hardest natural substance on Earth?",
+  "options": [
+   "Diamond",
+   "Quartz",
+   "Granite",
+   "Topaz"
+  ],
+  "answer": 0,
+  "fact": "Diamond and graphite, the 'lead' in pencils, are both made of pure carbon, just with the atoms arranged differently."
+ },
+ {
+  "id": "sci-009",
+  "cat": "sci",
+  "q": "Which organ in the human body produces insulin?",
+  "options": [
+   "Liver",
+   "Pancreas",
+   "Kidney",
+   "Spleen"
+  ],
+  "answer": 1,
+  "fact": "The first person ever treated with insulin was 14-year-old Leonard Thompson, in Toronto in January 1922."
+ },
+ {
+  "id": "sci-011",
+  "cat": "sci",
+  "q": "Which temperature scale starts at absolute zero?",
+  "options": [
+   "Celsius",
+   "Kelvin",
+   "Fahrenheit",
+   "Réaumur"
+  ],
+  "answer": 1,
+  "fact": "William Thomson became a Glasgow professor at 22 and later took the title Lord Kelvin from the river beside the university."
+ },
+ {
+  "id": "sci-012",
+  "cat": "sci",
+  "q": "Which gas makes up most of the Earth's atmosphere?",
+  "options": [
+   "Nitrogen",
+   "Oxygen",
+   "Argon",
+   "Carbon dioxide"
+  ],
+  "answer": 0,
+  "fact": "Argon makes up almost 1% of the air, and its name comes from the Greek for 'lazy' because it barely reacts with anything."
+ },
+ {
+  "id": "sci-013",
+  "cat": "sci",
+  "q": "Roughly how fast does light travel in a vacuum?",
+  "options": [
+   "3,000 km per second",
+   "30,000 km per second",
+   "300,000 km per second",
+   "3 million km per second"
+  ],
+  "answer": 2,
+  "fact": "Sunlight takes about 8 minutes and 20 seconds to travel from the Sun to the Earth."
+ },
+ {
+  "id": "sci-014",
+  "cat": "sci",
+  "q": "Who discovered penicillin in 1928?",
+  "options": [
+   "Louis Pasteur",
+   "Joseph Lister",
+   "Edward Jenner",
+   "Alexander Fleming"
+  ],
+  "answer": 3,
+  "fact": "Fleming spotted mould killing bacteria on a culture dish that had been left out while he was away on holiday."
+ },
+ {
+  "id": "sci-015",
+  "cat": "sci",
+  "q": "Which element did Marie Curie name after her home country?",
+  "options": [
+   "Radium",
+   "Polonium",
+   "Francium",
+   "Curium"
+  ],
+  "answer": 1,
+  "fact": "Her laboratory notebooks are still radioactive and are kept in lead-lined boxes at France's national library in Paris."
+ },
+ {
+  "id": "sci-016",
+  "cat": "sci",
+  "q": "Which element was detected in the Sun before it was found on Earth?",
+  "options": [
+   "Hydrogen",
+   "Neon",
+   "Oxygen",
+   "Helium"
+  ],
+  "answer": 3,
+  "fact": "It showed up as a mysterious yellow line in sunlight during an 1868 eclipse, but wasn't isolated on Earth until 1895."
+ },
+ {
+  "id": "sci-017",
+  "cat": "sci",
+  "q": "What is the largest organ of the human body?",
+  "options": [
+   "Liver",
+   "Brain",
+   "Skin",
+   "Lungs"
+  ],
+  "answer": 2,
+  "fact": "As well as protecting you, your skin makes vitamin D when it is exposed to sunlight."
+ },
+ {
+  "id": "sci-018",
+  "cat": "sci",
+  "q": "In DNA, which base always pairs with adenine?",
+  "options": [
+   "Thymine",
+   "Cytosine",
+   "Guanine",
+   "Uracil"
+  ],
+  "answer": 0,
+  "fact": "If you unravelled the DNA from just one of your cells and laid it end to end, it would stretch about 2 metres."
+ },
+ {
+  "id": "sci-019",
+  "cat": "sci",
+  "q": "Which blood type is known as the universal donor for red blood cells?",
+  "options": [
+   "A positive",
+   "AB positive",
+   "B negative",
+   "O negative"
+  ],
+  "answer": 3,
+  "fact": "Austrian scientist Karl Landsteiner discovered the ABO blood groups in 1901 and later won a Nobel Prize for it."
+ },
+ {
+  "id": "sci-020",
+  "cat": "sci",
+  "q": "Scurvy is caused by a lack of which vitamin?",
+  "options": [
+   "Vitamin A",
+   "Vitamin C",
+   "Vitamin D",
+   "Vitamin B12"
+  ],
+  "answer": 1,
+  "fact": "Royal Navy sailors were given lime juice to prevent scurvy, which is how British sailors got the nickname 'limeys'."
+ },
+ {
+  "id": "sci-021",
+  "cat": "sci",
+  "q": "Which element has the atomic number 1?",
+  "options": [
+   "Hydrogen",
+   "Helium",
+   "Lithium",
+   "Carbon"
+  ],
+  "answer": 0,
+  "fact": "Hydrogen makes up roughly three-quarters of all the ordinary matter in the universe by mass."
+ },
+ {
+  "id": "sci-022",
+  "cat": "sci",
+  "q": "What is the pH of pure water at 25°C?",
+  "options": [
+   "5",
+   "7",
+   "9",
+   "14"
+  ],
+  "answer": 1,
+  "fact": "The pH scale was introduced in 1909 by Danish chemist Søren Sørensen while working at the Carlsberg brewery's laboratory."
+ },
+ {
+  "id": "sci-023",
+  "cat": "sci",
+  "q": "Which metal is a liquid at room temperature?",
+  "options": [
+   "Lead",
+   "Tin",
+   "Mercury",
+   "Zinc"
+  ],
+  "answer": 2,
+  "fact": "Another metal, gallium, melts at about 30°C, so a piece of it will turn liquid if you hold it in your hand."
+ },
+ {
+  "id": "sci-024",
+  "cat": "sci",
+  "q": "How many chambers does the human heart have?",
+  "options": [
+   "Two",
+   "Three",
+   "Four",
+   "Six"
+  ],
+  "answer": 2,
+  "fact": "An adult heart beats roughly 100,000 times a day, pumping blood around the whole body."
+ },
+ {
+  "id": "sci-025",
+  "cat": "sci",
+  "q": "Which scientist wrote the Principia, setting out the laws of motion?",
+  "options": [
+   "Galileo Galilei",
+   "Johannes Kepler",
+   "Robert Boyle",
+   "Isaac Newton"
+  ],
+  "answer": 3,
+  "fact": "Newton later ran the Royal Mint, where he personally investigated counterfeiters."
+ },
+ {
+  "id": "sci-027",
+  "cat": "sci",
+  "q": "The microwave oven was invented after what melted in an engineer's pocket?",
+  "options": [
+   "A crayon",
+   "A chocolate bar",
+   "A rubber band",
+   "A candle"
+  ],
+  "answer": 1,
+  "fact": "The first food Percy Spencer deliberately cooked with microwaves was popcorn."
+ },
+ {
+  "id": "sci-029",
+  "cat": "sci",
+  "q": "Which subatomic particle carries a negative electric charge?",
+  "options": [
+   "Proton",
+   "Neutron",
+   "Photon",
+   "Electron"
+  ],
+  "answer": 3,
+  "fact": "J.J. Thomson discovered the electron in 1897 at the Cavendish Laboratory in Cambridge."
+ },
+ {
+  "id": "sci-030",
+  "cat": "sci",
+  "q": "Which part of the eye controls how much light gets in?",
+  "options": [
+   "Iris",
+   "Retina",
+   "Cornea",
+   "Lens"
+  ],
+  "answer": 0,
+  "fact": "The word 'iris' comes from the Greek for rainbow, a nod to the many different eye colours."
+ },
+ {
+  "id": "sci-031",
+  "cat": "sci",
+  "q": "Who created the periodic table of elements in 1869?",
+  "options": [
+   "John Dalton",
+   "Dmitri Mendeleev",
+   "Antoine Lavoisier",
+   "Ernest Rutherford"
+  ],
+  "answer": 1,
+  "fact": "He left gaps for elements not yet discovered and correctly predicted the properties of gallium and germanium."
+ },
+ {
+  "id": "sci-034",
+  "cat": "sci",
+  "q": "Which metal is the best conductor of electricity?",
+  "options": [
+   "Copper",
+   "Gold",
+   "Silver",
+   "Aluminium"
+  ],
+  "answer": 2,
+  "fact": "Copper is used for most wiring because it conducts almost as well but costs far less."
+ },
+ {
+  "id": "sci-035",
+  "cat": "sci",
+  "q": "Which part of a cell is often called its 'powerhouse'?",
+  "options": [
+   "Nucleus",
+   "Mitochondrion",
+   "Ribosome",
+   "Cell wall"
+  ],
+  "answer": 1,
+  "fact": "Mitochondria have their own DNA, which is almost always inherited from your mother."
+ },
+ {
+  "id": "sci-036",
+  "cat": "sci",
+  "q": "Who coined the word 'cell' after looking at cork under a microscope?",
+  "options": [
+   "Robert Hooke",
+   "Charles Darwin",
+   "Louis Pasteur",
+   "Gregor Mendel"
+  ],
+  "answer": 0,
+  "fact": "He chose the word because the tiny boxes reminded him of the small rooms, or cells, that monks lived in."
+ },
+ {
+  "id": "sci-039",
+  "cat": "sci",
+  "q": "Which scientist discovered electromagnetic induction in 1831?",
+  "options": [
+   "Alessandro Volta",
+   "Thomas Edison",
+   "Michael Faraday",
+   "Nikola Tesla"
+  ],
+  "answer": 2,
+  "fact": "Faraday also started the Royal Institution's famous Christmas Lectures for young people, first held in 1825."
+ },
+ {
+  "id": "nature-004",
+  "cat": "nature",
+  "q": "Which animal is thought to be the longest-living vertebrate?",
+  "options": [
+   "Giant tortoise",
+   "Bowhead whale",
+   "Koi carp",
+   "Greenland shark"
+  ],
+  "answer": 3,
+  "fact": "These sharks grow only about 1 cm a year and are thought not to reach adulthood until around 150 years old."
+ },
+ {
+  "id": "nature-005",
+  "cat": "nature",
+  "q": "What is a huge, swirling flock of starlings called?",
+  "options": [
+   "A murmuration",
+   "A parliament",
+   "A murder",
+   "A charm"
+  ],
+  "answer": 0,
+  "fact": "Each starling keeps track of about seven of its neighbours, which lets the whole flock change shape in an instant."
+ },
+ {
+  "id": "nature-006",
+  "cat": "nature",
+  "q": "Which Australian bird is famous for mimicking sounds like chainsaws and camera shutters?",
+  "options": [
+   "Kookaburra",
+   "Lyrebird",
+   "Cockatoo",
+   "Emu"
+  ],
+  "answer": 1,
+  "fact": "A male superb lyrebird, with its spectacular tail, appears on the Australian ten-cent coin."
+ },
+ {
+  "id": "nature-007",
+  "cat": "nature",
+  "q": "Komodo dragons are found in the wild in which country?",
+  "options": [
+   "Indonesia",
+   "Philippines",
+   "Australia",
+   "Madagascar"
+  ],
+  "answer": 0,
+  "fact": "In 2006 a female Komodo dragon at Chester Zoo laid fertile eggs without ever having met a male."
+ },
+ {
+  "id": "nature-008",
+  "cat": "nature",
+  "q": "What colour is the 'sweat' that hippos produce?",
+  "options": [
+   "Blue",
+   "Green",
+   "Black",
+   "Red"
+  ],
+  "answer": 3,
+  "fact": "The pigments act as a natural sunscreen and also slow the growth of some bacteria on the hippo's skin."
+ },
+ {
+  "id": "nature-009",
+  "cat": "nature",
+  "q": "Which animal has fingerprints that are almost impossible to tell apart from a human's?",
+  "options": [
+   "Kangaroo",
+   "Koala",
+   "Panda",
+   "Sloth"
+  ],
+  "answer": 1,
+  "fact": "Koalas live almost entirely on eucalyptus leaves, which are toxic to most other animals."
+ },
+ {
+  "id": "nature-010",
+  "cat": "nature",
+  "q": "Which bird makes the longest known migration of any animal?",
+  "options": [
+   "Albatross",
+   "Swallow",
+   "Arctic tern",
+   "Osprey"
+  ],
+  "answer": 2,
+  "fact": "Over its lifetime an Arctic tern can fly a distance equal to about three return trips to the Moon."
+ },
+ {
+  "id": "nature-011",
+  "cat": "nature",
+  "q": "What is the largest animal known to have ever lived?",
+  "options": [
+   "Argentinosaurus",
+   "Blue whale",
+   "Megalodon",
+   "Whale shark"
+  ],
+  "answer": 1,
+  "fact": "On a deep dive, a blue whale's heart can slow to just two beats per minute."
+ },
+ {
+  "id": "nature-013",
+  "cat": "nature",
+  "q": "Which tree gives us conkers?",
+  "options": [
+   "Sweet chestnut",
+   "Oak",
+   "Horse chestnut",
+   "Beech"
+  ],
+  "answer": 2,
+  "fact": "Although it's a British favourite, the horse chestnut is native to the Balkans and arrived in the UK in the late 1500s."
+ },
+ {
+  "id": "nature-015",
+  "cat": "nature",
+  "q": "How many sides or points does a typical snowflake have?",
+  "options": [
+   "Four",
+   "Five",
+   "Six",
+   "Eight"
+  ],
+  "answer": 2,
+  "fact": "In 1885 Vermont farmer Wilson Bentley took the first known photo of a snowflake, and went on to capture over 5,000."
+ },
+ {
+  "id": "nature-016",
+  "cat": "nature",
+  "q": "How many hearts does an octopus have?",
+  "options": [
+   "One",
+   "Two",
+   "Three",
+   "Four"
+  ],
+  "answer": 2,
+  "fact": "Octopus blood is blue because it carries oxygen using a copper-based molecule instead of iron."
+ },
+ {
+  "id": "nature-018",
+  "cat": "nature",
+  "q": "Which is the only mammal capable of true powered flight?",
+  "options": [
+   "Bat",
+   "Flying squirrel",
+   "Sugar glider",
+   "Colugo"
+  ],
+  "answer": 0,
+  "fact": "Bats aren't actually blind: many see quite well, but they use echolocation to hunt in the dark."
+ },
+ {
+  "id": "nature-019",
+  "cat": "nature",
+  "q": "Which is the largest living bird?",
+  "options": [
+   "Emu",
+   "Ostrich",
+   "Albatross",
+   "Cassowary"
+  ],
+  "answer": 1,
+  "fact": "An ostrich's eye is bigger than its brain."
+ },
+ {
+  "id": "nature-022",
+  "cat": "nature",
+  "q": "Which tree's spinning seeds are often called 'helicopters'?",
+  "options": [
+   "Oak",
+   "Sycamore",
+   "Birch",
+   "Holly"
+  ],
+  "answer": 1,
+  "fact": "The spinning slows the seed's fall, giving the wind more time to carry it away from the parent tree."
+ },
+ {
+  "id": "nature-023",
+  "cat": "nature",
+  "q": "What is the long, coiled mouthpart a butterfly uses to drink nectar?",
+  "options": [
+   "Proboscis",
+   "Antenna",
+   "Mandible",
+   "Thorax"
+  ],
+  "answer": 0,
+  "fact": "Butterflies taste with sensors on their feet, so they can tell if a leaf is good for their eggs just by landing on it."
+ },
+ {
+  "id": "nature-024",
+  "cat": "nature",
+  "q": "Which scale measures wind strength from 0 for calm to 12 for hurricane force?",
+  "options": [
+   "Richter scale",
+   "Beaufort scale",
+   "Fujita scale",
+   "Mohs scale"
+  ],
+  "answer": 1,
+  "fact": "It is named after Francis Beaufort, a Royal Navy officer who devised it in 1805 to describe conditions at sea."
+ },
+ {
+  "id": "nature-025",
+  "cat": "nature",
+  "q": "Which type of cloud is the towering thundercloud?",
+  "options": [
+   "Cirrus",
+   "Stratus",
+   "Altostratus",
+   "Cumulonimbus"
+  ],
+  "answer": 3,
+  "fact": "Their tops can climb more than 10 km high, where they often spread out into a flat 'anvil' shape."
+ },
+ {
+  "id": "nature-026",
+  "cat": "nature",
+  "q": "Which plant is famous for being one of the fastest-growing on Earth?",
+  "options": [
+   "Ivy",
+   "Oak",
+   "Bamboo",
+   "Cactus"
+  ],
+  "answer": 2,
+  "fact": "Bamboo might look like a tree, but it is actually a type of grass."
+ },
+ {
+  "id": "nature-027",
+  "cat": "nature",
+  "q": "Which is the only continent with no native ants?",
+  "options": [
+   "Australia",
+   "Antarctica",
+   "Europe",
+   "South America"
+  ],
+  "answer": 1,
+  "fact": "The biggest animal living permanently on land in Antarctica is a wingless midge just a few millimetres long."
+ },
+ {
+  "id": "nature-028",
+  "cat": "nature",
+  "q": "Which native British tree can live for thousands of years and is often found in churchyards?",
+  "options": [
+   "Oak",
+   "Ash",
+   "Beech",
+   "Yew"
+  ],
+  "answer": 3,
+  "fact": "Almost every part of the yew is poisonous, except for the soft red flesh around its seeds."
+ },
+ {
+  "id": "nature-029",
+  "cat": "nature",
+  "q": "What is a baby swan called?",
+  "options": [
+   "Gosling",
+   "Duckling",
+   "Cygnet",
+   "Eaglet"
+  ],
+  "answer": 2,
+  "fact": "Mute swans aren't really silent: they hiss and snort, and their wings make a loud throbbing sound in flight."
+ },
+ {
+  "id": "nature-030",
+  "cat": "nature",
+  "q": "What colour is a polar bear's skin under its fur?",
+  "options": [
+   "Black",
+   "White",
+   "Pink",
+   "Grey"
+  ],
+  "answer": 0,
+  "fact": "Polar bear fur isn't truly white either: each hair is transparent and simply scatters light."
+ },
+ {
+  "id": "nature-031",
+  "cat": "nature",
+  "q": "Which flightless bird is a national symbol of New Zealand?",
+  "options": [
+   "Emu",
+   "Penguin",
+   "Dodo",
+   "Kiwi"
+  ],
+  "answer": 3,
+  "fact": "A kiwi's egg is enormous for its size, weighing up to about a fifth of the mother's body weight."
+ },
+ {
+  "id": "nature-033",
+  "cat": "nature",
+  "q": "What type of animal is a slow worm?",
+  "options": [
+   "Lizard",
+   "Snake",
+   "Worm",
+   "Eel"
+  ],
+  "answer": 0,
+  "fact": "Unlike snakes, slow worms can blink, and they can shed their tails to escape from predators."
+ },
+ {
+  "id": "nature-034",
+  "cat": "nature",
+  "q": "Which of these mammals lays eggs?",
+  "options": [
+   "Wombat",
+   "Platypus",
+   "Pangolin",
+   "Armadillo"
+  ],
+  "answer": 1,
+  "fact": "Male platypuses have venomous spurs on their back legs, which is very rare among mammals."
+ },
+ {
+  "id": "nature-035",
+  "cat": "nature",
+  "q": "What is the largest species of penguin?",
+  "options": [
+   "Emperor penguin",
+   "King penguin",
+   "Adélie penguin",
+   "Gentoo penguin"
+  ],
+  "answer": 0,
+  "fact": "Male emperor penguins keep the egg warm on their feet through the Antarctic winter, going without food for months."
+ },
+ {
+  "id": "nature-036",
+  "cat": "nature",
+  "q": "What is the name for a baby hare?",
+  "options": [
+   "Leveret",
+   "Kit",
+   "Kid",
+   "Squab"
+  ],
+  "answer": 0,
+  "fact": "Unlike baby rabbits, young hares are born with fur and open eyes, and can move about within hours."
+ },
+ {
+  "id": "nature-038",
+  "cat": "nature",
+  "q": "A drey is the nest of which animal?",
+  "options": [
+   "Badger",
+   "Otter",
+   "Squirrel",
+   "Hare"
+  ],
+  "answer": 2,
+  "fact": "Like all rodents, squirrels have front teeth that never stop growing, so gnawing keeps them in shape."
+ },
+ {
+  "id": "nature-039",
+  "cat": "nature",
+  "q": "The name of which seasonal wind comes from the Arabic word for 'season'?",
+  "options": [
+   "Mistral",
+   "Sirocco",
+   "Chinook",
+   "Monsoon"
+  ],
+  "answer": 3,
+  "fact": "The summer monsoon brings India around three-quarters of its yearly rainfall, all within about four months from June to September."
+ },
+ {
+  "id": "nature-040",
+  "cat": "nature",
+  "q": "What is a group of lions called?",
+  "options": [
+   "A pack",
+   "A herd",
+   "A troop",
+   "A pride"
+  ],
+  "answer": 3,
+  "fact": "In a pride, it's usually the lionesses who do most of the hunting, often working together as a team."
+ },
+ {
+  "id": "food-001",
+  "cat": "food",
+  "q": "Which country is the home of paella?",
+  "options": [
+   "Spain",
+   "Portugal",
+   "Italy",
+   "Mexico"
+  ],
+  "answer": 0,
+  "fact": "Traditional Valencian paella is made with chicken, rabbit and green beans rather than seafood."
+ },
+ {
+  "id": "food-003",
+  "cat": "food",
+  "q": "Which spice is made from the dried stigmas of a crocus flower?",
+  "options": [
+   "Turmeric",
+   "Paprika",
+   "Saffron",
+   "Cardamom"
+  ],
+  "answer": 2,
+  "fact": "It takes roughly 150 crocus flowers, all picked by hand, to produce a single gram of saffron."
+ },
+ {
+  "id": "food-004",
+  "cat": "food",
+  "q": "The margherita pizza is famously linked to which Italian city?",
+  "options": [
+   "Rome",
+   "Naples",
+   "Milan",
+   "Florence"
+  ],
+  "answer": 1,
+  "fact": "Its tomato, mozzarella and basil are said to echo the red, white and green of the Italian flag."
+ },
+ {
+  "id": "food-005",
+  "cat": "food",
+  "q": "Halloumi cheese originally comes from which island?",
+  "options": [
+   "Sicily",
+   "Cyprus",
+   "Crete",
+   "Malta"
+  ],
+  "answer": 1,
+  "fact": "Halloumi has such a high melting point that it can be grilled or fried without turning runny."
+ },
+ {
+  "id": "food-006",
+  "cat": "food",
+  "q": "Which nut is ground to make marzipan?",
+  "options": [
+   "Almond",
+   "Hazelnut",
+   "Walnut",
+   "Cashew"
+  ],
+  "answer": 0,
+  "fact": "The German city of Lübeck is so famous for marzipan that 'Lübecker Marzipan' has protected status in the EU."
+ },
+ {
+  "id": "food-007",
+  "cat": "food",
+  "q": "Earl Grey tea gets its distinctive flavour from which citrus fruit?",
+  "options": [
+   "Lemon",
+   "Grapefruit",
+   "Lime",
+   "Bergamot"
+  ],
+  "answer": 3,
+  "fact": "Most of the world's bergamot oranges are grown along a small stretch of coast in Calabria, southern Italy."
+ },
+ {
+  "id": "food-008",
+  "cat": "food",
+  "q": "Wasabi belongs to the same plant family as which of these?",
+  "options": [
+   "Ginger",
+   "Garlic",
+   "Mustard",
+   "Chilli"
+  ],
+  "answer": 2,
+  "fact": "Much of the 'wasabi' served outside Japan is actually horseradish dyed green, as real wasabi is costly to grow."
+ },
+ {
+  "id": "food-009",
+  "cat": "food",
+  "q": "Kimchi is a staple of which country's cuisine?",
+  "options": [
+   "Japan",
+   "Vietnam",
+   "Korea",
+   "Thailand"
+  ],
+  "answer": 2,
+  "fact": "Kimjang, the tradition of families gathering to make kimchi for winter, is on UNESCO's cultural heritage list."
+ },
+ {
+  "id": "food-010",
+  "cat": "food",
+  "q": "Which fruit is the star of a classic tarte Tatin?",
+  "options": [
+   "Pear",
+   "Apple",
+   "Apricot",
+   "Plum"
+  ],
+  "answer": 1,
+  "fact": "The upside-down tart is named after the Tatin sisters, who ran a hotel in Lamotte-Beuvron in France."
+ },
+ {
+  "id": "food-011",
+  "cat": "food",
+  "q": "Feta cheese comes from which country?",
+  "options": [
+   "Greece",
+   "Turkey",
+   "Italy",
+   "Spain"
+  ],
+  "answer": 0,
+  "fact": "To be called feta in the EU, the cheese must be made from sheep's milk, or sheep's milk with up to 30% goat's milk."
+ },
+ {
+  "id": "food-015",
+  "cat": "food",
+  "q": "What is the main ingredient of hummus?",
+  "options": [
+   "Lentils",
+   "Chickpeas",
+   "Broad beans",
+   "Aubergine"
+  ],
+  "answer": 1,
+  "fact": "'Hummus' is simply the Arabic word for chickpea."
+ },
+ {
+  "id": "food-016",
+  "cat": "food",
+  "q": "The croissant is thought to descend from the kipferl, a pastry from which country?",
+  "options": [
+   "Austria",
+   "Belgium",
+   "Switzerland",
+   "Denmark"
+  ],
+  "answer": 0,
+  "fact": "French bakers still call croissants and other buttery pastries 'viennoiseries', a nod to Vienna."
+ },
+ {
+  "id": "food-017",
+  "cat": "food",
+  "q": "Haggis is traditionally cooked inside what?",
+  "options": [
+   "A sheep's stomach",
+   "A pastry case",
+   "A clay pot",
+   "A cabbage leaf"
+  ],
+  "answer": 0,
+  "fact": "Haggis takes centre stage at Burns Night suppers on 25 January, served with neeps and tatties."
+ },
+ {
+  "id": "food-018",
+  "cat": "food",
+  "q": "Borscht gets its deep red colour from which vegetable?",
+  "options": [
+   "Red pepper",
+   "Tomato",
+   "Red cabbage",
+   "Beetroot"
+  ],
+  "answer": 3,
+  "fact": "Beetroot's red pigment, betanin, is also used as a food colouring with the code E162."
+ },
+ {
+  "id": "food-019",
+  "cat": "food",
+  "q": "Which spirit is made from the blue agave plant?",
+  "options": [
+   "Rum",
+   "Gin",
+   "Tequila",
+   "Vodka"
+  ],
+  "answer": 2,
+  "fact": "Tequila takes its name from the town of Tequila in the Mexican state of Jalisco."
+ },
+ {
+  "id": "food-020",
+  "cat": "food",
+  "q": "What does the Italian cooking term 'al dente' literally mean?",
+  "options": [
+   "In the pot",
+   "To the tooth",
+   "With butter",
+   "Until golden"
+  ],
+  "answer": 1,
+  "fact": "Pasta cooked al dente has a lower glycaemic index than overcooked pasta, so its sugars are released more slowly."
+ },
+ {
+  "id": "food-021",
+  "cat": "food",
+  "q": "The mojito cocktail comes from which country?",
+  "options": [
+   "Mexico",
+   "Cuba",
+   "Jamaica",
+   "Brazil"
+  ],
+  "answer": 1,
+  "fact": "The daiquiri, another Cuban classic, is named after a beach and an iron mine near Santiago de Cuba."
+ },
+ {
+  "id": "food-022",
+  "cat": "food",
+  "q": "What kind of food is Stinking Bishop?",
+  "options": [
+   "Cheese",
+   "Sausage",
+   "Chutney",
+   "Pie"
+  ],
+  "answer": 0,
+  "fact": "Its rind is washed in perry made from a pear variety that is also called Stinking Bishop."
+ },
+ {
+  "id": "food-023",
+  "cat": "food",
+  "q": "Which spice gives many curries their golden-yellow colour?",
+  "options": [
+   "Cumin",
+   "Coriander",
+   "Cinnamon",
+   "Turmeric"
+  ],
+  "answer": 3,
+  "fact": "Turmeric's colour comes from curcumin, which is also used as a food colouring with the code E100."
+ },
+ {
+  "id": "food-024",
+  "cat": "food",
+  "q": "Poutine, a dish of chips, cheese curds and gravy, comes from which country?",
+  "options": [
+   "USA",
+   "Belgium",
+   "Canada",
+   "Ireland"
+  ],
+  "answer": 2,
+  "fact": "Poutine first appeared in rural Quebec in the 1950s, and the cheese curds are meant to squeak when you bite them."
+ },
+ {
+  "id": "food-025",
+  "cat": "food",
+  "q": "The pavlova dessert is named after a famous what?",
+  "options": [
+   "Opera singer",
+   "Queen",
+   "Ballerina",
+   "Painter"
+  ],
+  "answer": 2,
+  "fact": "It honours the Russian dancer Anna Pavlova, and both Australia and New Zealand claim to have invented it."
+ },
+ {
+  "id": "food-027",
+  "cat": "food",
+  "q": "Which fruit is used to make the French liqueur crème de cassis?",
+  "options": [
+   "Blackcurrant",
+   "Raspberry",
+   "Cherry",
+   "Blackberry"
+  ],
+  "answer": 0,
+  "fact": "Mix it with white wine and you get a kir, named after Félix Kir, a former mayor of Dijon."
+ },
+ {
+  "id": "food-028",
+  "cat": "food",
+  "q": "Which noodle soup, pronounced roughly 'fuh', is a Vietnamese classic?",
+  "options": [
+   "Ramen",
+   "Laksa",
+   "Udon",
+   "Pho"
+  ],
+  "answer": 3,
+  "fact": "Pho first appeared in northern Vietnam in the early 20th century, around Hanoi and Nam Định."
+ },
+ {
+  "id": "food-029",
+  "cat": "food",
+  "q": "The spice mace comes from the same fruit as which other spice?",
+  "options": [
+   "Cinnamon",
+   "Cloves",
+   "Allspice",
+   "Nutmeg"
+  ],
+  "answer": 3,
+  "fact": "Mace is the lacy red covering wrapped around the nutmeg seed, and it turns orange as it dries."
+ },
+ {
+  "id": "food-030",
+  "cat": "food",
+  "q": "The name of the Italian dessert tiramisu translates as what?",
+  "options": [
+   "Little cloud",
+   "Sweet dream",
+   "Pick me up",
+   "Coffee cake"
+  ],
+  "answer": 2,
+  "fact": "Tiramisu is built from coffee-soaked ladyfinger biscuits layered with mascarpone cream."
+ },
+ {
+  "id": "food-031",
+  "cat": "food",
+  "q": "The smörgåsbord buffet comes from which country?",
+  "options": [
+   "Denmark",
+   "Sweden",
+   "Norway",
+   "Finland"
+  ],
+  "answer": 1,
+  "fact": "The word combines 'smörgås', meaning open sandwich, and 'bord', meaning table."
+ },
+ {
+  "id": "food-032",
+  "cat": "food",
+  "q": "Which paprika-spiced stew is a national dish of Hungary?",
+  "options": [
+   "Goulash",
+   "Moussaka",
+   "Ratatouille",
+   "Cassoulet"
+  ],
+  "answer": 0,
+  "fact": "Goulash takes its name from 'gulyás', the Hungarian word for a cattle herdsman."
+ },
+ {
+  "id": "food-033",
+  "cat": "food",
+  "q": "Authentic mozzarella di bufala is made from the milk of which animal?",
+  "options": [
+   "Water buffalo",
+   "Goat",
+   "Sheep",
+   "Yak"
+  ],
+  "answer": 0,
+  "fact": "The name mozzarella comes from 'mozzare', Italian for 'to cut off', describing how the curd is shaped."
+ },
+ {
+  "id": "food-034",
+  "cat": "food",
+  "q": "The coffee plant Coffea arabica is originally native to which country?",
+  "options": [
+   "Brazil",
+   "Colombia",
+   "Jamaica",
+   "Ethiopia"
+  ],
+  "answer": 3,
+  "fact": "The Yemeni port of Mocha, once a major coffee-trading hub, gave its name to the mocha drink."
+ },
+ {
+  "id": "food-035",
+  "cat": "food",
+  "q": "What is the main ingredient of the dip baba ganoush?",
+  "options": [
+   "Chickpeas",
+   "Yoghurt",
+   "Aubergine",
+   "Lentils"
+  ],
+  "answer": 2,
+  "fact": "Botanically speaking, an aubergine is a berry."
+ },
+ {
+  "id": "food-036",
+  "cat": "food",
+  "q": "Apart from potato, which vegetable is the key ingredient in vichyssoise?",
+  "options": [
+   "Carrot",
+   "Leek",
+   "Pea",
+   "Tomato"
+  ],
+  "answer": 1,
+  "fact": "Despite its French name, the chilled soup was popularised by chef Louis Diat at the Ritz-Carlton in New York."
+ },
+ {
+  "id": "food-037",
+  "cat": "food",
+  "q": "Which Mexican sauce often combines chillies with chocolate?",
+  "options": [
+   "Salsa verde",
+   "Mole",
+   "Pico de gallo",
+   "Chimichurri"
+  ],
+  "answer": 1,
+  "fact": "Mole poblano, from the city of Puebla, can contain more than 20 ingredients."
+ },
+ {
+  "id": "sport-002",
+  "cat": "sport",
+  "q": "Legend says William Webb Ellis invented which sport by running with the ball in 1823?",
+  "options": [
+   "Cricket",
+   "Hockey",
+   "Lacrosse",
+   "Rugby"
+  ],
+  "answer": 3,
+  "fact": "The trophy for the men's Rugby World Cup is called the Webb Ellis Cup in his honour."
+ },
+ {
+  "id": "sport-003",
+  "cat": "sport",
+  "q": "The term 'hat-trick' was first used in which sport?",
+  "options": [
+   "Football",
+   "Ice hockey",
+   "Cricket",
+   "Horse racing"
+  ],
+  "answer": 2,
+  "fact": "In 1858 bowler H. H. Stephenson took three wickets in three balls in Sheffield, and fans bought him a hat."
+ },
+ {
+  "id": "sport-004",
+  "cat": "sport",
+  "q": "In which sport might you perform a Salchow?",
+  "options": [
+   "Gymnastics",
+   "Figure skating",
+   "Diving",
+   "Ski jumping"
+  ],
+  "answer": 1,
+  "fact": "The jump is named after Swedish skater Ulrich Salchow, who first landed it in competition in 1909."
+ },
+ {
+  "id": "sport-008",
+  "cat": "sport",
+  "q": "In chess, which piece can only ever move diagonally?",
+  "options": [
+   "Knight",
+   "Rook",
+   "Bishop",
+   "Queen"
+  ],
+  "answer": 2,
+  "fact": "Because it only moves diagonally, a bishop stays on squares of the same colour for the whole game."
+ },
+ {
+  "id": "sport-009",
+  "cat": "sport",
+  "q": "In tennis, what is a score of zero called?",
+  "options": [
+   "Nil",
+   "Duck",
+   "Love",
+   "Blank"
+  ],
+  "answer": 2,
+  "fact": "One popular theory says the 15, 30, 40 scoring came from quarter-hour marks on a clock face."
+ },
+ {
+  "id": "sport-011",
+  "cat": "sport",
+  "q": "In snooker, how many points is the black ball worth?",
+  "options": [
+   "7",
+   "5",
+   "6",
+   "10"
+  ],
+  "answer": 0,
+  "fact": "A maximum break, potting all 15 reds with a black each followed by every colour, scores 147."
+ },
+ {
+  "id": "sport-012",
+  "cat": "sport",
+  "q": "Cricket's Ashes series is contested between England and which country?",
+  "options": [
+   "India",
+   "South Africa",
+   "New Zealand",
+   "Australia"
+  ],
+  "answer": 3,
+  "fact": "The Ashes began with a mock obituary in 1882 declaring English cricket dead after a defeat at the Oval."
+ },
+ {
+  "id": "sport-013",
+  "cat": "sport",
+  "q": "Which country hosted the first FIFA World Cup in 1930?",
+  "options": [
+   "Brazil",
+   "Italy",
+   "England",
+   "Uruguay"
+  ],
+  "answer": 3,
+  "fact": "The hosts also won it, beating Argentina 4–2 in the final in Montevideo."
+ },
+ {
+  "id": "sport-014",
+  "cat": "sport",
+  "q": "What is the official distance of a marathon?",
+  "options": [
+   "40 km",
+   "45 km",
+   "42.195 km",
+   "38.5 km"
+  ],
+  "answer": 2,
+  "fact": "The odd distance comes from the 1908 London Olympics, whose course ran from Windsor Castle to the stadium."
+ },
+ {
+  "id": "sport-015",
+  "cat": "sport",
+  "q": "The Stanley Cup is the famous trophy of which sport?",
+  "options": [
+   "Baseball",
+   "Ice hockey",
+   "Basketball",
+   "American football"
+  ],
+  "answer": 1,
+  "fact": "It is named after Lord Stanley of Preston, a Governor General of Canada, who donated it in 1892."
+ },
+ {
+  "id": "sport-018",
+  "cat": "sport",
+  "q": "What colour jersey does the overall leader wear in the Tour de France?",
+  "options": [
+   "Green",
+   "Red",
+   "Pink",
+   "Yellow"
+  ],
+  "answer": 3,
+  "fact": "Yellow was chosen because L'Auto, the newspaper that founded the race in 1903, was printed on yellow paper."
+ },
+ {
+  "id": "sport-019",
+  "cat": "sport",
+  "q": "Which is the most expensive property on the classic UK Monopoly board?",
+  "options": [
+   "Park Lane",
+   "Bond Street",
+   "Mayfair",
+   "Strand"
+  ],
+  "answer": 2,
+  "fact": "Monopoly grew out of The Landlord's Game, which Elizabeth Magie patented in 1904."
+ },
+ {
+  "id": "sport-020",
+  "cat": "sport",
+  "q": "In which sport do players slide stones across ice while teammates sweep?",
+  "options": [
+   "Bowls",
+   "Curling",
+   "Bandy",
+   "Biathlon"
+  ],
+  "answer": 1,
+  "fact": "Many Olympic curling stones are carved from granite quarried on Ailsa Craig, a tiny island off Scotland."
+ },
+ {
+  "id": "sport-021",
+  "cat": "sport",
+  "q": "Foil, épée and sabre are the three weapons of which sport?",
+  "options": [
+   "Archery",
+   "Fencing",
+   "Kendo",
+   "Modern pentathlon"
+  ],
+  "answer": 1,
+  "fact": "Fencing is one of only a handful of sports to have featured at every modern Olympic Games since 1896."
+ },
+ {
+  "id": "sport-022",
+  "cat": "sport",
+  "q": "What do all the dots on a standard six-sided dice add up to?",
+  "options": [
+   "21",
+   "18",
+   "24",
+   "36"
+  ],
+  "answer": 0,
+  "fact": "On a standard dice, the numbers on opposite faces always add up to seven."
+ },
+ {
+  "id": "sport-023",
+  "cat": "sport",
+  "q": "Which martial art's name means 'empty hand'?",
+  "options": [
+   "Judo",
+   "Taekwondo",
+   "Aikido",
+   "Karate"
+  ],
+  "answer": 3,
+  "fact": "Karate developed on the island of Okinawa, in what is now southern Japan."
+ },
+ {
+  "id": "sport-024",
+  "cat": "sport",
+  "q": "Who was the first person to run a mile in under four minutes?",
+  "options": [
+   "Sebastian Coe",
+   "Steve Ovett",
+   "Roger Bannister",
+   "Chris Chataway"
+  ],
+  "answer": 2,
+  "fact": "He clocked 3 minutes 59.4 seconds at Iffley Road in Oxford on 6 May 1954."
+ },
+ {
+  "id": "sport-025",
+  "cat": "sport",
+  "q": "The 'Fosbury flop' is a technique used in which athletics event?",
+  "options": [
+   "Pole vault",
+   "Long jump",
+   "High jump",
+   "Triple jump"
+  ],
+  "answer": 2,
+  "fact": "Dick Fosbury used his backwards technique to win Olympic gold at the 1968 Mexico City Games."
+ },
+ {
+  "id": "sport-026",
+  "cat": "sport",
+  "q": "How many pieces does each player start with in draughts?",
+  "options": [
+   "10",
+   "12",
+   "15",
+   "16"
+  ],
+  "answer": 1,
+  "fact": "Draughts is played only on the dark squares of the same 8×8 board used for chess."
+ },
+ {
+  "id": "sport-027",
+  "cat": "sport",
+  "q": "The game Snakes and Ladders originated in which country?",
+  "options": [
+   "India",
+   "China",
+   "Egypt",
+   "Persia"
+  ],
+  "answer": 0,
+  "fact": "In the original Indian game, the ladders stood for virtues and the snakes for vices."
+ },
+ {
+  "id": "sport-028",
+  "cat": "sport",
+  "q": "The ancient Olympic Games were held in honour of which Greek god?",
+  "options": [
+   "Apollo",
+   "Poseidon",
+   "Ares",
+   "Zeus"
+  ],
+  "answer": 3,
+  "fact": "By tradition the first recorded Games, in 776 BC, had just one event: a sprint of about 190 metres."
+ },
+ {
+  "id": "sport-029",
+  "cat": "sport",
+  "q": "In table tennis, a game is normally played up to how many points?",
+  "options": [
+   "15",
+   "21",
+   "10",
+   "11"
+  ],
+  "answer": 3,
+  "fact": "Games used to be played to 21 points until the rules were changed in 2001."
+ },
+ {
+  "id": "sport-030",
+  "cat": "sport",
+  "q": "The fast stick-and-ball sport of hurling is native to which country?",
+  "options": [
+   "Scotland",
+   "Wales",
+   "Ireland",
+   "Canada"
+  ],
+  "answer": 2,
+  "fact": "The women's version of hurling has its own name: camogie."
+ },
+ {
+  "id": "sport-032",
+  "cat": "sport",
+  "q": "Which sport did astronaut Alan Shepard play on the Moon in 1971?",
+  "options": [
+   "Golf",
+   "Baseball",
+   "Tennis",
+   "Cricket"
+  ],
+  "answer": 0,
+  "fact": "Shepard's club was a six-iron head fixed to the handle of a tool for collecting lunar samples, folded up to fit on board."
+ },
+ {
+  "id": "sport-034",
+  "cat": "sport",
+  "q": "The Calcutta Cup is contested by England and Scotland in which sport?",
+  "options": [
+   "Cricket",
+   "Football",
+   "Polo",
+   "Rugby union"
+  ],
+  "answer": 3,
+  "fact": "The trophy was made from melted-down silver rupees left over when the Calcutta Football Club closed."
+ },
+ {
+  "id": "sport-037",
+  "cat": "sport",
+  "q": "Which card game uses a pegboard to keep score?",
+  "options": [
+   "Whist",
+   "Cribbage",
+   "Rummy",
+   "Canasta"
+  ],
+  "answer": 1,
+  "fact": "Cribbage is said to have been devised by the English poet Sir John Suckling in the early 17th century."
+ },
+ {
+  "id": "sport-038",
+  "cat": "sport",
+  "q": "How long is a cricket pitch from stumps to stumps?",
+  "options": [
+   "22 yards",
+   "20 yards",
+   "25 yards",
+   "18 yards"
+  ],
+  "answer": 0,
+  "fact": "22 yards is exactly one chain, an old unit that land surveyors used for centuries."
+ },
+ {
+  "id": "arts-002",
+  "cat": "arts",
+  "q": "Which Jane Austen novel was originally drafted under the title 'First Impressions'?",
+  "options": [
+   "Emma",
+   "Persuasion",
+   "Sense and Sensibility",
+   "Pride and Prejudice"
+  ],
+  "answer": 3,
+  "fact": "It was first published anonymously in 1813, credited only to 'the Author of Sense and Sensibility'."
+ },
+ {
+  "id": "arts-003",
+  "cat": "arts",
+  "q": "Which author created the detective Sherlock Holmes?",
+  "options": [
+   "G. K. Chesterton",
+   "Arthur Conan Doyle",
+   "Agatha Christie",
+   "Wilkie Collins"
+  ],
+  "answer": 1,
+  "fact": "Holmes first appeared in A Study in Scarlet in 1887, when Conan Doyle was working as a young doctor."
+ },
+ {
+  "id": "arts-004",
+  "cat": "arts",
+  "q": "Who wrote the novel Frankenstein?",
+  "options": [
+   "Bram Stoker",
+   "Emily Brontë",
+   "Ann Radcliffe",
+   "Mary Shelley"
+  ],
+  "answer": 3,
+  "fact": "She began it in 1816 at a villa near Lake Geneva, after Lord Byron challenged his guests to write ghost stories."
+ },
+ {
+  "id": "arts-005",
+  "cat": "arts",
+  "q": "Which artist painted the ceiling of the Sistine Chapel?",
+  "options": [
+   "Michelangelo",
+   "Raphael",
+   "Caravaggio",
+   "Botticelli"
+  ],
+  "answer": 0,
+  "fact": "Despite the popular image, he painted it standing up on a scaffold of his own design, not lying on his back."
+ },
+ {
+  "id": "arts-006",
+  "cat": "arts",
+  "q": "Which Shakespeare play contains the famous 'balcony scene'?",
+  "options": [
+   "Romeo and Juliet",
+   "Othello",
+   "Much Ado About Nothing",
+   "Twelfth Night"
+  ],
+  "answer": 0,
+  "fact": "The word 'balcony' never appears in Shakespeare's text: Romeo simply sees Juliet at a window above the orchard."
+ },
+ {
+  "id": "arts-007",
+  "cat": "arts",
+  "q": "Which Brontë sister wrote Wuthering Heights?",
+  "options": [
+   "Charlotte",
+   "Anne",
+   "Maria",
+   "Emily"
+  ],
+  "answer": 3,
+  "fact": "It was first published in 1847 under the male pen name Ellis Bell."
+ },
+ {
+  "id": "arts-008",
+  "cat": "arts",
+  "q": "Which surrealist painted the melting clocks of 'The Persistence of Memory'?",
+  "options": [
+   "Joan Miró",
+   "René Magritte",
+   "Salvador Dalí",
+   "Max Ernst"
+  ],
+  "answer": 2,
+  "fact": "The famous painting is surprisingly small, measuring only about 24 by 33 centimetres."
+ },
+ {
+  "id": "arts-009",
+  "cat": "arts",
+  "q": "Who painted 'The Starry Night'?",
+  "options": [
+   "Paul Gauguin",
+   "Henri Matisse",
+   "Vincent van Gogh",
+   "Georges Seurat"
+  ],
+  "answer": 2,
+  "fact": "The painting has belonged to the Museum of Modern Art in New York since 1941."
+ },
+ {
+  "id": "arts-010",
+  "cat": "arts",
+  "q": "Andy Warhol famously made pop art from cans of which brand of soup?",
+  "options": [
+   "Campbell's",
+   "Knorr",
+   "Baxters",
+   "Heinz"
+  ],
+  "answer": 0,
+  "fact": "His 1962 work is made up of 32 separate canvases, one for each variety the company sold at the time."
+ },
+ {
+  "id": "arts-011",
+  "cat": "arts",
+  "q": "Which composer wrote the set of violin concertos called The Four Seasons?",
+  "options": [
+   "Arcangelo Corelli",
+   "Johann Sebastian Bach",
+   "Joseph Haydn",
+   "Antonio Vivaldi"
+  ],
+  "answer": 3,
+  "fact": "The concertos were published in 1725 alongside four sonnets describing each season, possibly written by the composer himself."
+ },
+ {
+  "id": "arts-012",
+  "cat": "arts",
+  "q": "Which composer wrote the music for the ballet The Nutcracker?",
+  "options": [
+   "Nikolai Rimsky-Korsakov",
+   "Pyotr Tchaikovsky",
+   "Sergei Prokofiev",
+   "Igor Stravinsky"
+  ],
+  "answer": 1,
+  "fact": "He discovered the celesta in Paris and kept it secret so rivals couldn't use its tinkling sound before him."
+ },
+ {
+  "id": "arts-014",
+  "cat": "arts",
+  "q": "Which silent-film star created the character known as 'The Tramp'?",
+  "options": [
+   "Harold Lloyd",
+   "Stan Laurel",
+   "Buster Keaton",
+   "Charlie Chaplin"
+  ],
+  "answer": 3,
+  "fact": "In 1919 Chaplin co-founded the film studio United Artists with Mary Pickford, Douglas Fairbanks and D. W. Griffith."
+ },
+ {
+  "id": "arts-015",
+  "cat": "arts",
+  "q": "Which American artist painted 'Nighthawks', showing a late-night diner?",
+  "options": [
+   "Andrew Wyeth",
+   "Norman Rockwell",
+   "Edward Hopper",
+   "Grant Wood"
+  ],
+  "answer": 2,
+  "fact": "The Art Institute of Chicago bought it for $3,000 within months of its completion in 1942."
+ },
+ {
+  "id": "arts-017",
+  "cat": "arts",
+  "q": "Winnie-the-Pooh was partly named after a real bear that lived at which zoo?",
+  "options": [
+   "London Zoo",
+   "Bristol Zoo",
+   "Chester Zoo",
+   "Edinburgh Zoo"
+  ],
+  "answer": 0,
+  "fact": "The bear was called Winnipeg, after the Canadian home city of the soldier who brought her to England."
+ },
+ {
+  "id": "arts-019",
+  "cat": "arts",
+  "q": "Which composer wrote the orchestral suite The Planets?",
+  "options": [
+   "Ralph Vaughan Williams",
+   "Gustav Holst",
+   "Edward Elgar",
+   "Benjamin Britten"
+  ],
+  "answer": 1,
+  "fact": "He was director of music at St Paul's Girls' School in London from 1905 until his death in 1934."
+ },
+ {
+  "id": "arts-020",
+  "cat": "arts",
+  "q": "Which composer wrote the Water Music for King George I?",
+  "options": [
+   "Johann Sebastian Bach",
+   "Henry Purcell",
+   "Antonio Vivaldi",
+   "George Frideric Handel"
+  ],
+  "answer": 3,
+  "fact": "At its 1717 premiere on the Thames, the king reportedly liked it so much that he had it played three times."
+ },
+ {
+  "id": "arts-021",
+  "cat": "arts",
+  "q": "According to the stories, which country does Paddington Bear come from?",
+  "options": [
+   "Bolivia",
+   "Peru",
+   "Brazil",
+   "Chile"
+  ],
+  "answer": 1,
+  "fact": "Michael Bond was inspired by a lonely-looking teddy bear he spotted in a London shop on Christmas Eve 1956."
+ },
+ {
+  "id": "arts-022",
+  "cat": "arts",
+  "q": "Dorothy's magic shoes are silver in the original Oz book. What are they in the 1939 film?",
+  "options": [
+   "Glass slippers",
+   "Gold slippers",
+   "Ruby slippers",
+   "Emerald slippers"
+  ],
+  "answer": 2,
+  "fact": "The change was made to show off the bright colours of the then-new Technicolor process."
+ },
+ {
+  "id": "arts-023",
+  "cat": "arts",
+  "q": "Which Hitchcock film follows a photographer spying on neighbours from his flat?",
+  "options": [
+   "Rear Window",
+   "Vertigo",
+   "The Birds",
+   "Rope"
+  ],
+  "answer": 0,
+  "fact": "Hitchcock's cameo in the film shows him winding a clock in a neighbouring songwriter's apartment."
+ },
+ {
+  "id": "arts-024",
+  "cat": "arts",
+  "q": "Which novel's narrator invites readers to 'Call me Ishmael'?",
+  "options": [
+   "Billy Budd",
+   "Robinson Crusoe",
+   "Treasure Island",
+   "Moby-Dick"
+  ],
+  "answer": 3,
+  "fact": "It sold poorly when published in 1851; its reputation as a masterpiece only grew decades after Melville's death."
+ },
+ {
+  "id": "arts-026",
+  "cat": "arts",
+  "q": "Which Japanese artist created the woodblock print 'The Great Wave off Kanagawa'?",
+  "options": [
+   "Kitagawa Utamaro",
+   "Katsushika Hokusai",
+   "Sesshū Tōyō",
+   "Utagawa Hiroshige"
+  ],
+  "answer": 1,
+  "fact": "It is part of his series Thirty-six Views of Mount Fuji, and the mountain sits small in the background."
+ },
+ {
+  "id": "arts-027",
+  "cat": "arts",
+  "q": "In which Italian city can you see Leonardo da Vinci's The Last Supper?",
+  "options": [
+   "Milan",
+   "Rome",
+   "Venice",
+   "Florence"
+  ],
+  "answer": 0,
+  "fact": "Leonardo painted it on a dry wall rather than as a true fresco, so it began flaking within his lifetime."
+ },
+ {
+  "id": "arts-028",
+  "cat": "arts",
+  "q": "George Orwell was the pen name of which writer?",
+  "options": [
+   "Edward Blake",
+   "Eric Blair",
+   "Eric Weller",
+   "Ernest Blair"
+  ],
+  "answer": 1,
+  "fact": "Animal Farm was turned down by several publishers before it finally appeared in 1945."
+ },
+ {
+  "id": "arts-029",
+  "cat": "arts",
+  "q": "Which 1941 film follows newspaper tycoon Charles Foster Kane?",
+  "options": [
+   "The Great Dictator",
+   "How Green Was My Valley",
+   "The Maltese Falcon",
+   "Citizen Kane"
+  ],
+  "answer": 3,
+  "fact": "Orson Welles was just 25 when he co-wrote, directed and starred in it."
+ },
+ {
+  "id": "arts-037",
+  "cat": "arts",
+  "q": "Which composer wrote 'The Blue Danube' waltz?",
+  "options": [
+   "Johann Strauss II",
+   "Franz Schubert",
+   "Franz Lehár",
+   "Richard Strauss"
+  ],
+  "answer": 0,
+  "fact": "It was first written in 1867 as a piece for male choir, with words, before becoming famous as an orchestral waltz."
+ },
+ {
+  "id": "words-001",
+  "cat": "words",
+  "q": "What is a word that reads the same backwards as forwards, like 'level', called?",
+  "options": [
+   "A homophone",
+   "An anagram",
+   "A palindrome",
+   "An acronym"
+  ],
+  "answer": 2,
+  "fact": "James Joyce's 'tattarrattat', a knock at the door in Ulysses, is often cited as the longest palindromic word in the Oxford English Dictionary."
+ },
+ {
+  "id": "words-002",
+  "cat": "words",
+  "q": "What does the French phrase 'déjà vu' literally mean?",
+  "options": [
+   "Never again",
+   "Already seen",
+   "Lived twice",
+   "Seen before dawn"
+  ],
+  "answer": 1,
+  "fact": "The opposite sensation, when something familiar suddenly feels strangely new, is called 'jamais vu', meaning 'never seen'."
+ },
+ {
+  "id": "words-003",
+  "cat": "words",
+  "q": "The word 'hygge', meaning cosy contentment, is most associated with which country?",
+  "options": [
+   "Netherlands",
+   "Denmark",
+   "Finland",
+   "Austria"
+  ],
+  "answer": 1,
+  "fact": "It became so popular in Britain that it was shortlisted for Oxford Dictionaries' Word of the Year in 2016."
+ },
+ {
+  "id": "words-004",
+  "cat": "words",
+  "q": "What does the Latin phrase 'carpe diem' mean?",
+  "options": [
+   "Carry the day",
+   "Day of rest",
+   "Seize the day",
+   "Count the days"
+  ],
+  "answer": 2,
+  "fact": "The phrase comes from an ode by the Roman poet Horace, written over 2,000 years ago."
+ },
+ {
+  "id": "words-006",
+  "cat": "words",
+  "q": "Which letter is used most often in written English?",
+  "options": [
+   "A",
+   "E",
+   "S",
+   "T"
+  ],
+  "answer": 1,
+  "fact": "Because it is so common, Morse code gives it the shortest possible signal: a single dot."
+ },
+ {
+  "id": "words-007",
+  "cat": "words",
+  "q": "What is the collective noun for a group of crows?",
+  "options": [
+   "A murder",
+   "A charm",
+   "A murmuration",
+   "A gaggle"
+  ],
+  "answer": 0,
+  "fact": "Many quirky collective nouns come from 15th-century books on hunting and manners, such as the Book of St Albans."
+ },
+ {
+  "id": "words-008",
+  "cat": "words",
+  "q": "Which of these is spelt correctly?",
+  "options": [
+   "Accomodate",
+   "Acommodate",
+   "Acomodate",
+   "Accommodate"
+  ],
+  "answer": 3,
+  "fact": "It comes from the Latin 'accommodare', meaning to make fit, which already had the double c and double m."
+ },
+ {
+  "id": "words-009",
+  "cat": "words",
+  "q": "Actors wish each other good luck before a show by saying what?",
+  "options": [
+   "Break a leg",
+   "Hold your horses",
+   "Pull your socks up",
+   "Bite the bullet"
+  ],
+  "answer": 0,
+  "fact": "Saying 'good luck' in a theatre is traditionally thought to bring bad luck."
+ },
+ {
+  "id": "words-010",
+  "cat": "words",
+  "q": "The word 'Schadenfreude', pleasure at someone else's misfortune, comes from which language?",
+  "options": [
+   "Dutch",
+   "Danish",
+   "Swedish",
+   "German"
+  ],
+  "answer": 3,
+  "fact": "Literally translated, it means something like 'harm-joy'."
+ },
+ {
+  "id": "words-011",
+  "cat": "words",
+  "q": "What is the official language of Brazil?",
+  "options": [
+   "Italian",
+   "Spanish",
+   "Portuguese",
+   "French"
+  ],
+  "answer": 2,
+  "fact": "The explorer Pedro Álvares Cabral claimed Brazil for Portugal in 1500, and it became independent in 1822."
+ },
+ {
+  "id": "words-012",
+  "cat": "words",
+  "q": "What is the term for a word that imitates the sound it describes, like 'buzz'?",
+  "options": [
+   "Alliteration",
+   "Hyperbole",
+   "Metaphor",
+   "Onomatopoeia"
+  ],
+  "answer": 3,
+  "fact": "Animal noises vary by language: in Japanese, a dog goes 'wan wan'."
+ },
+ {
+  "id": "words-014",
+  "cat": "words",
+  "q": "What do you call a word formed from initial letters and said as a word, like NATO?",
+  "options": [
+   "An acronym",
+   "A contraction",
+   "A synonym",
+   "A homonym"
+  ],
+  "answer": 0,
+  "fact": "'Scuba' began life as one: self-contained underwater breathing apparatus."
+ },
+ {
+  "id": "words-015",
+  "cat": "words",
+  "q": "What does the German word 'Kindergarten' literally mean?",
+  "options": [
+   "Little school",
+   "Children's garden",
+   "First class",
+   "Play house"
+  ],
+  "answer": 1,
+  "fact": "It was coined in 1840 by the German educator Friedrich Fröbel."
+ },
+ {
+  "id": "words-016",
+  "cat": "words",
+  "q": "The word 'shampoo' comes from which language?",
+  "options": [
+   "Turkish",
+   "Persian",
+   "Arabic",
+   "Hindi"
+  ],
+  "answer": 3,
+  "fact": "In Regency Brighton, Sake Dean Mahomed ran fashionable 'shampooing' baths offering a kind of Indian therapeutic massage."
+ },
+ {
+  "id": "words-017",
+  "cat": "words",
+  "q": "The word 'bungalow' originally meant a house in the style of which region?",
+  "options": [
+   "Gujarat",
+   "Punjab",
+   "Kashmir",
+   "Bengal"
+  ],
+  "answer": 3,
+  "fact": "Some of the first houses in England to be called bungalows were built at Westgate-on-Sea in Kent around 1870."
+ },
+ {
+  "id": "words-018",
+  "cat": "words",
+  "q": "The word 'tycoon' entered English from which language?",
+  "options": [
+   "Korean",
+   "Hindi",
+   "Malay",
+   "Japanese"
+  ],
+  "answer": 3,
+  "fact": "Abraham Lincoln's secretaries affectionately called him 'the Tycoon'."
+ },
+ {
+  "id": "words-019",
+  "cat": "words",
+  "q": "When it was coined in 1688, what did the word 'nostalgia' describe?",
+  "options": [
+   "Homesickness",
+   "Forgetfulness",
+   "Seasickness",
+   "Sleeplessness"
+  ],
+  "answer": 0,
+  "fact": "It was invented by Swiss medical student Johannes Hofer from Greek words for 'homecoming' and 'pain'."
+ },
+ {
+  "id": "words-020",
+  "cat": "words",
+  "q": "'Karaoke' joins the Japanese for 'empty' with a shortened form of which word?",
+  "options": [
+   "Orchestra",
+   "Microphone",
+   "Chorus",
+   "Okay"
+  ],
+  "answer": 0,
+  "fact": "Karaoke machines spread through Japanese bars in the 1970s before the craze went global."
+ },
+ {
+  "id": "words-021",
+  "cat": "words",
+  "q": "The name 'ampersand' comes from children reciting the '&' at the end of what?",
+  "options": [
+   "The alphabet",
+   "The days of the week",
+   "Their prayers",
+   "Times tables"
+  ],
+  "answer": 0,
+  "fact": "The symbol itself started out as the letters e and t joined together, spelling the Latin 'et', meaning 'and'."
+ },
+ {
+  "id": "words-022",
+  "cat": "words",
+  "q": "A sentence that uses every letter of the alphabet is called a what?",
+  "options": [
+   "A pangram",
+   "A tautogram",
+   "A palindrome",
+   "A lipogram"
+  ],
+  "answer": 0,
+  "fact": "A version of 'the quick brown fox jumps over the lazy dog' was in print by 1885, recommended for handwriting practice."
+ },
+ {
+  "id": "words-026",
+  "cat": "words",
+  "q": "Which invented language was launched by L. L. Zamenhof in 1887?",
+  "options": [
+   "Esperanto",
+   "Ido",
+   "Volapük",
+   "Interlingua"
+  ],
+  "answer": 0,
+  "fact": "Its name comes from Zamenhof's pen name, Doktoro Esperanto, meaning 'one who hopes'."
+ },
+ {
+  "id": "words-027",
+  "cat": "words",
+  "q": "Swapping the first sounds of words, as in 'tease my ears', is named after which Oxford academic?",
+  "options": [
+   "Lewis Carroll",
+   "Thomas Bowdler",
+   "Samuel Johnson",
+   "William Spooner"
+  ],
+  "answer": 3,
+  "fact": "He was Warden of New College, Oxford, and many of the slips credited to him were probably made up by students."
+ },
+ {
+  "id": "words-029",
+  "cat": "words",
+  "q": "In the NATO phonetic alphabet, which word stands for the letter Q?",
+  "options": [
+   "Quiet",
+   "Quebec",
+   "Quintet",
+   "Queen"
+  ],
+  "answer": 1,
+  "fact": "'Alfa' and 'Juliett' are spelt that way so speakers of other languages pronounce them correctly."
+ },
+ {
+  "id": "words-030",
+  "cat": "words",
+  "q": "'Klutz', 'schmooze' and 'chutzpah' came into English from which language?",
+  "options": [
+   "Hungarian",
+   "Dutch",
+   "Yiddish",
+   "Polish"
+  ],
+  "answer": 2,
+  "fact": "It is written in the Hebrew alphabet but is mostly Germanic in its grammar and vocabulary."
+ },
+ {
+  "id": "words-038",
+  "cat": "words",
+  "q": "What is the name for the dot above a lowercase i or j?",
+  "options": [
+   "A jot",
+   "A serif",
+   "A tittle",
+   "A macron"
+  ],
+  "answer": 2,
+  "fact": "The expression 'to a T' may come from the older phrase 'to a tittle'."
+ },
+ {
+  "id": "words-039",
+  "cat": "words",
+  "q": "'Octothorpe' is another name for which symbol?",
+  "options": [
+   "#",
+   "*",
+   "&",
+   "@"
+  ],
+  "answer": 0,
+  "fact": "Engineers at Bell Labs were using the name by the 1960s for the symbol on new touch-tone telephone keypads."
+ },
+ {
+  "id": "words-040",
+  "cat": "words",
+  "q": "The interrobang punctuation mark combines which two symbols?",
+  "options": [
+   "! and ;",
+   ", and ?",
+   "? and !",
+   ": and !"
+  ],
+  "answer": 2,
+  "fact": "It was invented in 1962 by Martin Speckter, an American advertising executive."
+ },
+ {
+  "id": "space-004",
+  "cat": "space",
+  "q": "Which is the hottest planet in our Solar System?",
+  "options": [
+   "Mercury",
+   "Mars",
+   "Jupiter",
+   "Venus"
+  ],
+  "answer": 3,
+  "fact": "Its thick carbon dioxide atmosphere traps so much heat that the surface is hot enough to melt lead."
+ },
+ {
+  "id": "space-006",
+  "cat": "space",
+  "q": "Who was the first woman to travel into space, in 1963?",
+  "options": [
+   "Sally Ride",
+   "Valentina Tereshkova",
+   "Helen Sharman",
+   "Svetlana Savitskaya"
+  ],
+  "answer": 1,
+  "fact": "On her Vostok 6 flight she orbited Earth 48 times in just under three days."
+ },
+ {
+  "id": "space-007",
+  "cat": "space",
+  "q": "Who became the first human in space in 1961?",
+  "options": [
+   "Alexei Leonov",
+   "Alan Shepard",
+   "Yuri Gagarin",
+   "John Glenn"
+  ],
+  "answer": 2,
+  "fact": "His Vostok 1 flight made a single orbit of Earth and lasted about 108 minutes."
+ },
+ {
+  "id": "space-010",
+  "cat": "space",
+  "q": "Which element makes up most of the Sun?",
+  "options": [
+   "Helium",
+   "Hydrogen",
+   "Oxygen",
+   "Carbon"
+  ],
+  "answer": 1,
+  "fact": "Sunlight takes about eight minutes to travel the 150 million km from the Sun to Earth."
+ },
+ {
+  "id": "space-011",
+  "cat": "space",
+  "q": "Which world was named in 1930 after a suggestion from an 11-year-old Oxford schoolgirl?",
+  "options": [
+   "Ceres",
+   "Eris",
+   "Pluto",
+   "Charon"
+  ],
+  "answer": 2,
+  "fact": "Venetia Burney's grandfather, a former head of Oxford's Bodleian Library, passed her idea on to an astronomer friend."
+ },
+ {
+  "id": "space-012",
+  "cat": "space",
+  "q": "Which planet did William Herschel discover from his garden in Bath in 1781?",
+  "options": [
+   "Neptune",
+   "Saturn",
+   "Mars",
+   "Uranus"
+  ],
+  "answer": 3,
+  "fact": "Herschel wanted to call it Georgium Sidus, meaning 'George's Star', in honour of King George III."
+ },
+ {
+  "id": "space-013",
+  "cat": "space",
+  "q": "What is the largest moon in the Solar System?",
+  "options": [
+   "Ganymede",
+   "Titan",
+   "Callisto",
+   "Io"
+  ],
+  "answer": 0,
+  "fact": "Jupiter's moon Ganymede is bigger than the planet Mercury and is the only moon known to have its own magnetic field."
+ },
+ {
+  "id": "space-014",
+  "cat": "space",
+  "q": "Which space telescope, launched in 1990, is named after an American astronomer?",
+  "options": [
+   "Kepler",
+   "Hubble",
+   "James Webb",
+   "Herschel"
+  ],
+  "answer": 1,
+  "fact": "Soon after launch its main mirror was found to be slightly flawed; astronauts fitted corrective optics in 1993."
+ },
+ {
+  "id": "space-016",
+  "cat": "space",
+  "q": "Who became the first Briton in space, in 1991?",
+  "options": [
+   "Tim Peake",
+   "Michael Foale",
+   "Piers Sellers",
+   "Helen Sharman"
+  ],
+  "answer": 3,
+  "fact": "She applied after hearing a radio advert that said: 'Astronaut wanted. No experience necessary.'"
+ },
+ {
+  "id": "space-017",
+  "cat": "space",
+  "q": "In 2016, astronaut Tim Peake ran which city's marathon on a treadmill aboard the ISS?",
+  "options": [
+   "London",
+   "New York",
+   "Boston",
+   "Berlin"
+  ],
+  "answer": 0,
+  "fact": "Strapped to the treadmill by a harness, he finished in 3 hours, 35 minutes and 21 seconds."
+ },
+ {
+  "id": "space-018",
+  "cat": "space",
+  "q": "Which NASA Mars rover was planned to last 90 days but kept working for almost 15 years?",
+  "options": [
+   "Curiosity",
+   "Opportunity",
+   "Sojourner",
+   "Perseverance"
+  ],
+  "answer": 1,
+  "fact": "By the end of its mission it had driven 45.16 km across Mars, further than a marathon."
+ },
+ {
+  "id": "space-020",
+  "cat": "space",
+  "q": "Which Cheshire observatory's giant dish tracked the rocket that launched Sputnik in 1957?",
+  "options": [
+   "Royal Observatory Greenwich",
+   "Armagh Observatory",
+   "Herstmonceux",
+   "Jodrell Bank"
+  ],
+  "answer": 3,
+  "fact": "Its 76-metre (250 ft) dish is now called the Lovell Telescope, after the observatory's founder Bernard Lovell."
+ },
+ {
+  "id": "space-024",
+  "cat": "space",
+  "q": "The Plough, also called the Big Dipper, is part of which constellation?",
+  "options": [
+   "Ursa Minor",
+   "Cassiopeia",
+   "Ursa Major",
+   "Cygnus"
+  ],
+  "answer": 2,
+  "fact": "The two stars at the end of the Plough's 'pan' point the way to Polaris, the North Star."
+ },
+ {
+  "id": "space-025",
+  "cat": "space",
+  "q": "What is the name for the huge explosion of a massive star at the end of its life?",
+  "options": [
+   "Nebula",
+   "Quasar",
+   "Pulsar",
+   "Supernova"
+  ],
+  "answer": 3,
+  "fact": "The Crab Nebula is the glowing remains of a supernova recorded by Chinese astronomers in 1054."
+ },
+ {
+  "id": "space-026",
+  "cat": "space",
+  "q": "What is the boundary around a black hole beyond which nothing, not even light, can escape?",
+  "options": [
+   "Event horizon",
+   "Accretion disc",
+   "Singularity",
+   "Corona"
+  ],
+  "answer": 0,
+  "fact": "In 2019 the Event Horizon Telescope revealed the first ever image of a black hole, in the galaxy M87."
+ },
+ {
+  "id": "space-027",
+  "cat": "space",
+  "q": "What name is often given to a second full moon in the same calendar month?",
+  "options": [
+   "Harvest moon",
+   "Blue moon",
+   "Supermoon",
+   "Blood moon"
+  ],
+  "answer": 1,
+  "fact": "Despite the name it doesn't look blue, and one comes along roughly every two to three years."
+ },
+ {
+  "id": "space-028",
+  "cat": "space",
+  "q": "Which Apollo mission had to abandon its Moon landing after an oxygen tank burst in 1970?",
+  "options": [
+   "Apollo 11",
+   "Apollo 12",
+   "Apollo 13",
+   "Apollo 15"
+  ],
+  "answer": 2,
+  "fact": "The three astronauts used their lunar module, Aquarius, as a lifeboat to get safely home."
+ },
+ {
+  "id": "space-029",
+  "cat": "space",
+  "q": "Which is the farthest planet from the Sun?",
+  "options": [
+   "Uranus",
+   "Saturn",
+   "Jupiter",
+   "Neptune"
+  ],
+  "answer": 3,
+  "fact": "In 1846 Neptune became the first planet found by mathematical prediction rather than by scanning the sky."
+ },
+ {
+  "id": "space-031",
+  "cat": "space",
+  "q": "Which is the brightest star in the night sky?",
+  "options": [
+   "Polaris",
+   "Sirius",
+   "Betelgeuse",
+   "Vega"
+  ],
+  "answer": 1,
+  "fact": "Sirius is nicknamed the Dog Star because it sits in the constellation Canis Major, the Great Dog."
+ },
+ {
+  "id": "space-032",
+  "cat": "space",
+  "q": "In which constellation would you find the red supergiant Betelgeuse?",
+  "options": [
+   "Taurus",
+   "Gemini",
+   "Orion",
+   "Scorpius"
+  ],
+  "answer": 2,
+  "fact": "Orion's Belt is made up of three bright stars called Alnitak, Alnilam and Mintaka."
+ },
+ {
+  "id": "space-034",
+  "cat": "space",
+  "q": "Which dwarf planet is the largest object in the asteroid belt?",
+  "options": [
+   "Ceres",
+   "Eris",
+   "Makemake",
+   "Haumea"
+  ],
+  "answer": 0,
+  "fact": "It was first spotted by the astronomer Giuseppe Piazzi in Sicily on New Year's Day, 1801."
+ },
+ {
+  "id": "space-035",
+  "cat": "space",
+  "q": "Which is the only planet in our Solar System not named after a Greek or Roman god?",
+  "options": [
+   "Mars",
+   "Earth",
+   "Neptune",
+   "Saturn"
+  ],
+  "answer": 1,
+  "fact": "Earth is also the densest planet in the Solar System, thanks largely to its heavy iron core."
+ },
+ {
+  "id": "space-036",
+  "cat": "space",
+  "q": "What does a light year measure?",
+  "options": [
+   "Time",
+   "Brightness",
+   "Distance",
+   "Speed"
+  ],
+  "answer": 2,
+  "fact": "One light year is about 9.46 trillion kilometres, the distance light travels in a year."
+ },
+ {
+  "id": "space-038",
+  "cat": "space",
+  "q": "Which astronomer discovered Jupiter's four largest moons in 1610?",
+  "options": [
+   "Galileo Galilei",
+   "Isaac Newton",
+   "Johannes Kepler",
+   "Nicolaus Copernicus"
+  ],
+  "answer": 0,
+  "fact": "He first named them the Medicean Stars, after his powerful patrons, the Medici family of Florence."
+ },
+ {
+  "id": "space-039",
+  "cat": "space",
+  "q": "In 2019, China's Chang'e 4 made the first ever soft landing where?",
+  "options": [
+   "Mercury",
+   "The far side of the Moon",
+   "Mars's moon Phobos",
+   "Jupiter's moon Io"
+  ],
+  "answer": 1,
+  "fact": "It carried cotton seeds that briefly sprouted, the first seeds ever to germinate on the Moon."
+ },
+ {
+  "id": "space-040",
+  "cat": "space",
+  "q": "What do we call a space rock that survives its fall and lands on Earth?",
+  "options": [
+   "Meteor",
+   "Comet",
+   "Nebula",
+   "Meteorite"
+  ],
+  "answer": 3,
+  "fact": "Most shooting stars are caused by specks of space dust about the size of a grain of sand."
+ },
+ {
+  "id": "uk-001",
+  "cat": "uk",
+  "q": "Which Scottish city is nicknamed the Granite City?",
+  "options": [
+   "Aberdeen",
+   "Dundee",
+   "Inverness",
+   "Perth"
+  ],
+  "answer": 0,
+  "fact": "Thanks to mica in the stone, its buildings can sparkle in the sun, giving it another nickname: the Silver City."
+ },
+ {
+  "id": "uk-002",
+  "cat": "uk",
+  "q": "What is the largest lake in the UK by surface area?",
+  "options": [
+   "Loch Lomond",
+   "Lough Neagh",
+   "Loch Ness",
+   "Windermere"
+  ],
+  "answer": 1,
+  "fact": "This Northern Irish lough supplies around 40% of Northern Ireland's drinking water."
+ },
+ {
+  "id": "uk-003",
+  "cat": "uk",
+  "q": "Which Somerset city is famous for its Royal Crescent and Roman Baths?",
+  "options": [
+   "Wells",
+   "Taunton",
+   "Bath",
+   "Frome"
+  ],
+  "answer": 2,
+  "fact": "About 1.17 million litres of hot spring water, at around 46°C, still rise there every day."
+ },
+ {
+  "id": "uk-005",
+  "cat": "uk",
+  "q": "At which London landmark is the Ceremony of the Keys held every night?",
+  "options": [
+   "Tower of London",
+   "Buckingham Palace",
+   "Windsor Castle",
+   "Palace of Westminster"
+  ],
+  "answer": 0,
+  "fact": "The ceremony, in which the gates are locked for the night, has taken place for at least 700 years."
+ },
+ {
+  "id": "uk-006",
+  "cat": "uk",
+  "q": "The Beatles made their name at the Cavern Club in which city?",
+  "options": [
+   "Manchester",
+   "Liverpool",
+   "Birmingham",
+   "Leeds"
+  ],
+  "answer": 1,
+  "fact": "By one count, the band made 292 appearances at the club between 1961 and 1963."
+ },
+ {
+  "id": "uk-007",
+  "cat": "uk",
+  "q": "How many passenger capsules does the London Eye have?",
+  "options": [
+   "24",
+   "32",
+   "40",
+   "50"
+  ],
+  "answer": 1,
+  "fact": "The capsules are numbered up to 33, because number 13 is skipped for luck."
+ },
+ {
+  "id": "uk-008",
+  "cat": "uk",
+  "q": "What is the nickname of the skyscraper at 30 St Mary Axe in the City of London?",
+  "options": [
+   "The Shard",
+   "The Cheesegrater",
+   "The Gherkin",
+   "The Walkie-Talkie"
+  ],
+  "answer": 2,
+  "fact": "Despite its curvy shape, its only curved piece of glass is the lens-shaped cap at the very top."
+ },
+ {
+  "id": "uk-009",
+  "cat": "uk",
+  "q": "Which Scottish loch holds more water than all the lakes of England and Wales combined?",
+  "options": [
+   "Loch Lomond",
+   "Loch Morar",
+   "Loch Awe",
+   "Loch Ness"
+  ],
+  "answer": 3,
+  "fact": "The famous 1934 'Surgeon's Photograph' of Nessie was later revealed to be a toy submarine with a model head."
+ },
+ {
+  "id": "uk-010",
+  "cat": "uk",
+  "q": "Which Northern Irish landmark is made of around 40,000 interlocking basalt columns?",
+  "options": [
+   "Giant's Causeway",
+   "Carrick-a-Rede",
+   "Mourne Mountains",
+   "Marble Arch Caves"
+  ],
+  "answer": 0,
+  "fact": "Legend says the giant Finn McCool built it as a path across the sea to Scotland."
+ },
+ {
+  "id": "uk-011",
+  "cat": "uk",
+  "q": "The village with the very long name beginning Llanfairpwllgwyngyll is on which Welsh island?",
+  "options": [
+   "Skomer",
+   "Anglesey",
+   "Bardsey Island",
+   "Caldey Island"
+  ],
+  "answer": 1,
+  "fact": "Its 58-character full name is thought to have been dreamt up in the 1860s as a publicity stunt for the railway station."
+ },
+ {
+  "id": "uk-012",
+  "cat": "uk",
+  "q": "The Buckinghamshire town of Olney is famous for a race held on which day?",
+  "options": [
+   "Boxing Day",
+   "May Day",
+   "Shrove Tuesday",
+   "Easter Monday"
+  ],
+  "answer": 2,
+  "fact": "By tradition the pancake race dates back to 1445, and runners must wear an apron and a head covering."
+ },
+ {
+  "id": "uk-013",
+  "cat": "uk",
+  "q": "Which chocolate-making family built the model village of Bournville near Birmingham?",
+  "options": [
+   "Rowntree",
+   "Fry",
+   "Terry",
+   "Cadbury"
+  ],
+  "answer": 3,
+  "fact": "George Cadbury was a Quaker who opposed alcohol, and no pub has ever been built in Bournville."
+ },
+ {
+  "id": "uk-014",
+  "cat": "uk",
+  "q": "The 700-year-old Coronation Chair is kept in which London church?",
+  "options": [
+   "Westminster Abbey",
+   "St Paul's Cathedral",
+   "Southwark Cathedral",
+   "Westminster Cathedral"
+  ],
+  "answer": 0,
+  "fact": "Made for Edward I in 1300-1301, its back is covered in names carved by Westminster schoolboys and visitors in the 1700s and 1800s."
+ },
+ {
+  "id": "uk-015",
+  "cat": "uk",
+  "q": "At what time is a gun fired from Edinburgh Castle on most days?",
+  "options": [
+   "9am",
+   "12 noon",
+   "1pm",
+   "6pm"
+  ],
+  "answer": 2,
+  "fact": "First fired in 1861, it allowed ships in the Firth of Forth to set their clocks accurately."
+ },
+ {
+  "id": "uk-016",
+  "cat": "uk",
+  "q": "Which London department store installed England's first moving staircase in 1898?",
+  "options": [
+   "Selfridges",
+   "Harrods",
+   "Liberty",
+   "Fortnum & Mason"
+  ],
+  "answer": 1,
+  "fact": "Staff waited at the top to offer brandy and smelling salts to shoppers shaken by the ride."
+ },
+ {
+  "id": "uk-017",
+  "cat": "uk",
+  "q": "In which city did eight uninvited theatre groups start the famous Fringe festival in 1947?",
+  "options": [
+   "Glasgow",
+   "Manchester",
+   "Edinburgh",
+   "Bristol"
+  ],
+  "answer": 2,
+  "fact": "Playwright Robert Kemp coined the name in 1948, writing that 'round the fringe of official Festival drama' there was more private enterprise."
+ },
+ {
+  "id": "uk-018",
+  "cat": "uk",
+  "q": "What is the highest mountain in the UK?",
+  "options": [
+   "Scafell Pike",
+   "Yr Wyddfa (Snowdon)",
+   "Ben Macdui",
+   "Ben Nevis"
+  ],
+  "answer": 3,
+  "fact": "A weather observatory operated on its summit from 1883 until 1904."
+ },
+ {
+  "id": "uk-019",
+  "cat": "uk",
+  "q": "Harry Beck's famous diagram, first published in 1933, is a map of what?",
+  "options": [
+   "The London Underground",
+   "Britain's motorways",
+   "London's bus routes",
+   "The River Thames"
+  ],
+  "answer": 0,
+  "fact": "Beck ignored real distances, spacing stations evenly and drawing lines only horizontally, vertically or at 45 degrees."
+ },
+ {
+  "id": "uk-022",
+  "cat": "uk",
+  "q": "Which English cathedral has Britain's tallest cathedral spire, at 123 metres?",
+  "options": [
+   "Lincoln",
+   "Durham",
+   "York Minster",
+   "Salisbury"
+  ],
+  "answer": 3,
+  "fact": "It also holds the best preserved of the four surviving original copies of the 1215 Magna Carta."
+ },
+ {
+  "id": "uk-025",
+  "cat": "uk",
+  "q": "Which Welsh city is often described as the smallest city in Britain?",
+  "options": [
+   "St Asaph",
+   "Bangor",
+   "St Davids",
+   "Newport"
+  ],
+  "answer": 2,
+  "fact": "Legend says Wales's patron saint was born on the nearby clifftops, at a spot now called St Non's."
+ },
+ {
+  "id": "uk-026",
+  "cat": "uk",
+  "q": "Which London gardens are home to a ten-storey Great Pagoda built in the 1760s?",
+  "options": [
+   "Hampton Court",
+   "Regent's Park",
+   "Kensington Gardens",
+   "Kew Gardens"
+  ],
+  "answer": 3,
+  "fact": "In 2018, 80 colourful dragons returned to its roofs for the first time since the 1780s."
+ },
+ {
+  "id": "uk-029",
+  "cat": "uk",
+  "q": "What is the longest river in the UK?",
+  "options": [
+   "River Thames",
+   "River Trent",
+   "River Severn",
+   "River Great Ouse"
+  ],
+  "answer": 2,
+  "fact": "Its tidal surge, the Severn Bore, is a wave that surfers can ride for miles upstream."
+ },
+ {
+  "id": "uk-030",
+  "cat": "uk",
+  "q": "In 2012, the clock tower at the Houses of Parliament was renamed what?",
+  "options": [
+   "Victoria Tower",
+   "Jubilee Tower",
+   "Albert Tower",
+   "Elizabeth Tower"
+  ],
+  "answer": 3,
+  "fact": "Big Ben is strictly the name of the tower's great bell, which weighs about 13.7 tonnes."
+ },
+ {
+  "id": "uk-031",
+  "cat": "uk",
+  "q": "Which London bridge can be raised to let tall ships pass along the Thames?",
+  "options": [
+   "Tower Bridge",
+   "London Bridge",
+   "Westminster Bridge",
+   "Millennium Bridge"
+  ],
+  "answer": 0,
+  "fact": "It opened in 1894, and its huge lifting sections were originally powered by steam engines."
+ },
+ {
+  "id": "uk-033",
+  "cat": "uk",
+  "q": "In which English county is Stonehenge?",
+  "options": [
+   "Somerset",
+   "Dorset",
+   "Wiltshire",
+   "Devon"
+  ],
+  "answer": 2,
+  "fact": "Many of its smaller 'bluestones' were brought about 150 miles from the Preseli Hills in west Wales."
+ },
+ {
+  "id": "uk-034",
+  "cat": "uk",
+  "q": "What is the national animal of Scotland?",
+  "options": [
+   "The red deer",
+   "The golden eagle",
+   "The Highland cow",
+   "The unicorn"
+  ],
+  "answer": 3,
+  "fact": "In heraldry, the Scottish unicorn is usually shown wearing a golden chain."
+ },
+ {
+  "id": "uk-035",
+  "cat": "uk",
+  "q": "Which London railway station gave its name to a famous marmalade-loving bear?",
+  "options": [
+   "Paddington",
+   "Euston",
+   "Victoria",
+   "King's Cross"
+  ],
+  "answer": 0,
+  "fact": "In the original stories, the bear arrives from Peru with a label saying 'Please look after this bear'."
+ },
+ {
+  "id": "uk-036",
+  "cat": "uk",
+  "q": "Which London Underground line is shown in yellow on the Tube map?",
+  "options": [
+   "Central line",
+   "Circle line",
+   "Northern line",
+   "District line"
+  ],
+  "answer": 1,
+  "fact": "The Metropolitan line, opened in 1863, was the world's first underground railway."
+ },
+ {
+  "id": "uk-037",
+  "cat": "uk",
+  "q": "Which is the oldest university in the UK?",
+  "options": [
+   "Cambridge",
+   "St Andrews",
+   "Oxford",
+   "Durham"
+  ],
+  "answer": 2,
+  "fact": "There is evidence of teaching there by 1096, making it the oldest university in the English-speaking world."
+ },
+ {
+  "id": "uk-039",
+  "cat": "uk",
+  "q": "On which London street did Sherlock Holmes famously live, at number 221B?",
+  "options": [
+   "Baker Street",
+   "Downing Street",
+   "Fleet Street",
+   "Oxford Street"
+  ],
+  "answer": 0,
+  "fact": "When the stories were written, house numbers on Baker Street did not actually go as high as 221."
+ },
+ {
+  "id": "uk-040",
+  "cat": "uk",
+  "q": "In Scotland, what is Hogmanay?",
+  "options": [
+   "A harvest festival",
+   "A Highland dance",
+   "A type of bagpipe tune",
+   "New Year's Eve celebrations"
+  ],
+  "answer": 3,
+  "fact": "In 'first-footing', the first visitor after midnight is said to bring luck, ideally carrying a gift such as coal."
+ },
+ {
+  "id": "geo-121",
+  "cat": "geo",
+  "q": "What is the name of the imaginary line around the middle of the Earth?",
+  "options": [
+   "The Meridian",
+   "The Equator",
+   "The Horizon",
+   "The Tropic"
+  ],
+  "answer": 1,
+  "fact": "The Equator passes through Brazil, Kenya and Indonesia, among other countries."
+ },
+ {
+  "id": "geo-128",
+  "cat": "geo",
+  "q": "What is the capital of Russia?",
+  "options": [
+   "St Petersburg",
+   "Novosibirsk",
+   "Moscow",
+   "Kazan"
+  ],
+  "answer": 2,
+  "fact": "Moscow's metro is famous for grand stations decorated with chandeliers and mosaics."
+ },
+ {
+  "id": "geo-114",
+  "cat": "geo",
+  "q": "Which is the largest continent?",
+  "options": [
+   "Asia",
+   "Africa",
+   "Europe",
+   "North America"
+  ],
+  "answer": 0,
+  "fact": "Around six in every ten people in the world live in Asia."
+ },
+ {
+  "id": "geo-129",
+  "cat": "geo",
+  "q": "Amsterdam is the capital of which country?",
+  "options": [
+   "Belgium",
+   "Netherlands",
+   "Germany",
+   "Denmark"
+  ],
+  "answer": 1,
+  "fact": "About a quarter of the Netherlands lies below sea level, protected by dykes and dunes."
+ },
+ {
+  "id": "geo-134",
+  "cat": "geo",
+  "q": "Brussels is the capital of which country?",
+  "options": [
+   "Belgium",
+   "France",
+   "Austria",
+   "Switzerland"
+  ],
+  "answer": 0,
+  "fact": "Belgium has three official languages: Dutch, French and German."
+ },
+ {
+  "id": "geo-106",
+  "cat": "geo",
+  "q": "Kenya is in which continent?",
+  "options": [
+   "Africa",
+   "Asia",
+   "South America",
+   "Europe"
+  ],
+  "answer": 0,
+  "fact": "Kenya takes its name from Mount Kenya, the second-highest mountain in Africa."
+ },
+ {
+  "id": "geo-110",
+  "cat": "geo",
+  "q": "Hollywood, the home of the US film industry, is in which city?",
+  "options": [
+   "Los Angeles",
+   "San Francisco",
+   "Las Vegas",
+   "New York"
+  ],
+  "answer": 0,
+  "fact": "The famous Hollywood sign originally read 'Hollywoodland' and advertised new houses."
+ },
+ {
+  "id": "geo-117",
+  "cat": "geo",
+  "q": "Which sea lies between southern Europe and North Africa?",
+  "options": [
+   "Caribbean",
+   "Mediterranean",
+   "Baltic",
+   "Red Sea"
+  ],
+  "answer": 1,
+  "fact": "The name 'Mediterranean' comes from Latin words meaning 'in the middle of the land'."
+ },
+ {
+  "id": "geo-130",
+  "cat": "geo",
+  "q": "Which US state is made up entirely of islands?",
+  "options": [
+   "Hawaii",
+   "Florida",
+   "Alaska",
+   "California"
+  ],
+  "answer": 0,
+  "fact": "Hawaii's islands were formed by volcanoes, and some of those volcanoes are still active."
+ },
+ {
+  "id": "hist-129",
+  "cat": "hist",
+  "q": "Which famous Paris landmark was built for the World's Fair of 1889?",
+  "options": [
+   "The Louvre",
+   "The Eiffel Tower",
+   "Notre-Dame",
+   "The Arc de Triomphe"
+  ],
+  "answer": 1,
+  "fact": "The Eiffel Tower was originally only meant to stand for 20 years."
+ },
+ {
+  "id": "hist-130",
+  "cat": "hist",
+  "q": "Who was Queen Elizabeth II's husband?",
+  "options": [
+   "Prince Philip",
+   "Prince Albert",
+   "Prince Charles",
+   "Prince Edward"
+  ],
+  "answer": 0,
+  "fact": "Elizabeth and Philip married at Westminster Abbey in 1947."
+ },
+ {
+  "id": "hist-103",
+  "cat": "hist",
+  "q": "Which explorer famously sailed across the Atlantic to the Americas in 1492?",
+  "options": [
+   "Captain Cook",
+   "Marco Polo",
+   "Francis Drake",
+   "Christopher Columbus"
+  ],
+  "answer": 3,
+  "fact": "Columbus was born in Genoa, in what is now Italy, but his famous voyage was paid for by Spain."
+ },
+ {
+  "id": "hist-132",
+  "cat": "hist",
+  "q": "Which country was once ruled by tsars?",
+  "options": [
+   "France",
+   "Egypt",
+   "Russia",
+   "Japan"
+  ],
+  "answer": 2,
+  "fact": "The word 'tsar' comes from 'Caesar', the title used by Roman emperors."
+ },
+ {
+  "id": "sci-129",
+  "cat": "sci",
+  "q": "Steam, or water vapour, is water in which state?",
+  "options": [
+   "Solid",
+   "Gas",
+   "Crystal",
+   "Liquid"
+  ],
+  "answer": 1,
+  "fact": "True steam is invisible: the white cloud above a kettle is really tiny water droplets."
+ },
+ {
+  "id": "sci-131",
+  "cat": "sci",
+  "q": "What is it called when water slowly turns into vapour, like a drying puddle?",
+  "options": [
+   "Condensation",
+   "Melting",
+   "Evaporation",
+   "Freezing"
+  ],
+  "answer": 2,
+  "fact": "Puddles dry up faster on warm, windy days because evaporation speeds up."
+ },
+ {
+  "id": "sci-107",
+  "cat": "sci",
+  "q": "What does a thermometer measure?",
+  "options": [
+   "Speed",
+   "Weight",
+   "Temperature",
+   "Rainfall"
+  ],
+  "answer": 2,
+  "fact": "Normal human body temperature is about 37°C."
+ },
+ {
+  "id": "sci-104",
+  "cat": "sci",
+  "q": "Which organ pumps blood around the body?",
+  "options": [
+   "Lungs",
+   "Heart",
+   "Stomach",
+   "Liver"
+  ],
+  "answer": 1,
+  "fact": "An adult heart beats around 100,000 times every day."
+ },
+ {
+  "id": "nature-102",
+  "cat": "nature",
+  "q": "What does a caterpillar turn into?",
+  "options": [
+   "A butterfly",
+   "A dragonfly",
+   "A bee",
+   "A beetle"
+  ],
+  "answer": 0,
+  "fact": "Inside its chrysalis, a caterpillar breaks down almost completely before rebuilding itself."
+ },
+ {
+  "id": "nature-122",
+  "cat": "nature",
+  "q": "Which animal is famous for building dams across rivers?",
+  "options": [
+   "Otter",
+   "Badger",
+   "Rabbit",
+   "Beaver"
+  ],
+  "answer": 3,
+  "fact": "Beavers have orange teeth, coloured by iron that makes them extra strong."
+ },
+ {
+  "id": "nature-135",
+  "cat": "nature",
+  "q": "What is a baby goat called?",
+  "options": [
+   "A foal",
+   "A piglet",
+   "A kid",
+   "A cub"
+  ],
+  "answer": 2,
+  "fact": "Goats have rectangular pupils, which give them a very wide field of view."
+ },
+ {
+  "id": "nature-134",
+  "cat": "nature",
+  "q": "What are small balls of ice that fall from storm clouds called?",
+  "options": [
+   "Drizzle",
+   "Dew",
+   "Hail",
+   "Fog"
+  ],
+  "answer": 2,
+  "fact": "Hailstones grow in layers as they're tossed up and down inside storm clouds."
+ },
+ {
+  "id": "nature-119",
+  "cat": "nature",
+  "q": "Which tall yellow flower is named after the Sun?",
+  "options": [
+   "Buttercup",
+   "Daffodil",
+   "Sunflower",
+   "Marigold"
+  ],
+  "answer": 2,
+  "fact": "Young sunflowers follow the Sun across the sky, but most fully grown ones face east."
+ },
+ {
+  "id": "food-133",
+  "cat": "food",
+  "q": "Which large fruit has a hard, hairy shell and watery juice inside?",
+  "options": [
+   "Melon",
+   "Coconut",
+   "Pineapple",
+   "Papaya"
+  ],
+  "answer": 1,
+  "fact": "Despite its name, a coconut is botanically a drupe rather than a true nut."
+ },
+ {
+  "id": "food-129",
+  "cat": "food",
+  "q": "What is the traditional filling of a Cornish pasty?",
+  "options": [
+   "Chicken and leek",
+   "Beef and vegetables",
+   "Cheese and onion",
+   "Fish and peas"
+  ],
+  "answer": 1,
+  "fact": "Genuine Cornish pasties have protected status and must be prepared in Cornwall."
+ },
+ {
+  "id": "food-109",
+  "cat": "food",
+  "q": "Which vegetable is traditionally carved into a lantern at Halloween?",
+  "options": [
+   "Cabbage",
+   "Pumpkin",
+   "Cucumber",
+   "Aubergine"
+  ],
+  "answer": 1,
+  "fact": "In Ireland and Scotland, people carved turnips long before pumpkins caught on."
+ },
+ {
+  "id": "sport-124",
+  "cat": "sport",
+  "q": "In cricket, how many balls are bowled in a standard over?",
+  "options": [
+   "4",
+   "8",
+   "6",
+   "10"
+  ],
+  "answer": 2,
+  "fact": "An over in which the bowler gives away no runs is called a maiden."
+ },
+ {
+  "id": "sport-103",
+  "cat": "sport",
+  "q": "In darts, what is the highest score possible with three darts?",
+  "options": [
+   "100",
+   "150",
+   "200",
+   "180"
+  ],
+  "answer": 3,
+  "fact": "A 180 needs all three darts to land in the treble 20, the thin inner ring worth triple points."
+ },
+ {
+  "id": "sport-115",
+  "cat": "sport",
+  "q": "In boxing, what does KO stand for?",
+  "options": [
+   "Kick off",
+   "Keep out",
+   "Knee out",
+   "Knockout"
+  ],
+  "answer": 3,
+  "fact": "Despite being called a ring, a boxing ring is actually square."
+ },
+ {
+  "id": "sport-130",
+  "cat": "sport",
+  "q": "In which sport would you perform on a balance beam?",
+  "options": [
+   "Gymnastics",
+   "Diving",
+   "Athletics",
+   "Fencing"
+  ],
+  "answer": 0,
+  "fact": "The balance beam used in gymnastics is just 10 centimetres wide."
+ },
+ {
+  "id": "sport-104",
+  "cat": "sport",
+  "q": "Which sport is played at Wimbledon?",
+  "options": [
+   "Golf",
+   "Cricket",
+   "Tennis",
+   "Rugby"
+  ],
+  "answer": 2,
+  "fact": "Players at Wimbledon must wear almost entirely white clothing."
+ },
+ {
+  "id": "sport-110",
+  "cat": "sport",
+  "q": "The Grand National is a famous event in which sport?",
+  "options": [
+   "Horse racing",
+   "Rowing",
+   "Cycling",
+   "Motor racing"
+  ],
+  "answer": 0,
+  "fact": "The Grand National is held at Aintree Racecourse, near Liverpool."
+ },
+ {
+  "id": "sport-129",
+  "cat": "sport",
+  "q": "What is the official in charge of a football match called?",
+  "options": [
+   "Umpire",
+   "Referee",
+   "Judge",
+   "Steward"
+  ],
+  "answer": 1,
+  "fact": "The assistant referees who run the touchlines used to be called linesmen."
+ },
+ {
+  "id": "sport-108",
+  "cat": "sport",
+  "q": "What shape is a rugby ball?",
+  "options": [
+   "Round",
+   "Square",
+   "Oval",
+   "Triangular"
+  ],
+  "answer": 2,
+  "fact": "Early rugby balls were made from pigs' bladders covered in leather."
+ },
+ {
+  "id": "arts-105",
+  "cat": "arts",
+  "q": "What is the name of the young lion in The Lion King?",
+  "options": [
+   "Simba",
+   "Mufasa",
+   "Rafiki",
+   "Nala"
+  ],
+  "answer": 0,
+  "fact": "'Simba' is the Swahili word for 'lion'."
+ },
+ {
+  "id": "arts-118",
+  "cat": "arts",
+  "q": "What colour do you get by mixing blue and yellow paint?",
+  "options": [
+   "Purple",
+   "Brown",
+   "Orange",
+   "Green"
+  ],
+  "answer": 3,
+  "fact": "Painters have traditionally been taught that red, yellow and blue are the three primary colours."
+ },
+ {
+  "id": "arts-125",
+  "cat": "arts",
+  "q": "Which author wrote the Famous Five books?",
+  "options": [
+   "Enid Blyton",
+   "J.K. Rowling",
+   "Roald Dahl",
+   "Beatrix Potter"
+  ],
+  "answer": 0,
+  "fact": "Enid Blyton was incredibly productive and wrote hundreds of books during her career."
+ },
+ {
+  "id": "arts-110",
+  "cat": "arts",
+  "q": "Which musical instrument usually has 88 black and white keys?",
+  "options": [
+   "Accordion",
+   "Xylophone",
+   "Harp",
+   "Piano"
+  ],
+  "answer": 3,
+  "fact": "The piano's full name, 'pianoforte', means 'soft-loud' in Italian."
+ },
+ {
+  "id": "arts-108",
+  "cat": "arts",
+  "q": "How many dwarfs does Snow White meet in the Disney film?",
+  "options": [
+   "Five",
+   "Seven",
+   "Six",
+   "Nine"
+  ],
+  "answer": 1,
+  "fact": "Snow White and the Seven Dwarfs (1937) was Disney's first full-length animated feature film."
+ },
+ {
+  "id": "arts-115",
+  "cat": "arts",
+  "q": "Which fictional spy is known by the code number 007?",
+  "options": [
+   "Austin Powers",
+   "Jason Bourne",
+   "James Bond",
+   "Johnny English"
+  ],
+  "answer": 2,
+  "fact": "Ian Fleming borrowed the name James Bond from an American expert on birds."
+ },
+ {
+  "id": "arts-107",
+  "cat": "arts",
+  "q": "Which superhero is secretly Peter Parker?",
+  "options": [
+   "Batman",
+   "Superman",
+   "Spider-Man",
+   "Iron Man"
+  ],
+  "answer": 2,
+  "fact": "Spider-Man first swung into comics in 1962, in an issue of Amazing Fantasy."
+ },
+ {
+  "id": "arts-120",
+  "cat": "arts",
+  "q": "In which town was William Shakespeare born?",
+  "options": [
+   "Canterbury",
+   "Stratford-upon-Avon",
+   "Bath",
+   "Oxford"
+  ],
+  "answer": 1,
+  "fact": "You can still visit the house on Henley Street where Shakespeare is believed to have been born."
+ },
+ {
+  "id": "arts-133",
+  "cat": "arts",
+  "q": "In The Jungle Book, what kind of animal is Baloo?",
+  "options": [
+   "A bear",
+   "A panther",
+   "A tiger",
+   "A monkey"
+  ],
+  "answer": 0,
+  "fact": "The Jungle Book stories were written by Rudyard Kipling and first published in 1894."
+ },
+ {
+  "id": "arts-129",
+  "cat": "arts",
+  "q": "What is the famous nickname of the Academy Award statuette?",
+  "options": [
+   "Oscar",
+   "Emmy",
+   "Grammy",
+   "Tony"
+  ],
+  "answer": 0,
+  "fact": "Each Oscar statuette is made of bronze and plated in 24-carat gold."
+ },
+ {
+  "id": "words-103",
+  "cat": "words",
+  "q": "How many letters are in the English alphabet?",
+  "options": [
+   "28",
+   "25",
+   "24",
+   "26"
+  ],
+  "answer": 3,
+  "fact": "Words now spelt with a J, like 'jest', were once often written with an I instead."
+ },
+ {
+  "id": "words-101",
+  "cat": "words",
+  "q": "What do you call a word that means the same as another word?",
+  "options": [
+   "A homophone",
+   "A synonym",
+   "A pronoun",
+   "An antonym"
+  ],
+  "answer": 1,
+  "fact": "A thesaurus is a book of synonyms, and its name comes from a Greek word for 'treasure house'."
+ },
+ {
+  "id": "words-117",
+  "cat": "words",
+  "q": "'Listen' and 'silent' use the same letters. What is this called?",
+  "options": [
+   "A rhyme",
+   "An anagram",
+   "A synonym",
+   "A palindrome"
+  ],
+  "answer": 1,
+  "fact": "With a little rearranging, the letters of 'dormitory' spell 'dirty room'."
+ },
+ {
+  "id": "words-119",
+  "cat": "words",
+  "q": "What are words like 'sea' and 'see', which sound the same but mean different things?",
+  "options": [
+   "Antonyms",
+   "Acronyms",
+   "Synonyms",
+   "Homophones"
+  ],
+  "answer": 3,
+  "fact": "'Homophone' comes from the Greek for 'same sound'."
+ },
+ {
+  "id": "words-113",
+  "cat": "words",
+  "q": "What does BBC stand for?",
+  "options": [
+   "Broadcasting Britain Company",
+   "British Broadcasting Corporation",
+   "British Bureau of Culture",
+   "British Business Council"
+  ],
+  "answer": 1,
+  "fact": "The BBC began life in 1922 as the British Broadcasting Company, before becoming a corporation."
+ },
+ {
+  "id": "words-121",
+  "cat": "words",
+  "q": "What do you call a word like 'he', 'she' or 'they' that stands in for a noun?",
+  "options": [
+   "A verb",
+   "A pronoun",
+   "A preposition",
+   "An adverb"
+  ],
+  "answer": 1,
+  "fact": "Words like 'and', 'but' and 'or', which join parts of a sentence, are called conjunctions."
+ },
+ {
+  "id": "words-115",
+  "cat": "words",
+  "q": "What does 'e.g.' mean?",
+  "options": [
+   "And so on",
+   "That is",
+   "Note well",
+   "For example"
+  ],
+  "answer": 3,
+  "fact": "'e.g.' is short for the Latin 'exempli gratia', meaning 'for the sake of example'."
+ },
+ {
+  "id": "words-135",
+  "cat": "words",
+  "q": "What word describes someone who speaks two languages fluently?",
+  "options": [
+   "Biography",
+   "Bicycle",
+   "Biannual",
+   "Bilingual"
+  ],
+  "answer": 3,
+  "fact": "'Bilingual' comes from the Latin 'bi' (two) and 'lingua', meaning tongue."
+ },
+ {
+  "id": "space-105",
+  "cat": "space",
+  "q": "What does ISS stand for in space travel?",
+  "options": [
+   "International Satellite System",
+   "Inter-Stellar Ship",
+   "Interplanetary Science Shuttle",
+   "International Space Station"
+  ],
+  "answer": 3,
+  "fact": "The International Space Station zooms all the way around Earth roughly every 90 minutes."
+ },
+ {
+  "id": "space-104",
+  "cat": "space",
+  "q": "What is it called when the Moon blocks our view of the Sun during the day?",
+  "options": [
+   "A lunar eclipse",
+   "A solar eclipse",
+   "An equinox",
+   "A solstice"
+  ],
+  "answer": 1,
+  "fact": "The Sun is about 400 times wider than the Moon but also about 400 times farther away, so they look the same size."
+ },
+ {
+  "id": "space-133",
+  "cat": "space",
+  "q": "What is the Moon mainly made of?",
+  "options": [
+   "Cheese",
+   "Rock",
+   "Ice",
+   "Gas"
+  ],
+  "answer": 1,
+  "fact": "Many scientists think the Moon formed from debris after a Mars-sized object hit the young Earth."
+ },
+ {
+  "id": "space-114",
+  "cat": "space",
+  "q": "What are the rocky objects that mostly orbit the Sun between Mars and Jupiter?",
+  "options": [
+   "Comets",
+   "Moons",
+   "Asteroids",
+   "Stars"
+  ],
+  "answer": 2,
+  "fact": "Some asteroids even have their own tiny moons orbiting them."
+ },
+ {
+  "id": "space-126",
+  "cat": "space",
+  "q": "What is the name for the thin, curved shape the Moon sometimes appears as?",
+  "options": [
+   "Gibbous",
+   "Full",
+   "Crescent",
+   "Quarter"
+  ],
+  "answer": 2,
+  "fact": "Sunlight bounced off Earth, called earthshine, can make the dark part of a crescent moon faintly glow."
+ },
+ {
+  "id": "space-127",
+  "cat": "space",
+  "q": "What name is given to the Sun and all the planets that travel around it?",
+  "options": [
+   "The Milky Way",
+   "The Universe",
+   "The Galaxy",
+   "The Solar System"
+  ],
+  "answer": 3,
+  "fact": "'Solar' comes from 'sol', the Latin word for the Sun."
+ },
+ {
+  "id": "space-111",
+  "cat": "space",
+  "q": "Roughly how long does it take Earth to spin once on its axis?",
+  "options": [
+   "12 hours",
+   "24 hours",
+   "One week",
+   "One month"
+  ],
+  "answer": 1,
+  "fact": "Earth's spin is very gradually slowing down, so days were shorter when dinosaurs lived."
+ },
+ {
+  "id": "space-109",
+  "cat": "space",
+  "q": "What do we call a group of stars that forms a pattern or picture in the sky?",
+  "options": [
+   "A constellation",
+   "A galaxy",
+   "A nebula",
+   "A comet"
+  ],
+  "answer": 0,
+  "fact": "Astronomers officially recognise 88 constellations covering the whole sky."
+ },
+ {
+  "id": "space-118",
+  "cat": "space",
+  "q": "What is the name for the path one object takes around another in space?",
+  "options": [
+   "A spiral",
+   "An axis",
+   "An orbit",
+   "A loop"
+  ],
+  "answer": 2,
+  "fact": "Planets' orbits are not perfect circles but slightly squashed ovals called ellipses."
+ },
+ {
+  "id": "uk-108",
+  "cat": "uk",
+  "q": "Which prickly purple flower is the national emblem of Scotland?",
+  "options": [
+   "The rose",
+   "The tulip",
+   "The thistle",
+   "The daisy"
+  ],
+  "answer": 2,
+  "fact": "A thistle appears on the badge of Scotland's national rugby team."
+ },
+ {
+  "id": "uk-105",
+  "cat": "uk",
+  "q": "The bell known as Big Ben hangs in a tower at which London building?",
+  "options": [
+   "Buckingham Palace",
+   "The Tower of London",
+   "St Paul's Cathedral",
+   "The Houses of Parliament"
+  ],
+  "answer": 3,
+  "fact": "Big Ben weighs more than 13 tonnes and began striking the hours in 1859."
+ },
+ {
+  "id": "uk-119",
+  "cat": "uk",
+  "q": "The famous White Cliffs stand beside which Kent port?",
+  "options": [
+   "Folkestone",
+   "Dover",
+   "Ramsgate",
+   "Margate"
+  ],
+  "answer": 1,
+  "fact": "The White Cliffs are made of chalk, formed from the remains of tiny sea creatures."
+ },
+ {
+  "id": "uk-116",
+  "cat": "uk",
+  "q": "Which northern English city is home to both United and City football clubs?",
+  "options": [
+   "Liverpool",
+   "Leeds",
+   "Manchester",
+   "Newcastle"
+  ],
+  "answer": 2,
+  "fact": "Manchester's symbol, the worker bee, celebrates the city's busy industrial past."
+ }
+]

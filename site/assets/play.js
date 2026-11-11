@@ -1,11 +1,12 @@
 /* Unizy Play: "Unwind", the daily word quiz.
-   Each day has a hidden word of 6-10 letters and one easy general-knowledge question per letter. A right answer
+   Each day has a hidden word of 6-10 letters and one general-knowledge question per letter (mid-level, with a few easy warm-ups). A right answer
    reveals that letter; a wrong one leaves a gap. Then guess the word: one guess if you missed 0-2 letters,
    otherwise one guess per missed letter. Points = right answers + 5 for the word. Same word and questions for
    everyone each day (UK date); the first go counts on the leaderboard, then it's free play. */
 (function () {
   'use strict';
-  var Q_URL = '/data/play/easy.json?v=2', W_URL = '/data/play/words.json?v=1';
+  // mid-level bank from 12 Nov 2026 (the easy bank stays for days before, so a day's questions never change mid-day)
+  var Q_URL = today() >= '2026-11-12' ? '/data/play/medium.json?v=1' : '/data/play/easy.json?v=2', W_URL = '/data/play/words.json?v=1';
   var EPOCH = Date.UTC(2026, 10, 2); // day 0 of the cycle
   var WORD_BONUS = 5;
   var CATS = {
@@ -215,7 +216,7 @@
     else if (signedIn() && startedToday()) cta = '<div class="uw-today">You’ve already started today’s word on this device. A new one tomorrow.</div><button type="button" class="pl-btn ghost" data-uw-start="free">Free play</button>';
     else cta = '<button type="button" class="pl-btn" data-uw-start="daily">Start today’s Unwind</button>' + (signedIn() ? '' : '<p class="pl-note">Not logged in, so your score won’t go on the leaderboard. <a href="/login?next=%2Fdashboard%2Fplay">Log in</a></p>');
     var stats = signedIn() && me.signed_in && !me.failed ? '<div class="pl-stats"><div><b>' + (me.streak || 0) + '</b><span>day streak</span></div><div><b>' + (me.words || 0) + '</b><span>words solved</span></div><div><b>' + (me.best != null ? me.best : '–') + '</b><span>best score</span></div></div>' : '';
-    return '<div class="pl-grid"><section class="pl-card uw-hero" style="--uc:' + t.c + '"><div class="uw-sun" aria-hidden="true"></div><span class="pl-kick">' + esc(prettyDay()) + '</span><h2>Find today’s word.<br><em>One easy question per letter.</em></h2>' +
+    return '<div class="pl-grid"><section class="pl-card uw-hero" style="--uc:' + t.c + '"><div class="uw-sun" aria-hidden="true"></div><span class="pl-kick">' + esc(prettyDay()) + '</span><h2>Find today’s word.<br><em>One question per letter.</em></h2>' +
       '<p class="uw-lede">Each right answer reveals a letter of the hidden word; a wrong one leaves a gap. Then guess the word. Miss two letters or fewer and you get one guess; miss more and you get a guess for each one you missed.</p>' +
       demo + stats + '<div class="pl-cta">' + cta + '</div></section>' + boardCard() + '</div>';
   }
