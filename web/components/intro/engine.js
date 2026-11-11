@@ -16,6 +16,9 @@ import { buildLondon } from './london';
 import { buildUCL, tickLibrary } from './ucl';
 import { buildSouthKen, RIVER_GLSL } from './southken';
 import { buildImperial, IMPERIAL_KEYS } from './imperial';
+import { buildCityWorld } from './cityworld';
+import { buildQMUL, QMUL_KEYS, QMUL_STRIKE, QMUL_SHADOW, QMUL_KEEP } from './qmul';
+import { buildLSE, LSE_KEYS, LSE_STRIKE, LSE_SHADOW, LSE_KEEP } from './lse';
 
 // [progress, camera position, look-at target]
 const KEYS = [
@@ -105,9 +108,19 @@ const GRADE = {
     }`,
 };
 
+// one world per university. glass: the interior looks out through glass (the city stays drawn to the end)
+const WORLDS = {
+  ucl: { keys: KEYS, strike: [0, 0, 0], glass: false, shadow: [[1100, [0, 0, -150]], [260, [0, 0, 0]], [85, [0, 8, 25]]] },
+  imperial: { keys: IMPERIAL_KEYS, strike: [2300, 0, 1600], glass: true, shadow: [[1100, [400, 0, 0]], [320, [250, 0, -10]], [115, [50, 10, -6]]] },
+  qmul: { keys: QMUL_KEYS, strike: QMUL_STRIKE, glass: false, shadow: QMUL_SHADOW, keep: QMUL_KEEP, chair: 'dining_chair_02' },
+  lse: { keys: LSE_KEYS, strike: LSE_STRIKE, glass: false, shadow: LSE_SHADOW, keep: LSE_KEEP, chair: 'SchoolChair_01', landmarks: { stPauls: [-57, 1264, 0] } },
+};
+
 export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni = 'ucl', city = null } = {}) {
-  // one world per university: UCL (Bloomsbury) or Imperial (South Kensington)
+  // one world per university: UCL (Bloomsbury), Imperial (South Kensington), Queen Mary (Mile End), LSE (Aldwych)
   const imp = uni === 'imperial';
+  const W = WORLDS[uni] || WORLDS.ucl;
+  const generic = uni === 'qmul' || uni === 'lse';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
   let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.3 : 1.4);
   renderer.setPixelRatio(pr);
@@ -145,21 +158,24 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const cloudRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: false });
   cloudRT.texture.minFilter = cloudRT.texture.magFilter = THREE.LinearFilter;
 
-  const london = imp ? buildSouthKen(renderer, { mobile, city }) : buildLondon(renderer, { mobile, city });
+  const london = imp ? buildSouthKen(renderer, { mobile, city }) : generic ? buildCityWorld(renderer, { mobile, city, site: uni, keepRects: W.keep, landmarks: W.landmarks || {} }) : buildLondon(renderer, { mobile, city });
   scene.add(london.group);
-  const ucl = imp ? buildImperial({ mobile }) : buildUCL({ mobile });
+  const ucl = imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
   // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
   let intEnv = null, disposed = false;
   {
-    import('./realism').then(({ loadInterior, upgradeLibrary, upgradeHall, stoneExterior }) => loadInterior(imp ? 'imperial' : 'ucl').then((A) => {
+    import('./realism').then(({ loadInterior, upgradeLibrary, upgradeHall, stoneExterior }) => loadInterior(W === WORLDS.ucl ? 'ucl' : uni).then((A) => {
       if (disposed || !A) return;
       try {
         if (imp) {
           stoneExterior(ucl.group, A.stone, { skip: ucl.lib, keys: /^qt-stone/ });
           stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^qt-brick/, scale: 1 / 1.4, tint: 0.35 });
+        } else if (uni === 'lse') {
+          stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^lse-brick/, scale: 1 / 1.4, tint: 0.4 });
+          stoneExterior(ucl.group, A.stone, { skip: ucl.lib, keys: /^stone/ });
         } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
-        const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
+        const res = imp || generic ? upgradeHall(renderer, ucl, A, { mobile, chair: W.chair }) : upgradeLibrary(renderer, ucl, A, { mobile });
         if (res) {
           intEnv = res.env;
           // the reading room reflects the photographed interior; set per material, so the scene's environment
@@ -197,7 +213,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   };
   const cloudScene = new THREE.Scene();
   const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: imp ? CLOUD_FS.replace(/float riverX\(float z\)\{[^\n]*\}/, RIVER_GLSL) : CLOUD_FS, uniforms: cloudU, depthTest: false, depthWrite: false }));
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: imp || generic ? CLOUD_FS.replace(/float riverX\(float z\)\{[^\n]*\}/, imp ? RIVER_GLSL : london.riverGLSL) : CLOUD_FS, uniforms: cloudU, depthTest: false, depthWrite: false }));
   quad.frustumCulled = false;
   cloudScene.add(quad);
   scene.background = cloudRT.texture;
@@ -252,7 +268,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     scene.add(l);
     return l;
   };
-  const so = imp ? new THREE.Vector3(2300, 0, 1600) : new THREE.Vector3(); // strikes sit ahead of the opening camera
+  const so = new THREE.Vector3(...W.strike); // strikes sit ahead of the opening camera
   const strikes = [
     { t: 1.25, bolt: makeBolt(new THREE.Vector3(-1500, 2900, 2300).add(so), new THREE.Vector3(-1150, 1120, 2650).add(so), 7), pos: new THREE.Vector3(-1150, 1000, 2650).add(so) },
     { t: 3.0, bolt: makeBolt(new THREE.Vector3(1300, 2700, 1500).add(so), new THREE.Vector3(1050, 1120, 1900).add(so), 31), pos: new THREE.Vector3(1050, 980, 1900).add(so) },
@@ -260,7 +276,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const pulse = (x, w) => Math.exp(-(x * x) / (w * w));
   let flashesDone = false;
 
-  const keys = imp ? IMPERIAL_KEYS : KEYS;
+  const keys = W.keys;
   const posAt = makeTrack(keys, 1);
   const lookAt = makeTrack(keys, 2);
   const pos = new THREE.Vector3();
@@ -427,8 +443,12 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     london.trafficU.uCam.value.copy(camera.position);
     if (london.avMat) london.avMat.color.setRGB(6 * (0.15 + 0.85 * (Math.sin(time * 3) > 0.6 ? 1 : 0)), 0.3, 0.15);
     // Imperial's exam hall looks out through glass at the floodlit tower, so the floodlights stay on
-    ucl.ext.forEach(([l, i]) => { l.intensity = i * (imp ? 1 : 1 - inside); });
+    ucl.ext.forEach(([l, i]) => { l.intensity = i * (W.glass ? 1 : 1 - inside); });
     tickLibrary(ucl.furn);
+    if (ucl.clockHands) {
+      const d = new Date(), m = d.getMinutes() + d.getSeconds() / 60, h = (d.getHours() % 12) + m / 60;
+      ucl.clockHands.forEach(({ hH, mH }) => { mH.rotation.z = -(m / 60) * Math.PI * 2; hH.rotation.z = -(h / 12) * Math.PI * 2; });
+    }
     // shallow focus for the close-ups on the desk
     bokeh.enabled = p > 0.85;
     if (bokeh.enabled) {
@@ -446,10 +466,8 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const zone = p < 0.42 ? 0 : p < 0.6 ? 1 : 2;
     if (zone !== shadowZone) {
       shadowZone = zone;
-      const half = imp ? (zone === 0 ? 1100 : zone === 1 ? 320 : 115) : zone === 0 ? 1100 : zone === 1 ? 260 : 85;
-      const cen = imp
-        ? (zone === 0 ? new THREE.Vector3(400, 0, 0) : zone === 1 ? new THREE.Vector3(250, 0, -10) : new THREE.Vector3(50, 10, -6))
-        : zone === 0 ? new THREE.Vector3(0, 0, -150) : zone === 1 ? new THREE.Vector3(0, 0, 0) : new THREE.Vector3(0, 8, 25);
+      const half = W.shadow[zone][0];
+      const cen = new THREE.Vector3(...W.shadow[zone][1]);
       const cam = sun.shadow.camera;
       cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
       cam.updateProjectionMatrix();
@@ -462,11 +480,11 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     if (zone === 2 && inside > 0.5) setAO(0.5, 0.5);
 
     const below = camera.position.y < CLOUD_BOTTOM - 5;
-    london.group.visible = below && (imp ? p < 0.97 : inside < 1);
+    london.group.visible = below && (W.glass ? p < 0.97 : inside < 1);
     ucl.group.visible = below;
     if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
-    if (p < (imp ? 0.97 : 0.76)) {
+    if (p < (W.glass ? 0.97 : 0.76)) {
       cloudU.uTime.value = time;
       cloudU.uCam.value.copy(camera.position);
       cloudU.uInvProj.value.copy(camera.projectionMatrixInverse);

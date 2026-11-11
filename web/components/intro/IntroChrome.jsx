@@ -26,18 +26,45 @@ export const COPY = {
     kicker: 'University College London',
     title: 'The mark scheme your department *never sent.*',
     sub: 'Practice questions and marking for all 6,682 UCL modules.',
+    sample: { code: 'ECON0013', title: 'Microeconomics', crit: 'UCL Economics criteria', mark: '64', range: '62–66', cls: '2:1', note: 'You describe the model well. The question asked you to evaluate it. That’s the 2:1.' },
     ch: {},
   },
   imperial: {
     kicker: 'Imperial College London',
     title: 'The mark scheme your department *never sent.*',
     sub: 'Practice questions and marking for 1,180 Imperial modules.',
+    place: 'South *Kensington*',
+    sample: { code: 'Practice question', title: 'A uniform rod swinging about one end', crit: 'Imperial class bands', mark: '64', range: '62–66', cls: '2:1', note: 'Correct method, but the small-angle step is asserted, not justified. Two marks.' },
     ch: {
       '01': { s: 'Your department posts the past papers. The worked solutions stay with the examiners. You find out where the marks went when results come out.', r: ['Past papers', '2019–2025', 'worked solutions: 0'] },
       '02': { t: 'Straight from *the programme specs*.', s: '1,180 modules across 18 departments, each checked against Imperial’s own programme specifications.', r: ['MATH40001', 'COMP40008', 'MECH40001', '1,177 more'] },
       '03': { s: 'Marked against Imperial’s class bands and, where your department publishes them, its own criteria.' },
       '04': { s: 'Questions written in your module’s style. Show your working; the method marks are where it’s won.', r: ['Question 2', '20 marks', 'show your working'] },
     },
+  },
+};
+COPY.qmul = {
+  kicker: 'Queen Mary University of London',
+  title: 'The mark scheme your school *never sent.*',
+  sub: 'Practice questions and marking for all Queen Mary modules.',
+  place: 'Mile *End*',
+  sample: { code: 'Practice question', title: 'Long-run equilibrium in perfect competition', crit: 'Queen Mary marking scheme', mark: '66', range: '64–68', cls: '2:1', note: 'The entry argument is right. Show it on the diagram and define normal profit. That’s the First.' },
+  ch: {
+    '01': { s: 'QMplus has years of past papers for most modules and a model answer for almost none of them. You find out what a 2:1 looks like when results come out.', r: ['QMplus', 'Past exam papers', '2019–2025', 'model answers: 0'] },
+    '02': { t: 'Every module in *the directory*.', s: 'all Queen Mary modules across its schools, each checked against the official Module Directory.', r: ['ECN115', 'HST5606', 'MTH6110', 'and the rest'] },
+    '03': { s: 'Marked against Queen Mary’s class bands and, where your school publishes them, its own criteria.' },
+  },
+};
+COPY.lse = {
+  kicker: 'London School of Economics',
+  title: 'The mark scheme your department *never sent.*',
+  sub: 'Practice questions and marking for 579 LSE courses.',
+  place: 'Houghton *Street*',
+  sample: { code: 'EC1A3', title: 'Microeconomics I', crit: 'LSE marking scale', mark: '73', range: '72–75', cls: 'First', note: 'Clean Slutsky decomposition and the right condition. Label both effects on the diagram.' },
+  ch: {
+    '01': { s: 'Moodle has years of past exam papers for most courses and examiners’ comments for a few. A worked answer at First standard, almost never.' },
+    '02': { t: 'Every course in *the Calendar*.', s: '579 undergraduate courses across 21 departments, each checked against the 2026/27 Calendar’s course guides.', r: ['EC1A3', 'GV100', 'MA100', '576 more'] },
+    '03': { s: 'Marked against LSE’s marking scale and, where your department publishes them, its own criteria.' },
   },
 };
 export const chaptersFor = (uni) => CHAPTERS.map((c) => ({ ...c, ...((COPY[uni] || COPY.ucl).ch[c.n] || {}) }));
@@ -138,9 +165,7 @@ export function StartTitle({ setRef, copy }) {
 
 // ------------------------------------------------------------------ end card
 export function EndCard({ setRef, authed, uni, onEnter, onCta }) {
-  const sample = uni === 'imperial'
-    ? { code: 'Practice question', title: 'A uniform rod swinging about one end', crit: 'Imperial class bands', mark: '64', range: '62–66', cls: '2:1', note: 'Correct method, but the small-angle step is asserted, not justified. Two marks.' }
-    : { code: 'ECON0013', title: 'Microeconomics', crit: 'UCL Economics criteria', mark: '64', range: '62–66', cls: '2:1', note: 'You describe the model well. The question asked you to evaluate it. That’s the 2:1.' };
+  const sample = (COPY[uni] && COPY[uni].sample) || COPY.ucl.sample;
   return (
     <div ref={setRef} className="pointer-events-none invisible absolute inset-x-0 bottom-0 px-6 pb-[8vh] sm:pl-14 sm:pr-24" style={{ opacity: 0 }}>
       <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-10 lg:flex-row lg:items-end">

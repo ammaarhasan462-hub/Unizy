@@ -140,7 +140,8 @@ export default function Intro() {
     // UCL's world is already running behind the picker; Imperial's is built behind a short dark title card.
     const pick = (id = 'ucl') => {
       if (pickedRef.current || doneRef.current || !engine) return;
-      const u = UNIS.find((x) => x.id === id && x.live) ? id : 'ucl';
+      const preview = typeof window !== 'undefined' && /[?&]preview=1/.test(window.location.search);
+      const u = UNIS.find((x) => x.id === id && (x.live || preview)) ? id : 'ucl';
       pickedRef.current = true;
       track('intro_pick_' + u);
       setPicked(true);
@@ -284,7 +285,7 @@ export default function Intro() {
       <div className={`pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#05070b] transition-opacity duration-700 ${switching ? 'opacity-100' : 'opacity-0'}`} aria-hidden={!switching}>
         <div className="px-6 text-center">
           <p className="intro-kicker text-[10.5px] text-white/60">Unizy <span className="mx-3 inline-block h-px w-8 translate-y-[-3px] bg-white/35" /> {copy.kicker}</p>
-          <p className="intro-ed mt-5 text-[clamp(38px,5vw,72px)] leading-none text-[#f3eee4]"><T s="South *Kensington*" /></p>
+          <p className="intro-ed mt-5 text-[clamp(38px,5vw,72px)] leading-none text-[#f3eee4]"><T s={copy.place || 'South *Kensington*'} /></p>
           <span className="mx-auto mt-7 block h-px w-24 overflow-hidden bg-white/15"><span className="block h-full w-1/2 animate-[introload_1.1s_ease-in-out_infinite] bg-[#d9b46c]/80" /></span>
         </div>
       </div>
