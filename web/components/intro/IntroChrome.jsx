@@ -46,12 +46,12 @@ export const COPY = {
 COPY.qmul = {
   kicker: 'Queen Mary University of London',
   title: 'The mark scheme your school *never sent.*',
-  sub: 'Practice questions and marking for all Queen Mary modules.',
+  sub: 'Practice questions and marking for 2,194 Queen Mary modules.',
   place: 'Mile *End*',
   sample: { code: 'Practice question', title: 'Long-run equilibrium in perfect competition', crit: 'Queen Mary marking scheme', mark: '66', range: '64–68', cls: '2:1', note: 'The entry argument is right. Show it on the diagram and define normal profit. That’s the First.' },
   ch: {
     '01': { s: 'QMplus has years of past papers for most modules and a model answer for almost none of them. You find out what a 2:1 looks like when results come out.', r: ['QMplus', 'Past exam papers', '2019–2025', 'model answers: 0'] },
-    '02': { t: 'Every module in *the directory*.', s: 'all Queen Mary modules across its schools, each checked against the official Module Directory.', r: ['ECN115', 'HST5606', 'MTH6110', 'and the rest'] },
+    '02': { t: 'Straight from *the directory*.', s: '2,194 undergraduate modules from 20 schools and institutes, each checked against Queen Mary’s official module directory.', r: ['ECN115', 'HST4000U', 'MTH6110', '2,191 more'] },
     '03': { s: 'Marked against Queen Mary’s class bands and, where your school publishes them, its own criteria.' },
   },
 };
