@@ -91,8 +91,8 @@ export function Reviews() {
 }
 
 export function Pricing() {
-  const free = ['3 days free when you sign up, no card needed', '3 answers marked a day', '3 tutor questions a day', 'Then go Pro to keep marking'];
-  const pro = ['Up to 30 answers marked a day', 'Your tutor for every module', 'Rewrite and resubmit as often as you like', 'Or £39 a year, or £12 for an exam-season pass'];
+  const free = ['Your first answer marked free, no account needed', 'Then 3 days free when you sign up, no card needed', '3 answers marked and 3 tutor questions a day', 'Practice questions, flashcards and progress stay free'];
+  const pro = ['Up to 30 answers marked a day', 'Your tutor on your modules', 'Rewrite and resubmit as often as you like', 'Or £39 a year, or £12 for an exam-season pass'];
   const Tick = () => <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 fill-none stroke-cyan stroke-[2.4]"><path d="M5 12l5 5 9-10" /></svg>;
   return (
     <section id="pricing" className="relative scroll-mt-24 py-24 lg:py-32">
@@ -131,8 +131,8 @@ export function Pricing() {
 const QA = [
   ['Is this cheating?', 'No. Unizy is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
   ['Does it have my exact past papers?', 'We don’t host university exam papers. Paste a question from your own past paper and we’ll mark your answer to it, or use one of our exam-style questions written from the module’s official description.'],
-  ['How accurate is the marking?', 'It’s a practice estimate, so you always see a mark range rather than a single number. We test the marker against real marked answers, module by module, and you can tell us your real mark to help keep it accurate.'],
-  ['Which universities and modules?', 'UCL, Imperial, Queen Mary and LSE, with King’s next. That’s over 10,000 modules from each university’s own published catalogue, programme specifications or module directory, and every undergraduate course. Practice questions are written the first time someone opens a module, then saved for everyone.'],
+  ['How accurate is the marking?', 'It’s a practice estimate, so you always see a mark range rather than a single number. It marks against your university’s published grade bands and, where your department publishes them, its own criteria. On every result you can tell us the real mark you got for a similar answer, and we use those to check the marker stays accurate.'],
+  ['Which universities and modules?', 'UCL, Imperial, Queen Mary and LSE, with King’s next. You can search over 10,000 modules from each university’s own published catalogue, programme specifications or module directory. 20 big UCL first-year modules have full packs, checked twice. Any other module gets a starter set of practice questions the first time someone opens it, saved for everyone.'],
   ['Is Unizy part of my university?', 'No. Unizy is an independent revision tool built by a London student. It isn’t affiliated with or endorsed by UCL, Imperial, Queen Mary, LSE or any other university.'],
 ];
 
@@ -189,7 +189,7 @@ export function Final() {
           <p className="mt-6 text-[18px] text-mute">Free to start. No card needed.</p>
           <div className="mt-10">
             <Magnetic>
-              <a href="/signup" onClick={() => track('lp_final_signup')} className="btn btn-glow px-8 py-4.5 text-[17px]">Get my first answer marked, free</a>
+              <a href="/try" onClick={() => track('lp_final_signup')} className="btn btn-glow px-8 py-4.5 text-[17px]">Get my first answer marked, free</a>
             </Magnetic>
           </div>
         </div>

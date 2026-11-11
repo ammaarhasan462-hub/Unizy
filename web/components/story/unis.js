@@ -89,29 +89,29 @@ export function uniCopy(id) {
     const mods = sum('modules');
     return {
       id: '', all: true, short: 'your uni', name: 'UCL, Imperial, Queen Mary and LSE',
-      kick: 'Every module · 4 universities', modulesLine: n(mods) + ' modules, 4 universities',
+      kick: 'Exam practice · 4 universities', modulesLine: n(mods) + ' modules to search, 4 universities',
       more: '+' + n(mods - 3), tags: ['ECON0013', 'MATH40001', 'EC1A3'], book: UNIS.ucl.book, course: UNIS.ucl.course,
       bands: 'your university’s grade bands', corner: 'UCL · Imperial · Queen Mary · LSE',
-      crit: 'Your department · Year 1 criteria', critShort: 'your department’s criteria', tutor: 'Your module professor', tutorH: 'A professor for<br>every module',
+      crit: 'Your department · Year 1 criteria', critShort: 'your department’s criteria', tutor: 'Your module professor', tutorH: 'A professor for<br>your modules',
       gapAt: 'At uni', anyOf: 'any of ' + n(mods) + ' modules',
-      numsH: 'Four universities. <span class="uz-serif">Every module.</span>',
-      nums: [[mods, 'modules at UCL, Imperial, Queen Mary and LSE'], [sum('departments'), 'departments, schools and units'], [sum('rubrics'), 'sets of marking criteria across 4 universities'], [4, 'London universities, one dashboard']],
-      backH: 'Every<br>module.', back: [['Modules', n(mods)], ['Universities', '4'], ['Criteria sets', n(sum('rubrics'))]],
-      mods: ALL_MODS, mq: ['Marked like your department marks', 'Free 3-day trial', 'No card needed', 'UCL · Imperial · Queen Mary · LSE', 'A professor for every module'],
+      numsH: 'Four universities. <span class="uz-serif">Start with the big modules.</span>',
+      nums: [[mods, 'modules to search at UCL, Imperial, Queen Mary and LSE'], [sum('departments'), 'departments, schools and units'], [sum('rubrics'), 'sets of marking criteria across 4 universities'], [4, 'London universities, one dashboard']],
+      backH: 'Your<br>modules.', back: [['Modules to search', n(mods)], ['Universities', '4'], ['Criteria sets', n(sum('rubrics'))]],
+      mods: ALL_MODS, mq: ['Marked against your uni’s grade bands', 'First answer marked free, no sign-up', 'Free 3-day trial', 'UCL · Imperial · Queen Mary · LSE', 'Full packs for 20 big first-year modules'],
       pat: ['#F1DDA9', '#17302A'],
     };
   }
   const s = U.stats, dep = Math.max(0, s.rubrics - 1);
   return {
     id, all: false, short: U.short, name: U.name,
-    kick: 'Every ' + U.short + ' module', modulesLine: n(s.modules) + ' ' + U.short + ' ' + U.modWord,
+    kick: 'Exam practice for ' + U.short, modulesLine: n(s.modules) + ' ' + U.short + ' ' + U.modWord + ' to search',
     more: '+' + n(s.modules - 3), tags: U.tags, book: U.book, course: U.course, bands: U.bands, corner: U.short + ' · <b>Exam practice</b>',
-    crit: U.short + ' Economics · Year 1 criteria', critShort: U.short + ' Economics criteria', tutor: U.tutor, tutorH: U.tutor + ',<br>every module',
+    crit: U.short + ' Economics · Year 1 criteria', critShort: U.short + ' Economics criteria', tutor: U.tutor, tutorH: U.tutor + ',<br>on your modules',
     gapAt: 'At ' + U.short, anyOf: 'any of ' + U.poss + ' ' + n(s.modules),
-    numsH: 'Built for ' + U.short + '. <span class="uz-serif">All of it.</span>',
+    numsH: 'Built for ' + U.short + '. <span class="uz-serif">Module by module.</span>',
     nums: [[s.modules, U.short + ' ' + U.modWord + ', ' + U.src], [s.departments, U.short + ' ' + U.depts], [s.rubrics, 'sets of marking criteria (' + U.short + '-wide' + (dep ? ' + ' + dep + ' ' + (dep === 1 ? U.unit.replace(/s$/, '') : U.unit) : '') + ')'], [3, 'concrete changes on every marked answer']],
-    backH: 'Every ' + U.short + '<br>module.', back: [['Modules', n(s.modules)], [U.unit[0].toUpperCase() + U.unit.slice(1), n(s.departments)], ['Criteria sets', n(s.rubrics)]],
-    mods: U.mods, mq: ['Marked like your department marks', 'Free 3-day trial', 'No card needed', 'Every ' + U.short + ' module', U.tutor],
+    backH: 'Your ' + U.short + '<br>modules.', back: [['Modules to search', n(s.modules)], [U.unit[0].toUpperCase() + U.unit.slice(1), n(s.departments)], ['Criteria sets', n(s.rubrics)]],
+    mods: U.mods, mq: ['Marked against ' + U.bands, 'First answer marked free, no sign-up', 'Free 3-day trial', 'Search any ' + U.short + ' module', U.tutor],
     pat: U.pat,
   };
 }

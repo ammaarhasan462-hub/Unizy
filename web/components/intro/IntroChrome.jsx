@@ -16,8 +16,8 @@ export function Em({ s }) {
 // Chapters by number. `r` is the receipt line. Per-university copy overrides fields by chapter number.
 export const CHAPTERS = [
   { n: '01', k: 'The problem', t: 'Past papers. *No answers.*', s: 'Moodle has years of past papers for most modules and a model answer for almost none of them. You find out what a 2:1 looks like when results come out.', r: ['Moodle', 'Past exam papers', '2019–2025', 'model answers: 0'] },
-  { n: '02', k: 'Coverage', t: 'Every module in *the catalogue*.', s: 'All 6,682 UCL modules, including the one with eleven people on it.', r: ['ECON0013', 'HIST0003', 'LAWS0002', '6,679 more'] },
-  { n: '03', k: 'The standard', t: '70 is a First. *This is what 70 reads like.*', s: 'Marked against UCL’s class bands and your department’s published criteria. Not word count. Not effort.', r: ['70+ First', '60–69 2:1', '50–59 2:2', '40–49 Third'] },
+  { n: '02', k: 'Coverage', t: 'Start with *the big ones*.', s: 'Full packs for 20 big first-year modules: every topic in depth, every exam question with an answer plan, checked twice. Any other module gets a starter set the first time someone opens it.', r: ['ECON0002', 'LAWS0001', 'STAT0002', '17 more'] },
+  { n: '03', k: 'The standard', t: '70 is a First. *This is what 70 reads like.*', s: 'Marked against UCL’s class bands and, where your department publishes them, its own criteria. Not word count. Not effort.', r: ['70+ First', '60–69 2:1', '50–59 2:2', '40–49 Third'] },
   { n: '04', k: 'Practice', t: 'Write it like it’s *the exam*.', s: 'Questions written in your module’s style. No notes, no second tab, nobody checking.', r: ['Question 3', '45 minutes', 'answer any two'] },
   { n: '05', k: 'Feedback', t: 'A mark, then *the reasons*.', s: 'A mark range, the sentence that cost you, and three changes that would move it up a class.', r: ['62–66', '2:1', 'asked to evaluate, chose to describe'] },
 ];
@@ -25,14 +25,14 @@ export const COPY = {
   ucl: {
     kicker: 'University College London',
     title: 'The mark scheme your department *never sent.*',
-    sub: 'Practice questions and marking for all 6,682 UCL modules.',
+    sub: 'Full packs for 20 big first-year modules. Search any UCL module and practise.',
     sample: { code: 'ECON0013', title: 'Microeconomics', crit: 'UCL Economics criteria', mark: '64', range: '62–66', cls: '2:1', note: 'You describe the model well. The question asked you to evaluate it. That’s the 2:1.' },
     ch: {},
   },
   imperial: {
     kicker: 'Imperial College London',
     title: 'The mark scheme your department *never sent.*',
-    sub: 'Practice questions and marking for 1,180 Imperial modules.',
+    sub: 'Search 1,180 Imperial modules. Practice questions are written the first time you open one.',
     place: 'South *Kensington*',
     sample: { code: 'Practice question', title: 'A uniform rod swinging about one end', crit: 'Imperial class bands', mark: '64', range: '62–66', cls: '2:1', note: 'Correct method, but the small-angle step is asserted, not justified. Two marks.' },
     ch: {
@@ -46,7 +46,7 @@ export const COPY = {
 COPY.qmul = {
   kicker: 'Queen Mary University of London',
   title: 'The mark scheme your school *never sent.*',
-  sub: 'Practice questions and marking for 2,194 Queen Mary modules.',
+  sub: 'Search 2,194 Queen Mary modules. Practice questions are written the first time you open one.',
   place: 'Mile *End*',
   sample: { code: 'Practice question', title: 'Long-run equilibrium in perfect competition', crit: 'Queen Mary marking scheme', mark: '66', range: '64–68', cls: '2:1', note: 'The entry argument is right. Show it on the diagram and define normal profit. That’s the First.' },
   ch: {
@@ -58,12 +58,12 @@ COPY.qmul = {
 COPY.lse = {
   kicker: 'London School of Economics',
   title: 'The mark scheme your department *never sent.*',
-  sub: 'Practice questions and marking for 579 LSE courses.',
+  sub: 'Search 579 LSE courses. Practice questions are written the first time you open one.',
   place: 'Houghton *Street*',
   sample: { code: 'EC1A3', title: 'Microeconomics I', crit: 'LSE marking scale', mark: '73', range: '72–75', cls: 'First', note: 'Clean Slutsky decomposition and the right condition. Label both effects on the diagram.' },
   ch: {
     '01': { s: 'Moodle has years of past exam papers for most courses and examiners’ comments for a few. A worked answer at First standard, almost never.' },
-    '02': { t: 'Every course in *the Calendar*.', s: '579 undergraduate courses from 21 departments and units, each checked against the 2026/27 Calendar’s course guides.', r: ['EC1A3', 'GV100', 'MA100', '576 more'] },
+    '02': { t: 'Straight from *the Calendar*.', s: '579 undergraduate courses from 21 departments and units, each checked against the 2026/27 Calendar’s course guides.', r: ['EC1A3', 'GV100', 'MA100', '576 more'] },
     '03': { s: 'Marked against LSE’s marking scale and, where your department publishes them, its own criteria.' },
   },
 };
@@ -173,14 +173,14 @@ export function EndCard({ setRef, authed, uni, onEnter, onCta }) {
           <p className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[.26em] text-[#d6a35c]/90"><span>06</span><span className="h-px w-7 bg-[#d6a35c]/40" /><span className="text-[#ece6da]/55">Marked</span></p>
           <h2 className="intro-ed mt-5 text-[clamp(42px,6vw,92px)] leading-[.96] text-[#f3eee4]"><Em s="Find out what your answer would *get.*" /></h2>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a href={authed ? '/dashboard/practice' : '/signup'} onClick={onCta} className="rounded-full bg-[#ece6da] px-6 py-3 text-[14px] font-medium text-[#121417] transition-colors hover:bg-white">
-              {authed ? 'Back to my modules' : 'Mark my first answer'}
+            <a href={authed ? '/dashboard/practice' : '/try'} onClick={onCta} className="rounded-full bg-[#ece6da] px-6 py-3 text-[14px] font-medium text-[#121417] transition-colors hover:bg-white">
+              {authed ? 'Back to my modules' : 'Mark my first answer free'}
             </a>
             <button type="button" onClick={onEnter} data-testid="intro-enter" className="rounded-full border border-[#ece6da]/20 bg-[#0d0f12]/55 px-6 py-3 backdrop-blur-md text-[14px] text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/45 hover:text-[#ece6da]">
               Enter Unizy ↓
             </button>
           </div>
-          <p className="mt-5 text-[12.5px] text-[#ece6da]/40">Practice only. Your actual coursework stays your own.</p>
+          <p className="mt-5 text-[12.5px] text-[#ece6da]/40">{authed ? '' : 'No sign-up needed for your first marked answer. '}Practice only. Your actual coursework stays your own.</p>
         </div>
         {/* a marked answer, as it comes back */}
         <article className="w-full max-w-[380px] rounded-2xl border border-[#ece6da]/10 bg-[#101215]/70 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,.8)] backdrop-blur-xl">

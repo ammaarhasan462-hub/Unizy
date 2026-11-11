@@ -107,7 +107,7 @@ const HERO = `
       <span class="uz-kick" data-u="kick">${A.kick}</span>
       <p>Write an answer to any exam question in your module. Unizy marks it against <b>your department’s own grading criteria</b>, tells you your class, and shows you exactly what would move you up one.</p>
       <div class="row">
-        <a href="/signup" class="uz-btn uz-btn-gold" data-track="lp_hero_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free</span>${ARROW}</a>
+        <a href="/try" class="uz-btn uz-btn-gold" data-track="lp_hero_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free, no sign-up</span>${ARROW}</a>
         <a href="#how" class="uz-btn uz-btn-line">See how it works</a>
       </div>
       <ul><li data-u="modulesLine">${A.modulesLine}</li><li>Free 3-day trial</li><li>No card needed</li></ul>
@@ -122,7 +122,7 @@ const HERO = `
     </div>
     <div class="uz-info" data-f="3">
       <span class="uz-kick">02 · Go up a class</span>
-      <p>Feedback on every criterion, <b>the 3 changes that would move you up a class</b>, and a First-class answer to compare against.</p>
+      <p>Feedback on every criterion, <b>the 3 changes that would move you up a class</b>, and a First-class plan to compare against.</p>
       <div class="uz-tags"><span class="uz-tag">Predicted <b>62–66</b></span><span class="uz-tag">Next: <b>First</b></span></div>
     </div>
 
@@ -259,7 +259,7 @@ export const STORY_END = `<div class="uz" data-uz>
     ${mega(['Let’s get', 'marking.'])}
     <p class="sub">Free to start. No card needed. Your first answer marked in about ten minutes.</p>
     <div class="row">
-      <a href="/signup" class="uz-btn uz-btn-gold" data-track="lp_final_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free</span>${ARROW}</a>
+      <a href="/try" class="uz-btn uz-btn-gold" data-track="lp_final_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free, no sign-up</span>${ARROW}</a>
       <a href="/mark" class="uz-btn uz-btn-line">Find your module</a>
     </div>
   </div>

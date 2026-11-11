@@ -5,14 +5,14 @@ const FONTS = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;6
 
 const TITLE = 'Unizy · The mark scheme your uni never gave you.';
 const DESC =
-  "At A-level you had mark schemes. At uni you don't. For UCL, Imperial, Queen Mary and LSE: write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class.";
+  "At A-level you had mark schemes. At uni you don't. For UCL, Imperial, Queen Mary and LSE: write an answer to an exam question in your module and get it marked against your university's grade bands and, where your department publishes them, its own criteria, with the changes that would move you up a class.";
 
 export const metadata = {
   metadataBase: new URL('https://unizy.uk'),
   title: TITLE,
   description: DESC,
   alternates: { canonical: '/' },
-  openGraph: { title: TITLE, description: 'Exam practice and marking for every module at UCL, Imperial, Queen Mary and LSE.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png?v=4'] },
+  openGraph: { title: TITLE, description: 'Exam practice and marking for UCL, Imperial, Queen Mary and LSE modules. Your first answer marked free, no sign-up.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png?v=4'] },
   twitter: { card: 'summary_large_image' },
   icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }] },
 };

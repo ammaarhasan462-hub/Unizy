@@ -39,7 +39,7 @@
     if (!s || !s.user) return;
     who = { id: s.user.id, email: s.user.email };
     document.getElementById('nav-app').textContent = 'My dashboard';
-    var free = document.getElementById('free-cta'); free.href = '/app.html'; free.textContent = 'Go to my dashboard';
+    var free = document.getElementById('free-cta'); free.href = '/dashboard'; free.textContent = 'Go to my dashboard';
     update();
     return fetch(CFG.supabaseUrl + '/rest/v1/rpc/my_plan', { method: 'POST', headers: headers(s.access_token), body: '{}' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d) return;

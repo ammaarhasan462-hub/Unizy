@@ -1,4 +1,5 @@
 /dashboard/*  /dashboard  200
+/try  /mark  302
 /modules/*  /mark  200
 /app/*  /app  200
 # Short links for bios, posts and posters: the home page counts each source (src_<name>) as an anonymous daily total.

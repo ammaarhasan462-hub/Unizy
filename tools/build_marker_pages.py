@@ -50,7 +50,7 @@ def scripts(*names):
 
 
 MARK_PAGE = head(f"Find your module · practice questions and marking · {BRAND}",
-                 "Every module at UCL, Imperial, Queen Mary and LSE. Practise an exam-style question, get it marked against your department's grade descriptors, and see what a First looks like.",
+                 "Search modules at UCL, Imperial, Queen Mary and LSE. Full packs for 20 big UCL first-year modules. Practise an exam-style question, get it marked against your university's grade bands, and see what a First looks like.",
                  "/mark") + header("/mark") + """
 <main id="main" class="mk-wrap"><div id="mk"><noscript>Turn on JavaScript to search modules and get answers marked.</noscript></div></main>
 """ + footer() + scripts("study.js?v=2", "mark.js?v=8") + "</body></html>\n"

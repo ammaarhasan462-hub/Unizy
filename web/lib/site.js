@@ -3,7 +3,15 @@ export const BRAND = 'Unizy';
 export const SB_URL = 'https://aayelwhshiboqyjdhnst.supabase.co';
 export const SB_KEY = 'sb_publishable_eJrU8D7FBn0o8vs0cgfPmw_0ZJzmqVE';
 
+// The database only counts a fixed list of event names (track_event). The landing page's own names are mapped onto
+// those, so home page visits and button clicks show up in the analytics again.
+const EV_MAP = {
+  lp_view: 'home_view',
+  lp_hero_signup: 'cta_explore_hero', lp_final_signup: 'cta_explore_final', intro_signup: 'cta_explore_demo',
+  lp_nav_signup: 'nav_signup', lp_price_free: 'cta_signup_final', lp_price_pro: 'cta_signup_demo',
+};
 export function track(ev) {
+  ev = EV_MAP[ev] || ev;
   try {
     if (navigator.webdriver || localStorage.getItem('unizy:notrack') === '1') return;
     fetch(SB_URL + '/rest/v1/rpc/track_event', {
