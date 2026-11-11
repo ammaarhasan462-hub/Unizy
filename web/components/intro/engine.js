@@ -109,7 +109,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   // one world per university: UCL (Bloomsbury) or Imperial (South Kensington)
   const imp = uni === 'imperial';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
-  let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.5 : 1.6);
+  let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.3 : 1.4);
   renderer.setPixelRatio(pr);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -350,12 +350,13 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
     // adaptive quality: drop AO, then resolution, then cloud steps
     frames++;
-    if (frames > 20 && dt > 0.045) slow++;
-    if (frames % 90 === 0) {
-      if (slow > 45 && level < 3) {
+    // anything under ~40 fps counts as slow, so a laptop that is merely sluggish steps down too
+    if (frames > 20 && dt > 0.025) slow++;
+    if (frames % 60 === 0) {
+      if (slow > 24 && level < 3) {
         level++;
         if (level === 1 && gtao) gtao.enabled = false;
-        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(1, pr * 0.8); resize(); }
+        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(0.9, pr * 0.8); resize(); }
         if (level === 3) { cloudU.uSteps.value = Math.round(cloudU.uSteps.value * 0.7); pr = Math.max(0.85, pr * 0.85); resize(); }
       }
       slow = 0;
