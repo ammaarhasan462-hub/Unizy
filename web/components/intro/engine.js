@@ -340,7 +340,18 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const prevRT = renderer.getRenderTarget();
     try {
       renderer.setRenderTarget(composer.readBuffer);
-      const done = renderer.compileAsync ? renderer.compileAsync(scene, camera) : (renderer.compile(scene, camera), null);
+      // three's compileAsync polls materials that may be disposed meanwhile (a uni switch) and throws;
+      // poll here with a guard instead
+      const mats = renderer.compile(scene, camera);
+      const ext = renderer.extensions.get('KHR_parallel_shader_compile');
+      const done = !ext ? null : new Promise((res) => {
+        const poll = () => {
+          if (disposed) return res();
+          mats.forEach((m) => { const pr = renderer.properties.get(m).currentProgram; if (!pr || pr.isReady()) mats.delete(m); });
+          if (mats.size === 0) res(); else setTimeout(poll, 10);
+        };
+        poll();
+      });
       if (warm) { if (done && done.then) done.then(warmup, () => {}); else warmup(); }
     } catch (e) { /* ignore */ }
     renderer.setRenderTarget(prevRT);
