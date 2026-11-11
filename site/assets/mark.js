@@ -12,10 +12,12 @@
   var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove, exam dates
   // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
   function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
-  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{4}[0-9]{4,5})\\/?$');
+  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{2,4}[0-9][0-9A-Za-z]{1,4})\\/?$');
   // universities: UCL modules (4-digit codes) and Imperial modules (5-digit codes) share one catalogue table
   var UNIS = { ucl: { short: 'UCL', poss: 'UCL’s', exam: 'a UCL', src: 'Full description on UCL’s catalogue', cat: 'UCL’s module catalogue' },
-    imperial: { short: 'Imperial', poss: 'Imperial’s', exam: 'an Imperial', src: 'Imperial’s programme specification', cat: 'Imperial’s programme specifications' } };
+    imperial: { short: 'Imperial', poss: 'Imperial’s', exam: 'an Imperial', src: 'Imperial’s programme specification', cat: 'Imperial’s programme specifications' },
+    qmul: { short: 'Queen Mary', poss: 'Queen Mary’s', exam: 'a Queen Mary', src: 'Queen Mary’s module directory', cat: 'Queen Mary’s module directory' },
+    lse: { short: 'LSE', poss: 'LSE’s', exam: 'an LSE', src: 'the LSE course guide', cat: 'the LSE Calendar’s course guides' } };
   function uniId() { return state.mod && state.mod.uni ? state.mod.uni : HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   function U() { return UNIS[uniId()] || UNIS.ucl; }
   function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
@@ -142,7 +144,7 @@
     if (term.length < 2) { state.results = []; renderList(); return; }
     searchTimer = setTimeout(function () {
       var seq = ++searchSeq, t = term.replace(/[%*,()]/g, ' ').trim();
-      var filt = /^[A-Za-z]{4}\d{0,5}$/.test(t) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
+      var filt = (/^[A-Za-z]{4}\d{0,5}$/.test(t) || /^[A-Za-z]{2,4}\d[0-9A-Za-z]{0,4}$/.test(t)) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
       rest('ucl_modules?select=code,title,level,credits,ects,department,uni&uni=eq.' + listUni() + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
         if (seq !== searchSeq) return;
         state.results = rows || []; renderList();
@@ -372,10 +374,10 @@
     var html = head();
     var mm = state.topics && state.topics.length ? ST.moduleMastery(state.topics, studyData()) : null, signed = !!getSession();
     html += '<section class="mk-modhead"><span class="mk-code big">' + esc(m.code) + '</span><h1>' + esc(m.title) + '</h1>' +
-      '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
+      '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.uni === 'lse' ? (m.credits == 0.5 ? ' · Half unit' : m.credits == 1 ? ' · Full unit' : '') : m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
       (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
       examRow(m) +
-      (m.summary || m.uni === 'imperial' ? '<p class="mk-sum">' + esc((m.summary || (m.programmes && m.programmes.length ? 'Taught on ' + m.programmes.slice(0, 3).join(', ') + (m.programmes.length > 3 ? ' and ' + (m.programmes.length - 3) + ' more' : '') + '.' : '')).replace(/\.\.\.$/, '…')) + (m.url ? ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + U().src + '</a>' : '') + '</p>' : '') + '</section>';
+      (m.summary || (m.uni && m.uni !== 'ucl') ? '<p class="mk-sum">' + esc((m.summary || (m.programmes && m.programmes.length ? 'Taught on ' + m.programmes.slice(0, 3).join(', ') + (m.programmes.length > 3 ? ' and ' + (m.programmes.length - 3) + ' more' : '') + '.' : '')).replace(/\.\.\.$/, '…')) + (m.url ? ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + U().src + '</a>' : '') + '</p>' : '') + '</section>';
     if (HOOKS && signed) html += '<div class="mk-wmode" role="tablist" aria-label="Workspace mode">' + [['study', 'Study mode', 'Structured topics and practice'], ['parse', 'Parse mode', 'Drop slides, transcripts or notes']].map(function (w) { return '<button type="button" role="tab" data-wmode="' + w[0] + '" aria-selected="' + (state.wmode === w[0]) + '"><b>' + w[1] + '</b><span>' + w[2] + '</span></button>'; }).join('') + '</div>';
     if (HOOKS && signed && state.wmode === 'parse') return html + parseHtml();
     if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.</p></section>';

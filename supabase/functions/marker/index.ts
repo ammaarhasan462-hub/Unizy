@@ -1,5 +1,5 @@
-// The marker: a Module Map (topics + practice questions at three levels) for any UCL or Imperial module, and marking of a
-// student's practice answer against UCL's grade bands and the department's own published criteria.
+// The marker: a Module Map (topics + practice questions at three levels) for any UCL, Imperial, Queen Mary or LSE module, and marking of
+// a student's practice answer against the university's grade bands and the department's own published criteria.
 //
 // POST { action: "questions", code }                     -> topics + questions; starts writing them if the module has none yet
 //                                                           (signed in; returns { pending: true } while they are being written)
@@ -26,14 +26,21 @@ const CORS = {
 const SONNET = "claude-sonnet-5-5";
 const MAX_ANSWER = 14_000; // characters, roughly 2,300 words
 const MAX_QUESTION = 3_000;
-const CODE_RE = /^[A-Z]{4}[0-9]{4,5}$/; // UCL codes have 4 digits, Imperial codes 5
+const CODE_RE = /^[A-Z]{2,4}[0-9][0-9A-Z]{1,4}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1 / LSE100
 
 // Universities. Modules carry a `uni`; everything the examiner says follows it.
 const UNIS: Record<string, { name: string; long: string; source: string }> = {
   ucl: { name: "UCL", long: "UCL", source: "UCL's public module catalogue" },
   imperial: { name: "Imperial", long: "Imperial College London", source: "Imperial College London's official programme specifications" },
+  qmul: { name: "Queen Mary", long: "Queen Mary University of London", source: "Queen Mary's official module directory" },
+  lse: { name: "LSE", long: "the London School of Economics and Political Science", source: "the LSE Calendar's undergraduate course guides" },
 };
 const uniOf = (mod: any) => UNIS[mod?.uni] || UNIS.ucl;
+const bare = (U: { long: string }) => U.long.replace(/^the /, "");
+const anU = (U: { long: string }) => (/^[AEIO]/.test(bare(U)) ? "an " : "a ") + bare(U); // "a UCL", "an Imperial College London", "a Queen Mary…"
+// module size as each university prints it
+const sizeOf = (mod: any) => mod.uni === "lse" ? (mod.credits == 0.5 ? "half unit" : mod.credits == 1 ? "full unit" : mod.credits ? `${mod.credits} units` : "")
+  : mod.uni === "imperial" ? (mod.ects ? `${mod.ects} ECTS` : "") : (mod.credits ? `${mod.credits} credits` : mod.ects ? `${mod.ects} ECTS` : "");
 const UUID_RE = /^[0-9a-f-]{36}$/;
 const OPENS_PER_DAY = 15; // new modules one student can have written per day (each costs a few pence)
 
@@ -54,11 +61,12 @@ function stripHtml(html: string): string {
 
 // The full description from the module's public UCL catalogue page, cached on the module row.
 async function moduleDetails(service: any, mod: any): Promise<string> {
-  if (mod.uni === "imperial") {
-    // Imperial publishes modules in programme specifications (PDF), not a catalogue page: describe the module from them
+  if (mod.uni && mod.uni !== "ucl") {
+    // Imperial, Queen Mary and LSE: describe the module from the verified facts held on the row
+    const U = uniOf(mod), size = sizeOf(mod);
     const facts = [
-      `${mod.code} ${mod.title} is an Imperial College London module in ${mod.department || "its department"}${mod.faculty ? " (" + mod.faculty + ")" : ""}.`,
-      [mod.ects ? `${mod.ects} ECTS` : "", mod.year_of_study ? `usually taken in Year ${mod.year_of_study}` : "", mod.mtype ? mod.mtype : "", mod.term ? `term: ${mod.term}` : ""].filter(Boolean).join(", "),
+      `${mod.code} ${mod.title} is ${anU(U)} ${mod.uni === "lse" ? "course" : "module"} in ${mod.department || "its department"}${mod.faculty ? " (" + mod.faculty + ")" : ""}.`,
+      [size, mod.year_of_study ? `usually taken in Year ${mod.year_of_study}` : "", mod.mtype ? mod.mtype : "", mod.term ? `term: ${mod.term}` : ""].filter(Boolean).join(", "),
       Array.isArray(mod.programmes) && mod.programmes.length ? `Programmes: ${mod.programmes.join("; ")}.` : "",
       mod.status ? mod.status + "." : "",
       mod.summary || mod.details || "",
@@ -133,7 +141,7 @@ async function callClaude(apiKey: string, system: string, user: string | any[], 
   return { ok: true as const, text, usage: data.usage, truncated: data.stop_reason === "max_tokens" };
 }
 
-const systemFor = (U: { name: string; long: string }) => `You are the examiner inside a revision website for ${U.long} students. You write exam-style practice questions and mark practice answers the way an experienced, fair ${U.long} examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real ${U.name} paper; never name lecturers; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.`;
+const systemFor = (U: { name: string; long: string }) => `You are the examiner inside a revision website for ${bare(U)} students. You write exam-style practice questions and mark practice answers the way an experienced, fair ${bare(U)} examiner in the relevant department would. Be accurate and specific; never invent cases, statutes, studies, statistics, quotations or reading; never claim a question comes from a real ${U.name} paper; never name lecturers; never refer to yourself as an AI or name any model or company — you are the student's tutor. Reply with only the JSON value requested: no prose before or after, no code fences.`;
 
 const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 const KINDS = ["essay", "problem", "short"];
@@ -153,10 +161,10 @@ async function writeMap(service: any, apiKey: string, mod: any, source: "open" |
   try {
     const details = await moduleDetails(service, mod);
     const U = uniOf(mod);
-    const prompt = `Build a revision Module Map for this ${U.long} module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
+    const prompt = `Build a revision Module Map for this ${bare(U)} module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
 
 MODULE: ${mod.code} ${mod.title}
-Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${mod.credits ? mod.credits + " credits" : mod.ects ? mod.ects + " ECTS" : "? credits"} · ${mod.term || ""}
+Department: ${mod.department || "unknown"} · Faculty: ${mod.faculty || "unknown"} · ${levelWord(mod.level)} · ${sizeOf(mod) || "? credits"} · ${mod.term || ""}
 Description (from ${U.source}):
 """
 ${details.slice(0, 5000)}
@@ -166,7 +174,7 @@ Rules:
 - 8 topics (6 if the description is thin, up to 10 for a broad module). "title" under 8 words; "summary" one sentence under 25 words on what the topic covers. Stay within what the description says the module covers; where it is thin, use the standard core of this subject at this level.
 - For each topic write:
   • "recall": 2 Foundation questions on core definitions, key terms, principles, key cases / thinkers / equations. Each has a model "a" (answer) under 45 words that a student can check themselves against.
-  • "exam": 1 exam-style question at the standard of a typical ${U.long} exam for this module.
+  • "exam": 1 exam-style question at the standard of a typical ${bare(U)} exam for this module.
   • "first": 1 harder First-class stretch question on the same topic: synoptic (links to another topic of this module), evaluative, a counter-argument to assess, or an edge case / harder calculation.
 - Match the discipline's exam format: essay questions for humanities and social sciences; for law, a mix of essay questions and problem questions (a short fact scenario to advise on); calculation / derivation questions for quantitative subjects; short structured questions with marks in brackets for sciences and medicine. Language, project, dissertation or placement modules: practise the kind of written work they assess. Exam and First questions should be answerable in about 45 minutes without notes.
 - For "exam" and "first": "kind" is "essay" | "problem" | "short"; "guide" has one sentence (under 30 words) each on what a First, a 2:1 and a 2:2 answer does for THIS question; and ONLY for a calculation, derivation or other worked numerical / formal problem, "steps" = 3-6 worked-solution steps (each under 50 words, the last giving the final answer). No "steps" for essays or law problem questions.
@@ -339,7 +347,7 @@ Deno.serve(async (req) => {
     }
     const src = hasAtt ? "the student's answer (for attachments, as you transcribe it)" : "the student's answer";
     const U = uniOf(mod);
-    const prompt = `Mark this practice exam answer as ${U.long === "UCL" ? "a UCL" : "an " + U.long} examiner in ${mod.department || "this department"} would.
+    const prompt = `Mark this practice exam answer as ${anU(U)} examiner in ${mod.department || "this department"} would.
 
 MODULE: ${mod.code} ${mod.title} · ${levelWord(mod.level)} · Department: ${mod.department || "unknown"}
 Module description: """${details.slice(0, 2500)}"""
