@@ -34,8 +34,8 @@ const RAIL = CH.filter((c) => c.n);
 // the university picker that opens the intro
 const UNIS = [
   { id: 'ucl', short: 'UCL', name: 'University College London', live: true },
-  { id: 'qmul', short: 'Queen Mary', name: 'Queen Mary University of London' },
-  { id: 'lse', short: 'LSE', name: 'London School of Economics' },
+  { id: 'qmul', short: 'Queen Mary', name: 'Queen Mary University of London', live: true },
+  { id: 'lse', short: 'LSE', name: 'London School of Economics', live: true },
   { id: 'imperial', short: 'Imperial', name: 'Imperial College London', live: true },
   { id: 'kcl', short: 'King’s', name: 'King’s College London' },
 ];
