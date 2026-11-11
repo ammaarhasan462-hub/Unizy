@@ -123,7 +123,7 @@ export function buildQMUL({ mobile }) {
   box(stone, -5.4, 5.4, 0, 1.4, 11.6, 12.6);
   // entrance arch and doors
   box(dark, -1.6, 1.6, 0.4, 5.2, 12.0, 12.25);
-  const arch = add(new THREE.CylinderGeometry(1.6, 1.6, 0.3, 24, 1, false, 0, Math.PI), dark, 0, 5.2, 12.1); arch.rotation.x = Math.PI / 2; arch.rotation.z = Math.PI / 2;
+  const arch = add(new THREE.CylinderGeometry(1.6, 1.6, 0.3, 24, 1, false, Math.PI / 2, Math.PI), dark, 0, 5.2, 12.1); arch.rotation.x = Math.PI / 2; // the round head of the doorway
   box(stone2, -2.4, 2.4, 6.6, 7.2, 12.0, 12.6);
   // steps up to the door
   for (let i = 0; i < 4; i++) box(stone, -4 - i * 0.4, 4 + i * 0.4, 0, 0.6 - i * 0.15, 12 + i * 0.55, 12.55 + i * 0.55);
@@ -250,7 +250,7 @@ export function buildQMUL({ mobile }) {
   // the Octagon
   const OC = OCT_Z;
   const H1 = F + 5.4, H2 = F + 10.8, HT = F + 15.5; // gallery floor, top of upper cases, top of the walls
-  const oct = ladd(new THREE.CylinderGeometry(RC - 0.01, RC - 0.01, HT - F, 8, 1, true), plaster, 0, (HT + F) / 2, OC);
+  const oct = ladd(new THREE.CylinderGeometry(RC - 0.01, RC - 0.01, HT - F, 7, 1, true, 0, Math.PI * 7 / 4) /* no face over the doorway: seen from the corridor it would close it */, plaster, 0, (HT + F) / 2, OC);
   oct.rotation.y = Math.PI / 8; oct.material = plaster.clone(); oct.material.side = THREE.BackSide; oct.material.userData = { key: 'h-plaster' };
   const of = ladd(new THREE.CircleGeometry(RC, 8), floorM, 0, F, OC); of.rotation.x = -Math.PI / 2; of.rotation.z = Math.PI / 8; of.receiveShadow = true;
   // the eight walls: two tiers of bookcases, the gallery on cast-iron columns, its balustrade, cornice
