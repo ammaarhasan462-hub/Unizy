@@ -15,6 +15,8 @@ const V = 1;
 const NEED = {
   ucl: { models: ['dining_chair_02', 'Chandelier_03', 'marble_bust_01', 'book_encyclopedia_set_01', 'fancy_picture_frame_01', 'fancy_picture_frame_02', 'round_spectacles'], surf: ['wood_floor', 'dark_wood', 'wood_table_001', 'painted_plaster_wall', 'brown_leather'], hdr: true },
   imperial: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall'], hdr: false },
+  qmul: { models: ['dining_chair_02'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall', 'dark_wood'], hdr: true },
+  lse: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall'], hdr: false },
 };
 
 const caches = {};
@@ -498,7 +500,7 @@ export function upgradeLibrary(renderer, ucl, A, { mobile }) {
 
 // Imperial's exam hall: stacking school chairs at the desks, oak floor, oak desks, plaster with texture; the hall is
 // laid out ready for the paper, nobody in it yet
-export function upgradeHall(renderer, ucl, A, { mobile }) {
+export function upgradeHall(renderer, ucl, A, { mobile, chair = 'SchoolChair_01' }) {
   const lib = ucl.lib, furn = ucl.furn;
   if (!lib || !furn || !furn.place) return null;
   const P = furn.place, F = P.F;
@@ -508,22 +510,33 @@ export function upgradeHall(renderer, ucl, A, { mobile }) {
   const deskM = surface(S.wood_table_001, { color: '#b89a80', rough: 0.4, tri: 2.2, key: 'rlh-desk' });
   const plasterM = surface(S.painted_plaster_wall, { color: '#e2dccf', rough: 0.9, key: 'rlh-plaster' });
   [plasterM.map, plasterM.roughnessMap, plasterM.normalMap].forEach((t) => t && t.repeat.set(20, 6));
+  const shelfM = S.dark_wood ? surface(S.dark_wood, { color: '#a08070', rough: 0.55, tri: 0.9, key: 'rlh-wood' }) : null;
+  let bookM = null;
   lib.traverse((o) => {
     if (!o.isMesh || !o.material || !o.material.userData) return;
     const k = o.material.userData.key;
     if (k === 'h-floor') o.material = floorM;
     else if (k === 'h-desk') o.material = deskM;
     else if (k === 'h-plaster') o.material = plasterM;
+    else if (k === 'h-wood' && shelfM) o.material = shelfM;
+    else if (k === 'books') { bookM = bookM || bookMaterial(); o.material = bookM; }
   });
   const hide = (arr) => arr.forEach((o) => { if (o) o.visible = false; });
   hide(furn.proc.people);
   const added = [];
-  if (A.m.SchoolChair_01 && P.chairs.length) {
+  if (A.m[chair] && P.chairs.length) {
     hide(furn.proc.chairs);
     const r = rng(8);
     const Q = (ry) => new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry);
-    added.push(...instance(A.m.SchoolChair_01, P.chairs.map(([x, z]) => new THREE.Matrix4().compose(new THREE.Vector3(x + (r() - 0.5) * 0.06, F, z + (r() - 0.5) * 0.08), Q(Math.PI + (r() - 0.5) * 0.18), new THREE.Vector3(1, 1, 1))), lib, { fix: fixMat() }));
+    // a chair's 4th value, if given, is the way it faces (radians about y); otherwise it faces -z
+    added.push(...instance(A.m[chair], P.chairs.map(([x, z, , face]) => new THREE.Matrix4().compose(new THREE.Vector3(x + (r() - 0.5) * 0.06, F, z + (r() - 0.5) * 0.08), Q((face ?? Math.PI) + (r() - 0.5) * 0.18), new THREE.Vector3(1, 1, 1))), lib, { fix: fixMat() }));
+  }
+  let env = null;
+  if (A.hdr) {
+    const pm = new THREE.PMREMGenerator(renderer);
+    env = pm.fromEquirectangular(A.hdr).texture;
+    pm.dispose();
   }
   ucl.dustK = 0.15;
-  return { env: null, added };
+  return { env, added };
 }
