@@ -1,14 +1,15 @@
 /* Unizy Play: "Unwind", the daily word quiz.
-   Each day has a hidden word of 6-10 letters and one general-knowledge question per letter (mid-level, with a few easy warm-ups). A right answer
+   Each day has a hidden word of 6-10 letters and one general-knowledge question per letter (10 seconds each; a bit harder than pub-quiz basics). A right answer
    reveals that letter; a wrong one leaves a gap. Then guess the word: one guess if you missed 0-2 letters,
    otherwise one guess per missed letter. Points = right answers + 5 for the word. Same word and questions for
    everyone each day (UK date); the first go counts on the leaderboard, then it's free play. */
 (function () {
   'use strict';
-  // mid-level bank from 12 Nov 2026 (the easy bank stays for days before, so a day's questions never change mid-day)
-  var Q_URL = today() >= '2026-11-12' ? '/data/play/medium.json?v=1' : '/data/play/easy.json?v=2', W_URL = '/data/play/words.json?v=1';
+  // harder bank from 12 Nov 2026 (the easy bank stays for days before, so a day's questions never change mid-day)
+  var Q_URL = today() >= '2026-11-12' ? '/data/play/medium.json?v=2' : '/data/play/easy.json?v=2', W_URL = '/data/play/words.json?v=1';
   var EPOCH = Date.UTC(2026, 10, 2); // day 0 of the cycle
   var WORD_BONUS = 5;
+  var TIME_LIMIT = 10000; // 10 seconds per question; run out and the letter stays hidden
   var CATS = {
     geo: { label: 'Geography', icon: '🌍' }, hist: { label: 'History', icon: '🏛️' }, sci: { label: 'Science', icon: '🔬' },
     nature: { label: 'Nature', icon: '🌿' }, food: { label: 'Food & drink', icon: '🍜' }, sport: { label: 'Sport & games', icon: '⚽' },
@@ -17,7 +18,7 @@
   var S = {
     kit: null, el: null, qs0: null, words: null, loading: false, loadErr: '',
     phase: 'intro', mode: 'daily', word: '', hint: '', qs: [], i: 0, picked: null, results: [], shownAt: 0, thinkMs: 0,
-    guesses: [], guessLeft: 0, solved: false, guessMsg: '',
+    guesses: [], guessLeft: 0, timedOut: false, deadline: 0, timer: 0, solved: false, guessMsg: '',
     me: null, board: null, scope: 'today', boardLoading: false, result: null, submitting: false, nameMsg: ''
   };
 
@@ -118,6 +119,24 @@
   });
 
   // ------------------------------------------------------------------ the game
+  function stopTimer() { if (S.timer) { clearInterval(S.timer); S.timer = 0; } }
+  function tick() {
+    if (S.phase !== 'play' || S.picked !== null) { stopTimer(); return; }
+    var left = Math.max(0, S.deadline - Date.now());
+    var bar = document.querySelector('[data-uw-timer]');
+    if (bar) {
+      var secs = Math.ceil(left / 1000);
+      bar.style.setProperty('--left', (left / TIME_LIMIT).toFixed(3));
+      bar.classList.toggle('low', left <= 3000);
+      var n = bar.querySelector('span'); if (n && n.textContent !== String(secs)) n.textContent = secs;
+    }
+    if (left <= 0) timeUp();
+  }
+  function startTimer() { stopTimer(); S.timedOut = false; S.shownAt = Date.now(); S.deadline = S.shownAt + TIME_LIMIT; tick(); S.timer = setInterval(tick, 100); }
+  function timeUp() {
+    if (S.phase !== 'play' || S.picked !== null) return;
+    S.timedOut = true; pick(-1);
+  }
   function start(mode) {
     if (!S.qs0 || !S.words || !S.words.length) return;
     if (mode === 'daily' && signedIn() && startedToday()) mode = 'free';
@@ -126,13 +145,14 @@
     var g = mode === 'daily' ? dailyGame() : freeGame();
     S.word = g.word; S.hint = g.hint; S.qs = g.qs;
     S.i = 0; S.picked = null; S.results = []; S.thinkMs = 0; S.result = null; S.guesses = []; S.solved = false; S.guessMsg = '';
-    S.phase = 'play'; draw(); S.shownAt = Date.now();
+    S.phase = 'play'; draw(); startTimer();
     try { if (S.el && S.el.getBoundingClientRect().top < 0) S.el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { /* ignore */ }
   }
   function pick(idx) {
     if (S.phase !== 'play' || S.picked !== null) return;
     var q = S.qs[S.i]; if (!q) return;
-    S.thinkMs += Math.min(120000, Date.now() - S.shownAt);
+    stopTimer();
+    S.thinkMs += Math.min(TIME_LIMIT, Date.now() - S.shownAt);
     S.picked = idx;
     S.results.push({ cat: q.cat, right: idx === q.answer });
     draw();
@@ -141,7 +161,7 @@
   function next() {
     if (S.phase !== 'play' || S.picked === null) return;
     S.i++; S.picked = null;
-    if (S.i < S.qs.length) { draw(); S.shownAt = Date.now(); return; }
+    if (S.i < S.qs.length) { draw(); startTimer(); return; }
     // every letter found: the word is already solved
     if (wrongs() === 0) { S.solved = true; finish(); return; }
     S.guessLeft = guessAllowance(wrongs()); S.phase = 'guess'; S.shownAt = Date.now(); draw();
@@ -161,7 +181,7 @@
     draw(); focusGuess();
   }
   function finish() {
-    S.phase = 'done'; draw();
+    stopTimer(); S.phase = 'done'; draw();
     if (S.mode === 'daily') { if (signedIn()) submit(); else loadBoard(); }
   }
 
@@ -217,7 +237,7 @@
     else cta = '<button type="button" class="pl-btn" data-uw-start="daily">Start today’s Unwind</button>' + (signedIn() ? '' : '<p class="pl-note">Not logged in, so your score won’t go on the leaderboard. <a href="/login?next=%2Fdashboard%2Fplay">Log in</a></p>');
     var stats = signedIn() && me.signed_in && !me.failed ? '<div class="pl-stats"><div><b>' + (me.streak || 0) + '</b><span>day streak</span></div><div><b>' + (me.words || 0) + '</b><span>words solved</span></div><div><b>' + (me.best != null ? me.best : '–') + '</b><span>best score</span></div></div>' : '';
     return '<div class="pl-grid"><section class="pl-card uw-hero" style="--uc:' + t.c + '"><div class="uw-sun" aria-hidden="true"></div><span class="pl-kick">' + esc(prettyDay()) + '</span><h2>Find today’s word.<br><em>One question per letter.</em></h2>' +
-      '<p class="uw-lede">Each right answer reveals a letter of the hidden word; a wrong one leaves a gap. Then guess the word. Miss two letters or fewer and you get one guess; miss more and you get a guess for each one you missed.</p>' +
+      '<p class="uw-lede">You have 10 seconds for each question. A right answer reveals a letter of the hidden word; a wrong answer, or running out of time, leaves a gap. Then guess the word. Miss two letters or fewer and you get one guess; miss more and you get a guess for each one you missed.</p>' +
       demo + stats + '<div class="pl-cta">' + cta + '</div></section>' + boardCard() + '</div>';
   }
   function playHtml() {
@@ -228,12 +248,12 @@
       return '<button type="button" class="' + cls + '" data-uw-opt="' + i + '"' + (answered ? ' disabled' : '') + '><kbd>' + 'ABCD'[i] + '</kbd><span>' + esc(o) + '</span></button>';
     }).join('');
     var last = S.i + 1 >= S.qs.length;
-    var reveal = answered ? '<div class="uw-reveal ' + (right ? 'ok' : 'no') + '"><b>' + (right ? 'Correct! You found the letter ' + S.word[S.i] + '.' : 'Not quite. It’s ' + esc(q.options[q.answer]) + '. That letter stays hidden.') + '</b><p><span>Did you know?</span> ' + esc(q.fact) + '</p>' +
+    var reveal = answered ? '<div class="uw-reveal ' + (right ? 'ok' : 'no') + '"><b>' + (right ? 'Correct! You found the letter ' + S.word[S.i] + '.' : (S.timedOut ? 'Time’s up! ' : 'Not quite. ') + 'It’s ' + esc(q.options[q.answer]) + '. That letter stays hidden.') + '</b><p><span>Did you know?</span> ' + esc(q.fact) + '</p>' +
       '<button type="button" class="pl-btn" data-uw-next>' + (last ? (wrongs() === 0 ? 'See the word →' : 'Guess the word →') : 'Next question →') + '</button></div>' : '';
     return '<div class="uw-run"><div class="uw-top">' + tiles({ fresh: answered && right }) + '<button type="button" class="pl-x" data-uw-quit aria-label="Stop">×</button></div>' +
       '<p class="uw-sub">Letter ' + (S.i + 1) + ' of ' + S.qs.length + ' · Hint: ' + esc(S.hint) + (S.mode === 'free' ? ' · free play' : '') + '</p>' +
-      '<section class="pl-card uw-card"><span class="uw-cat">' + c.icon + ' ' + esc(c.label) + '</span><p class="uw-q">' + esc(q.q) + '</p><div class="uw-opts">' + opts + '</div>' + reveal + '</section>' +
-      '<p class="pl-keys">Tip: press A–D (or 1–4) to answer and Enter for the next question.</p></div>';
+      '<section class="pl-card uw-card"><div class="uw-qhead"><span class="uw-cat">' + c.icon + ' ' + esc(c.label) + '</span>' + (answered ? '' : '<div class="uw-timer" data-uw-timer role="timer" aria-label="Seconds left"><span>' + Math.ceil(Math.max(0, (S.deadline || Date.now() + TIME_LIMIT) - Date.now()) / 1000) + '</span><i></i></div>') + '</div><p class="uw-q">' + esc(q.q) + '</p><div class="uw-opts">' + opts + '</div>' + reveal + '</section>' +
+      '<p class="pl-keys">Tip: press A–D (or 1–4) to answer and Enter for the next question. The timer keeps running if you switch tabs.</p></div>';
   }
   function guessHtml() {
     var w = wrongs();
@@ -278,7 +298,7 @@
     else if (t.hasAttribute('data-uw-start')) start(t.getAttribute('data-uw-start'));
     else if (t.hasAttribute('data-uw-scope')) loadBoard(t.getAttribute('data-uw-scope'));
     else if (t.hasAttribute('data-uw-resubmit')) submit();
-    else if (t.hasAttribute('data-uw-home')) { S.phase = 'intro'; draw(); }
+    else if (t.hasAttribute('data-uw-home')) { stopTimer(); S.phase = 'intro'; draw(); }
     else if (t.hasAttribute('data-uw-quit')) {
       if (S.mode === 'daily' && !confirm('Stop today’s Unwind? What you’ve answered so far is what counts.')) return;
       finish();
