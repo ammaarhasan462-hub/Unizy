@@ -160,7 +160,19 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
           stoneExterior(ucl.group, A.brick, { skip: ucl.lib, keys: /^qt-brick/, scale: 1 / 1.4, tint: 0.35 });
         } else stoneExterior(ucl.group, A.stone, { skip: ucl.lib });
         const res = imp ? upgradeHall(renderer, ucl, A, { mobile }) : upgradeLibrary(renderer, ucl, A, { mobile });
-        if (res) { intEnv = res.env; renderer.shadowMap.needsUpdate = true; }
+        if (res) {
+          intEnv = res.env;
+          // the reading room reflects the photographed interior; set per material, so the scene's environment
+          // never swaps (a swap would recompile every shader)
+          if (intEnv) {
+            const seen = new Set();
+            ucl.lib.traverse((o) => {
+              const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+              ms.forEach((m) => { if (!seen.has(m) && 'envMap' in m && !m.isShaderMaterial) { seen.add(m); m.envMap = intEnv; m.envMapIntensity = 0.42; m.needsUpdate = true; } });
+            });
+          }
+          renderer.shadowMap.needsUpdate = true;
+        }
         precompile();
       } catch (e) { console.error(e); }
     })).catch(() => {});
@@ -280,6 +292,13 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   };
   window.addEventListener('pointermove', onMove, { passive: true });
 
+  // three.js builds a shader per light count: a light inside a group that is switched off changes the count and makes
+  // every material recompile mid-scroll. Lights therefore live directly on the scene and are dimmed, never hidden.
+  [ucl.group, london.group].forEach((grp) => {
+    const ls = [];
+    grp.traverse((o) => { if (o.isLight) ls.push(o); });
+    ls.forEach((l) => { scene.attach(l); if (l.target && l.target.parent !== scene) scene.attach(l.target); });
+  });
   // compile every shader up front (hidden parts included), so nothing compiles mid-scroll and stutters
   function precompile() {
     const hidden = [];
@@ -379,8 +398,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const inside = ss(0.705, 0.75, p);
     ATMO.uIndoor.value = inside;
     ATMO.uHaze.value = lerp(lerp(0.00004, 0.00011, ss(0.2, 0.32, p)), 0.00018, ss(0.5, 0.64, p));
-    scene.environment = intEnv && inside > 0.5 ? intEnv : sky.env;
-    scene.environmentIntensity = intEnv && inside > 0.5 ? lerp(0.3, 0.42, inside) : lerp(2.2, 0.3, inside);
+    scene.environmentIntensity = lerp(2.2, 0.3, inside);
     sun.intensity = 2.2 * (1 - inside);
     renderer.toneMappingExposure = lerp(lerp(0.5, 1.08, ss(0.24, 0.4, p)), 1.6, inside) * lerp(1, 0.85, ss(0.86, 1, p));
     london.trafficU.uTime.value = time;
@@ -424,7 +442,6 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const below = camera.position.y < CLOUD_BOTTOM - 5;
     london.group.visible = below && (imp ? p < 0.97 : inside < 1);
     ucl.group.visible = below;
-    sun.castShadow = below;
     if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
     if (p < (imp ? 0.97 : 0.76)) {
