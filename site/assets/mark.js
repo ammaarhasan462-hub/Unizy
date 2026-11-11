@@ -1,4 +1,4 @@
-/* The marker: find any UCL or Imperial module, see its Module Map (topics, red/amber/green, mastery), practise at three levels
+/* The marker: find any module at UCL, Imperial, Queen Mary or LSE, see its Module Map (topics, red/amber/green, mastery), practise at three levels
    (Foundation quick recall, Exam-style, First-class stretch), get answers marked against UCL's grade bands and the
    department's criteria, see exactly where marks were lost, rewrite and re-mark. Progress maths lives in study.js. */
 (function () {
@@ -20,7 +20,15 @@
     lse: { short: 'LSE', poss: 'LSE’s', exam: 'an LSE', src: 'the LSE course guide', cat: 'the LSE Calendar’s course guides' } };
   function uniId() { return state.mod && state.mod.uni ? state.mod.uni : HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   function U() { return UNIS[uniId()] || UNIS.ucl; }
-  function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
+  // public search: the university picked on the homepage (or in its tabs here); '' searches all of them
+  var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579 };
+  var pubUni = (function () { try { var u = localStorage.getItem('unizy:uni'); return UNIS[u] ? u : ''; } catch (e) { return ''; } })();
+  function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : pubUni; }
+  function uniTabs() {
+    var ids = ['ucl', 'imperial', 'qmul', 'lse'];
+    return '<div class="mk-unitabs" role="tablist" aria-label="University"><button type="button" role="tab" data-puni=""' + (pubUni ? '' : ' class="on" aria-selected="true"') + '>All</button>' +
+      ids.map(function (id) { return '<button type="button" role="tab" data-puni="' + id + '"' + (pubUni === id ? ' class="on" aria-selected="true"' : '') + '>' + UNIS[id].short + '</button>'; }).join('') + '</div>';
+  }
   var state = {
     q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
     attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, itab: 'alloc', rewrite: null, busy: false, err: '',
@@ -145,7 +153,7 @@
     searchTimer = setTimeout(function () {
       var seq = ++searchSeq, t = term.replace(/[%*,()]/g, ' ').trim();
       var filt = (/^[A-Za-z]{4}\d{0,5}$/.test(t) || /^[A-Za-z]{2,4}\d[0-9A-Za-z]{0,4}$/.test(t)) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
-      rest('ucl_modules?select=code,title,level,credits,ects,department,uni&uni=eq.' + listUni() + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
+      rest('ucl_modules?select=code,title,level,credits,ects,department,uni' + (listUni() ? '&uni=eq.' + listUni() : '') + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
         if (seq !== searchSeq) return;
         state.results = rows || []; renderList();
       }).catch(function () { if (seq === searchSeq) { state.results = null; renderList(); } });
@@ -347,18 +355,19 @@
     var mine = HOOKS ? HOOKS.myModules() : [];
     var picks = mine.length ? '<div class="mk-mine"><p class="mk-lab">Your modules</p><ul class="mk-results">' + mine.map(function (m) { return '<li><a href="' + MBASE + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + '</span></a></li>'; }).join('') + '</ul></div>' : '';
     if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
-    return '<section class="mk-hero"><span class="kicker">All ' + '6,682' + ' UCL modules</span><h1>Find your module.</h1>' +
+    var pn = pubUni ? PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Every module at UCL, Imperial, Queen Mary and LSE';
+    return '<section class="mk-hero"><span class="kicker">' + (pubUni ? 'All ' : '') + pn + '</span><h1>Find your module.</h1>' + uniTabs() +
       '<p class="lead">Search by module code, title or department. Work through each topic at three levels, write an answer, and get it marked the way your department marks.</p>' +
-      '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + U().short + ' modules">' +
+      '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
       '<div id="mk-list" aria-live="polite"></div></section>';
   }
   function listHtml() {
     if (state.q.trim().length < 2) return '<p class="mk-hint">Start typing a module code (like <b>HIST0003</b>), a title or a department.</p>';
     if (state.results === null) return '<p class="mk-err">Couldn’t search just now. Try again.</p>';
-    if (!state.results.length) return '<p class="mk-hint">No ' + UNIS[listUni()].short + ' modules match that. Try the module code from your timetable' + (listUni() === 'ucl' ? ' or Moodle' : '') + '.</p>';
+    if (!state.results.length) return '<p class="mk-hint">No ' + (listUni() ? UNIS[listUni()].short + ' ' : '') + 'modules match that. Try the module code from your timetable' + (listUni() === 'ucl' ? ' or Moodle' : '') + '.</p>';
     return '<ul class="mk-results">' + state.results.map(function (m) {
-      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.status ? ' · ' + esc(m.status) : '') + '</span></a></li>';
+      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + (!listUni() && UNIS[m.uni] ? UNIS[m.uni].short + ' · ' : '') + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.status ? ' · ' + esc(m.status) : '') + '</span></a></li>';
     }).join('') + '</ul>';
   }
   function bar(pct, cls) { return '<span class="mk-bar' + (cls ? ' ' + cls : '') + '" role="img" aria-label="' + pct + '% mastered"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></span>'; }
@@ -715,6 +724,15 @@
   root.addEventListener('mousedown', function (e) { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
   root.addEventListener('keydown', function (e) { if (e.target.id === 'mk-real' && e.key === 'Enter') { var b = root.querySelector('[data-real]'); if (b) saveReal(b.getAttribute('data-real')); } });
   root.addEventListener('click', function (e) {
+    var pu = e.target.closest('[data-puni]');
+    if (pu) {
+      pubUni = pu.getAttribute('data-puni');
+      try { if (pubUni) localStorage.setItem('unizy:uni', pubUni); else localStorage.removeItem('unizy:uni'); } catch (er) {}
+      root.querySelectorAll('[data-puni]').forEach(function (b) { var on = b === pu; b.classList.toggle('on', on); if (on) b.setAttribute('aria-selected', 'true'); else b.removeAttribute('aria-selected'); });
+      var k = root.querySelector('.mk-hero .kicker');
+      if (k) k.textContent = pubUni ? 'All ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Every module at UCL, Imperial, Queen Mary and LSE';
+      search(state.q); renderList(); return;
+    }
     var hl = e.target.closest('mark[data-lost]');
     if (hl) { var li = document.getElementById('mk-li' + hl.getAttribute('data-lost')); if (li) { li.scrollIntoView({ block: 'center', behavior: 'smooth' }); li.classList.add('flash'); setTimeout(function () { li.classList.remove('flash'); }, 1200); } return; }
     var lli = e.target.closest('[data-lostli]');

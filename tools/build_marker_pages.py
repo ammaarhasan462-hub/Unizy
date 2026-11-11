@@ -20,7 +20,7 @@ CONFIG = cfg.group(1)
 
 
 def head(title, desc, path, extra_css=""):
-    return f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><meta name="description" content="{desc}"><meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}{path}"><meta property="og:url" content="https://{DOMAIN}{path}"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=3"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#17302A"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Fraunces:opsz,wght@9..144,500..700&family=DM+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/home.css?v=16"><link rel="stylesheet" href="/assets/site.css?v=2"><link rel="stylesheet" href="/assets/mark.css?v=5">{extra_css}</head><body class="sx">
+    return f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title}</title><meta name="description" content="{desc}"><meta property="og:title" content="{title}"><meta property="og:description" content="{desc}"><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}{path}"><meta property="og:url" content="https://{DOMAIN}{path}"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=4"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#17302A"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&family=Fraunces:opsz,wght@9..144,500..700&family=DM+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/home.css?v=16"><link rel="stylesheet" href="/assets/site.css?v=2"><link rel="stylesheet" href="/assets/mark.css?v=7">{extra_css}</head><body class="sx">
 <a class="skip" href="#main">Skip to content</a>"""
 
 
@@ -36,12 +36,12 @@ def header(current):
 
 def footer():
     return f"""<footer class="sx-foot"><div class="sx-foot-in">
-<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><p>{TAGLINE} Exam practice and marking for UCL students.</p></div>
+<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><p>{TAGLINE} Exam practice and marking for students at UCL, Imperial, Queen Mary and LSE.</p></div>
 <nav class="sx-foot-col" aria-label="Product"><span>Product</span><a href="/mark">Find your module</a><a href="/#how">How it works</a><a href="/pricing">Pricing</a><a href="/dashboard">Dashboard</a></nav>
 <nav class="sx-foot-col" aria-label="About"><span>About</span><a href="/trust">Trust &amp; safety</a><a href="/reviews">Reviews</a><a href="/faq">FAQ</a></nav>
 <nav class="sx-foot-col" aria-label="Legal"><span>Legal</span><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="mailto:hello@{DOMAIN}">Contact</a></nav>
 </div>
-<div class="sx-foot-fine"><span>{BRAND} is an independent revision tool for UCL students. It is not affiliated with or endorsed by UCL. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from UCL exam papers.</span><span>© 2026 {BRAND}</span></div>
+<div class="sx-foot-fine"><span>{BRAND} is an independent revision tool for university students. It is not affiliated with or endorsed by UCL, Imperial College London, Queen Mary University of London, LSE or any other university. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from any university’s exam papers.</span><span>© 2026 {BRAND}</span></div>
 </footer>"""
 
 
@@ -49,13 +49,13 @@ def scripts(*names):
     return f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/site.js?v=2"></script>' + "".join(f'<script src="/assets/{n}"></script>' for n in names)
 
 
-MARK_PAGE = head(f"Find your UCL module · practice questions and marking · {BRAND}",
-                 "Every UCL module. Practise an exam-style question, get it marked against your department's grade descriptors, and see what a First looks like.",
+MARK_PAGE = head(f"Find your module · practice questions and marking · {BRAND}",
+                 "Every module at UCL, Imperial, Queen Mary and LSE. Practise an exam-style question, get it marked against your department's grade descriptors, and see what a First looks like.",
                  "/mark") + header("/mark") + """
-<main id="main" class="mk-wrap"><div id="mk"><noscript>Turn on JavaScript to search UCL modules and get answers marked.</noscript></div></main>
-""" + footer() + scripts("study.js?v=2", "mark.js?v=7") + "</body></html>\n"
+<main id="main" class="mk-wrap"><div id="mk"><noscript>Turn on JavaScript to search modules and get answers marked.</noscript></div></main>
+""" + footer() + scripts("study.js?v=2", "mark.js?v=8") + "</body></html>\n"
 
-HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{BRAND} · {TAGLINE}</title><meta name="description" content="At A-level you had mark schemes. At UCL you don't. Write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class."><meta property="og:title" content="{BRAND} · {TAGLINE}"><meta property="og:description" content="Exam practice and marking for every UCL module."><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}/"><meta property="og:url" content="https://{DOMAIN}/"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=3"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#06060b"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/landing.css?v=2"></head>
+HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{BRAND} · {TAGLINE}</title><meta name="description" content="At A-level you had mark schemes. At UCL you don't. Write an answer to an exam question in your module and get it marked against your department's own grading criteria, with the changes that would move you up a class."><meta property="og:title" content="{BRAND} · {TAGLINE}"><meta property="og:description" content="Exam practice and marking for every UCL module."><meta property="og:type" content="website"><link rel="canonical" href="https://{DOMAIN}/"><meta property="og:url" content="https://{DOMAIN}/"><meta property="og:image" content="https://{DOMAIN}/assets/og.png?v=4"><meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#06060b"><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"><link rel="stylesheet" href="/assets/landing.css?v=2"></head>
 <body class="lp">
 <a class="skip" href="#main">Skip to content</a>
 <div class="bg" aria-hidden="true"><div class="grid"></div><div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div></div>
@@ -189,7 +189,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 
 <footer class="foot"><div class="wrap">
 <div class="foot-in"><a class="brand" href="/"><span class="brand-mark">{MARK}</span>{BRAND}</a><nav aria-label="Footer"><a href="/mark">Find your module</a><a href="/pricing">Pricing</a><a href="/reviews">Reviews</a><a href="/faq">FAQ</a><a href="/trust">Trust &amp; safety</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="mailto:hello@{DOMAIN}">Contact</a></nav></div>
-<p class="fine">{BRAND} is an independent revision tool for UCL students. It is not affiliated with or endorsed by UCL. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from UCL exam papers. The dashboard shown above is an illustration. © 2026 {BRAND}</p>
+<p class="fine">{BRAND} is an independent revision tool for university students. It is not affiliated with or endorsed by UCL, Imperial College London, Queen Mary University of London, LSE or any other university. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from any university’s exam papers. The dashboard shown above is an illustration. © 2026 {BRAND}</p>
 </div></footer>
 <script>window.UNIZY_CONFIG={CONFIG};</script><script src="/assets/landing.js?v=1"></script>
 </body></html>
@@ -211,7 +211,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
     ("cards", "Flashcards", "Flashcard decks", "/dashboard/cards", "M4 7h12v12H4zM8 3h12v12"),
     ("arena", "Topic arena", "Question-by-topic arena", "/dashboard/practice", "M4 5h7v6H4zM13 5h7v6h-7zM4 13h7v6H4zM13 13h7v6h-7z"),
     ("exam", "Exam sim", "Exam simulator", "/dashboard/exam", "M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 9v4l3 2M9 2h6")]) + """</div></div>
-<div class="db-mods-head"><span>My modules</span><a href="/dashboard/practice">+ Add</a></div>
+<div class="db-mods-head"><span>My modules</span><span class="db-mh-a"><a href="/dashboard/account#course">Edit</a><a href="/dashboard/practice">+ Add</a></span></div>
 <ul class="db-mods" id="db-mods"></ul>
 </div>
 </aside>
@@ -221,6 +221,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <div class="db-ragf" id="db-ragf" role="group" aria-label="Highlight topics by confidence"></div>
 <a class="db-due" id="db-due" href="/dashboard/cards" hidden></a>
 <span id="db-plan"></span>
+<button type="button" class="db-replay" id="db-replay" title="Show the quick tour of the dashboard again">Replay tutorial?</button>
 </div>
 <div class="db-setupbox" id="db-setup"><div class="db-setup-in"><p class="mk-busy"><span class="spin"></span>Loading your dashboard…</p></div></div>
 <section class="db-tab" data-tab="home" id="db-home" hidden></section>
@@ -233,7 +234,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=2"></script><script src="/assets/tour.js?v=1"></script><script src="/assets/dashboard.js?v=10"></script><script src="/assets/mark.js?v=7"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=1"></script><script src="/assets/study.js?v=2"></script><script src="/assets/tour.js?v=1"></script><script src="/assets/dashboard.js?v=10"></script><script src="/assets/mark.js?v=8"></script><script src="/assets/play.js?v=8"></script></body></html>\n'
 
 if __name__ == "__main__":
     (SITE / "dashboard.html").write_text(DASH_PAGE)

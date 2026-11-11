@@ -23,6 +23,13 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* university colours (html[data-uni] is set before first paint by UNI_BOOT; none = Unizy's own colours) */
+html[data-uni="ucl"] { --color-ink: #160B24; --color-ink-2: #24133A; --color-paper: #F5F2F9; --color-paper-2: #ECE6F4; --color-vio: #6A3BA3; --color-vio-2: #361A54; --color-lilac: #5A2A99; --color-blue: #361A54; --color-cyan: #993BFF; --color-gold-l: #E6D2FF; --color-mute: #6A6177; --color-dim: #8E86A0; }
+html[data-uni="imperial"] { --color-ink: #04182D; --color-ink-2: #0C2640; --color-paper: #F2F5F8; --color-paper-2: #E6ECF2; --color-vio: #1E64A6; --color-vio-2: #003E74; --color-lilac: #003E74; --color-blue: #003E74; --color-cyan: #0091D4; --color-gold-l: #D2EEFB; --color-mute: #5E6A76; --color-dim: #84909C; }
+html[data-uni="qmul"] { --color-ink: #0E1834; --color-ink-2: #18244A; --color-paper: #F4F4F8; --color-paper-2: #E9E9F1; --color-vio: #3A548F; --color-vio-2: #21376A; --color-lilac: #7B0E72; --color-blue: #21376A; --color-cyan: #A0369A; --color-gold-l: #F4D6F0; --color-mute: #636A7A; --color-dim: #8A90A0; }
+html[data-uni="lse"] { --color-ink: #141414; --color-ink-2: #262626; --color-paper: #F5F4F4; --color-paper-2: #EBE9E9; --color-vio: #8E1A1F; --color-vio-2: #1C1C1C; --color-lilac: #A3161B; --color-blue: #1C1C1C; --color-cyan: #C8102E; --color-gold-l: #FAD9DA; --color-mute: #6B6767; --color-dim: #918C8C; }
+html[data-uni="ucl"], html[data-uni="imperial"], html[data-uni="qmul"], html[data-uni="lse"] { background: var(--color-paper); color: var(--color-ink); }
+body { transition: background-color .45s, color .45s; }
 html, body { overflow-x: clip; }
 html { --font-inter: 'Inter'; --font-grotesk: 'Space Grotesk'; --font-jet: 'JetBrains Mono'; background: #F4F4EF; color: #17302A; scroll-behavior: smooth; }
 body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: clip; }
@@ -61,11 +68,11 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
   }
 
   .text-grad {
-    background: linear-gradient(100deg, #17302A 0%, #2B4F44 30%, #3E6B5C 58%, #8A5E1E 82%, #B8862F 100%);
+    background: linear-gradient(100deg, var(--color-ink) 0%, var(--color-vio-2) 30%, var(--color-vio) 58%, var(--color-lilac) 82%, var(--color-cyan) 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .text-grad-anim {
-    background: linear-gradient(100deg, #17302A, #3E6B5C, #8A5E1E, #B8862F, #3E6B5C, #17302A);
+    background: linear-gradient(100deg, var(--color-ink), var(--color-vio), var(--color-lilac), var(--color-cyan), var(--color-vio), var(--color-ink));
     background-size: 250% 100%;
     -webkit-background-clip: text; background-clip: text; color: transparent;
     animation: gradshift 8s ease-in-out infinite alternate;
@@ -78,7 +85,7 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
   }
   .btn-glow {
     color: #fff;
-    background: linear-gradient(110deg, #17302A, #23362F 40%, #2B4F44 75%, #3E6B5C);
+    background: linear-gradient(110deg, var(--color-ink), var(--color-ink-2) 40%, var(--color-vio-2) 75%, var(--color-vio));
     box-shadow: 0 0 0 1px rgb(255 255 255 / 0.08) inset, 0 10px 30px -10px rgb(23 48 42 / 0.55), 0 0 44px -18px rgb(184 134 47 / 0.7);
   }
   .btn-glow::after {
@@ -88,14 +95,14 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
   }
   .btn-glow:hover::after { background-position: -40% 0; }
   .btn-glow:hover { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12) inset, 0 14px 36px -10px rgb(23 48 42 / 0.6), 0 0 60px -16px rgb(184 134 47 / 0.8); }
-  .btn-ghost { color: #17302A; background: rgb(255 255 255 / 0.7); border: 1px solid rgb(23 48 42 / 0.16); }
+  .btn-ghost { color: var(--color-ink); background: rgb(255 255 255 / 0.7); border: 1px solid rgb(23 48 42 / 0.16); }
   .btn-ghost:hover { background: #fff; border-color: rgb(23 48 42 / 0.3); }
 
   .kicker {
     display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em;
-    text-transform: uppercase; color: #8A5E1E;
+    text-transform: uppercase; color: var(--color-lilac);
   }
-  .kicker::before { content: ""; width: 22px; height: 1px; background: linear-gradient(90deg, #3E6B5C, #B8862F); }
+  .kicker::before { content: ""; width: 22px; height: 1px; background: linear-gradient(90deg, var(--color-vio), var(--color-cyan)); }
 
   .h2 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.035em; line-height: 0.98; font-size: clamp(40px, 6vw, 84px); }
 
@@ -124,11 +131,11 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
 
   .cls-pill {
     display: inline-grid; place-items: center; font-family: var(--font-display); font-weight: 700; color: #fff;
-    background: linear-gradient(135deg, #3E6B5C, #2B4F44); box-shadow: 0 10px 28px -8px rgb(23 48 42 / .5);
+    background: linear-gradient(135deg, var(--color-vio), var(--color-vio-2)); box-shadow: 0 10px 28px -8px rgb(23 48 42 / .5);
   }
   .chip { font-family: var(--font-mono); font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 999px; border: 1px solid transparent; }
-  .chip-first { color: #F1DDA9; background: #17302A; }
-  .chip-21 { color: #fff; background: #3E6B5C; }
+  .chip-first { color: var(--color-gold-l); background: var(--color-ink); }
+  .chip-21 { color: #fff; background: var(--color-vio); }
   .chip-22 { color: #4D3B14; background: #E8DCC0; }
 }
 

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Logo } from './ui';
+import UniTabs from './UniTabs';
 import { hasSession, track } from '@/lib/site';
 
 const LINKS = [
@@ -64,6 +65,7 @@ export default function Nav() {
           </button>
         </div>
       </div>
+      <UniTabs compact={scrolled} />
       <AnimatePresence>
         {open && (
           <motion.nav

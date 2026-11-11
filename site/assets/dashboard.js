@@ -115,7 +115,7 @@
 
   function show() {
     if (S.profile === undefined) return; // still loading
-    if (!S.profile) { renderSetup(); return; }
+    if (!S.profile || (S.setup && S.setup.editing)) { renderSetup(); return; }
     $('db').classList.remove('setup');
     var tab = tabOf(location.pathname);
     document.querySelectorAll('.db-nav a').forEach(function (a) { if (a.getAttribute('data-tab') === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
@@ -267,6 +267,12 @@
       nextHref: n && n.href ? n.href : n && n.mod ? '/dashboard/practice/' + n.mod.code : '',
       nav: nav, track: track, auth: authUser, ready: function () { return !!S.today && tabOf(location.pathname) === 'home' && !PAL.open; } };
   }
+  function replayTour() {
+    track('tour_replay');
+    var go = function () { if (window.UnizyTour && !window.UnizyTour.active()) window.UnizyTour.start(tourCtx()); };
+    if (tabOf(location.pathname) === 'home') go(); else { nav('/dashboard'); setTimeout(go, 700); }
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest('#db-replay')) replayTour(); });
   var tourTried = false;
   function maybeTour() {
     if (tourTried || !window.UnizyTour || !S.profile) return;
@@ -347,53 +353,133 @@
 
   function closeMenu() { var d = $('db'); if (d) d.classList.remove('menu'); }
 
-  // ---------- first-run set-up: course, year, modules ----------
-  function loadCourses() {
-    if (S.courses) return Promise.resolve(S.courses);
-    return fetch('/data/ucl-courses.json').then(function (r) { return r.json(); }).then(function (c) { S.courses = c; return c; }).catch(function () { S.courses = []; return []; });
+  // ---------- set-up (first run, and "Change course & modules" later): university, course, year, modules ----------
+  // Course lists: UCL from /data/courses-ucl.json (every undergraduate course, with the catalogue code prefixes each one
+  // uses); Imperial, Queen Mary and LSE from their official programme specifications / directories via uni_courses().
+  // A course that isn't listed can be typed in, with the subjects it covers picked by search.
+  var LEGACY = null;
+  function loadLegacy() {
+    if (LEGACY) return Promise.resolve(LEGACY);
+    return fetch('/data/ucl-courses.json').then(function (r) { return r.json(); }).then(function (c) { LEGACY = c || []; return LEGACY; }).catch(function () { LEGACY = []; return LEGACY; });
+  }
+  S.coursesBy = {};
+  function prettyCourse(n) {
+    n = String(n || '').trim();
+    var m = /^(BA|BSc|BEng|MEng|MSci|LLB|iBSc|MBBS(?:\/BSc)?|MA)\s+(?:in\s+)?(.+)$/.exec(n);
+    if (m) n = m[2] + ' ' + m[1];
+    return n.replace(/\s+/g, ' ');
+  }
+  function loadCourses(u) {
+    u = u || uniId();
+    if (S.coursesBy[u]) return Promise.resolve(S.coursesBy[u]);
+    var p = u === 'ucl'
+      ? Promise.all([fetch('/data/courses-ucl.json').then(function (r) { return r.json(); }), loadLegacy()]).then(function (r) {
+          var leg = {}; r[1].forEach(function (c) { leg[c.name.replace(/\s*\(Hons\)$/, '').toLowerCase()] = c; });
+          return r[0].map(function (c) { return { id: c.id, n: c.n, y: c.y, p: c.p, legacy: leg[c.n.toLowerCase()] || null }; });
+        })
+      : rest('rpc/uni_courses', { method: 'POST', body: { p_uni: u } }).then(function (rows) {
+          var seen = {};
+          return (rows || []).map(function (c) { return { id: u + ':' + c.prog, n: prettyCourse(c.name), y: c.years, prog: c.prog }; })
+            .filter(function (c) { var k = c.n.toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; })
+            .sort(function (a, b) { return a.n.localeCompare(b.n); });
+        });
+    return p.then(function (list) { S.coursesBy[u] = list; return list; }).catch(function () { S.coursesBy[u] = []; return []; });
   }
   function loadDepts() {
-    if (S.depts && S.deptsUni === uniId()) return Promise.resolve(S.depts);
-    var u = uniId();
+    if (S.depts && S.deptsUni === S.setup.uni) return Promise.resolve(S.depts);
+    var u = S.setup.uni;
     return rest('ucl_departments?select=department,ug_modules&uni=eq.' + u + '&ug_modules=gt.0&order=department.asc').then(function (d) { S.depts = d || []; S.deptsUni = u; return S.depts; });
+  }
+  var POPULAR = { ucl: ['Economics BSc (Econ)', 'Law LLB', 'Medicine MBBS BSc', 'History BA', 'Psychology BSc', 'Computer Science BSc', 'Linguistics BA', 'Philosophy, Politics and Economics BSc', 'English BA', 'Politics and International Relations BSc'] };
+  function lsUni() { var u = lsGet('unizy:uni'); return UNI_ORDER.indexOf(u) >= 0 ? u : null; }
+  function startSetup(editing) {
+    var p = S.profile || {};
+    S.setup = { step: 1, uni: p.uni || lsUni(), course: null, cq: '', name: '', subjects: [], subq: '', subres: null, year: null, picks: {}, sugg: null, q: '', results: [], editing: !!editing, current: {} };
+    if (editing) {
+      S.mods.forEach(function (m) { S.setup.picks[m.code] = m; S.setup.current[m.code] = true; });
+      S.setup.year = p.year || null;
+    }
+    renderSetup();
+    if (S.setup.uni) loadCourses(S.setup.uni).then(function () {
+      var st = S.setup; if (!st) return;
+      if (editing && p.course) {
+        var hit = (S.coursesBy[st.uni] || []).filter(function (c) { return c.n === p.course || (p.course_id && c.id === p.course_id); })[0];
+        if (hit) st.course = hit; else { st.course = 'other'; st.name = p.course; if (p.department) st.subjects = [{ dept: p.department }]; }
+      }
+      renderSetup();
+    });
+  }
+  function courseMatches(st) {
+    var all = S.coursesBy[st.uni];
+    if (!all) return null;
+    var q = st.cq.trim().toLowerCase().replace(/[()]/g, ' ');
+    if (!q) {
+      var pop = POPULAR[st.uni];
+      return pop ? pop.map(function (n) { return all.filter(function (c) { return c.n === n; })[0]; }).filter(Boolean) : all.slice(0, 10);
+    }
+    var words = q.split(/\s+/).filter(Boolean);
+    return all.filter(function (c) { var h = c.n.toLowerCase(); return words.every(function (w) { return h.indexOf(w) >= 0; }); })
+      .sort(function (a, b) { return (a.n.toLowerCase().indexOf(words[0]) === 0 ? 0 : 1) - (b.n.toLowerCase().indexOf(words[0]) === 0 ? 0 : 1) || a.n.length - b.n.length; })
+      .slice(0, 14);
   }
   function renderSetup() {
     $('db').classList.add('setup');
-    var st = S.setup || (S.setup = { step: 1, uni: (S.profile && S.profile.uni) || 'ucl', course: null, dept: '', name: '', year: null, picks: {}, sugg: null, q: '', results: [] });
-    var imp = st.uni !== 'ucl', U0 = UNIS[st.uni] || UNIS.ucl;
+    var st = S.setup || startSetup(false) || S.setup;
+    var U0 = UNIS[st.uni] || null;
+    var cancel = st.editing ? '<button type="button" class="btn line" data-setup="cancel">Cancel</button>' : '';
     var box = $('db-setup'), html = '<div class="db-setup-in"><p class="db-steps"><span' + (st.step === 1 ? ' class="on"' : '') + '>1. Course</span><span' + (st.step === 2 ? ' class="on"' : '') + '>2. Year</span><span' + (st.step === 3 ? ' class="on"' : '') + '>3. Modules</span></p>';
     if (st.step === 1) {
-      html += '<h1>' + (firstName() ? 'Welcome, ' + esc(firstName()) + '. ' : '') + 'Where do you study?</h1>';
-      html += '<div class="db-unis">' + UNI_ORDER.map(function (u) { return '<button type="button" class="db-course' + (st.uni === u ? ' on' : '') + '" data-uni="' + u + '">' + esc(UNIS[u].name) + '</button>'; }).join('') + '</div>';
-      html += '<h2 class="db-sub">What do you study' + ' at ' + U0.short + '?</h2><p class="lead">We’ll suggest your modules. You can add or remove any of them later.</p>';
-      if (!imp) html += '<div class="db-courses">' + (S.courses || []).map(function (c) { return '<button type="button" class="db-course' + (st.course && st.course.id === c.id ? ' on' : '') + '" data-course="' + c.id + '">' + esc(c.name) + '</button>'; }).join('') +
-        '<button type="button" class="db-course' + (st.course === 'other' ? ' on' : '') + '" data-course="other">My course isn’t listed</button></div>';
-      if (st.course === 'other') {
-        html += '<div class="db-other"><label class="mk-lab" for="db-cname">Your course</label><input id="db-cname" type="text" placeholder="' + (imp ? U0.course : 'e.g. History, Politics and Economics BA') + '" value="' + esc(st.name) + '">' +
-          '<label class="mk-lab" for="db-dept">Main department</label><select id="db-dept"><option value="">Choose a department…</option>' + (S.depts || []).map(function (d) { return '<option' + (st.dept === d.department ? ' selected' : '') + '>' + esc(d.department) + '</option>'; }).join('') + '</select></div>';
-      }
-      html += '<div class="db-setup-act"><button type="button" class="btn primary" data-setup="next1"' + (st.course ? '' : ' disabled') + '>Continue</button></div>';
+      html += '<h1>' + (st.editing ? 'Change your course' : (firstName() ? 'Welcome, ' + esc(firstName()) + '. ' : '') + 'Where do you study?') + '</h1>';
+      if (st.editing) html += '<p class="lead">Pick a different university or course. You choose which modules to keep on the last step.</p>';
+      html += '<div class="db-unis">' + UNI_ORDER.map(function (u) { return '<button type="button" class="db-course db-uni-' + u + (st.uni === u ? ' on' : '') + '" data-uni="' + u + '"><b>' + esc(UNIS[u].short) + '</b><small>' + esc(UNIS[u].name) + '</small></button>'; }).join('') +
+        '<button type="button" class="db-course soon" disabled><b>King’s</b><small>King’s College London · coming soon</small></button></div>';
+      if (U0) {
+        var all = S.coursesBy[st.uni], list = courseMatches(st);
+        html += '<h2 class="db-sub">What do you study at ' + esc(U0.short) + '?</h2>';
+        if (st.course && st.course !== 'other') html += '<div class="db-picked"><span>Your course</span><b>' + esc(st.course.n) + '</b><button type="button" class="mk-clear" data-setup="unpick">Change</button></div>';
+        else if (st.course !== 'other') {
+          html += '<input id="db-cq" class="db-cq" type="search" autocomplete="off" placeholder="' + (all ? (all.length ? 'Search ' + all.length.toLocaleString('en-GB') + ' ' + esc(U0.short) + ' courses' : 'Type your course') + ', e.g. ' + (st.uni === 'ucl' ? 'Linguistics' : st.uni === 'lse' ? 'Economics' : st.uni === 'imperial' ? 'Mechanical Engineering' : 'Law') : 'Loading courses…') + '" value="' + esc(st.cq) + '" aria-label="Search for your course">';
+          html += '<p class="db-cq-h">' + (st.cq.trim() ? (list && list.length ? 'Matching courses' : 'No course matches “' + esc(st.cq.trim()) + '”.') : (st.uni === 'ucl' ? 'Popular courses' : 'Courses')) + '</p>';
+          html += '<div class="db-courses db-clist">' + (list || []).map(function (c) { return '<button type="button" class="db-course" data-course="' + esc(c.id) + '">' + esc(c.n) + '</button>'; }).join('') + '</div>';
+          html += '<button type="button" class="db-notlisted" data-course="other">My course isn’t listed →</button>';
+        }
+        if (st.course === 'other') {
+          var subs = st.subjects;
+          html += '<div class="db-other"><label class="mk-lab" for="db-cname">Your course</label><input id="db-cname" type="text" placeholder="e.g. ' + (st.uni === 'ucl' ? 'Linguistics BA' : esc(U0.course ? U0.course.replace(/^e\.g\. /, '') : 'Economics BSc')) + '" value="' + esc(st.name) + '">' +
+            '<label class="mk-lab" for="db-subq">What subjects does it cover? <small>Pick up to 4</small></label>' +
+            (subs.length ? '<div class="db-chips">' + subs.map(function (s2, i) { return '<span class="db-chip2">' + esc(s2.dept) + '<button type="button" data-subrm="' + i + '" aria-label="Remove">×</button></span>'; }).join('') + '</div>' : '') +
+            (subs.length < 4 ? '<input id="db-subq" type="search" autocomplete="off" placeholder="Type a subject, e.g. linguistics, law, chemistry" value="' + esc(st.subq) + '"><ul class="db-sres" id="db-subres"></ul>' : '') +
+            '<button type="button" class="mk-clear" data-setup="unpick">← Back to the course list</button></div>';
+        }
+      } else html += '<p class="lead">Pick your university to see its courses.</p>';
+      html += '<div class="db-setup-act">' + cancel + '<button type="button" class="btn primary" data-setup="next1"' + (st.course && (st.course !== 'other' || (st.name.trim() && st.subjects.length)) ? '' : ' disabled') + '>Continue</button></div>';
     } else if (st.step === 2) {
-      var years = st.course && st.course !== 'other' ? st.course.years : imp && /medic/i.test(st.dept) ? 6 : 4;
-      html += '<h1>Which year are you in?</h1><div class="db-years">';
-      for (var y = 1; y <= years; y++) html += '<button type="button" class="db-course' + (st.year === y ? ' on' : '') + '" data-year="' + y + '">Year ' + y + '</button>';
-      html += '</div><div class="db-setup-act"><button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="next2"' + (st.year ? '' : ' disabled') + '>Continue</button></div>';
+      var years = st.course && st.course !== 'other' ? st.course.y : /medic|mbbs/i.test(st.name) ? 6 : 4;
+      html += '<h1>Which year are you in?</h1><p class="lead">' + esc(st.course === 'other' ? st.name : st.course.n) + '</p><div class="db-years">';
+      for (var y = 1; y <= Math.max(1, years); y++) html += '<button type="button" class="db-course' + (st.year === y ? ' on' : '') + '" data-year="' + y + '">Year ' + y + '</button>';
+      html += '</div><div class="db-setup-act">' + cancel + '<button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="next2"' + (st.year ? '' : ' disabled') + '>Continue</button></div>';
     } else {
-      html += '<h1>Pick your modules</h1><p class="lead">These stay in your sidebar so you can practise them in one click. ' + (st.uni !== 'ucl' ? 'Here are your department’s modules for that year: tick the ones you take.' : 'Compulsory modules are ticked for you.') + '</p>';
+      html += '<h1>Pick your modules</h1><p class="lead">These sit in your sidebar so you can practise them in one click. ' + (st.sugg && st.sugg.some(function (m) { return m.compulsory; }) ? 'Compulsory modules are ticked for you.' : 'Tick the ones you take this year.') + '</p>';
       if (st.sugg === null) html += '<p class="mk-hint">Finding your modules…</p>';
       else if (!st.sugg.length) html += '<p class="mk-hint">We couldn’t suggest modules for that year. Search for them below.</p>';
-      else html += '<ul class="db-picks">' + st.sugg.map(function (m) { return '<li><label><input type="checkbox" data-pick="' + m.code + '"' + (st.picks[m.code] ? ' checked' : '') + '><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + (m.compulsory ? ' <em>Compulsory</em>' : '') + '</span></label></li>'; }).join('') + '</ul>';
-      var extra = Object.keys(st.picks).filter(function (c) { return st.picks[c] && !(st.sugg || []).some(function (m) { return m.code === c; }); });
-      if (extra.length) html += '<p class="mk-lab">Also added</p><ul class="db-picks">' + extra.map(function (c) { var m = st.picks[c]; return '<li><label><input type="checkbox" data-pick="' + c + '" checked><span class="db-mcode">' + esc(c) + '</span><span>' + esc(m.title || '') + '</span></label></li>'; }).join('') + '</ul>';
-      html += '<label class="mk-lab" for="db-sq">Add another module</label><input id="db-sq" type="search" autocomplete="off" placeholder="Search by code or title, e.g. ' + (imp ? U0.eg : 'HIST0003') + '" value="' + esc(st.q) + '"><ul class="db-sres" id="db-sres"></ul>';
+      else html += '<p class="mk-lab">Suggested for Year ' + st.year + '</p><ul class="db-picks">' + st.sugg.map(function (m) { return '<li><label><input type="checkbox" data-pick="' + m.code + '"' + (st.picks[m.code] ? ' checked' : '') + '><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + (m.compulsory ? ' <em>Compulsory</em>' : '') + '</span></label></li>'; }).join('') + '</ul>';
+      var sugg = {}; (st.sugg || []).forEach(function (m) { sugg[m.code] = 1; });
+      var extra = Object.keys(st.picks).filter(function (c) { return !sugg[c]; });
+      var cur = extra.filter(function (c) { return st.current[c]; }), added = extra.filter(function (c) { return !st.current[c] && st.picks[c]; });
+      var cur2 = Object.keys(st.current).filter(function (c) { return !sugg[c] && !st.picks[c]; });
+      if (cur.length || cur2.length) html += '<p class="mk-lab">Your current modules <small>untick to remove them from your dashboard</small></p><ul class="db-picks">' + cur.concat(cur2).map(function (c) { var m = st.picks[c] || (S.mods.filter(function (x) { return x.code === c; })[0]) || {}; return '<li><label><input type="checkbox" data-pick="' + c + '"' + (st.picks[c] ? ' checked' : '') + '><span class="db-mcode">' + esc(c) + '</span><span>' + esc(m.title || '') + '</span></label></li>'; }).join('') + '</ul>';
+      if (added.length) html += '<p class="mk-lab">Also added</p><ul class="db-picks">' + added.map(function (c) { var m = st.picks[c]; return '<li><label><input type="checkbox" data-pick="' + c + '" checked><span class="db-mcode">' + esc(c) + '</span><span>' + esc(m.title || '') + '</span></label></li>'; }).join('') + '</ul>';
+      html += '<label class="mk-lab" for="db-sq">Add another module</label><input id="db-sq" type="search" autocomplete="off" placeholder="Search ' + esc((UNIS[st.uni] || UNIS.ucl).short) + ' modules by code or title, e.g. ' + esc((UNIS[st.uni] || {}).eg || 'PLIN0001') + '" value="' + esc(st.q) + '"><ul class="db-sres" id="db-sres"></ul>';
       var n = Object.keys(st.picks).filter(function (c) { return st.picks[c]; }).length;
-      html += '<div class="db-setup-act"><button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="finish">' + (n ? 'Go to my dashboard (' + n + ' module' + (n === 1 ? '' : 's') + ')' : 'Skip for now') + '</button></div>';
+      var rm = Object.keys(st.current).filter(function (c) { return !st.picks[c]; }).length;
+      html += '<div class="db-setup-act">' + cancel + '<button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="finish">' + (st.editing ? 'Save changes (' + n + ' module' + (n === 1 ? '' : 's') + (rm ? ', ' + rm + ' removed' : '') + ')' : n ? 'Go to my dashboard (' + n + ' module' + (n === 1 ? '' : 's') + ')' : 'Skip for now') + '</button></div>';
     }
     html += '<p class="db-err" id="db-serr" hidden></p></div>';
     var f = document.activeElement && document.activeElement.id;
     box.innerHTML = html;
     if (f && $(f)) { var el = $(f); el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} }
     if (st.step === 3) setupResults();
+    if (st.step === 1 && st.course === 'other') subResults();
   }
   function setupResults() {
     var st = S.setup, ul = $('db-sres'); if (!ul) return;
@@ -402,26 +488,59 @@
   var sTimer = null;
   function setupSearch(q) {
     var st = S.setup; st.q = q; clearTimeout(sTimer);
-    var t = q.trim().replace(/[%*,()]/g, ' ').trim();
+    var t = q.trim().replace(/[%*,()"]/g, ' ').trim();
     if (t.length < 2) { st.results = []; setupResults(); return; }
     sTimer = setTimeout(function () {
       var filt = codeSearch(t) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*)';
       rest('ucl_modules?select=code,title,level,department&uni=eq.' + st.uni + '&' + filt + '&level=lte.7&order=level.asc,code.asc&limit=12').then(function (rows) { st.results = rows || []; setupResults(); }).catch(function () {});
     }, 180);
   }
+  // "My course isn't listed": find the subjects (departments) by name, or by the modules they teach
+  var subTimer = null;
+  function subSearch(q) {
+    var st = S.setup; st.subq = q; clearTimeout(subTimer);
+    var t = q.trim().replace(/[%*,()"]/g, ' ').trim();
+    if (t.length < 2) { st.subres = null; subResults(); return; }
+    subTimer = setTimeout(function () {
+      Promise.all([loadDepts(), rest('ucl_modules?select=department&uni=eq.' + st.uni + '&level=lte.6&title=ilike.*' + encodeURIComponent(t) + '*&limit=400').catch(function () { return []; })]).then(function (r) {
+        var low = t.toLowerCase(), counts = {};
+        (r[1] || []).forEach(function (m) { if (m.department) counts[m.department] = (counts[m.department] || 0) + 1; });
+        var byName = (S.depts || []).filter(function (d) { return d.department.toLowerCase().indexOf(low) >= 0; }).map(function (d) { return { dept: d.department, why: 'Department' }; });
+        var byMods = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 6).map(function (d) { return { dept: d, why: counts[d] + ' module' + (counts[d] === 1 ? '' : 's') + ' about “' + t + '”' }; });
+        var seen = {}; st.subres = byName.concat(byMods).filter(function (x) { if (seen[x.dept] || st.subjects.some(function (s2) { return s2.dept === x.dept; })) return false; seen[x.dept] = 1; return true; }).slice(0, 8);
+        subResults();
+      });
+    }, 220);
+  }
+  function subResults() {
+    var st = S.setup, ul = $('db-subres'); if (!ul) return;
+    if (!st.subres) { ul.innerHTML = ''; return; }
+    ul.innerHTML = st.subres.length ? st.subres.map(function (x, i) { return '<li><button type="button" data-subadd="' + i + '"><b>' + esc(x.dept) + '</b> <small>' + esc(x.why) + '</small></button></li>'; }).join('') : '<li class="db-empty">Nothing found. Try another word.</li>';
+  }
+  function levelFor(st) {
+    var c = st.course, integrated = c && c !== 'other' ? /\b(MEng|MSci|MPharm|MEngArch|MBBS)\b/.test(c.n) : false;
+    return Math.min(integrated ? 7 : 6, 3 + (st.year || 1));
+  }
   function suggest() {
     var st = S.setup; st.sugg = null; renderSetup();
-    var p;
-    if (st.course && st.course !== 'other') {
-      var list = (st.course.y[String(st.year)] || []);
-      var codes = list.map(function (m) { return m.c; });
-      p = codes.length ? rest('ucl_modules?select=code,title,level,department,credits&code=in.(' + codes.join(',') + ')').then(function (rows) {
+    var c = st.course, lvl = levelFor(st), p;
+    if (c && c !== 'other' && c.legacy && c.legacy.y[String(st.year)]) {
+      var list = c.legacy.y[String(st.year)], codes = list.map(function (m) { return m.c; });
+      p = rest('ucl_modules?select=code,title,level,department,credits&code=in.(' + codes.join(',') + ')').then(function (rows) {
         var byCode = {}; (rows || []).forEach(function (r) { byCode[r.code] = r; });
         return list.filter(function (m) { return byCode[m.c]; }).map(function (m) { var r = byCode[m.c]; r.compulsory = m.s === 'c'; return r; });
-      }) : Promise.resolve([]);
+      });
+    } else if (c && c !== 'other' && c.prog) {
+      p = rest('ucl_modules?select=code,title,level,department,credits,mtype,year_of_study&uni=eq.' + st.uni + '&programmes=cs.' + encodeURIComponent('{"' + c.prog.replace(/"/g, '\\"') + '"}') + '&order=code.asc&limit=400').then(function (rows) {
+        return (rows || []).filter(function (m) { return m.year_of_study != null ? m.year_of_study === st.year : m.level === lvl; })
+          .map(function (m) { m.compulsory = /compulsory|core/i.test(m.mtype || '') && !/stream|option|elective/i.test(m.mtype || ''); return m; })
+          .sort(function (a, b) { return (b.compulsory ? 1 : 0) - (a.compulsory ? 1 : 0) || a.code.localeCompare(b.code); });
+      });
+    } else if (c && c !== 'other' && c.p && c.p.length) {
+      p = rest('ucl_modules?select=code,title,level,department,credits&uni=eq.ucl&level=eq.' + lvl + '&or=(' + c.p.map(function (x) { return 'code.like.' + x + '*'; }).join(',') + ')&order=code.asc&limit=150');
     } else {
-      var lvl = Math.min(7, 3 + (st.year || 1));
-      p = rest('ucl_modules?select=code,title,level,department,credits&uni=eq.' + st.uni + '&department=eq.' + encodeURIComponent(st.dept) + '&level=eq.' + lvl + '&order=code.asc&limit=' + (st.uni !== 'ucl' ? 120 : 60));
+      var depts = st.subjects.map(function (s2) { return '"' + s2.dept.replace(/"/g, '') + '"'; });
+      p = depts.length ? rest('ucl_modules?select=code,title,level,department,credits&uni=eq.' + st.uni + '&department=in.(' + encodeURIComponent(depts.join(',')) + ')&level=eq.' + lvl + '&order=department.asc,code.asc&limit=160') : Promise.resolve([]);
     }
     p.then(function (rows) {
       st.sugg = rows || [];
@@ -430,13 +549,21 @@
     }).catch(function () { st.sugg = []; renderSetup(); });
   }
   function finishSetup() {
-    var st = S.setup;
-    var picks = Object.keys(st.picks).filter(function (c) { return st.picks[c]; }).map(function (c) { return st.picks[c]; });
-    var body = { user_id: uid(), uni: st.uni, course: st.course === 'other' ? (st.name.trim() || null) : st.course.name, course_id: st.course === 'other' ? null : st.course.id, department: st.course === 'other' ? (st.dept || null) : null, year: st.year, updated_at: new Date().toISOString() };
+    var st = S.setup, c = st.course;
+    var picks = Object.keys(st.picks).filter(function (k) { return st.picks[k]; }).map(function (k) { return st.picks[k]; });
+    var drop = Object.keys(st.current).filter(function (k) { return !st.picks[k]; });
+    var body = { user_id: uid(), uni: st.uni, course: c === 'other' ? (st.name.trim() || null) : c.n, course_id: c === 'other' ? null : (c.legacy ? c.legacy.id : c.id).slice(0, 200),
+      department: c === 'other' ? (st.subjects[0] ? st.subjects[0].dept : null) : null, year: st.year, updated_at: new Date().toISOString() };
     var btn = document.querySelector('[data-setup="finish"]'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
     rest('study_profile', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: body })
+      .then(function () { return Promise.all(drop.map(removeMod)); })
       .then(function () { return addMods(picks); })
-      .then(function () { S.profile = body; S.setup = null; track('dash_setup_done'); nav('/dashboard'); })
+      .then(function () {
+        S.profile = body; var was = st.editing; S.setup = null; S.today = null; lsSet('unizy:uni', body.uni);
+        track(was ? 'dash_course_changed' : 'dash_setup_done');
+        $('db').classList.remove('setup');
+        nav(was ? '/dashboard/account' : '/dashboard'); if (was) refreshStudy(true);
+      })
       .catch(function (e) { var er = $('db-serr'); if (er) { er.hidden = false; er.textContent = e.message; } if (btn) { btn.disabled = false; btn.textContent = 'Try again'; } });
   }
   document.addEventListener('click', function (e) {
@@ -444,26 +571,33 @@
     var b = e.target.closest('button'); if (!b) return;
     var st = S.setup;
     if (b.hasAttribute('data-uni')) {
-      st.uni = b.getAttribute('data-uni'); st.dept = ''; st.picks = {}; S.depts = null;
-      st.course = st.uni !== 'ucl' ? 'other' : null;
-      if (st.uni !== 'ucl') loadDepts().then(renderSetup);
-      renderSetup();
+      var u = b.getAttribute('data-uni'); if (u === st.uni) return;
+      st.uni = u; st.course = null; st.cq = ''; st.subjects = []; st.subq = ''; st.subres = null; S.depts = null;
+      if (!st.editing) st.picks = {};
+      lsSet('unizy:uni', u);
+      renderSetup(); loadCourses(u).then(renderSetup);
     } else if (b.hasAttribute('data-course')) {
       var id = b.getAttribute('data-course');
-      st.course = id === 'other' ? 'other' : S.courses.filter(function (c) { return c.id === id; })[0];
-      if (id === 'other' && !S.depts) loadDepts().then(renderSetup);
+      st.course = id === 'other' ? 'other' : (S.coursesBy[st.uni] || []).filter(function (c) { return c.id === id; })[0] || null;
+      if (id === 'other' && !st.name) st.name = st.cq.trim();
+      if (st.course && st.course !== 'other' && st.year && st.year > st.course.y) st.year = null;
       renderSetup();
-    } else if (b.hasAttribute('data-year')) { st.year = +b.getAttribute('data-year'); renderSetup(); }
+      if (id === 'other') { var ci = $('db-cname'); if (ci) ci.focus(); }
+    } else if (b.hasAttribute('data-subadd')) {
+      var x = (st.subres || [])[+b.getAttribute('data-subadd')]; if (x) st.subjects.push({ dept: x.dept }); st.subq = ''; st.subres = null; renderSetup();
+      var sq = $('db-subq'); if (sq) sq.focus();
+    } else if (b.hasAttribute('data-subrm')) { st.subjects.splice(+b.getAttribute('data-subrm'), 1); renderSetup(); }
+    else if (b.hasAttribute('data-year')) { st.year = +b.getAttribute('data-year'); renderSetup(); }
     else if (b.hasAttribute('data-addpick')) {
-      var c = b.getAttribute('data-addpick'), m = (st.results || []).filter(function (x) { return x.code === c; })[0];
+      var c = b.getAttribute('data-addpick'), m = (st.results || []).filter(function (x2) { return x2.code === c; })[0];
       if (m) st.picks[c] = m; st.q = ''; st.results = []; renderSetup();
     } else {
       var a = b.getAttribute('data-setup');
-      if (a === 'next1') {
-        if (st.course === 'other' && !st.dept) { var er = $('db-serr'); er.hidden = false; er.textContent = 'Choose your main department.'; return; }
-        st.step = 2; renderSetup();
-      } else if (a === 'next2') { st.step = 3; suggest(); }
+      if (a === 'next1') { st.step = 2; renderSetup(); }
+      else if (a === 'next2') { st.step = 3; suggest(); }
       else if (a === 'back') { st.step = Math.max(1, st.step - 1); renderSetup(); }
+      else if (a === 'unpick') { st.course = null; renderSetup(); var cq = $('db-cq'); if (cq) cq.focus(); }
+      else if (a === 'cancel') { S.setup = null; $('db').classList.remove('setup'); nav('/dashboard/account'); }
       else if (a === 'finish') finishSetup();
     }
   });
@@ -472,16 +606,18 @@
     var t = e.target;
     if (t.hasAttribute && t.hasAttribute('data-pick')) {
       var c = t.getAttribute('data-pick'), st = S.setup;
-      var m = (st.sugg || []).filter(function (x) { return x.code === c; })[0] || st.picks[c];
+      var m = (st.sugg || []).filter(function (x) { return x.code === c; })[0] || st.picks[c] || S.mods.filter(function (x) { return x.code === c; })[0];
       if (t.checked) st.picks[c] = m; else delete st.picks[c];
       renderSetup();
     }
-    if (t.id === 'db-dept') { S.setup.dept = t.value; }
   });
   document.addEventListener('input', function (e) {
     if (!S.setup) return;
-    if (e.target.id === 'db-sq') setupSearch(e.target.value);
-    if (e.target.id === 'db-cname') S.setup.name = e.target.value;
+    var id = e.target.id;
+    if (id === 'db-sq') setupSearch(e.target.value);
+    else if (id === 'db-cname') { S.setup.name = e.target.value; var nb = document.querySelector('[data-setup="next1"]'); if (nb) nb.disabled = !(S.setup.name.trim() && S.setup.subjects.length); }
+    else if (id === 'db-cq') { S.setup.cq = e.target.value; renderSetup(); }
+    else if (id === 'db-subq') subSearch(e.target.value);
   });
 
   // ---------- Home: Today ----------
@@ -589,7 +725,7 @@
   }
   function progressHtml() {
     if (!S.mods.length) return '';
-    return '<section class="db-sec"><div class="mk-row"><h2>Your modules</h2><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div><ul class="td-prog">' + S.mods.map(function (m) {
+    return '<section class="db-sec"><div class="mk-row"><h2>Your modules</h2><span class="mk-row start"><a class="btn line small" href="/dashboard/account#course">Change course or modules</a><a class="btn line small" href="/dashboard/practice">+ Add a module</a></span></div><ul class="td-prog">' + S.mods.map(function (m) {
       var tps = topicsOf(m.code) || [], ms = tps.length ? masteryOf(m.code) : null, cd = m.exam_date ? ST.countdown(m.exam_date) : '', d = modData(m.code);
       var dots = tps.length ? '<span class="td-dots" aria-hidden="true">' + tps.map(function (t) { var rs = topicStatus(m.code, t.position, d); return '<i class="dot ' + (rs || 'n') + '" title="T' + (t.position + 1) + ' ' + esc(t.title) + '"></i>'; }).join('') + '</span>' : '';
       var p = ms ? '<span class="td-pline">' + statusPill(ms, true) + '<b>' + ms.pct + '%</b><span>' + ms.started + '/' + ms.total + ' topics</span></span><span class="mk-bar' + (ms.pct >= 70 ? ' done' : '') + '"><i style="width:' + Math.max(ms.started ? 3 : 0, ms.pct) + '%"></i></span>' + dots
@@ -892,14 +1028,18 @@
     var el = $('db-account'), s = getSession() || {}, u = s.user || {}, p = S.profile || {}, pl = S.plan;
     var plan = !pl ? 'Loading…' : pl.tier === 'pro' ? 'Pro until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : pl.tier === 'trial' ? 'Free trial until ' + new Date(pl.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) + (pl.assessPerDay ? '. Today: ' + Math.max(0, pl.assessLeft) + ' of ' + pl.assessPerDay + ' markings and ' + Math.max(0, pl.actionsLeft) + ' of ' + pl.actionsPerDay + ' tutor questions left' : '') : 'Free trial ended. Go Pro to keep using marking and the tutor';
     el.innerHTML = '<header class="db-hello"><h1>Account</h1></header>' +
-      '<section class="mk-card"><dl class="db-dl"><dt>Name</dt><dd>' + esc(u.name || '–') + '</dd><dt>Email</dt><dd>' + esc(u.email || '') + '</dd><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || '–') + (p.year ? ', Year ' + p.year : '') + ' <button type="button" class="mk-clear" id="db-recourse">Change</button></dd><dt>Plan</dt><dd>' + esc(plan) + '</dd></dl>' +
+      '<section class="mk-card"><dl class="db-dl"><dt>Name</dt><dd>' + esc(u.name || '–') + '</dd><dt>Email</dt><dd>' + esc(u.email || '') + '</dd><dt>Plan</dt><dd>' + esc(plan) + '</dd></dl>' +
       '<div class="mk-row start">' + (pl && pl.tier === 'pro' ? (CFG.stripe && CFG.stripe.portal ? '<a class="btn line small" href="' + esc(CFG.stripe.portal) + '" target="_blank" rel="noopener">Manage billing</a>' : '') : '<a class="btn primary small" href="/pricing">Go Pro</a>') + '<a class="btn line small" href="/reset.html">Change password</a><button type="button" class="btn line small" id="db-logout">Log out</button><button type="button" class="btn line small" id="db-tour">Replay the dashboard tour</button></div></section>' +
-      '<section class="mk-card"><h2>Your modules</h2><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="mk-x" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">×</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><a class="btn line small" href="/dashboard/practice">+ Add a module</a></section>' +
+      '<section class="mk-card" id="db-course"><div class="mk-row"><h2>Your course and modules</h2><button type="button" class="btn primary small" id="db-recourse">Change course</button></div>' +
+      '<dl class="db-dl"><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || 'Not set') + '</dd><dt>Year</dt><dd>' + (p.year ? 'Year ' + p.year : '–') + '</dd></dl>' +
+      '<p class="mk-fine">Changing course lets you pick a different university, course or year, then choose which modules to keep. Your marked answers and flashcards stay.</p>' +
+      '<h3 class="db-h3">Modules (' + S.mods.length + ')</h3><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="db-rmbtn" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">Remove</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><div class="mk-row start"><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div></section>' +
       '<p class="db-more">Need help? Email <a href="mailto:' + esc(CFG.contactEmail || 'hello@unizy.uk') + '">' + esc(CFG.contactEmail || 'hello@unizy.uk') + '</a>. Notes and flashcards are in the <a href="/app">study tools</a>.</p>';
     $('db-logout').onclick = logout;
-    $('db-tour').onclick = function () { nav('/dashboard'); track('tour_replay'); setTimeout(function () { if (window.UnizyTour) window.UnizyTour.start(tourCtx()); }, 700); };
-    $('db-recourse').onclick = function () { S.setup = null; S.profile = null; loadCourses().then(renderSetup); };
-    el.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { removeMod(b.getAttribute('data-rm')).then(renderAccount); }; });
+    $('db-tour').onclick = replayTour;
+    $('db-recourse').onclick = function () { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); };
+    el.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { var c = b.getAttribute('data-rm'); if (!confirm('Remove ' + c + ' from your dashboard? Your marked answers and flashcards for it are kept.')) return; b.disabled = true; removeMod(c).then(function () { S.today = null; renderAccount(); refreshStudy(true); }); }; });
+    if (location.hash === '#course') { var cs = $('db-course'); if (cs) cs.scrollIntoView({ block: 'start' }); }
   }
   function logout() {
     token().then(function (t) { if (t) fetch(CFG.supabaseUrl + '/auth/v1/logout', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t } }).catch(function () {}); });
@@ -917,7 +1057,7 @@
       if (!t) { try { localStorage.removeItem(SKEY); } catch (e) {} toLogin(); return; }
       return Promise.all([
         rest('study_profile?select=uni,course,course_id,department,year').then(function (r) { S.profile = (r && r[0]) || null; }),
-        loadMods(), loadPlan(), loadCourses()
+        loadMods(), loadPlan()
       ]).then(function () {
         // older accounts that already have modules skip set-up
         if (!S.profile && S.mods.length) S.profile = { course: null, year: null };

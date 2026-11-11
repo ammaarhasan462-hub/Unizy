@@ -731,3 +731,35 @@ body:not(:has(.db)) .mk-insp{top:84px}
 @media (max-width:900px){.db{grid-template-columns:1fr}.db-seg{margin:0}.db-tab{max-width:none}}
 body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary,body.sx .db-main details summary{font-family:var(--sans)}body.sx .mk-unitsbox>summary h2{font-family:var(--sans)}
 .mk-wrap:has(.mk-ws){max-width:1240px}
+
+/* set-up: universities, course search, subjects (Nov 2026) */
+.db-unis .db-course{display:flex;flex-direction:column;gap:2px}
+.db-unis .db-course b{font-size:17px}.db-unis .db-course small{font-weight:500;font-size:13px;opacity:.75}
+.db-course.soon{opacity:.5;cursor:not-allowed;border-style:dashed}
+.db-cq{font:inherit;font-size:17px;padding:14px 16px;border:1.5px solid #C9D1CB;border-radius:14px;background:#fff;color:var(--ink);width:100%;max-width:620px;box-sizing:border-box;margin:6px 0 4px}
+.db-cq:focus{outline:0;border-color:var(--ink);box-shadow:0 0 0 3px #E8DCC0}
+.db-cq-h{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#7C8A85;margin:14px 0 0}
+.db-clist{margin-top:8px!important}
+.db-clist .db-course{font-weight:600;font-size:15px;padding:13px 16px}
+.db-notlisted{font:inherit;font-weight:700;font-size:15px;color:var(--accent-d);background:none;border:0;padding:8px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.db-picked{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#fff;border:1.5px solid var(--ink);border-radius:14px;padding:14px 16px;max-width:620px;margin:8px 0}
+.db-picked span{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#7C8A85}
+.db-picked b{font-size:17px;flex:1}
+.db-chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
+.db-chip2{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#fff;border-radius:999px;padding:6px 6px 6px 12px;font-size:14px;font-weight:600}
+.db-chip2 button{border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1}
+.db-other #db-subq{margin-bottom:2px}
+.db-replay{font:inherit;font-size:13px;font-weight:600;color:#4B5B55;background:none;border:0;padding:6px 4px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.db-replay:hover{color:var(--ink)}
+.db-mh-a{display:flex;gap:12px}
+.db-rmbtn{font:inherit;font-size:13px;font-weight:600;color:#9B2C1F;background:#FBEDEA;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+.db-rmbtn:hover{background:#F6D9D3}
+.db-h3{font-family:var(--sans)!important;font-size:15px!important;margin:18px 0 8px!important}
+#db-course .db-dl{margin-top:4px}
+@media (max-width:900px){.db-replay{order:5}}
+
+/* public module search: university tabs */
+.mk-unitabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 18px; }
+.mk-unitabs button { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 1.5px solid rgb(23 48 42 / .16); background: #fff; color: #17302A; cursor: pointer; }
+.mk-unitabs button:hover { border-color: rgb(23 48 42 / .4); }
+.mk-unitabs button.on { background: #17302A; border-color: #17302A; color: #F4F4EF; }

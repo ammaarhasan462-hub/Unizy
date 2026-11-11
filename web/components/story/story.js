@@ -5,6 +5,16 @@
 // The centrepiece is a 3D exam answer booklet built from CSS 3D faces. It rises, twists, turns over,
 // opens to show an answer being marked against the mark scheme, gets stamped 2:1 and then First.
 
+import { uniCopy, getUni, loadStats } from './unis.js';
+
+const A = uniCopy(''); // server-rendered copy (all universities); applyUni() swaps it in the browser
+const u = (k, html) => `<span data-u="${k}">${html}</span>`;
+const tagsHtml = (c) => c.tags.map((t) => `<span class="uz-tag">${t}</span>`).join('') + `<span class="uz-tag"><b>${c.more}</b> more</span>`;
+const modsHtml = (c) => c.mods.map(([k, t]) => `<span><code>${k}</code>${t}</span>`).join('');
+const mqHtml = (items) => items.map((x) => `<span>${x}</span>`).join('');
+const courseHtml = (c) => c.course[1].map(([k, t, on]) => `<li${on ? ' class="on"' : ''}><code>${k}</code>${t}<span>${on ? '✓' : '+'}</span></li>`).join('');
+const backList = (c) => c.back.map(([k, v]) => `<li>${k}<b>${v}</b></li>`).join('') + '<li>unizy.uk<b>✦</b></li>';
+
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const ss = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -22,7 +32,7 @@ function pattern(color) {
 }
 const PAT_L = pattern('#F1DDA9');
 const PAT_D = pattern('#17302A');
-const pat = (light, speed = 0.15) => `<div class="uz-pat" data-pat="${speed}" style="background-image:${light ? PAT_L : PAT_D}" aria-hidden="true"></div>`;
+const pat = (light, speed = 0.15) => `<div class="uz-pat" data-pat="${speed}" data-light="${light ? 1 : 0}" style="background-image:${light ? PAT_L : PAT_D}" aria-hidden="true"></div>`;
 
 const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const mega = (lines, cls = '', tag = 'h2') =>
@@ -32,11 +42,11 @@ const mega = (lines, cls = '', tag = 'h2') =>
 const SEAL = `<svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="uzsealp" d="M50 50 m-38 0 a38 38 0 1 1 76 0 a38 38 0 1 1 -76 0"/></defs><text><textPath href="#uzsealp">MARKED · AGAINST · YOUR · DEPARTMENT ·</textPath></text></svg>`;
 const COVER = `<div class="cv-top"><span class="lg">U</span>UNIZY<em>2026</em></div>
   <div class="cv-title">Examination<br>answer<br>booklet</div>
-  <div class="cv-mod">ECON0013 · Microeconomics</div>
+  <div class="cv-mod" data-u="book">${A.book[0]} · ${A.book[1]}</div>
   <div class="cv-seal">${SEAL}<span>U</span></div>
   <div class="cv-foot"><div class="cv-box">Candidate<b>UZY-0013</b></div><div class="cv-bar"></div></div>`;
-const BACK = `<div class="bk-h">Every UCL<br>module.</div><div class="bk-s">Marked like your department marks.</div>
-  <ul><li>Modules<b>6,682</b></li><li>Departments<b>81</b></li><li>Criteria sets<b>10</b></li><li>unizy.uk<b>✦</b></li></ul><div class="cv-bar"></div>`;
+const BACK = `<div class="bk-h" data-u="backH">${A.backH}</div><div class="bk-s">Marked like your department marks.</div>
+  <ul data-u="back">${backList(A)}</ul><div class="cv-bar"></div>`;
 
 const BOOK = `
 <div class="uz-obj" aria-hidden="true">
@@ -44,7 +54,7 @@ const BOOK = `
   <div class="uz-objin">
     <div class="uz-book">
       <div class="uz-face f-back">${BACK}<i class="f-shade"></i></div>
-      <div class="uz-face f-spine"><span>UNIZY · ECON0013 · ANSWER BOOKLET</span></div>
+      <div class="uz-face f-spine"><span>UNIZY · <span data-u="code">${A.book[0]}</span> · ANSWER BOOKLET</span></div>
       <div class="uz-face f-er"></div><div class="uz-face f-et"></div><div class="uz-face f-eb"></div>
       <div class="uz-face f-page">
         <div class="pg-q">Q3 · Explain why a profit-maximising monopolist produces on the elastic part of demand</div>
@@ -59,7 +69,7 @@ const BOOK = `
       <div class="f-cover">
         <div class="uz-face f-out">${COVER}<i class="f-sheen"></i><i class="f-shade"></i></div>
         <div class="uz-face f-in">
-          <div class="ms-h">Mark<br>scheme</div><div class="ms-s">UCL Economics · Year 1 criteria</div>
+          <div class="ms-h">Mark<br>scheme</div><div class="ms-s" data-u="crit">${A.crit}</div>
           <div class="ms-row"><span class="ms-chip ch-21">2:1</span>Knowledge and understanding</div>
           <div class="ms-row"><span class="ms-chip ch-22">2:2</span>Analysis: result stated, not derived</div>
           <div class="ms-row"><span class="ms-chip ch-1">First</span>Structure and communication</div>
@@ -94,21 +104,21 @@ const HERO = `
     <div class="uz-call" data-call="3" style="--r:4deg">✦ 3 changes to go up a class</div>
 
     <div class="uz-info" data-f="0">
-      <span class="uz-kick">Every UCL module</span>
+      <span class="uz-kick" data-u="kick">${A.kick}</span>
       <p>Write an answer to any exam question in your module. Unizy marks it against <b>your department’s own grading criteria</b>, tells you your class, and shows you exactly what would move you up one.</p>
       <div class="row">
         <a href="/signup" class="uz-btn uz-btn-gold" data-track="lp_hero_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Get my first answer marked, free</span>${ARROW}</a>
         <a href="#how" class="uz-btn uz-btn-line">See how it works</a>
       </div>
-      <ul><li>6,682 UCL modules</li><li>Free 3-day trial</li><li>No card needed</li></ul>
+      <ul><li data-u="modulesLine">${A.modulesLine}</li><li>Free 3-day trial</li><li>No card needed</li></ul>
     </div>
     <div class="uz-info" data-f="1">
       <span class="uz-kick">01 · Practise</span>
       <p>Exam-style questions written in <b>your module’s style</b>, or paste one from your own past paper. Turn on the 45-minute timer for exam conditions.</p>
-      <div class="uz-tags"><span class="uz-tag">ECON0013</span><span class="uz-tag">HIST0003</span><span class="uz-tag">LAWS0001</span><span class="uz-tag"><b>+6,679</b> more</span></div>
+      <div class="uz-tags" data-u="tags">${tagsHtml(A)}</div>
     </div>
     <div class="uz-info" data-f="2">
-      <p>Marked against <b>UCL’s grade bands</b> and the criteria <b>your department publishes</b>.</p>
+      <p>Marked against <b data-u="bands">${A.bands}</b> and the criteria <b>your department publishes</b>.</p>
     </div>
     <div class="uz-info" data-f="3">
       <span class="uz-kick">02 · Go up a class</span>
@@ -118,7 +128,7 @@ const HERO = `
 
     <div class="uz-dots" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i></div>
     <div class="uz-corner uz-c-bl"><i></i>Scroll</div>
-    <div class="uz-corner uz-c-br">UCL · <b>Exam practice</b><br>Marked like your department marks</div>
+    <div class="uz-corner uz-c-br"><span data-u="corner">${A.corner}</span><br>Marked like your department marks</div>
   </div>
 </section>`;
 
@@ -130,9 +140,9 @@ const SPLIT = `
       <span class="uz-kick">How it works · about ten minutes</span>
       <h2><span class="f">No guesswork.</span><span class="o">No waiting for</span><span class="f">results day.</span></h2>
       <div class="sp-steps">
-        <div class="sp-step on"><span class="n">01</span><div><h3>Pick your course and modules</h3><p>Sign up and choose your course and year. Your modules sit in your dashboard, and any of UCL’s 6,682 can be added.</p></div></div>
+        <div class="sp-step on"><span class="n">01</span><div><h3>Pick your course and modules</h3><p>Sign up and choose your course and year. Your modules sit in your dashboard, and ${u('anyOf', A.anyOf)} can be added.</p></div></div>
         <div class="sp-step"><span class="n">02</span><div><h3>Answer an exam-style question</h3><p>Pick one written in your module’s style, or paste one from your own past paper. Timer on for exam conditions.</p></div></div>
-        <div class="sp-step"><span class="n">03</span><div><h3>See your class, and how to go up one</h3><p>Marked against UCL’s grade bands and your department’s criteria, with the 3 changes that would move you up a class.</p></div></div>
+        <div class="sp-step"><span class="n">03</span><div><h3>See your class, and how to go up one</h3><p>Marked against ${u('bands', A.bands)} and your department’s criteria, with the 3 changes that would move you up a class.</p></div></div>
       </div>
     </div>
     <div class="sp-right">
@@ -141,21 +151,16 @@ const SPLIT = `
       <div class="sp-cards" aria-hidden="true">
         <div class="sp-card">
           <div class="t"><span>Your course</span><span>Step 1</span></div>
-          <h4>Economics BSc · Year 1</h4>
-          <ul class="sp-mods">
-            <li class="on"><code>ECON0013</code>Microeconomics<span>✓</span></li>
-            <li class="on"><code>ECON0019</code>Quantitative Economics<span>✓</span></li>
-            <li class="on"><code>HIST0003</code>Approaching History<span>✓</span></li>
-            <li><code>POLS0006</code>Introduction to Politics<span>+</span></li>
-          </ul>
+          <h4 data-u="course">${A.course[0]}</h4>
+          <ul class="sp-mods" data-u="courseMods">${courseHtml(A)}</ul>
         </div>
         <div class="sp-card">
-          <div class="t"><span>ECON0013 · Q3</span><span class="sp-timer">⏱ 38:12 left</span></div>
+          <div class="t"><span><span data-u="code">${A.book[0]}</span> · Q3</span><span class="sp-timer">⏱ 38:12 left</span></div>
           <h4>“Explain why a profit-maximising monopolist always produces on the elastic part of the demand curve.”</h4>
           <div class="sp-type"><span data-type></span><i></i></div>
         </div>
         <div class="sp-card">
-          <div class="t"><span>Marked · UCL Economics criteria</span><span>Step 3</span></div>
+          <div class="t"><span>Marked · <span data-u="critShort">${A.critShort}</span></span><span>Step 3</span></div>
           <div class="sp-res"><span class="cls">2:1</span><div><b>62–66</b><small>predicted mark range</small></div></div>
           <div class="sp-fix"><div>1. Derive MR = P(1 + 1/ε) before using it</div><div>2. Add the labelled diagram</div><div>3. Finish with the intuition</div></div>
         </div>
@@ -169,19 +174,19 @@ const ICON_CHECK = '<svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/>
 const ICON_CHAT = '<svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>';
 const ICON_UP = '<svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>';
 
-const GAP_TEXT = 'At A-level you had past papers and *mark* *schemes.* At UCL you get the papers, and *nothing* to check your answers against.';
+const GAP_TEXT = 'At A-level you had past papers and *mark* *schemes.* @AT you get the papers, and *nothing* to check your answers against.';
 const GAP = `
 <section class="uz-gap" data-gap aria-label="The gap">
   ${pat(false, 0.08)}
   <div class="uz-wrap">
     <div class="gap-top">
-    <p class="gap-banner" data-words>${GAP_TEXT.split(' ').map((w) => `<span class="w${w.startsWith('*') ? ' hi' : ''}">${w.replace(/\*/g, '')}</span>`).join(' ')}</p>
+    <p class="gap-banner" data-words>${GAP_TEXT.split(' ').map((w) => w === '@AT' ? `<span class="w" data-u="gapAt">${A.gapAt}</span>` : `<span class="w${w.startsWith('*') ? ' hi' : ''}">${w.replace(/\*/g, '')}</span>`).join(' ')}</p>
 
-    <div class="gap-float" data-speed="-0.12" data-rot="-7" style="right:2%;top:-4%"><div class="gf"><span class="t">Past paper · 2024</span>ECON0013, Section B, Q3<br><span class="no">No mark scheme</span></div></div>
+    <div class="gap-float" data-speed="-0.12" data-rot="-7" style="right:2%;top:-4%"><div class="gf"><span class="t">Past paper · 2024</span><span data-u="code">${A.book[0]}</span>, Section B, Q3<br><span class="no">No mark scheme</span></div></div>
     <div class="gap-float hide-m" data-speed="0.14" data-rot="5" style="left:1%;top:66%"><div class="gf dark"><span class="t">Course group chat · 1:12am</span>does anyone actually know what a First looks like??</div></div>
     <div class="gap-float" data-speed="-0.1" data-rot="4" style="right:6%;top:50%"><div class="gf hand">is this a 2:1 or a 2:2??</div></div>
     <div class="gap-float hide-m" data-speed="0.16" data-rot="-4" style="left:36%;top:74%"><div class="gf"><span class="t">Results day</span><span class="big">Too late.</span>That’s when you find out.</div></div>
-    <div class="gap-float hide-m" data-speed="-0.14" data-rot="6" style="right:20%;top:86%"><div class="gf dark"><span class="t">Professor UCL</span>Show the decomposition on a diagram, then sign each effect.</div></div>
+    <div class="gap-float hide-m" data-speed="-0.14" data-rot="6" style="right:20%;top:86%"><div class="gf dark"><span class="t" data-u="tutor">${A.tutor}</span>Show the decomposition on a diagram, then sign each effect.</div></div>
     </div>
 
     <div class="gap-why">
@@ -196,7 +201,7 @@ const GAP = `
         <div class="mini"><div class="r"><span class="ms-chip ch-21">2:1</span>Argument answers the question</div><div class="r"><span class="ms-chip ch-1">First</span>Evidence well-chosen</div><div class="r"><span class="ms-chip ch-22">2:2</span>Historiography not engaged</div></div>
       </div>
       <div class="gcol" data-col>
-        <span class="ic">${ICON_CHAT}</span><h3>Professor UCL,<br>every module</h3>
+        <span class="ic">${ICON_CHAT}</span><h3 data-u="tutorH">${A.tutorH}</h3>
         <p>Ask why you lost marks and how to fix it, in your module’s own terms.</p>
         <div class="mini"><div class="bub me">How would that earn marks?</div><div class="bub tu">Label the compensated budget line, then sign each effect. That’s 2:2 to 2:1.</div></div>
       </div>
@@ -228,26 +233,18 @@ const UNLOCK = `
   </div>
 </section>`;
 
-const MODS = [
-  ['ECON0013', 'Microeconomics'], ['HIST0003', 'Approaching History'], ['POLS0006', 'Introduction to Politics'], ['LAWS0001', 'Contract Law'],
-  ['COMP0002', 'Principles of Programming'], ['STAT0002', 'Probability and Statistics'], ['ANAT0001', 'Anatomy and Development'],
-  ['PHIL0001', 'Ancient Greek Philosophy'], ['ELEC0002', 'Electronic Engineering'], ['BIOL0001', 'Quantitative Biology'],
-];
-const mq = (items, cls, d) => `<div class="uz-mq ${cls}" style="--d:${d}s" aria-hidden="true"><div>${[...items, ...items].map((x) => `<span>${x}</span>`).join('')}</div></div>`;
+const mq = (key, html, cls, d) => `<div class="uz-mq ${cls}" style="--d:${d}s" aria-hidden="true"><div data-u="${key}">${html}${html}</div></div>`;
 
 const NUMS = `
 <section class="uz-nums" aria-label="Unizy in numbers">
   <div class="uz-wrap">
-    <h2 class="nm-h">Built for UCL. <span class="uz-serif">All of it.</span></h2>
+    <h2 class="nm-h" data-u="numsH">${A.numsH}</h2>
     <div class="nm-grid">
-      <div class="nm"><b data-count="6682">6,682</b><span>UCL modules, from the official catalogue</span></div>
-      <div class="nm"><b data-count="81">81</b><span>UCL departments covered</span></div>
-      <div class="nm"><b data-count="10">10</b><span>sets of marking criteria (UCL-wide + 9 departments)</span></div>
-      <div class="nm"><b data-count="3">3</b><span>concrete changes on every marked answer</span></div>
+      ${A.nums.map(([v, t], i) => `<div class="nm"><b data-count="${v}" data-n="${i}">${Number(v).toLocaleString('en-GB')}</b><span data-u="nums${i}">${t}</span></div>`).join('')}
     </div>
   </div>
-  ${mq(MODS.map(([c, t]) => `<code>${c}</code>${t}`), 'mq-a', 60)}
-  ${mq(['Marked like your department marks', 'Free 3-day trial', 'No card needed', 'Every UCL module', 'Professor UCL'], 'mq-b rev', 34)}
+  ${mq('mods', modsHtml(A), 'mq-a', 60)}
+  ${mq('mq', mqHtml(A.mq), 'mq-b rev', 34)}
 </section>`;
 
 export const STORY_TOP = `<div class="uz" data-uz>${HERO}${SPLIT}${GAP}${UNLOCK}${NUMS}</div>`;
@@ -295,6 +292,25 @@ function pose(p, mobile) {
 const FRAMES = [[-1, -1, 0.13, 0.2], [0.21, 0.27, 0.41, 0.46], [0.47, 0.53, 0.69, 0.73], [0.74, 0.8, 2, 2]];
 const TYPED = 'A monopolist maximises profit where MR = MC. Since MR = P(1 + 1/ε) and MC is positive, MR must be positive, so |ε| > 1. Demand is therefore elastic at the chosen output…';
 
+// Swap every university-specific line, figure, module and doodle colour in place ('' = all universities).
+export function applyUni(root, id) {
+  if (!root) return;
+  const c = uniCopy(id);
+  const set = (k, html) => root.querySelectorAll(`[data-u="${k}"]`).forEach((el) => { if (el.innerHTML !== html) el.innerHTML = html; });
+  set('book', c.book[0] + ' · ' + c.book[1]); set('code', c.book[0]);
+  set('backH', c.backH); set('back', backList(c)); set('crit', c.crit); set('critShort', c.critShort);
+  set('kick', c.kick); set('modulesLine', c.modulesLine); set('tags', tagsHtml(c)); set('bands', c.bands); set('corner', c.corner);
+  set('anyOf', c.anyOf); set('course', c.course[0]); set('courseMods', courseHtml(c));
+  set('gapAt', c.gapAt); set('tutor', c.tutor); set('tutorH', c.tutorH); set('numsH', c.numsH);
+  c.nums.forEach(([v, t], i) => {
+    set('nums' + i, t);
+    root.querySelectorAll(`[data-n="${i}"]`).forEach((b) => { b.dataset.count = v; if (b.dataset.done) b.textContent = Number(v).toLocaleString('en-GB'); });
+  });
+  set('mods', modsHtml(c) + modsHtml(c)); set('mq', mqHtml(c.mq) + mqHtml(c.mq));
+  const L = pattern(c.pat[0]), D = pattern(c.pat[1]);
+  root.querySelectorAll('[data-pat]').forEach((el) => { el.style.backgroundImage = el.dataset.light === '1' ? L : D; });
+}
+
 export function mountStory(root, opts = {}) {
   if (!root) return () => {};
   const track = opts.track || (() => {});
@@ -307,6 +323,11 @@ export function mountStory(root, opts = {}) {
   // signed-in visitors: CTAs go to the dashboard
   if (opts.authed) $$('[data-auth-href]').forEach((a) => { a.href = a.dataset.authHref; const s = a.querySelector('span'); if (s) s.textContent = a.dataset.authText; });
   $$('[data-track]').forEach((a) => on(a, 'click', () => track(a.dataset.track)));
+
+  // the university picked in the intro or in the tabs: its copy, modules and figures
+  applyUni(root, getUni());
+  on(window, 'unizy:uni', (e) => applyUni(root, e.detail || ''));
+  if (opts.sbUrl) loadStats(opts.sbUrl, opts.sbKey).then((ok) => { if (ok) applyUni(root, getUni()); });
 
   // echo layers behind each big headline (the stacked outline copies)
   $$('[data-echo]').forEach((h) => {
@@ -362,12 +383,12 @@ export function mountStory(root, opts = {}) {
     ents.forEach((en) => {
       if (!en.isIntersecting || counted.has(en.target)) return;
       counted.add(en.target);
-      const el = en.target, end = +el.dataset.count, t0 = performance.now(), dur = end > 100 ? 1800 : 1100;
-      if (reduce) return;
+      const el = en.target, t0 = performance.now(), dur = +el.dataset.count > 100 ? 1800 : 1100;
+      if (reduce) { el.dataset.done = 1; el.textContent = (+el.dataset.count).toLocaleString('en-GB'); return; }
       const step = (now) => {
         const k = clamp((now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
-        el.textContent = Math.round(end * e).toLocaleString('en-GB');
-        if (k < 1) requestAnimationFrame(step);
+        el.textContent = Math.round(+el.dataset.count * e).toLocaleString('en-GB');
+        if (k < 1) requestAnimationFrame(step); else el.dataset.done = 1;
       };
       el.textContent = '0';
       requestAnimationFrame(step);

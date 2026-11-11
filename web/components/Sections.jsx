@@ -17,7 +17,7 @@ const ICONS = {
 
 export function Trust() {
   const cards = [
-    ['doc', 'Your department’s criteria', 'Every answer is marked against UCL’s grade bands for your year and, where your department publishes them, its own grade descriptors.'],
+    ['doc', 'Your department’s criteria', 'Every answer is marked against your university’s grade bands for your year (UCL, Imperial, Queen Mary or LSE) and, where your department publishes them, its own grade descriptors.'],
     ['shield', 'Practice, not coursework', 'Unizy is for exam practice. It refuses to mark work you’re going to submit, and it never writes work for you to hand in.'],
     ['pulse', 'Honest ranges', 'You always get a mark range, not a fake-precise number, and you can tell us your real mark so we keep checking the marker’s accuracy.'],
   ];
@@ -110,7 +110,7 @@ export function Pricing() {
           </Reveal>
           <Reveal delay={0.08}>
             <div className="relative h-full overflow-hidden rounded-[30px] p-px">
-              <div className="absolute inset-[-60%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,#3E6B5C_70deg,#B8862F_140deg,transparent_200deg)]" />
+              <div className="absolute inset-[-60%] animate-[spin_6s_linear_infinite] bg-[conic-gradient(from_0deg,transparent_0deg,var(--color-vio)_70deg,var(--color-cyan)_140deg,transparent_200deg)]" />
               <SpotCard className="relative h-full rounded-[29px] bg-white p-8">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-[22px] font-semibold">Pro</h3>
@@ -132,8 +132,8 @@ const QA = [
   ['Is this cheating?', 'No. Unizy is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
   ['Does it have my exact past papers?', 'We don’t host university exam papers. Paste a question from your own past paper and we’ll mark your answer to it, or use one of our exam-style questions written from the module’s official description.'],
   ['How accurate is the marking?', 'It’s a practice estimate, so you always see a mark range rather than a single number. We test the marker against real marked answers, module by module, and you can tell us your real mark to help keep it accurate.'],
-  ['Which modules?', 'All 6,682 modules in UCL’s public module catalogue. Practice questions are written the first time someone opens a module, then saved for everyone.'],
-  ['Is Unizy part of UCL?', 'No. Unizy is an independent revision tool built by a UCL student. It isn’t affiliated with or endorsed by UCL.'],
+  ['Which universities and modules?', 'UCL, Imperial, Queen Mary and LSE, with King’s next. That’s over 10,000 modules from each university’s own published catalogue, programme specifications or module directory, and every undergraduate course. Practice questions are written the first time someone opens a module, then saved for everyone.'],
+  ['Is Unizy part of my university?', 'No. Unizy is an independent revision tool built by a London student. It isn’t affiliated with or endorsed by UCL, Imperial, Queen Mary, LSE or any other university.'],
 ];
 
 export function Faq() {
@@ -210,7 +210,7 @@ export function Footer() {
           </nav>
         </div>
         <p className="mt-8 max-w-[900px] text-[12.5px] leading-relaxed text-dim">
-          Unizy is an independent revision tool for UCL students. It is not affiliated with or endorsed by UCL. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from UCL exam papers. The dashboard shown above is an illustration. © 2026 Unizy
+          Unizy is an independent revision tool for university students. It is not affiliated with or endorsed by UCL, Imperial College London, Queen Mary University of London, LSE or any other university. Marks are practice estimates, not official marks. Practice questions are written for revision and are not taken from any university’s exam papers. The dashboard shown above is an illustration. © 2026 Unizy
         </p>
       </div>
     </footer>

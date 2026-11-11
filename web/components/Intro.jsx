@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { hasSession, track } from '@/lib/site';
+import { setUni as saveUni } from './story/unis';
 import { COPY, EndCard, ProgressRail, StartTitle, Chapter, TopBar, chaptersFor, Em } from './intro/IntroChrome';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
@@ -144,6 +145,7 @@ export default function Intro() {
       const u = UNIS.find((x) => x.id === id && (x.live || preview)) ? id : 'ucl';
       pickedRef.current = true;
       track('intro_pick_' + u);
+      saveUni(u); // the homepage, and the dashboard after sign-up, open on this university
       setPicked(true);
       setTimeout(() => setPickerGone(true), 900);
       setUni(u);
