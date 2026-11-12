@@ -264,20 +264,20 @@ function facade(fam, T) {
               float tt = min(min(tx, ty), rd / dn);
               vec3 hp = vec3(px + du * tt, py + dv * tt, dn * tt);
               // shelves of stock on the walls, a counter, a pale floor, panel lights in the ceiling
-              vec3 rc = vec3(0.55, 0.53, 0.5);
+              vec3 rc = vec3(0.4, 0.38, 0.35);
               if (tt == ty && dv > 0.0) rc = vec3(0.9) * (0.6 + 0.8 * step(0.7, fract(hp.x * 0.5)) * step(0.6, fract(hp.z * 0.4)));
               else if (tt == ty) rc = kd > 0.5 && kd < 2.5 ? vec3(0.22, 0.13, 0.07) : vec3(0.62, 0.6, 0.56);
               else {
                 float sh = fract(hp.y / 0.42);
-                float cell = fh(vec2(floor((hp.x + hp.z) / 0.35), floor(hp.y / 0.42) + uh * 13.0));
-                vec3 stock = mix(vec3(0.7, 0.25, 0.12), vec3(0.15, 0.3, 0.6), cell);
-                stock = mix(stock, vec3(0.85, 0.8, 0.6), step(0.66, cell));
-                rc = mix(vec3(0.6, 0.57, 0.52), stock, step(0.15, sh) * step(hp.y, 2.2) * step(0.4, hp.y));
+                float cell = fh(vec2(floor((hp.x + hp.z) / 0.22), floor(hp.y / 0.42) + uh * 13.0));
+                vec3 stock = mix(vec3(0.42, 0.15, 0.08), vec3(0.08, 0.16, 0.34), cell) * step(0.12, fract((hp.x + hp.z) / 0.22));
+                stock = mix(stock, vec3(0.62, 0.58, 0.46), step(0.72, cell));
+                rc = mix(vec3(0.42, 0.4, 0.37), stock, step(0.15, sh) * step(hp.y, 2.2) * step(0.4, hp.y));
                 if (kd > 0.5 && kd < 2.5) rc = mix(vec3(0.32, 0.2, 0.12), rc, 0.35);
               }
-              rc *= mix(1.0, 0.55, clamp(hp.z / rd, 0.0, 1.0));
+              rc *= mix(1.0, 0.35, clamp(hp.z / rd, 0.0, 1.0));
               pc = rc * 0.06;
-              pEc = rc * open * sLit * 1.6;
+              pEc = rc * open * sLit * 0.6;
               pW = 1.0;
               if (shut > 0.5) {
                 float tag = step(0.82, fh(vec2(floor(fu * 0.8), floor(yy * 0.9) + uh * 5.0))) * step(yy, 2.0);
@@ -315,7 +315,7 @@ function facade(fam, T) {
             pc *= 0.8 + 0.2 * smoothstep(0.0, 1.0, yy);
             // far away the shopfront averages to its fascia, its glass and its light
             vec3 avgC = mix(wallC, mix(fas, vec3(0.04), 0.6), 0.8);
-            vec3 avgE = (open * 0.7 * sLit * 0.42 + 0.1 * step(0.55, fh(vec2(uh, 8.0)))) * (1.0 - shut);
+            vec3 avgE = (open * 0.7 * sLit * 0.2 + 0.06 * step(0.55, fh(vec2(uh, 8.0)))) * (1.0 - shut);
             diffuseColor.rgb = mix(avgC, pc, sa);
             fWin = mix(0.7, pW, sa);
             fGR = 0.05;
