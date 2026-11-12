@@ -21,12 +21,13 @@ The workflow runs monthly, so newly mapped buildings arrive on their own.
 1. Pick the top unticked item below.
 2. Branch from main.
 3. Implement the change, then rebake if needed with `python3 tools/city/bake_city.py`.
-4. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial` (needs Playwright and Chrome; frames go to `/tmp/shots`).
+4. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial`, `UNI=lse` and `UNI=qmul`, each on desktop and mobile (needs Playwright and Chrome; frames go to `/tmp/shots`).
 5. Compare against the previous night's renders, which are kept in `tools/city/renders/`.
 6. Merge to main only if the change is clearly better and nothing broke:
    - no console errors;
    - `engine up` within about 60 seconds under swiftshader;
-   - the mobile render still works.
+   - the mobile render still works;
+   - UCL, Imperial, LSE and Queen Mary all still look right.
 7. Tick the item, add a line to the log at the bottom, and save the 4-frame sheet to `tools/city/renders/<date>.jpg`.
 
 Keep to these limits:
