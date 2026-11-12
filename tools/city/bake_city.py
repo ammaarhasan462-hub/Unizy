@@ -313,6 +313,173 @@ def height_of(t, a, site, seed):
     return max(h, minh + 2.5), minh, src
 
 
+# ------------------------------------------------------------------ facade eras (ERA in web/components/intro/city.js)
+# 0 as classified, 1 Georgian and Regency terraces (stock brick or stucco over a rusticated stucco ground floor, black
+# railings, six-over-six sashes), 2 Victorian (red or stock brick with stone dressings and bay windows), 3 inter-war and
+# Edwardian Portland stone, 4 post-war concrete (ribbon windows, board-marked spandrels)
+ARCH_ERA = [(('georgian', 'regency', 'palladian', 'classicism', 'neoclassicism', 'neoclassical', 'greek_revival', 'italianate'), 1),
+            (('victorian', 'gothic', 'neo-gothic', 'gothic revival', 'gothic_revival', 'queen_anne', 'arts_and_crafts', 'tudor', 'romanesque', 'byzantine', 'flemish'), 2),
+            (('edwardian', 'baroque', 'art_deco', 'art deco', 'beaux-arts', 'beaux_arts', 'stripped_classicism', 'neo-baroque', 'interwar'), 3),
+            (('brutalism', 'brutalist', 'modernism', 'modern', 'international', 'post-war', 'postwar', 'streamline_moderne'), 4)]
+
+# streets whose terraces or blocks share one period (the area round each campus); everything else is inferred from its
+# mapped neighbours on the same street, then from the building's type
+STREET_ERA = {
+    # Bloomsbury, Fitzrovia, Marylebone, Islington (UCL); Holborn, Covent Garden, Clerkenwell (LSE)
+    1: ['Gower Street', 'Bedford Square', 'Gordon Square', 'Tavistock Square', 'Woburn Square', 'Torrington Square', 'Russell Square', 'Bloomsbury Square',
+        'Great Russell Street', 'Montague Street', 'Bedford Place', 'Bedford Way', 'Store Street', 'Taviton Street', 'Doughty Street', 'John Street', 'Mecklenburgh Square',
+        'Marchmont Street', 'Cartwright Gardens', 'Argyle Square', 'Argyle Street', 'Fitzroy Square', 'Fitzroy Street', 'Charlotte Street', 'Gloucester Place', 'Portland Place',
+        'Great Ormond Street', "Lamb's Conduit Street", 'Bedford Row', 'Red Lion Square', 'Guilford Street', 'Queen Square', 'Coram Street', 'Herbrand Street',
+        'Liverpool Road', 'Cloudesley Road', 'Cloudesley Square', 'Richmond Avenue', 'Barnsbury Road', 'Barnsbury Square', 'Thornhill Square', 'Gibson Square', 'Milner Square',
+        'Lonsdale Square', 'Duncan Terrace', 'Colebrooke Row', 'Canonbury Square', 'Amwell Street', 'Myddelton Square', 'Lloyd Baker Street', 'Percy Circus', 'Claremont Square',
+        'Wharton Street', 'Great Percy Street', 'Sekforde Street', 'Albert Street', 'Mornington Crescent', 'Delancey Street', 'Gloucester Avenue', 'Regent\'s Park Road',
+        'Chalcot Square', 'Montagu Square', 'Bryanston Square', 'Dorset Square', 'Wimpole Street', 'Upper Wimpole Street', 'Devonshire Place', 'Mansfield Street',
+        "Lincoln's Inn Fields", 'New Square', 'Old Square', 'Great James Street', 'Rugby Street', 'Bedford Street', 'Henrietta Street', 'Maiden Lane',
+        'Trinity Church Square', 'Merrick Square', 'Kennington Road',
+        # South Kensington, Knightsbridge, Belgravia, Bayswater (Imperial): Italianate stucco, the same dress
+        "Queen's Gate", "Queen's Gate Gardens", "Queen's Gate Terrace", "Queen's Gate Place", 'Onslow Gardens', 'Onslow Square', 'Cromwell Road', 'Thurloe Square',
+        'Pelham Crescent', 'Pelham Place', 'Egerton Crescent', 'Egerton Gardens', 'Ennismore Gardens', "Prince's Gate", "Princes Gate", 'Rutland Gate', 'Cornwall Gardens',
+        'Elvaston Place', 'Gloucester Road', 'Stanhope Gardens', 'Harrington Road', 'Sumner Place', 'Elm Park Gardens', 'Redcliffe Gardens', 'Redcliffe Square',
+        'The Boltons', 'Bolton Gardens', 'Eaton Place', 'Eaton Square', 'Belgrave Square', 'Chester Square', 'Wilton Crescent', 'Lowndes Square', 'Sussex Gardens',
+        'Norfolk Square', 'Talbot Square', 'Leinster Square', 'Kensington Park Gardens', 'Ladbroke Square', 'Ladbroke Grove', 'Pembridge Square', 'Kensington Square',
+        'Edwardes Square', 'Earls Court Square', 'Courtfield Gardens', 'Collingham Place', 'Stanhope Terrace', 'Gloucester Square', 'Hyde Park Gardens',
+        # East End: the few Georgian squares
+        'Tredegar Square', 'Stepney Green', 'Arbour Square', 'Wellington Row', 'Fournier Street', 'Elder Street', 'Wilkes Street', 'Princelet Street'],
+    2: ['Torrington Place', 'Chenies Street', 'Huntley Street', 'Harley Street', 'Great Portland Street', 'New Cavendish Street', 'Hemingford Road', 'Caledonian Road',
+        'Camden High Street', 'Parkway', 'Ripplevale Grove', 'Chapel Market', 'Judd Street', 'Grafton Way', 'Warren Street', 'Cleveland Street', 'Goodge Street',
+        'Wardour Street', 'Berwick Street', 'Great Titchfield Street', "Gray's Inn Road", 'St. John Street', 'Goswell Road', 'Farringdon Road', 'Theobalds Road',
+        'Fleet Street', 'Borough High Street', 'Charing Cross Road', 'Shaftesbury Avenue', 'Long Acre', 'Endell Street', 'Drury Lane',
+        'Harrington Gardens', 'Collingham Gardens', 'Cadogan Square', 'Cadogan Gardens', 'Pont Street', 'Hans Road', 'Hans Place', 'Sloane Street', 'Basil Street',
+        'Kensington Gore', 'Earl\'s Court Road', 'Old Brompton Road', 'Fulham Road', "King's Road", 'North End Road', 'Lillie Road', 'Seagrave Road', 'Sedlescombe Road',
+        'Halford Road', 'Westbourne Grove', 'Portobello Road', 'Kensington Church Street', 'Draycott Place', 'Oakley Street', 'Old Church Street', 'Sydney Street',
+        'Mile End Road', 'Bancroft Road', 'Antill Road', 'Ropery Street', 'Rhondda Grove', 'Coborn Street', 'Coborn Road', 'Grove Road', 'Roman Road', 'Old Ford Road',
+        'Victoria Park Road', 'Lauriston Road', 'Commercial Road', 'Whitechapel Road', 'Senrab Street', 'Aston Street', 'Salmon Lane', 'Southborough Road', 'Gore Road',
+        'Mare Street', 'Cambridge Heath Road', "King Edward's Road", 'Bow Road', 'Medway Road', 'Ellesmere Road', 'Mostyn Grove', 'Malmesbury Road', 'Lichfield Road',
+        'Alloway Road', 'Kenilworth Road', 'Selwyn Road', 'Rounton Road', 'Ainsley Street', 'Mossford Street', 'Hamlets Way', 'Eric Street', 'Lockhart Street'],
+    3: ['Kingsway', 'Aldwych', 'Southampton Row', 'Malet Street', 'Keppel Street', 'Euston Square', 'Woburn Place', 'Upper Woburn Place', 'Regent Street',
+        'Piccadilly', 'Oxford Street', 'Holborn', 'High Holborn', 'Strand', 'Bush House', 'Houghton Street', 'Great Queen Street', 'Exhibition Road', 'Imperial College Road',
+        'Prince Consort Road', 'Kensington High Street', 'Brompton Road', 'Knightsbridge', 'Moorgate', 'London Wall', 'Queen Victoria Street', 'Cheapside',
+        'New Bond Street', 'Oxford Circus', 'Baker Street', 'Euston Road', 'Tottenham Court Road', 'Bloomsbury Street', 'Southwark Street', 'Stamford Street'],
+    4: ['Brunswick Square', 'Hunter Street', 'Portugal Street', 'Clare Market', 'Sheffield Street', 'Kean Street', 'Carr Street', 'Ben Jonson Road', 'Clemence Street',
+        'Auden Place', 'Lofting Road', 'Ocean Estate', 'Stepney Way', 'Burdett Road', 'White Horse Road', 'Cable Street', 'Exmouth Street', 'Ernest Street',
+        'Hampstead Road', 'Robert Street', 'Varndell Street', 'Stanhope Street', 'Golden Lane', 'Silk Street', 'Barbican', 'Fann Street'],
+}
+STREET_ERA = {s: e for e, ss in STREET_ERA.items() for s in ss}
+# what the plain residential stock looks like where nothing else says (by site): era, then the share of whole streets in
+# stucco (era 1) or red brick (era 2)
+SITE_DRESS = {'ucl': {'house': 1, 'stucco': 0.18, 'red': 0.4}, 'lse': {'house': 1, 'stucco': 0.15, 'red': 0.45},
+              'imperial': {'house': 1, 'stucco': 0.88, 'red': 0.65}, 'qmul': {'house': 2, 'stucco': 0.08, 'red': 0.22}}
+
+
+def year_of(t):
+    for k in ('start_date', 'year_of_construction', 'construction_date', 'building:start_date'):
+        v = (t.get(k) or '').strip().lower()
+        m = re.search(r'(1[5-9]\d\d|20[0-2]\d)', v)
+        if m:
+            return int(m.group(1))
+        m = re.search(r'c(1[5-9]|20)\b', v.replace(' ', ''))
+        if m:
+            return int(m.group(1)) * 100 - 50
+    return None
+
+
+def own_era(t, hgt, a, style):
+    """the period a building's own tags give it, or None"""
+    y = year_of(t)
+    big = a > 900 or hgt > 22
+    if y:
+        if y < 1840:
+            return 1
+        if y < 1900:
+            return 2
+        if y < 1940:
+            return 3 if (big or style in ('stone',)) else 2
+        if y < 1985:
+            return 4
+        return 0
+    ar = (t.get('building:architecture') or '').lower()
+    for keys, e in ARCH_ERA:
+        if any(k in ar for k in keys):
+            return e
+    if t.get('heritage') or t.get('listed_status') or t.get('HE_ref'):
+        return {'stock': 1, 'stucco': 1, 'redbrick': 2, 'stone': 3}.get(style)
+    return None
+
+
+def street_of(t):
+    s = (t.get('addr:street') or '').strip()
+    return s.replace('St ', 'St. ') if s.startswith('St ') else s
+
+
+def dress(recs, site, named_road):
+    """facade era per building, and its style where the map gives no material. recs: [{'t', 'st', 'h', 'a', 'c'}];
+    named_road(x, z): the nearest named street, or ''. Returns ([era], [style]) and fills a report."""
+    cfg = SITE_DRESS[site]
+    streets, own = [], []
+    tally = {}
+    for r in recs:
+        s = street_of(r['t']) or named_road(*r['c'])
+        streets.append(s)
+        e = own_era(r['t'], r['h'], r['a'], r['st'])
+        own.append(e)
+        if e is not None and s:
+            tally.setdefault(s, {}).setdefault(e, 0)
+            tally[s][e] += 1
+    eras, sts = [], []
+    rep = {'own': 0, 'street': 0, 'neighbours': 0, 'type': 0}
+    for r, s, e in zip(recs, streets, own):
+        t, st, h, a = r['t'], r['st'], r['h'], r['a']
+        b = t.get('building', t.get('building:part', 'yes'))
+        mat = (t.get('building:material') or t.get('building:facade:material') or t.get('facade:material') or '').lower()
+        lv = num(t.get('building:levels')) or h / 3.3
+        if st in ('church', 'shed', 'glass') or (st == 'concrete' and h > 34):
+            eras.append(0); sts.append(st)
+            continue
+        how = 'own'
+        if e is None:
+            how = 'street'
+            e = STREET_ERA.get(s)
+            if e is None and s in tally:
+                how = 'neighbours'
+                best = max(tally[s].items(), key=lambda kv: kv[1])
+                e = best[0] if best[1] >= 2 else None
+            # tall blocks of flats and big slab offices are post-war wherever they stand
+            if b in ('apartments', 'residential', 'flats', 'dormitory') and lv >= 6.5 and not mat:
+                how, e = 'type', 4
+            if e is None:
+                how = 'type'
+                if b in ('terrace', 'house', 'semidetached_house', 'detached') or (b in ('yes', 'residential', 'apartments') and a < 400 and lv <= 5.5):
+                    e = cfg['house']
+                elif st == 'concrete':
+                    e = 4
+                elif st == 'stone' and a > 600:
+                    e = 3
+                else:
+                    e = 0
+            # a period street of terraces still has its big modern infill; a street of stone blocks its odd small house;
+            # a post-war estate its low brick terraces
+            if e in (1, 2) and (a > 2500 or lv > 7.5) and not mat:
+                e = 4 if st in ('concrete', 'glass') or lv > 7.5 else 3
+            elif e == 3 and a < 300 and lv <= 4.5:
+                e = 2
+            elif e == 4 and lv <= 3.5 and b in ('house', 'terrace', 'semidetached_house', 'detached'):
+                e = 0
+        rep[how] += 1
+        # where the map says nothing about the walls, the period decides them, the same along the whole street
+        if not mat and not t.get('building:colour') and e:
+            sh = h32(site + (s or str(round(r['c'][0] / 60)) + str(round(r['c'][1] / 60))))
+            if e == 1:
+                st = 'stucco' if sh < cfg['stucco'] else 'stock'
+            elif e == 2:
+                st = 'redbrick' if sh < cfg['red'] else 'stock'
+            elif e == 3:
+                st = 'stone'
+            elif e == 4:
+                st = 'concrete'
+        eras.append(e); sts.append(st)
+    return eras, sts, rep
+
+
 # shopfront kinds (SHOPK in web/components/intro/city.js): what the fascia, the window and the light behind it look like
 FOOD = {'restaurant', 'cafe', 'fast_food', 'ice_cream', 'food_court'}
 PUB = {'pub', 'bar', 'nightclub', 'biergarten'}
@@ -344,10 +511,10 @@ def seg_d(px, pz, a, b):
     return math.hypot(px - a[0] - dx * u, pz - a[1] - dz * u)
 
 
-def shopfronts(bring, road_segs, points):
-    """Ground-floor walls that face a street and carry a mapped shop, cafe, pub or bank.
-    bring: [(out index, outer ring, min height, height, style, own tags)]; road_segs: [(class, width, [pts])];
-    points: [(x, z, kind)] for mapped shop nodes and areas. Returns {(out index, edge index): kind}."""
+def frontages(bring, road_segs):
+    """street fronts: fr(k) -> [(edge, midpoint, normal, length)] for the walls of building k with a street in front.
+    bring: [(out index, outer ring, min height, height, style, own tags)]; road_segs: [(class, width, [pts])]. Also returns
+    the building grid (25 m cells)."""
     G = 25.0
     # roads a pedestrian can shop from: everything but footpaths
     rgrid = {}
@@ -411,6 +578,13 @@ def shopfronts(bring, road_segs, points):
             fr_cache[k] = frontage(k)
         return fr_cache[k]
 
+    return fr, bgrid
+
+
+def shopfronts(bring, fr, bgrid, points):
+    """Ground-floor walls that face a street and carry a mapped shop, cafe, pub or bank.
+    points: [(x, z, kind)] for mapped shop nodes and areas. Returns {(out index, edge index): kind}."""
+    G = 25.0
     flag = {}
     # whole buildings mapped as a shop or pub: every street-facing wall
     for k, (bi, o, _, _, _, t) in enumerate(bring):
@@ -606,6 +780,7 @@ def bake(site):
     bring = []  # (out index, ring, min height, height, style, own tags) for the shopfronts
     stats = {'h': 0, 'lv': 0, 'guess': 0}
     style_n = {}
+    drecs = []  # what dress() needs to pick each building's period
     for i, b in enumerate(blds + parts):
         if i < len(blds) and i in has_parts:
             continue
@@ -622,6 +797,7 @@ def bake(site):
             rh = min(6, 0.35 * math.sqrt(b['a']))
         if rs and hgt - rh < minh + 2:
             rh = max(0, hgt - minh - 2)
+        drecs.append({'t': t, 'st': st, 'h': hgt, 'a': b['a'], 'c': b['c']})
         bring.append((len(out_b), b['o'], minh, hgt, STY[st], b['t']))
         out_b.append([STY[st], round(hgt, 1), round(minh, 1), rs, round(rh, 1), colour(t.get('building:colour')) or '', colour(t.get('roof:colour')) or '',
                       flat(b['o'])] + ([flat(hr) for hr in b['h']] if b['h'] else []))
@@ -635,7 +811,7 @@ def bake(site):
     CLS = {'motorway': 0, 'trunk': 0, 'primary': 0, 'secondary': 1, 'tertiary': 1, 'unclassified': 2, 'residential': 2, 'living_street': 2,
            'service': 3, 'pedestrian': 4, 'footway': 5, 'path': 5, 'cycleway': 5, 'steps': 5, 'bridleway': 5, 'track': 5}
     roads, areas, rails, trees = [], [], [], []
-    road_segs, shop_pts = [], []
+    road_segs, shop_pts, named_segs = [], [], []
     lim = DETAIL + 200
 
     def clip_line(pts):
@@ -701,6 +877,8 @@ def bake(site):
             for seg in clip_line(ring_pts(el['geometry'], fr)):
                 seg = dp(seg, 0.3)
                 road_segs.append((CLS.get(hw.replace('_link', ''), 2), w, seg))
+                if t.get('name') and CLS.get(hw.replace('_link', ''), 2) <= 2:
+                    named_segs.append((t['name'], seg))
                 roads.append([CLS.get(hw.replace('_link', ''), 2), round(w, 1), 1 if t.get('bridge') == 'yes' else 0, flat(seg)])
         elif t.get('railway') in ('rail', 'subway', 'light_rail') and t.get('tunnel') != 'yes' and t.get('layer', '0')[:1] != '-':
             for seg in clip_line(ring_pts(el['geometry'], fr)):
@@ -718,7 +896,52 @@ def bake(site):
             pass
 
     # ------------------------------------------------------------------ shopfronts on the ground floors
-    sfl, sf_fill = shopfronts(bring, road_segs, shop_pts)
+    # ------------------------------------------------------------------ facade periods, by the building's own tags, then its street
+    NG = 40.0
+    ngrid = {}
+    for nm, seg in named_segs:
+        for a, b in zip(seg, seg[1:]):
+            for gx in range(int(min(a[0], b[0]) // NG), int(max(a[0], b[0]) // NG) + 1):
+                for gz in range(int(min(a[1], b[1]) // NG), int(max(a[1], b[1]) // NG) + 1):
+                    ngrid.setdefault((gx, gz), []).append((nm, a, b))
+
+    def named_road(x, z):
+        best = (30.0, '')
+        for gx in (int(x // NG) - 1, int(x // NG), int(x // NG) + 1):
+            for gz in (int(z // NG) - 1, int(z // NG), int(z // NG) + 1):
+                for nm, a, b in ngrid.get((gx, gz), ()):
+                    d = seg_d(x, z, a, b)
+                    if d < best[0]:
+                        best = (d, nm)
+        return best[1]
+
+    eras, dsts, era_how = dress(drecs, site, named_road)
+    style_n = {}
+    for k, (bi, o, minh, hgt, st, t) in enumerate(bring):
+        out_b[bi][0] = STY[dsts[k]]
+        bring[k] = (bi, o, minh, hgt, STY[dsts[k]], t)
+        style_n[dsts[k]] = style_n.get(dsts[k], 0) + 1
+    era_n = [eras.count(e) for e in range(5)]
+
+    fr_of, bgrid = frontages(bring, road_segs)
+    sfl, sf_fill = shopfronts(bring, fr_of, bgrid, shop_pts)
+    # street fronts of the period terraces: front doors, area railings and (Victorian houses) bay windows, as
+    # [building, wall, kind]: kind 0 doors and railings, 1 doors and canted bays, 2 doors only (shop or office below)
+    ef = []
+    ef_n = [0, 0, 0]
+    for k, (bi, o, minh, hgt, st, t) in enumerate(bring):
+        e = eras[k]
+        if e not in (1, 2):
+            continue
+        b = t.get('building', t.get('building:part', 'yes'))
+        lv = num(t.get('building:levels')) or hgt / 3.3
+        house = b in ('terrace', 'house', 'semidetached_house', 'detached', 'residential', 'yes', 'apartments') and lv <= 5.5 and drecs[k]['a'] < 700
+        for i, m, n, L in fr_of(k):
+            if L < 4.5 or L > 90:
+                continue
+            kd = 2 if ((bi, i) in sfl or not house) else (1 if e == 2 and lv <= 4.5 and drecs[k]['a'] < 400 else 0)
+            ef += [bi, i, kd]
+            ef_n[kd] += 1
     sf = []
     for (bi, ei), kd in sorted(sfl.items()):
         sf += [bi, ei, kd]
@@ -764,13 +987,13 @@ def bake(site):
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
-        'landmarks': landmarks, 'b': out_b, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
+        'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 

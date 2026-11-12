@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { atmo } from './atmo';
 import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox } from './materials';
 
-const V = 1;
+const V = 2;
 const BASE = '/assets/city/';
 const cache = {};
 
@@ -129,12 +129,20 @@ function facade(fam, T) {
         vec3 litC = vec3(1.0, 0.7, 0.4);
         {
           // the style slot also carries the shopfront kind: style + 16 * (kind + 1) on ground-floor shop walls
+          // and the period dress: + 128 * era, + 1024 * front (1 doors and railings, 2 doors and bays, 3 doors, 4 a bay window's face)
           float sxk = floor(vB.x + 0.5);
+          float frontF = floor(sxk / 1024.0 + 0.001); sxk -= frontF * 1024.0;
+          float era = floor(sxk / 128.0 + 0.001); sxk -= era * 128.0;
           float shopK = floor(sxk / 16.0 + 0.001);
           int st = int(sxk - shopK * 16.0 + 0.5);
+          float isBay = step(3.5, frontF);
           // the building seed is interpolated, so quantise it before hashing (hashes amplify float noise into speckle)
           float seed = floor(vB.y * 997.0 + 0.5) * 0.1373, wl = vB.z, bh = vB.w;
           float flo = uFloor[st], bay = uBay[st], ww = uWinW[st], wh = uWinH[st];
+          // post-war blocks: ribbon windows; a bay window's faces: glazed nearly edge to edge
+          if (era > 3.5) { bay = 3.0; ww = 0.97; wh = 0.5; }
+          if (isBay > 0.5) { bay = wl; ww = clamp(1.0 - 0.36 / wl, 0.3, 0.9); wh = 0.6; }
+          float topM = isBay > 0.5 ? 0.45 : 1.1;
           float u = vW.x, yy = vW.y;
           float shopTop = shopK > 0.5 ? clamp(flo + 1.0, 4.3, 5.0) : 0.0;
           float yg = yy - (shopK > 0.5 ? shopTop - flo : 0.0);
@@ -143,11 +151,30 @@ function facade(fam, T) {
           float bu = u / (wl / nb);
           float fx = fract(bu), fy = fract(yg / flo), fl = floor(yg / flo);
           float gnd = shopK > 0.5 ? shopTop + 0.25 : st == 3 ? 0.2 : 0.65;
+          float topF = floor((bh - 0.6) / flo) - 1.0;
+          // Georgian fronts: tall first-floor windows (the piano nobile), squat ones in the top storey
+          if (era > 0.5 && era < 1.5 && isBay < 0.5) wh *= fl > 0.5 && fl < 1.5 ? 1.22 : (fl >= topF && fl > 1.5 ? 0.78 : 1.0);
+          // the front door: one bay in each house (three bays to a Georgian house, two to a Victorian one), houses mirrored in pairs
+          float bI = floor(bu), per = era < 1.5 ? 3.0 : 2.0;
+          float hJ = floor(bI / per), hK = bI - hJ * per;
+          float doorBay = step(0.5, frontF) * step(frontF, 3.5) * step(shopK, 0.5) * step(fl, 0.5) * step(3.25, flo) * step(5.0, wl)
+                        * step(abs(hK - (mod(hJ, 2.0) < 0.5 ? 0.0 : per - 1.0)), 0.1);
           float inWin = step(0.5 - ww*0.5, fx) * step(fx, 0.5 + ww*0.5) * step(0.5 - wh*0.5, fy) * step(fy, 0.5 + wh*0.5)
-                      * step(gnd, yy) * step(yy, bh - 1.1) * step(3.2, wl);
+                      * step(gnd, yy) * step(yy, bh - topM) * max(step(3.2, wl), isBay) * (1.0 - doorBay);
           float gl = inWin * step(0.5 - ww*0.5 + 0.04, fx) * step(fx, 0.5 + ww*0.5 - 0.04) * step(0.5 - wh*0.5 + 0.035, fy) * step(fy, 0.5 + wh*0.5 - 0.035);
           float frameM = inWin - gl;
           gl *= 1.0 - uSash[st] * step(abs(fy - 0.5), 0.014);
+          // glazing bars by period: six over six, two over two, steel casements, a mullion in each ribbon light
+          if (era > 0.5 && gl > 0.5) {
+            float wx = (fx - (0.5 - ww * 0.5)) / ww, wy = (fy - (0.5 - wh * 0.5)) / wh;
+            float mW = ww * wl / nb, mH = wh * flo, bw = 0.02;
+            float gb = 0.0;
+            if (era < 1.5) gb = max(step(abs(fract(wx * 3.0 + 0.5) - 0.5) * mW / 3.0, bw), step(abs(fract(wy * 6.0 + 0.5) - 0.5) * mH / 6.0, bw));
+            else if (era < 2.5) gb = step(abs(wx - 0.5) * mW, bw);
+            else if (era < 3.5) gb = max(step(abs(fract(wx * 3.0 + 0.5) - 0.5) * mW / 3.0, bw * 0.8), step(abs(fract(wy * 4.0 + 0.5) - 0.5) * mH / 4.0, bw * 0.8));
+            else gb = step(abs(wx - 0.5) * mW, 0.03);
+            gl *= 1.0 - gb * clamp(1.0 - max(fwidth(wx * mW), fwidth(wy * mH)) * 18.0, 0.0, 1.0);
+          }
           float aa = clamp(1.0 - max(fwidth(bu), fwidth(yg / flo)) * 2.0, 0.0, 1.0);
           float hs = fh(vec2(floor(bu), fl) + seed);
           float bLit = step(0.45, fract(seed * 4.5313));
@@ -201,10 +228,57 @@ function facade(fam, T) {
           }
           // sills and lintels in stone or render on the older brick fronts
           float sillT = 0.5 - wh * 0.5, linT = 0.5 + wh * 0.5;
-          float band = uSash[st] * step(0.5 - ww * 0.5 - 0.03, fx) * step(fx, 0.5 + ww * 0.5 + 0.03) * step(gnd, yy) * step(yy, bh - 1.1) * step(3.2, wl)
+          float band = uSash[st] * step(0.5 - ww * 0.5 - 0.03, fx) * step(fx, 0.5 + ww * 0.5 + 0.03) * step(gnd, yy) * step(yy, bh - topM) * max(step(3.2, wl), isBay) * (1.0 - doorBay)
                      * (step(sillT - 0.045, fy) * step(fy, sillT) + (st == 0 || st == 4 ? step(linT, fy) * step(fy, linT + 0.05) : 0.0));
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.83, 0.76), band * aa);
-          vec3 pc = mix(diffuseColor.rgb, uFrame[st], frameM);
+          // ---- period dressings (OpenStreetMap start_date, building:architecture and heritage, else the street; see bake_city.py)
+          float fineA = clamp(1.0 - max(fwidth(yy), fwidth(u)) * 12.0, 0.0, 1.0);
+          float off = 1.0 - inWin;
+          float bwM = wl / nb;
+          if (era > 0.5 && era < 1.5 && shopK < 0.5 && isBay < 0.5) {
+            // Georgian and Regency: a rusticated stucco ground floor under a moulded band; a stucco cornice under the top storey
+            vec3 stuc = vec3(0.8, 0.78, 0.71) * (0.95 + 0.1 * fh(vec2(seed, 2.0)));
+            float gfl = step(yy, flo) * off;
+            diffuseColor.rgb = mix(diffuseColor.rgb, stuc * (1.0 - 0.42 * step(fract(yy / 0.4), 0.07) * fineA), gfl);
+            float b1 = step(flo, yy) * step(yy, flo + 0.24);
+            float yc = topF * flo;
+            float b2 = step(yc - 0.06, yy) * step(yy, yc + 0.22) * step(3.0, topF);
+            diffuseColor.rgb = mix(diffuseColor.rgb, stuc * 1.08, max(b1, b2));
+            diffuseColor.rgb *= 1.0 - 0.3 * (step(flo + 0.24, yy) * step(yy, flo + 0.34) + step(yc - 0.16, yy) * step(yy, yc - 0.06) * step(3.0, topF)) * off;
+          } else if (era > 1.5 && era < 2.5) {
+            // Victorian: stone string courses, quoins, and stone surrounds with keystones round the windows
+            vec3 dst = vec3(0.82, 0.78, 0.69) * (0.95 + 0.1 * fh(vec2(seed, 3.0)));
+            float notSt = st == 1 ? 0.0 : 1.0;
+            float sc = step(fract(yg / flo) * flo, 0.16) * step(flo * 0.9, yg) * step(yg, bh - 0.6);
+            float qw = mod(floor(yy / 0.32), 2.0) > 0.5 ? 0.78 : 0.46;
+            float qn = (step(u, qw) + step(wl - qw, u)) * step(4.0, wl) * (1.0 - isBay) * notSt;
+            float dx = abs(fx - 0.5), dy = fy - 0.5;
+            float inE = step(dx, ww * 0.5 + 0.11 / bwM) * step(-wh * 0.5 - 0.06 / flo, dy) * step(dy, wh * 0.5 + 0.3 / flo)
+                      * step(gnd, yy) * step(yy, bh - topM) * max(step(3.2, wl), isBay) * (1.0 - doorBay);
+            float keyS = step(dx, 0.12 / bwM) * step(wh * 0.5, dy) * step(dy, wh * 0.5 + 0.42 / flo) * step(gnd, yy) * step(yy, bh - topM) * max(step(3.2, wl), isBay) * (1.0 - doorBay);
+            float dres = clamp(max(max(sc, qn), max(inE, keyS)), 0.0, 1.0) * off;
+            vec3 dcol = dst * (1.0 - 0.3 * qn * step(fract(yy / 0.32), 0.07) * fineA);
+            diffuseColor.rgb = mix(diffuseColor.rgb, dcol, dres * mix(0.45, 1.0, notSt));
+          } else if (era > 2.5 && era < 3.5) {
+            // inter-war Portland stone: banded rustication on the ground floor, ashlar courses, a deep cornice under the attic storey
+            float course = floor(yy / 0.55);
+            float joint = max(step(fract(yy / 0.55), 0.07), step(fract(u / 1.2 + 0.5 * mod(course, 2.0)), 0.025));
+            diffuseColor.rgb *= 1.0 - step(yy, flo + 0.3) * off * 0.4 * joint * fineA;
+            diffuseColor.rgb *= 1.0 - 0.12 * step(fract(yy / 0.6), 0.04) * fineA * off;
+            float yc = topF * flo;
+            float cor = step(yc - 0.55, yy) * step(yy, yc) * step(3.0, topF);
+            diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * (0.45 + 0.75 * smoothstep(yc - 0.5, yc - 0.15, yy)), cor);
+          } else if (era > 3.5) {
+            // post-war concrete: board-marked spandrels, rain streaks under the windows, a dark recessed ground floor on columns
+            float bm = fh(vec2(floor(u / 0.15), floor(yy / 1.2) + seed * 7.0));
+            diffuseColor.rgb *= 0.92 + 0.12 * bm * fineA * off;
+            float stain = off * step(fy, 0.5 - wh * 0.5) * step(gnd, yy) * fh(vec2(floor(u / 0.45), fl + seed)) * smoothstep(0.0, 0.5 - wh * 0.5, fy);
+            diffuseColor.rgb *= 1.0 - 0.22 * stain;
+            float pil = step(fract(u / 6.0), 0.08);
+            diffuseColor.rgb *= 1.0 - 0.6 * step(yy, flo - 0.3) * (1.0 - pil) * step(shopK, 0.5) * step(fl, 0.5) * step(12.0, wl);
+          }
+          vec3 frC = era > 2.5 && era < 3.5 ? vec3(0.045, 0.045, 0.042) : uFrame[st];
+          vec3 pc = mix(diffuseColor.rgb, frC, frameM);
           pc = mix(pc, glass, gl);
           float avgW = ww * wh * 0.75;
           vec3 avgc = mix(diffuseColor.rgb, vec3(0.06, 0.065, 0.07), avgW);
@@ -215,6 +289,44 @@ function facade(fam, T) {
           litC *= 0.6 + 0.8 * fh(vec2(fl, seed + 1.0));
           fLit = gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6 * bLit;
           roomE = mix(vec3(1.0), roomE, aa);
+          // front doors: panelled and gloss-painted in a doorcase, under a fanlight (Georgian) or a transom light (Victorian)
+          if (doorBay > 0.5) {
+            float cu = (fx - 0.5) * bwM;
+            float dW = 0.55, dH = 2.6;
+            float surround = step(abs(cu), dW + 0.24) * step(yy, dH + (era < 1.5 ? 0.82 : 0.78));
+            float leaf = step(abs(cu), dW) * step(yy, dH);
+            vec2 fc = vec2(cu, yy - dH - 0.05);
+            float fan = (era < 1.5 ? step(length(fc), dW) : step(abs(cu), dW) * step(fc.y, 0.55)) * step(0.0, fc.y);
+            float dk = fh(vec2(seed, 11.0 + hJ));
+            vec3 dc = dk < 0.4 ? vec3(0.008) : dk < 0.55 ? vec3(0.005, 0.03, 0.015) : dk < 0.7 ? vec3(0.006, 0.012, 0.04) : dk < 0.82 ? vec3(0.12, 0.012, 0.01) : vec3(0.55, 0.52, 0.46);
+            vec3 sc2 = era < 1.5 ? vec3(0.82, 0.8, 0.73) : vec3(0.8, 0.76, 0.67);
+            float ang = atan(fc.y, fc.x);
+            if (surround > 0.5 && leaf < 0.5 && fan < 0.5) { diffuseColor.rgb = sc2 * (0.85 + 0.15 * step(0.12, abs(abs(cu) - dW - 0.12))); fWin = 0.0; fLit = 0.0; }
+            if (leaf > 0.5) {
+              float pu = abs(cu) / dW, pv = yy / dH;
+              float edge = max(step(0.86, pu), max(step(abs(pu - 0.0), 0.04), step(abs(fract(pv * 3.0) - 0.5), 0.07)));
+              diffuseColor.rgb = dc * (1.0 + 0.6 * edge * fineA) + vec3(0.004);
+              diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.6, 0.48, 0.2), step(abs(pv - 0.5), 0.015) * step(abs(pu - 0.5), 0.06));
+              fWin = 0.45; fGR = 0.22; fLit = 0.0;
+            }
+            if (fan > 0.5 && leaf < 0.5) {
+              float fb = era < 1.5 ? max(step(abs(fract(ang / 3.14159 * 5.0 + 0.5) - 0.5), 0.07), step(dW - 0.06, length(fc))) : step(abs(cu), 0.02);
+              float hall = step(0.62, fh(vec2(seed, 12.0 + hJ)));
+              diffuseColor.rgb = mix(vec3(0.03), vec3(0.85, 0.83, 0.78), fb * fineA);
+              fWin = 1.0 - fb; fLit = 1.0 - fb; fGR = 0.05; litC = vec3(1.0, 0.72, 0.42); roomE = vec3(0.35 * hall);
+            }
+          }
+          // iron balconettes across the tall first-floor windows of Georgian and Regency fronts
+          if (era > 0.5 && era < 1.5 && fl > 0.5 && fl < 1.5 && isBay < 0.5 && shopK < 0.5 && (st == 1 || fract(seed * 7.13) < 0.5)) {
+            float cu = abs(fx - 0.5) * bwM, ym = (fy - (0.5 - wh * 0.5)) * flo;
+            float inB = step(cu, ww * 0.5 * bwM + 0.12) * step(-0.04, ym) * step(ym, 0.92) * step(3.2, wl);
+            if (inB > 0.5) {
+              float bb = clamp(step(abs(fract(cu / 0.11) - 0.5) * 0.11, 0.011) + step(abs(ym - 0.88), 0.035) + step(abs(ym), 0.04) + step(abs(ym - 0.14), 0.018), 0.0, 1.0);
+              float bm = mix(0.35, bb, aa);
+              diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.012), bm);
+              fWin *= 1.0 - bm; fLit *= 1.0 - bm;
+            }
+          }
           // coping band and parapet shadow at the top, plinth and grime near the pavement
           diffuseColor.rgb *= 1.0 - 0.2 * step(bh - 0.8, yy) * step(yy, bh - 0.5);
           diffuseColor.rgb = mix(diffuseColor.rgb, uFrame[st] * 0.9, step(bh - 0.45, yy) * (1.0 - step(3.0, float(st)) * 0.0) * 0.6);
@@ -392,7 +504,7 @@ class Buf {
 const dec = (f) => { const o = []; for (let i = 0; i < f.length; i += 2) o.push([f[i] / 10, f[i + 1] / 10]); return o; };
 const ringArea = (r) => { let a = 0; for (let i = 0; i < r.length; i++) { const [x0, z0] = r[i], [x1, z1] = r[(i + 1) % r.length]; a += x0 * z1 - x1 * z0; } return a / 2; };
 
-function walls(buf, ring, y0, y1, col, st, seed, shops = null) {
+function walls(buf, ring, y0, y1, col, st, seed, shops = null, era = 0, fronts = null) {
   // one continuous u along the ring, but each wall gets its own bay layout (its length) so windows centre on it
   for (let i = 0; i < ring.length; i++) {
     const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % ring.length];
@@ -400,7 +512,8 @@ function walls(buf, ring, y0, y1, col, st, seed, shops = null) {
     if (L < 0.05) continue;
     const nx = dz / L, nz = -dx / L;
     const sk = shops && y0 < 0.7 ? shops.get(i) : undefined;
-    const b = [sk === undefined ? st : st + 16 * (sk + 1), seed, L, y1];
+    const fk = fronts && y0 < 0.7 ? fronts.get(i) : undefined;
+    const b = [(sk === undefined ? st : st + 16 * (sk + 1)) + 128 * era + (fk === undefined ? 0 : 1024 * (fk + 1)), seed, L, y1];
     const a = buf.v(x0, y0, z0, nx, 0, nz, col, b, 0, y0);
     const bb = buf.v(x1, y0, z1, nx, 0, nz, col, b, L, y0);
     const c = buf.v(x1, y1, z1, nx, 0, nz, col, b, L, y1);
@@ -498,6 +611,47 @@ function domeRoof(buf, o, y, rh, col) {
 
 const hexCol = (h, fb) => new THREE.Color(h || fb);
 
+// facade periods (bake_city.py): 0 as classified, 1 Georgian and Regency, 2 Victorian, 3 inter-war Portland stone, 4 post-war concrete
+// the doors of a front: one bay in each house, three bays to a Georgian house and two to a Victorian one, houses mirrored in
+// pairs (the facade shader lays them out the same way)
+function frontBays(L, st, era) {
+  const bay = STYLES[st].bay, nb = Math.max(1, Math.floor(L / bay + 0.25)), per = era === 1 ? 3 : 2;
+  const out = [];
+  for (let b = 0; b < nb; b++) {
+    const j = Math.floor(b / per), k = b - j * per;
+    out.push(k === (j % 2 === 0 ? 0 : per - 1) ? 'door' : (k === (j % 2 === 0 ? 1 : 0) ? 'bay' : ''));
+  }
+  return { bw: L / nb, kinds: out };
+}
+
+// black area railings: one quad per run, the bars, rails and spear heads cut out in the shader
+function railMaterial() {
+  const m = new THREE.MeshStandardMaterial({ color: '#0b0c0d', roughness: 0.42, metalness: 0.55, side: THREE.DoubleSide });
+  m.userData.key = 'city-rail';
+  m.userData.patch = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vRw;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvRw = uv;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vRw;')
+      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+        {
+          float u = vRw.x, y = vRw.y, sp = 0.125;
+          float d = abs(fract(u / sp) - 0.5) * sp;
+          // square bars with spear heads above the top rail, a bottom rail near the kerb
+          float head = smoothstep(0.93, 0.985, y) * (1.0 - smoothstep(0.985, 1.06, y));
+          float bar = step(d, 0.0095 + 0.02 * head);
+          float rails = step(abs(y - 0.9), 0.02) + step(abs(y - 0.1), 0.018);
+          float cov = clamp(bar + rails, 0.0, 1.0);
+          // far away, dither to the railing's average cover rather than shimmer
+          float far = smoothstep(0.012, 0.035, max(fwidth(u), fwidth(y)));
+          float dz = fract(sin(dot(floor(gl_FragCoord.xy), vec2(12.9898, 78.233))) * 43758.5453);
+          if (mix(cov, step(dz, 0.24), far) < 0.5) discard;
+        }`);
+  };
+  return atmo(m);
+}
+
 // ------------------------------------------------------------------ the city
 // opts: { mobile, H, site, keep(x, z): false where trees and lamps must not go, skip(x, z): true for buildings a hand-built
 // landmark replaces, paint(ctx, toPx, k): draws hand-built ground (a campus) over the map }
@@ -530,6 +684,19 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     shopAt.get(SF[i]).set(SF[i + 1], SF[i + 2]);
   }
   const shopGlow = [];
+  // facade periods and the street fronts of the period terraces (doors, railings, bay windows)
+  const ERA = data.e || '';
+  const frontAt = new Map();
+  const EF = data.ef || [];
+  for (let i = 0; i + 2 < EF.length; i += 3) {
+    if (!frontAt.has(EF[i])) frontAt.set(EF[i], new Map());
+    frontAt.get(EF[i]).set(EF[i + 1], EF[i + 2]);
+  }
+  const rail = { p: [], n: [], w: [], i: [] };
+  const areaPaint = [];
+  const LEAD = new THREE.Color('#5a5f64');
+  const DRESS_R = mobile ? 600 : 1400;
+  let nBays = 0;
   data.b.forEach((rec, bi) => {
     const [st, h, minh, rs, rhIn, colH, rcolH, of, ...hf] = rec;
     const outer = dec(of);
@@ -551,7 +718,60 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     const pitched = rs2 && o && o.fill > 0.8 && rh > 0.5;
     const eave = pitched ? h - (rs2 === 4 ? rh : rh) : h;
     const shops = shopAt.get(bi) || null;
-    walls(b, outer, minh, eave, col, st, seed, shops);
+    const era = +ERA[bi] || 0;
+    const fronts = frontAt.get(bi) || null;
+    walls(b, outer, minh, eave, col, st, seed, shops, era, fronts);
+    if (fronts && minh < 0.7 && Math.hypot(cx, cz) < DRESS_R) {
+      fronts.forEach((kd, ei) => {
+        const [x0, z0] = outer[ei], [x1, z1] = outer[(ei + 1) % outer.length];
+        const L = Math.hypot(x1 - x0, z1 - z0);
+        if (L < 4.5) return;
+        const ux = (x1 - x0) / L, uz = (z1 - z0) / L, nx = uz, nz = -ux;
+        const at = (u, o) => [x0 + ux * u + nx * o, z0 + uz * u + nz * o];
+        const { bw, kinds } = frontBays(L, st, era);
+        if (kd === 0) {
+          // the area in front of the basement, behind black railings, with a gap at each front door
+          const runs = [];
+          let u0 = 0;
+          kinds.forEach((k, j) => { if (k === 'door' && L >= 5) { runs.push([u0, (j + 0.5) * bw - 0.85]); u0 = (j + 0.5) * bw + 0.85; } });
+          runs.push([u0, L]);
+          const off = 1.3;
+          runs.forEach(([a, c]) => {
+            if (c - a < 0.6) return;
+            const [ax, az] = at(a, off), [cx2, cz2] = at(c, off);
+            const base = rail.p.length / 3;
+            [[ax, 0, az, a, 0], [cx2, 0, cz2, c, 0], [cx2, 1.06, cz2, c, 1.06], [ax, 1.06, az, a, 1.06]].forEach(([x, y, z, wu, wv]) => {
+              rail.p.push(x, y, z); rail.n.push(nx, 0, nz); rail.w.push(wu, wv);
+            });
+            rail.i.push(base, base + 1, base + 2, base, base + 2, base + 3);
+          });
+          areaPaint.push([at(0, 0), at(L, 0), at(L, off - 0.05), at(0, off - 0.05)]);
+        } else if (kd === 1) {
+          // canted bay windows, ground and first floor where the house is tall enough, under a flat lead roof
+          const S0 = STYLES[st];
+          const yb = Math.min(eave - 0.4, eave >= S0.floor * 3 ? S0.floor * 2 + 0.6 : S0.floor + 0.5);
+          if (yb < 2.5) return;
+          kinds.forEach((k, j) => {
+            if (k !== 'bay') return;
+            const uc = (j + 0.5) * bw, W = Math.min(bw * 0.92, 2.7), pr = 0.62, F = Math.max(0.8, W - 2 * pr * 0.75);
+            const P = [at(uc - W / 2, 0), at(uc - F / 2, pr), at(uc + F / 2, pr), at(uc + W / 2, 0)];
+            for (let q = 0; q < 3; q++) {
+              const [ax, az] = P[q], [bx2, bz2] = P[q + 1];
+              const fl = Math.hypot(bx2 - ax, bz2 - az);
+              const fnx = (bz2 - az) / fl, fnz = -(bx2 - ax) / fl;
+              const bb = [st + 128 * era + 1024 * 4, seed, fl, yb];
+              const i0 = b.v(ax, minh, az, fnx, 0, fnz, col, bb, 0, minh), i1 = b.v(bx2, minh, bz2, fnx, 0, fnz, col, bb, fl, minh);
+              const i2 = b.v(bx2, yb, bz2, fnx, 0, fnz, col, bb, fl, yb), i3 = b.v(ax, yb, az, fnx, 0, fnz, col, bb, 0, yb);
+              b.i.push(i0, i3, i1, i1, i3, i2);
+            }
+            const r0 = roofs.p.length / 3;
+            P.forEach(([x, z]) => roofs.v(x, yb, z, 0, 1, 0, LEAD, null, x, z, 0));
+            roofs.i.push(r0, r0 + 2, r0 + 1, r0, r0 + 3, r0 + 2);
+            nBays++;
+          });
+        }
+      });
+    }
     if (shops && minh < 0.7) {
       // light from the open shops spills onto the pavement in front
       shops.forEach((kd, ei) => {
@@ -629,6 +849,18 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     });
     return true;
   };
+  if (rail.i.length) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(rail.p, 3));
+    g.setAttribute('normal', new THREE.Float32BufferAttribute(rail.n, 3));
+    g.setAttribute('uv', new THREE.Float32BufferAttribute(rail.w, 2));
+    g.setIndex(rail.p.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(rail.i, 1) : new THREE.Uint16BufferAttribute(rail.i, 1));
+    g.computeBoundingSphere();
+    const m = new THREE.Mesh(g, railMaterial());
+    m.receiveShadow = true;
+    group.add(m);
+  }
+  group.userData.dress = { bays: nBays, railVerts: rail.p.length / 3 };
   const bx = baseBox();
   // chimneys and rooftop plant are centred boxes rotated to the building
   inst(bx, plainMaterial({ roughness: 0.92 }, 'city-chim'), chim);
@@ -682,6 +914,9 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     // contact shadow under every building
     ctx.fillStyle = 'rgba(30,28,25,.5)';
     footprints.forEach((f) => { poly(ctx, [f]); ctx.fill(); });
+    // the basement areas behind the railings
+    ctx.fillStyle = 'rgba(22,21,19,.8)';
+    areaPaint.forEach((q) => { poly(ctx, [q]); ctx.fill(); });
     if (paint) paint(ctx, toPx, k);
     for (let i = 0; i < (mobile ? 20000 : 60000); i++) {
       const v = 90 + r() * 70;
