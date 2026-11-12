@@ -39,7 +39,7 @@ Keep to these limits:
 ## Backlog (top = next)
 
 
-- [ ] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
+- [x] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
   - use OSM `shop=*` and `amenity=*` nodes inside or next to a footprint to flag the building;
   - draw glazed fronts with fascia bands and warm interiors.
 - [ ] **Facade eras and dressings:**
@@ -77,6 +77,19 @@ Keep to these limits:
 
 ## Log
 
+- 2026-11-11: shopfronts are live (finishes the unmerged attempt on `city-refine-2026-11-10`).
+  - The extract now carries shop, cafe, pub and bank nodes (about 5k at UCL, 3k at Imperial). `bake_city.py` flags each street-facing ground-floor wall they sit on, plus unmapped units between two shops on the same parade, and writes them as `sf` in the city JSON: 4,987 walls at UCL, 1,685 at Imperial (QMUL and LSE get them too).
+  - A wall only counts if the walk out to the street is clear, so kiosks, arcades and the next block across a yard no longer hide shopfronts behind them.
+  - `city.js` draws them in the facade shader, with no new vertices. Each unit has pilasters, a painted fascia with lettering (pubs get gilt), a cornice, a stallriser, a door and the display glass. Behind the glass is a lit shop floor with stock on the shelves, a dark unit, or a roller shutter still down at dawn. Shop light also spills onto the pavement.
+  - The interiors are toned to dawn after the first pass came out blown-out white.
+  - Checks:
+    - no console errors;
+    - engine up in 49 to 55 s for UCL. Imperial desktop takes 93 to 98 s; it took 88 s before this change, so it was already over the 60 s target under swiftshader;
+    - mobile still renders, with the engine up in 30 s (UCL) and 44 s (Imperial);
+    - city JSON is 0.82 MB (UCL) and 0.72 MB (Imperial) gzipped;
+    - the hand-built fallback still works.
+  - From the intro's own camera path the change is small, because the campus streets carry few shops. It is clear at street level: see `renders/2026-11-11.jpg` (street close-ups, before and after).
+  - Next shopfront ideas: awnings on cafes, hanging pub signs, and A-boards.
 - 2026-11-10 (late): photoreal pass is live.
   - Rooms behind every window (interior mapping), with curtains, reveals, sills and lintels.
   - Scanned CC0 furniture from Poly Haven, listed in tools/assets/want.txt and fetched by fetch-assets.yml:
