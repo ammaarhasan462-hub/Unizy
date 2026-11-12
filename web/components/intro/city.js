@@ -96,7 +96,19 @@ function facade(fam, T) {
         uniform float uFloor[${N}], uBay[${N}], uWinW[${N}], uWinH[${N}], uSash[${N}], uLit[${N}], uGlassR[${N}];
         uniform vec3 uFrame[${N}];
         uniform float uHasTex;
-        float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }`)
+        float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }
+        // shopfront fascia paints (linear): kind 0 shop, 1 cafe or restaurant, 2 pub or bar, 3 bank, chemist and services, 4 empty
+        vec3 fasC(float kd, float h) {
+          float i = floor(h * 6.0);
+          if (kd < 0.5) return i < 1.0 ? vec3(0.012, 0.012, 0.014) : i < 2.0 ? vec3(0.012, 0.022, 0.06) : i < 3.0 ? vec3(0.01, 0.045, 0.026)
+                             : i < 4.0 ? vec3(0.07, 0.01, 0.014) : i < 5.0 ? vec3(0.72, 0.7, 0.64) : vec3(0.13, 0.16, 0.19);
+          if (kd < 1.5) return i < 2.0 ? vec3(0.6, 0.52, 0.37) : i < 3.0 ? vec3(0.02, 0.08, 0.04) : i < 4.0 ? vec3(0.42, 0.035, 0.02)
+                             : i < 5.0 ? vec3(0.3, 0.085, 0.03) : vec3(0.015, 0.015, 0.016);
+          if (kd < 2.5) return i < 2.0 ? vec3(0.08, 0.01, 0.01) : i < 4.0 ? vec3(0.008, 0.032, 0.016) : vec3(0.01, 0.01, 0.012);
+          if (kd < 3.5) return i < 2.0 ? vec3(0.5, 0.012, 0.012) : i < 3.0 ? vec3(0.01, 0.05, 0.26) : i < 4.0 ? vec3(0.02, 0.24, 0.06)
+                             : i < 5.0 ? vec3(0.09, 0.02, 0.19) : vec3(0.75, 0.74, 0.7);
+          return vec3(0.42, 0.4, 0.36);
+        }`)
       // walls sample the photo textures in metres along the wall (aW.x) and up it (aW.y)
       .replace('#include <map_fragment>', `
         #ifdef USE_MAP
@@ -116,22 +128,27 @@ function facade(fam, T) {
         vec3 roomE = vec3(1.0);
         vec3 litC = vec3(1.0, 0.7, 0.4);
         {
-          int st = int(vB.x + 0.5);
+          // the style slot also carries the shopfront kind: style + 16 * (kind + 1) on ground-floor shop walls
+          float sxk = floor(vB.x + 0.5);
+          float shopK = floor(sxk / 16.0 + 0.001);
+          int st = int(sxk - shopK * 16.0 + 0.5);
           // the building seed is interpolated, so quantise it before hashing (hashes amplify float noise into speckle)
           float seed = floor(vB.y * 997.0 + 0.5) * 0.1373, wl = vB.z, bh = vB.w;
           float flo = uFloor[st], bay = uBay[st], ww = uWinW[st], wh = uWinH[st];
           float u = vW.x, yy = vW.y;
+          float shopTop = shopK > 0.5 ? clamp(flo + 1.0, 4.3, 5.0) : 0.0;
+          float yg = yy - (shopK > 0.5 ? shopTop - flo : 0.0);
           diffuseColor.rgb *= 0.92 + 0.16 * fh(vec2(floor(u * 0.25), floor(yy * 0.3)) + seed);
           float nb = max(1.0, floor(wl / bay + 0.25));
           float bu = u / (wl / nb);
-          float fx = fract(bu), fy = fract(yy / flo), fl = floor(yy / flo);
-          float gnd = st == 3 ? 0.2 : 0.65;
+          float fx = fract(bu), fy = fract(yg / flo), fl = floor(yg / flo);
+          float gnd = shopK > 0.5 ? shopTop + 0.25 : st == 3 ? 0.2 : 0.65;
           float inWin = step(0.5 - ww*0.5, fx) * step(fx, 0.5 + ww*0.5) * step(0.5 - wh*0.5, fy) * step(fy, 0.5 + wh*0.5)
                       * step(gnd, yy) * step(yy, bh - 1.1) * step(3.2, wl);
           float gl = inWin * step(0.5 - ww*0.5 + 0.04, fx) * step(fx, 0.5 + ww*0.5 - 0.04) * step(0.5 - wh*0.5 + 0.035, fy) * step(fy, 0.5 + wh*0.5 - 0.035);
           float frameM = inWin - gl;
           gl *= 1.0 - uSash[st] * step(abs(fy - 0.5), 0.014);
-          float aa = clamp(1.0 - max(fwidth(bu), fwidth(yy / flo)) * 2.0, 0.0, 1.0);
+          float aa = clamp(1.0 - max(fwidth(bu), fwidth(yg / flo)) * 2.0, 0.0, 1.0);
           float hs = fh(vec2(floor(bu), fl) + seed);
           float bLit = step(0.45, fract(seed * 4.5313));
           float roomLit = step(1.0 - uLit[st], hs) * bLit;
@@ -204,6 +221,107 @@ function facade(fam, T) {
           diffuseColor.rgb *= 0.78 + 0.22 * smoothstep(0.0, 3.0, yy);
           // streaks of soot under the sills on older fronts
           diffuseColor.rgb *= 1.0 - 0.08 * uSash[st] * step(0.5 - ww*0.5, fx) * step(fx, 0.5 + ww*0.5) * smoothstep(0.5 - wh*0.5, 0.0, fy) * step(gnd, yy);
+          // ---- ground-floor shopfronts where OpenStreetMap has a shop, cafe, pub or bank: units between pilasters, a painted
+          // fascia with its lettering under a cornice, a stallriser, a door and the display window, and behind the glass a lit
+          // shop floor, a dark one, or a roller shutter still down at dawn
+          if (shopK > 0.5 && yy < shopTop) {
+            float kd = shopK - 1.0;
+            float mpp = max(max(fwidth(u), fwidth(yy)), 1e-4);
+            float sa = clamp(1.6 - mpp * 4.0, 0.0, 1.0);
+            float nU = max(1.0, floor(wl / 5.6 + 0.4)), uw = wl / nU;
+            float ui = floor(u / uw), fu = fract(u / uw) * uw;
+            float uh = fh(vec2(ui + wl * 0.731, seed * 3.7 + 11.0)), uh2 = fh(vec2(uh * 7.3, ui + 3.1));
+            vec3 wallC = diffuseColor.rgb;
+            vec3 fas = fasC(kd, uh);
+            float fasL = dot(fas, vec3(0.3, 0.59, 0.11));
+            // open, lit units by kind (cafes are open at dawn, pubs mostly are not); the rest dark or shuttered
+            float pOpen = kd < 0.5 ? 0.55 : kd < 1.5 ? 0.8 : kd < 2.5 ? 0.3 : kd < 3.5 ? 0.6 : 0.0;
+            float pShut = kd < 0.5 ? 0.3 : kd < 1.5 ? 0.12 : kd < 2.5 ? 0.05 : kd < 3.5 ? 0.3 : 0.0;
+            float open = step(uh2, pOpen), shut = (1.0 - open) * step(1.0 - pShut, uh2);
+            vec3 sLit = kd > 0.5 && kd < 2.5 ? vec3(1.0, 0.66, 0.36) : mix(vec3(0.95, 0.9, 0.82), vec3(1.0, 0.78, 0.55), step(0.5, fh(vec2(uh, 4.0))));
+            float fasB = shopTop - 0.95, corB = shopTop - 0.18;
+            float pil = 1.0 - step(0.3, fu) * step(fu, uw - 0.3);
+            float doorL = uh > 0.5 ? 0.5 : uw - 1.55;
+            float door = step(doorL, fu) * step(fu, doorL + 1.05) * step(yy, 2.35);
+            float glz = (1.0 - pil) * step(0.48, yy) * step(yy, fasB - 0.07);
+            // glazing bars: a frame round each light, mullions every ~1.6 m, a transom under the fascia
+            float nm = max(1.0, floor((uw - 0.6) / 1.6 + 0.5));
+            float mq = fract((fu - 0.3) / ((uw - 0.6) / nm));
+            float bar = max(max(step(abs(yy - (fasB - 0.62)), 0.035), 1.0 - step(0.012, mq) * step(mq, 0.988)), step(yy, 0.53) + step(fasB - 0.13, yy));
+            vec3 pc = wallC;
+            float pE = 0.0, pW = 0.0;
+            vec3 pEc = vec3(0.0);
+            // display window or door glass: interior, shutter, whitewash
+            if (glz + door > 0.5) {
+              vec3 Vd = normalize(vAtmoW - cameraPosition);
+              vec3 Nw = normalize(vWN);
+              vec3 Tw = vec3(-Nw.z, 0.0, Nw.x);
+              float du = dot(Vd, Tw), dv = Vd.y, dn = max(-dot(Vd, Nw), 0.06);
+              float rw = uw - 0.6, rh = fasB, rd = 6.0 + 3.0 * uh;
+              float px = clamp(fu - 0.3, 0.0, rw), py = yy;
+              float tx = du > 0.0 ? (rw - px) / max(du, 1e-4) : px / max(-du, 1e-4);
+              float ty = dv > 0.0 ? (rh - py) / max(dv, 1e-4) : py / max(-dv, 1e-4);
+              float tt = min(min(tx, ty), rd / dn);
+              vec3 hp = vec3(px + du * tt, py + dv * tt, dn * tt);
+              // shelves of stock on the walls, a counter, a pale floor, panel lights in the ceiling
+              vec3 rc = vec3(0.55, 0.53, 0.5);
+              if (tt == ty && dv > 0.0) rc = vec3(0.9) * (0.6 + 0.8 * step(0.7, fract(hp.x * 0.5)) * step(0.6, fract(hp.z * 0.4)));
+              else if (tt == ty) rc = kd > 0.5 && kd < 2.5 ? vec3(0.22, 0.13, 0.07) : vec3(0.62, 0.6, 0.56);
+              else {
+                float sh = fract(hp.y / 0.42);
+                float cell = fh(vec2(floor((hp.x + hp.z) / 0.35), floor(hp.y / 0.42) + uh * 13.0));
+                vec3 stock = mix(vec3(0.7, 0.25, 0.12), vec3(0.15, 0.3, 0.6), cell);
+                stock = mix(stock, vec3(0.85, 0.8, 0.6), step(0.66, cell));
+                rc = mix(vec3(0.6, 0.57, 0.52), stock, step(0.15, sh) * step(hp.y, 2.2) * step(0.4, hp.y));
+                if (kd > 0.5 && kd < 2.5) rc = mix(vec3(0.32, 0.2, 0.12), rc, 0.35);
+              }
+              rc *= mix(1.0, 0.55, clamp(hp.z / rd, 0.0, 1.0));
+              pc = rc * 0.06;
+              pEc = rc * open * sLit * 1.6;
+              pW = 1.0;
+              if (shut > 0.5) {
+                float tag = step(0.82, fh(vec2(floor(fu * 0.8), floor(yy * 0.9) + uh * 5.0))) * step(yy, 2.0);
+                pc = vec3(0.2, 0.21, 0.22) * (0.8 + 0.2 * sin(yy * 55.0)) ;
+                pc = mix(pc, fasC(0.0, fh(vec2(fu, uh))) + 0.1, tag * 0.6);
+                pEc = vec3(0.0); pW = 0.25;
+              }
+              if (kd > 3.5) { pc = vec3(0.45, 0.43, 0.38) * (0.85 + 0.3 * fh(vec2(floor(fu * 2.0), floor(yy * 2.0)))); pEc = vec3(0.0); pW = 0.2; }
+              float bars = door > 0.5 ? max(1.0 - step(0.07, fu - doorL) * step(fu - doorL, 0.98), step(2.27, yy)) : bar;
+              pc = mix(pc, fas * 0.9 + 0.01, bars);
+              pEc *= 1.0 - bars;
+              pW *= 1.0 - bars;
+            } else if (yy > corB) {
+              // moulded cornice over the fascia, catching the light, with its shadow line beneath
+              pc = vec3(0.56, 0.53, 0.47) * (0.65 + 0.35 * step(corB + 0.07, yy));
+            } else if (yy > fasB && pil < 0.5) {
+              // the fascia and its sign-written name; some are lit
+              float fm = (fasB + corB) * 0.5;
+              float cl = fu / 0.24;
+              float on = step(uw * 0.18, fu) * step(fu, uw * 0.82) * step(abs(yy - fm), 0.17) * step(0.28, fh(vec2(floor(cl), uh * 9.0)))
+                       * step(0.14, fract(cl)) * step(fract(cl), 0.84);
+              vec3 letC = kd > 1.5 && kd < 2.5 ? vec3(0.62, 0.42, 0.12) : fasL > 0.25 ? vec3(0.02) : vec3(0.78, 0.76, 0.7);
+              pc = mix(fas, letC, on);
+              pE = on * step(0.55, fh(vec2(uh, 8.0))) * (open > 0.5 || kd > 1.5 ? 1.0 : 0.0);
+              pEc = letC * pE * 1.4;
+              pW = 0.6;
+            } else if (pil < 0.5) {
+              // panelled stallriser under the window
+              pc = fas * 0.75 + 0.01;
+              pW = 0.6;
+            } else if (yy > fasB) {
+              // console bracket capping the pilaster
+              pc = wallC * 0.8;
+            }
+            pc *= 0.8 + 0.2 * smoothstep(0.0, 1.0, yy);
+            // far away the shopfront averages to its fascia, its glass and its light
+            vec3 avgC = mix(wallC, mix(fas, vec3(0.04), 0.6), 0.8);
+            vec3 avgE = (open * 0.7 * sLit * 0.42 + 0.1 * step(0.55, fh(vec2(uh, 8.0)))) * (1.0 - shut);
+            diffuseColor.rgb = mix(avgC, pc, sa);
+            fWin = mix(0.7, pW, sa);
+            fGR = 0.05;
+            fLit = 1.0; litC = vec3(1.0);
+            roomE = mix(avgE, pEc, sa);
+          }
         }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, fGR, fWin);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * roomE * 2.6;');
@@ -274,14 +392,15 @@ class Buf {
 const dec = (f) => { const o = []; for (let i = 0; i < f.length; i += 2) o.push([f[i] / 10, f[i + 1] / 10]); return o; };
 const ringArea = (r) => { let a = 0; for (let i = 0; i < r.length; i++) { const [x0, z0] = r[i], [x1, z1] = r[(i + 1) % r.length]; a += x0 * z1 - x1 * z0; } return a / 2; };
 
-function walls(buf, ring, y0, y1, col, st, seed) {
+function walls(buf, ring, y0, y1, col, st, seed, shops = null) {
   // one continuous u along the ring, but each wall gets its own bay layout (its length) so windows centre on it
   for (let i = 0; i < ring.length; i++) {
     const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % ring.length];
     const dx = x1 - x0, dz = z1 - z0, L = Math.hypot(dx, dz);
     if (L < 0.05) continue;
     const nx = dz / L, nz = -dx / L;
-    const b = [st, seed, L, y1];
+    const sk = shops && y0 < 0.7 ? shops.get(i) : undefined;
+    const b = [sk === undefined ? st : st + 16 * (sk + 1), seed, L, y1];
     const a = buf.v(x0, y0, z0, nx, 0, nz, col, b, 0, y0);
     const bb = buf.v(x1, y0, z1, nx, 0, nz, col, b, L, y0);
     const c = buf.v(x1, y1, z1, nx, 0, nz, col, b, L, y1);
@@ -403,7 +522,15 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const SLATE = ['#4c525a', '#575b61', '#41464d', '#5d6064', '#50555c'];
   const FLAT = ['#6f6e6b', '#7c7a75', '#615f5c', '#86837c', '#5a5a58'];
   const footprints = [];
-  data.b.forEach((rec) => {
+  // ground-floor shopfronts: building index -> (wall index -> kind), from mapped shops, cafes, pubs and banks
+  const shopAt = new Map();
+  const SF = data.sf || [];
+  for (let i = 0; i + 2 < SF.length; i += 3) {
+    if (!shopAt.has(SF[i])) shopAt.set(SF[i], new Map());
+    shopAt.get(SF[i]).set(SF[i + 1], SF[i + 2]);
+  }
+  const shopGlow = [];
+  data.b.forEach((rec, bi) => {
     const [st, h, minh, rs, rhIn, colH, rcolH, of, ...hf] = rec;
     const outer = dec(of);
     const holes = hf.map(dec);
@@ -423,7 +550,22 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     if (rs2 === 3) rs2 = 2;
     const pitched = rs2 && o && o.fill > 0.8 && rh > 0.5;
     const eave = pitched ? h - (rs2 === 4 ? rh : rh) : h;
-    walls(b, outer, minh, eave, col, st, seed);
+    const shops = shopAt.get(bi) || null;
+    walls(b, outer, minh, eave, col, st, seed, shops);
+    if (shops && minh < 0.7) {
+      // light from the open shops spills onto the pavement in front
+      shops.forEach((kd, ei) => {
+        if (kd === 4) return;
+        const [x0, z0] = outer[ei], [x1, z1] = outer[(ei + 1) % outer.length];
+        const L = Math.hypot(x1 - x0, z1 - z0);
+        if (L < 2) return;
+        const nx = (z1 - z0) / L, nz = -(x1 - x0) / L, n = Math.max(1, Math.floor(L / 5.6 + 0.4));
+        for (let j = 0; j < n; j++) {
+          const t = (j + 0.5) / n;
+          shopGlow.push([x0 + (x1 - x0) * t + nx * 2.2, z0 + (z1 - z0) * t + nz * 2.2, kd === 1 || kd === 2]);
+        }
+      });
+    }
     holes.forEach((hr) => walls(b, hr, minh, eave, col, st, seed));
     const rc = hexCol(rcolH, (pitched ? SLATE : FLAT)[Math.floor(seed * 97) % 5]);
     if (pitched && rs2 === 4) domeRoof(roofs, o, eave, rh, rc);
@@ -559,6 +701,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       ctx.fillStyle = g; ctx.fillRect(px - rr, pz - rr, rr * 2, rr * 2);
     };
     const warm = '255,214,168', led = '235,240,255';
+    // shop windows (about half are open at dawn)
+    shopGlow.forEach(([x, z, food]) => { if (keep(x, z) && r() < (food ? 0.75 : 0.5)) lamp(x, z, 4.5, food ? 0.4 : 0.32, food ? '255,190,130' : '255,226,190'); });
     roads.forEach((rd) => {
       if (rd.cls > 4) return;
       const major = rd.cls <= 1, step = major ? 24 : rd.cls === 4 ? 20 : 30;

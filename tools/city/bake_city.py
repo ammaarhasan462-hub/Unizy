@@ -34,7 +34,18 @@ def load(name):
     p = os.path.join(RAW, f'{name}.json.gz')
     if os.path.exists(p):
         with gzip.open(p) as f:
-            return json.load(f)['elements']
+            els = json.load(f)['elements']
+        # the Overpass snapshot has no shop nodes: take those from the monthly extract
+        if os.path.exists(os.path.join(RAW, f'{name}.geojsonseq.gz')):
+            have = {(round(e['lat'], 6), round(e['lon'], 6)) for e in els if e['type'] == 'node'}
+            for e in load_seq(name):
+                if e['type'] == 'node' and shop_kind(e['tags']) is not None and (round(e['lat'], 6), round(e['lon'], 6)) not in have:
+                    els.append(e)
+        return els
+    return load_seq(name)
+
+
+def load_seq(name):
     p = os.path.join(RAW, f'{name}.geojsonseq.gz')
     if not os.path.exists(p):
         raise FileNotFoundError(p)
@@ -302,6 +313,157 @@ def height_of(t, a, site, seed):
     return max(h, minh + 2.5), minh, src
 
 
+# shopfront kinds (SHOPK in web/components/intro/city.js): what the fascia, the window and the light behind it look like
+FOOD = {'restaurant', 'cafe', 'fast_food', 'ice_cream', 'food_court'}
+PUB = {'pub', 'bar', 'nightclub', 'biergarten'}
+SERVICE = {'bank', 'pharmacy', 'bureau_de_change', 'post_office', 'cinema', 'theatre', 'dentist', 'doctors', 'veterinary', 'money_transfer',
+           'betting', 'casino', 'clinic', 'library', 'arts_centre', 'internet_cafe', 'gambling'}
+
+
+def shop_kind(t):
+    """0 shop, 1 cafe or restaurant, 2 pub or bar, 3 bank, chemist and other services, 4 empty unit; None if not a shopfront"""
+    am = t.get('amenity', '')
+    sh = t.get('shop', '')
+    if sh in ('vacant', 'disused') or t.get('disused:shop'):
+        return 4
+    if am in PUB:
+        return 2
+    if am in FOOD or sh in ('bakery', 'coffee', 'deli', 'pastry'):
+        return 1
+    if am in SERVICE:
+        return 3
+    if sh and sh not in ('no', 'none', 'mall', 'department_store', 'wholesale', 'storage_rental'):
+        return 0
+    return None
+
+
+def seg_d(px, pz, a, b):
+    dx, dz = b[0] - a[0], b[1] - a[1]
+    L2 = dx * dx + dz * dz or 1e-9
+    u = max(0.0, min(1.0, ((px - a[0]) * dx + (pz - a[1]) * dz) / L2))
+    return math.hypot(px - a[0] - dx * u, pz - a[1] - dz * u)
+
+
+def shopfronts(bring, road_segs, points):
+    """Ground-floor walls that face a street and carry a mapped shop, cafe, pub or bank.
+    bring: [(out index, outer ring, min height, height, style, own tags)]; road_segs: [(class, width, [pts])];
+    points: [(x, z, kind)] for mapped shop nodes and areas. Returns {(out index, edge index): kind}."""
+    G = 25.0
+    # roads a pedestrian can shop from: everything but footpaths
+    rgrid = {}
+    for cls, w, pts in road_segs:
+        if cls > 4:
+            continue
+        for a, b in zip(pts, pts[1:]):
+            for gx in range(int(min(a[0], b[0]) // G) - 1, int(max(a[0], b[0]) // G) + 2):
+                for gz in range(int(min(a[1], b[1]) // G) - 1, int(max(a[1], b[1]) // G) + 2):
+                    rgrid.setdefault((gx, gz), []).append((w, a, b))
+    bgrid = {}
+    for k, (_, o, _, _, _, _) in enumerate(bring):
+        xs, zs = [p[0] for p in o], [p[1] for p in o]
+        for gx in range(int(min(xs) // G), int(max(xs) // G) + 1):
+            for gz in range(int(min(zs) // G), int(max(zs) // G) + 1):
+                bgrid.setdefault((gx, gz), []).append(k)
+
+    def inside_other(x, z, me):
+        for k in bgrid.get((int(x // G), int(z // G)), ()):
+            if k != me and pip(x, z, bring[k][1]):
+                return True
+        return False
+
+    def frontage(k):
+        """edges of building k with a street in front and no neighbour against them: [(edge, midpoint, normal, length)]"""
+        _, o, minh, hgt, st, _ = bring[k]
+        if minh > 0.6 or hgt < 4.5 or st in (STY['church'], STY['shed']):
+            return []
+        res = []
+        for i in range(len(o)):
+            (x0, z0), (x1, z1) = o[i], o[(i + 1) % len(o)]
+            L = math.hypot(x1 - x0, z1 - z0)
+            if L < 2.8:
+                continue
+            nx, nz = (z1 - z0) / L, -(x1 - x0) / L  # outward for an anticlockwise ring
+            mx, mz = (x0 + x1) / 2, (z0 + z1) / 2
+            if inside_other(mx + nx * 1.2, mz + nz * 1.2, k):
+                continue  # party wall
+            # a carriageway or pedestrian street within a pavement's width of the wall, on its outer side
+            ok = False
+            for s in (3.0, 7.0, 12.0):
+                px, pz = mx + nx * s, mz + nz * s
+                for w, a, b in rgrid.get((int(px // G), int(pz // G)), ()):
+                    if seg_d(px, pz, a, b) < w / 2 + 3.5 and seg_d(mx, mz, a, b) > 1.0:
+                        ok = True
+                        break
+                if ok:
+                    break
+            if ok:
+                res.append((i, (mx, mz), (nx, nz), L))
+        return res
+
+    fr_cache = {}
+
+    def fr(k):
+        if k not in fr_cache:
+            fr_cache[k] = frontage(k)
+        return fr_cache[k]
+
+    flag = {}
+    # whole buildings mapped as a shop or pub: every street-facing wall
+    for k, (bi, o, _, _, _, t) in enumerate(bring):
+        kd = shop_kind(t)
+        if kd is not None:
+            for i, _, _, _ in fr(k):
+                flag.setdefault((bi, i), kd)
+    # shop nodes: the nearest street-facing wall of the building they sit in or beside
+    for x, z, kd in points:
+        best = None
+        for gx in (int(x // G) - 1, int(x // G), int(x // G) + 1):
+            for gz in (int(z // G) - 1, int(z // G), int(z // G) + 1):
+                for k in bgrid.get((gx, gz), ()):
+                    o = bring[k][1]
+                    for i, _, _, _ in fr(k):
+                        d = seg_d(x, z, o[i], o[(i + 1) % len(o)])
+                        if d < 14 and (best is None or d < best[0]):
+                            best = (d, k, i)
+        if best:
+            key = (bring[best[1]][0], best[2])
+            # a cafe beats a vacant unit on the same wall; otherwise the first mapped use stays
+            if key not in flag or flag[key] == 4:
+                flag[key] = kd
+    # parades: an unmapped street wall between two shopfronts on the same frontage is a shop too
+    fl = []
+    for k in range(len(bring)):
+        for i, m, n, L in fr(k):
+            if (bring[k][0], i) in flag:
+                fl.append((m, n))
+    fgrid = {}
+    for m, n in fl:
+        fgrid.setdefault((int(m[0] // G), int(m[1] // G)), []).append((m, n))
+    added = 0
+    for k in range(len(bring)):
+        for i, m, n, L in fr(k):
+            key = (bring[k][0], i)
+            if key in flag:
+                continue
+            tx, tz = -n[1], n[0]  # along the wall
+            lo = hi = False
+            for gx in (int(m[0] // G) - 1, int(m[0] // G), int(m[0] // G) + 1):
+                for gz in (int(m[1] // G) - 1, int(m[1] // G), int(m[1] // G) + 1):
+                    for m2, n2 in fgrid.get((gx, gz), ()):
+                        if n2[0] * n[0] + n2[1] * n[1] < 0.94:
+                            continue
+                        dx, dz = m2[0] - m[0], m2[1] - m[1]
+                        along = dx * tx + dz * tz
+                        if abs(dx * n[0] + dz * n[1]) > 2.5 or abs(along) > 22:
+                            continue
+                        lo = lo or along < -1
+                        hi = hi or along > 1
+            if lo and hi:
+                flag[key] = 0
+                added += 1
+    return flag, added
+
+
 def bake(site):
     els = load(site)
     # ------------------------------------------------------------------ anchors / frame
@@ -437,6 +599,7 @@ def bake(site):
                 p['parent'] = b['t']
                 break
     out_b = []
+    bring = []  # (out index, ring, min height, height, style, own tags) for the shopfronts
     stats = {'h': 0, 'lv': 0, 'guess': 0}
     style_n = {}
     for i, b in enumerate(blds + parts):
@@ -455,6 +618,7 @@ def bake(site):
             rh = min(6, 0.35 * math.sqrt(b['a']))
         if rs and hgt - rh < minh + 2:
             rh = max(0, hgt - minh - 2)
+        bring.append((len(out_b), b['o'], minh, hgt, STY[st], b['t']))
         out_b.append([STY[st], round(hgt, 1), round(minh, 1), rs, round(rh, 1), colour(t.get('building:colour')) or '', colour(t.get('roof:colour')) or '',
                       flat(b['o'])] + ([flat(hr) for hr in b['h']] if b['h'] else []))
 
@@ -467,6 +631,7 @@ def bake(site):
     CLS = {'motorway': 0, 'trunk': 0, 'primary': 0, 'secondary': 1, 'tertiary': 1, 'unclassified': 2, 'residential': 2, 'living_street': 2,
            'service': 3, 'pedestrian': 4, 'footway': 5, 'path': 5, 'cycleway': 5, 'steps': 5, 'bridleway': 5, 'track': 5}
     roads, areas, rails, trees = [], [], [], []
+    road_segs, shop_pts = [], []
     lim = DETAIL + 200
 
     def clip_line(pts):
@@ -494,6 +659,11 @@ def bake(site):
         t = el.get('tags', {})
         if 'building' in t or 'building:part' in t:
             continue
+        sk = shop_kind(t)
+        if sk is not None and t.get('level', '0').strip() in ('0', '0;1', '0;-1', '') and t.get('location') != 'underground':
+            ps = el_pts(el, fr)
+            if ps:
+                shop_pts.append((sum(p[0] for p in ps) / len(ps), sum(p[1] for p in ps) / len(ps), sk))
         if el['type'] == 'node':
             if t.get('natural') == 'tree':
                 x, z = fr(el['lat'], el['lon'])
@@ -526,6 +696,7 @@ def bake(site):
                 w *= 0.65
             for seg in clip_line(ring_pts(el['geometry'], fr)):
                 seg = dp(seg, 0.3)
+                road_segs.append((CLS.get(hw.replace('_link', ''), 2), w, seg))
                 roads.append([CLS.get(hw.replace('_link', ''), 2), round(w, 1), 1 if t.get('bridge') == 'yes' else 0, flat(seg)])
         elif t.get('railway') in ('rail', 'subway', 'light_rail') and t.get('tunnel') != 'yes' and t.get('layer', '0')[:1] != '-':
             for seg in clip_line(ring_pts(el['geometry'], fr)):
@@ -541,6 +712,13 @@ def bake(site):
                         trees += [q(x), q(z), 0]
         elif t.get('barrier') in ('hedge',) and False:
             pass
+
+    # ------------------------------------------------------------------ shopfronts on the ground floors
+    sfl, sf_fill = shopfronts(bring, road_segs, shop_pts)
+    sf = []
+    for (bi, ei), kd in sorted(sfl.items()):
+        sf += [bi, ei, kd]
+    sf_n = [sum(1 for v in sfl.values() if v == k) for k in range(5)]
 
     # ------------------------------------------------------------------ skyline (tall buildings beyond the detail map)
     sky = []
@@ -582,13 +760,13 @@ def bake(site):
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
-        'landmarks': landmarks, 'b': out_b, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sky': sky, 'river': river,
+        'landmarks': landmarks, 'b': out_b, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'skyline': len(sky), 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 
