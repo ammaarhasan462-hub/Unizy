@@ -774,3 +774,5 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-guestcta{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0 18px;padding:16px 18px;border-radius:14px;background:#FBF7EE;border:1.5px solid #EADFC8}
 .mk-guestcta p{margin:4px 0 0;font-size:14.5px;color:var(--mute,#4B5C56)}
 .mk-guestcta .btn{flex:0 0 auto}
+.mk-unitabs.one{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mk-unione{display:inline-block;font-weight:600;font-size:14px;padding:7px 14px;border-radius:999px;background:var(--ink,#16231F);color:#fff}

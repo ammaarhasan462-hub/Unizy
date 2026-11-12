@@ -24,8 +24,11 @@
   var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579 };
   var pubUni = (function () { try { var u = localStorage.getItem('unizy:uni'); return UNIS[u] ? u : ''; } catch (e) { return ''; } })();
   function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : pubUni; }
+  var uniOpen = false;
   function uniTabs() {
     var ids = ['ucl', 'imperial', 'qmul', 'lse'];
+    // picked a university (in the intro or here)? Then it's only that university's modules, with a way to change it
+    if (pubUni && !uniOpen) return '<div class="mk-unitabs one"><span class="mk-unione">' + esc(UNIS[pubUni].short) + ' ' + (pubUni === 'lse' ? 'courses' : 'modules') + ' only</span><button type="button" class="mk-clear" data-unichange="1">Change university</button></div>';
     return '<div class="mk-unitabs" role="tablist" aria-label="University"><button type="button" role="tab" data-puni=""' + (pubUni ? '' : ' class="on" aria-selected="true"') + '>All</button>' +
       ids.map(function (id) { return '<button type="button" role="tab" data-puni="' + id + '"' + (pubUni === id ? ' class="on" aria-selected="true"' : '') + '>' + UNIS[id].short + '</button>'; }).join('') + '</div>';
   }
@@ -416,7 +419,7 @@
     var pl = packList.filter(function (p) { return packUni[p.code] && (!pubUni || packUni[p.code] === pubUni); });
     var pk = pl.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
     return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>Find your module.</h1>' + uniTabs() +
-      '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
+      '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'course' : 'module') + (pl.length === 1 ? '' : 's') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
       '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
       '<div id="mk-list" aria-live="polite"></div></section>';
@@ -439,6 +442,8 @@
     var m = state.mod;
     if (m.missing) return head() + '<section class="mk-card"><h1>Module not found</h1><p>We couldn’t find <b>' + esc(m.code) + '</b> in ' + U().cat + '. Check the code and <a href="' + BASE + '" data-go="home">search again</a>.</p></section>';
     if (m.loading) return head() + '<section class="mk-card"><p class="mk-hint">Loading module…</p></section>';
+    // in the dashboard you only practise your own university's modules
+    if (HOOKS && listUni() && m.uni && m.uni !== listUni() && UNIS[m.uni] && UNIS[listUni()]) return head() + '<section class="mk-card"><h1>' + esc(m.code) + ' is a ' + esc(UNIS[m.uni].short) + ' ' + (m.uni === 'lse' ? 'course' : 'module') + '</h1><p>Your dashboard is set up for ' + esc(UNIS[listUni()].short) + ', so you can only practise ' + esc(UNIS[listUni()].short) + ' modules here. <a href="' + BASE + '" data-go="home">Find a ' + esc(UNIS[listUni()].short) + ' module</a>, or change your university under Account → Change course.</p></section>';
     var html = head();
     var mm = state.topics && state.topics.length ? ST.moduleMastery(state.topics, studyData()) : null, signed = !!getSession();
     if (canGuest() && state.topics && state.topics.length) html += '<div class="mk-trybar"><b>Try it free, no sign-up.</b> Pick any exam-style or First-class question below, write your answer, and get it marked against ' + U().poss + ' grade bands. One free marked answer.</div>';
@@ -788,9 +793,10 @@
   root.addEventListener('mousedown', function (e) { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
   root.addEventListener('keydown', function (e) { if (e.target.id === 'mk-real' && e.key === 'Enter') { var b = root.querySelector('[data-real]'); if (b) saveReal(b.getAttribute('data-real')); } });
   root.addEventListener('click', function (e) {
+    if (e.target.closest('[data-unichange]')) { uniOpen = true; render(); return; }
     var pu = e.target.closest('[data-puni]');
     if (pu) {
-      pubUni = pu.getAttribute('data-puni');
+      pubUni = pu.getAttribute('data-puni'); uniOpen = !pubUni;
       try { if (pubUni) localStorage.setItem('unizy:uni', pubUni); else localStorage.removeItem('unizy:uni'); } catch (er) {}
       root.querySelectorAll('[data-puni]').forEach(function (b) { var on = b === pu; b.classList.toggle('on', on); if (on) b.setAttribute('aria-selected', 'true'); else b.removeAttribute('aria-selected'); });
       var k = root.querySelector('.mk-hero .kicker');

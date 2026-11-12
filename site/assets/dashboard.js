@@ -138,7 +138,8 @@
   // ---------- data ----------
   function loadMods() {
     return rest('my_modules?select=code,added_at,exam_date,ucl_modules(code,title,level,credits,department,summary,uni)&order=added_at.asc').then(function (rows) {
-      S.mods = (rows || []).map(function (r) { var m = r.ucl_modules || { code: r.code, title: r.code }; m.exam_date = r.exam_date || null; return m; });
+      S.mods = (rows || []).map(function (r) { var m = r.ucl_modules || { code: r.code, title: r.code }; m.exam_date = r.exam_date || null; return m; })
+        .filter(function (m) { var u = S.profile && S.profile.uni; return !u || !m.uni || m.uni === u; }); // modules from another university stay hidden
     });
   }
   function loadAttempts() {
@@ -466,7 +467,9 @@
       var sugg = {}; (st.sugg || []).forEach(function (m) { sugg[m.code] = 1; });
       var extra = Object.keys(st.picks).filter(function (c) { return !sugg[c]; });
       var cur = extra.filter(function (c) { return st.current[c]; }), added = extra.filter(function (c) { return !st.current[c] && st.picks[c]; });
-      var cur2 = Object.keys(st.current).filter(function (c) { return !sugg[c] && !st.picks[c]; });
+      var other = Object.keys(st.current).filter(function (c) { var m = S.mods.filter(function (x) { return x.code === c; })[0]; return m && m.uni && m.uni !== st.uni; });
+      var cur2 = Object.keys(st.current).filter(function (c) { return !sugg[c] && !st.picks[c] && other.indexOf(c) < 0; });
+      if (other.length) html += '<p class="mk-hint">' + other.length + ' module' + (other.length === 1 ? '' : 's') + ' from your old university will be removed: ' + esc(other.join(', ')) + '.</p>';
       if (cur.length || cur2.length) html += '<p class="mk-lab">Your current modules <small>untick to remove them from your dashboard</small></p><ul class="db-picks">' + cur.concat(cur2).map(function (c) { var m = st.picks[c] || (S.mods.filter(function (x) { return x.code === c; })[0]) || {}; return '<li><label><input type="checkbox" data-pick="' + c + '"' + (st.picks[c] ? ' checked' : '') + '><span class="db-mcode">' + esc(c) + '</span><span>' + esc(m.title || '') + '</span></label></li>'; }).join('') + '</ul>';
       if (added.length) html += '<p class="mk-lab">Also added</p><ul class="db-picks">' + added.map(function (c) { var m = st.picks[c]; return '<li><label><input type="checkbox" data-pick="' + c + '" checked><span class="db-mcode">' + esc(c) + '</span><span>' + esc(m.title || '') + '</span></label></li>'; }).join('') + '</ul>';
       html += '<label class="mk-lab" for="db-sq">Add another module</label><input id="db-sq" type="search" autocomplete="off" placeholder="Search ' + esc((UNIS[st.uni] || UNIS.ucl).short) + ' modules by code or title, e.g. ' + esc((UNIS[st.uni] || {}).eg || 'PLIN0001') + '" value="' + esc(st.q) + '"><ul class="db-sres" id="db-sres"></ul>';
@@ -526,7 +529,7 @@
     var c = st.course, lvl = levelFor(st), p;
     if (c && c !== 'other' && c.legacy && c.legacy.y[String(st.year)]) {
       var list = c.legacy.y[String(st.year)], codes = list.map(function (m) { return m.c; });
-      p = rest('ucl_modules?select=code,title,level,department,credits&code=in.(' + codes.join(',') + ')').then(function (rows) {
+      p = rest('ucl_modules?select=code,title,level,department,credits&uni=eq.' + st.uni + '&code=in.(' + codes.join(',') + ')').then(function (rows) {
         var byCode = {}; (rows || []).forEach(function (r) { byCode[r.code] = r; });
         return list.filter(function (m) { return byCode[m.c]; }).map(function (m) { var r = byCode[m.c]; r.compulsory = m.s === 'c'; return r; });
       });
@@ -537,7 +540,7 @@
           .sort(function (a, b) { return (b.compulsory ? 1 : 0) - (a.compulsory ? 1 : 0) || a.code.localeCompare(b.code); });
       });
     } else if (c && c !== 'other' && c.p && c.p.length) {
-      p = rest('ucl_modules?select=code,title,level,department,credits&uni=eq.ucl&level=eq.' + lvl + '&or=(' + c.p.map(function (x) { return 'code.like.' + x + '*'; }).join(',') + ')&order=code.asc&limit=150');
+      p = rest('ucl_modules?select=code,title,level,department,credits&uni=eq.' + st.uni + '&level=eq.' + lvl + '&or=(' + c.p.map(function (x) { return 'code.like.' + x + '*'; }).join(',') + ')&order=code.asc&limit=150');
     } else {
       var depts = st.subjects.map(function (s2) { return '"' + s2.dept.replace(/"/g, '') + '"'; });
       p = depts.length ? rest('ucl_modules?select=code,title,level,department,credits&uni=eq.' + st.uni + '&department=in.(' + encodeURIComponent(depts.join(',')) + ')&level=eq.' + lvl + '&order=department.asc,code.asc&limit=160') : Promise.resolve([]);
@@ -574,6 +577,8 @@
       var u = b.getAttribute('data-uni'); if (u === st.uni) return;
       st.uni = u; st.course = null; st.cq = ''; st.subjects = []; st.subq = ''; st.subres = null; S.depts = null;
       if (!st.editing) st.picks = {};
+      // your modules always belong to your university: switching drops the old university's modules
+      else Object.keys(st.picks).forEach(function (c) { var m = st.picks[c] || {}; if (m.uni && m.uni !== u) delete st.picks[c]; });
       lsSet('unizy:uni', u);
       renderSetup(); loadCourses(u).then(renderSetup);
     } else if (b.hasAttribute('data-course')) {
@@ -590,7 +595,7 @@
     else if (b.hasAttribute('data-year')) { st.year = +b.getAttribute('data-year'); renderSetup(); }
     else if (b.hasAttribute('data-addpick')) {
       var c = b.getAttribute('data-addpick'), m = (st.results || []).filter(function (x2) { return x2.code === c; })[0];
-      if (m) st.picks[c] = m; st.q = ''; st.results = []; renderSetup();
+      if (m && (!m.uni || m.uni === st.uni)) st.picks[c] = m; st.q = ''; st.results = []; renderSetup();
     } else {
       var a = b.getAttribute('data-setup');
       if (a === 'next1') { st.step = 2; renderSetup(); }
@@ -1092,8 +1097,8 @@
     token().then(function (t) {
       if (!t) { try { localStorage.removeItem(SKEY); } catch (e) {} toLogin(); return; }
       return Promise.all([
-        rest('study_profile?select=uni,course,course_id,department,year').then(function (r) { S.profile = (r && r[0]) || null; }),
-        loadMods(), loadPlan()
+        rest('study_profile?select=uni,course,course_id,department,year').then(function (r) { S.profile = (r && r[0]) || null; }).then(loadMods),
+        loadPlan()
       ]).then(function () {
         // older accounts that already have modules skip set-up
         if (!S.profile && S.mods.length) S.profile = { course: null, year: null };
