@@ -386,16 +386,20 @@ def shopfronts(bring, road_segs, points):
             mx, mz = (x0 + x1) / 2, (z0 + z1) / 2
             if inside_other(mx + nx * 1.2, mz + nz * 1.2, k):
                 continue  # party wall
-            # a carriageway or pedestrian street within a pavement's width of the wall, on its outer side
+            # a carriageway or pedestrian street within a pavement's width of the wall, on its outer side, with nothing built
+            # in between (walk out from the wall: a kiosk, an arcade or the next block across a yard hides the street)
             ok = False
-            for s in (3.0, 7.0, 12.0):
+            s = 1.2
+            while s <= 13.2 and not ok:
                 px, pz = mx + nx * s, mz + nz * s
-                for w, a, b in rgrid.get((int(px // G), int(pz // G)), ()):
-                    if seg_d(px, pz, a, b) < w / 2 + 3.5 and seg_d(mx, mz, a, b) > 1.0:
-                        ok = True
-                        break
-                if ok:
+                if inside_other(px, pz, k):
                     break
+                if s >= 2.4:
+                    for w, a, b in rgrid.get((int(px // G), int(pz // G)), ()):
+                        if seg_d(px, pz, a, b) < w / 2 + 2.5 and seg_d(mx, mz, a, b) > 1.0:
+                            ok = True
+                            break
+                s += 1.2
             if ok:
                 res.append((i, (mx, mz), (nx, nz), L))
         return res
