@@ -397,8 +397,21 @@ Return one JSON object with ONLY the items you changed, each with its ref and th
 
 // Chains: a module's pack is built one topic at a time (each finished topic starts the next), so a whole batch of modules
 // only ever has one request per module running at once and stays inside the API's concurrency limit.
+// Hard spending cap for batch jobs: ops_keys 'batch_cap_usd' = the most ai_batch_spend may reach (total, all days).
+// Once it's reached, no batch step starts (students' marking is separate and unaffected).
+async function batchCapped(service: any): Promise<boolean> {
+  const [{ data: cap }, { data: rows }] = await Promise.all([
+    service.from("ops_keys").select("key").eq("name", "batch_cap_usd").maybeSingle(),
+    service.from("ai_batch_spend").select("usd"),
+  ]);
+  if (!cap || !cap.key) return false;
+  const spent = (rows || []).reduce((t: number, r: any) => t + (+r.usd || 0), 0);
+  return spent >= +cap.key;
+}
+
 async function nextTopic(service: any, code: string, key: string, left: number) {
   if (left <= 0) return;
+  if (await batchCapped(service)) { console.error("batch cap reached; stopping chain at", code); return; }
   const [{ data: tps }, { data: qs }] = await Promise.all([
     service.from("module_topics").select("position").eq("code", code).order("position"),
     service.from("module_questions").select("topic_pos, tier, answer").eq("code", code),
@@ -417,6 +430,7 @@ async function nextTopic(service: any, code: string, key: string, left: number) 
 // When a module is finished, this chain moves on to the next module queued in module_packs (status 'queued'), so a batch
 // keeps the same number of chains running until the queue is empty.
 async function startQueued(service: any, key: string) {
+  if (await batchCapped(service)) return;
   for (let i = 0; i < 3; i++) {
     const { data: nxt } = await service.from("module_packs").select("code").eq("status", "queued").order("code").limit(1);
     if (!nxt || !nxt.length) return;
@@ -608,6 +622,7 @@ Deno.serve(async (req) => {
   // ---------- background batch (no user; secret key) ----------
   if (body.action === "warm") {
     if (!(await opsAllowed(service, req))) return json(401, { code: "invalid_request", message: "No." });
+    if (await batchCapped(service)) return json(402, { code: "batch_cap", message: "Batch spending cap reached." });
     const code = String(body.code || "").toUpperCase().trim();
     const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
     if (!mod) return json(404, { code: "not_found" });
@@ -630,6 +645,7 @@ Deno.serve(async (req) => {
 
   if (body.action === "deepen") {
     if (!(await opsAllowed(service, req))) return json(401, { code: "invalid_request", message: "No." });
+    if (await batchCapped(service)) return json(402, { code: "batch_cap", message: "Batch spending cap reached." });
     const code = String(body.code || "").toUpperCase().trim(), pos = Math.round(+body.topic_pos);
     const { data: mod } = await service.from("ucl_modules").select("*").eq("code", code).maybeSingle();
     if (!mod || !Number.isInteger(pos) || pos < 0) return json(404, { code: "not_found" });
