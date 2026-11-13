@@ -237,7 +237,7 @@ function facade(fam, T) {
           float bwM = wl / nb;
           if (era > 0.5 && era < 1.5 && shopK < 0.5 && isBay < 0.5) {
             // Georgian and Regency: a rusticated stucco ground floor under a moulded band; a stucco cornice under the top storey
-            vec3 stuc = vec3(0.8, 0.78, 0.71) * (0.95 + 0.1 * fh(vec2(seed, 2.0)));
+            vec3 stuc = vec3(0.72, 0.7, 0.64) * (0.94 + 0.12 * fh(vec2(seed, 2.0)));
             float gfl = step(yy, flo) * off;
             diffuseColor.rgb = mix(diffuseColor.rgb, stuc * (1.0 - 0.42 * step(fract(yy / 0.4), 0.07) * fineA), gfl);
             float b1 = step(flo, yy) * step(yy, flo + 0.24);
@@ -626,7 +626,7 @@ function frontBays(L, st, era) {
 
 // black area railings: one quad per run, the bars, rails and spear heads cut out in the shader
 function railMaterial() {
-  const m = new THREE.MeshStandardMaterial({ color: '#0b0c0d', roughness: 0.42, metalness: 0.55, side: THREE.DoubleSide });
+  const m = new THREE.MeshStandardMaterial({ color: '#0b0c0d', roughness: 0.42, metalness: 0.55, side: THREE.DoubleSide, transparent: true });
   m.userData.key = 'city-rail';
   m.userData.patch = (shader) => {
     shader.vertexShader = shader.vertexShader
@@ -634,19 +634,22 @@ function railMaterial() {
       .replace('#include <uv_vertex>', '#include <uv_vertex>\nvRw = uv;');
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vRw;')
-      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+      .replace('#include <color_fragment>', `#include <color_fragment>
         {
           float u = vRw.x, y = vRw.y, sp = 0.125;
           float d = abs(fract(u / sp) - 0.5) * sp;
-          // square bars with spear heads above the top rail, a bottom rail near the kerb
+          float px = max(fwidth(u), fwidth(y));
+          // square bars with spear heads above the top rail, a bottom rail near the kerb; never thinner than a pixel
           float head = smoothstep(0.93, 0.985, y) * (1.0 - smoothstep(0.985, 1.06, y));
-          float bar = step(d, 0.0095 + 0.02 * head);
-          float rails = step(abs(y - 0.9), 0.02) + step(abs(y - 0.1), 0.018);
-          float cov = clamp(bar + rails, 0.0, 1.0);
-          // far away, dither to the railing's average cover rather than shimmer
-          float far = smoothstep(0.012, 0.035, max(fwidth(u), fwidth(y)));
-          float dz = fract(sin(dot(floor(gl_FragCoord.xy), vec2(12.9898, 78.233))) * 43758.5453);
-          if (mix(cov, step(dz, 0.24), far) < 0.5) discard;
+          float hw = 0.0095 + 0.02 * head;
+          float bar = 1.0 - smoothstep(hw - px * 0.5, hw + px * 0.5, d);
+          float rails = max(1.0 - smoothstep(0.02 - px * 0.5, 0.02 + px * 0.5, abs(y - 0.9)), 1.0 - smoothstep(0.018 - px * 0.5, 0.018 + px * 0.5, abs(y - 0.1)));
+          float cov = max(bar, rails);
+          // further off the bars blur into the railing's average cover, then fade out
+          float far = smoothstep(0.015, 0.05, px);
+          cov = mix(cov, 0.3, far) * (1.0 - smoothstep(0.12, 0.3, px));
+          if (cov < 0.02) discard;
+          diffuseColor.a *= cov;
         }`);
   };
   return atmo(m);
