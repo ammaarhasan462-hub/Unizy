@@ -18,26 +18,47 @@ The workflow runs monthly, so newly mapped buildings arrive on their own.
 
 ## How a refinement night works
 
-1. Pick the top unticked item below.
+1. Pick the top unticked item of the realism backlog, and the top unticked item of the lag backlog. Every night reduces lag as well as adding realism.
 2. Branch from main.
-3. Implement the change, then rebake if needed with `python3 tools/city/bake_city.py`.
-4. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial`, `UNI=lse` and `UNI=qmul`, each on desktop and mobile (needs Playwright and Chrome; frames go to `/tmp/shots`).
-5. Compare against the previous night's renders, which are kept in `tools/city/renders/`.
-6. Merge to main only if the change is clearly better and nothing broke:
+3. Implement the changes, then rebake if needed with `python3 tools/city/bake_city.py`.
+4. Render the before frames first, from a copy of `site/` and `render_intro.py`, because pulling a new build replaces `site/`.
+5. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial`, `UNI=lse` and `UNI=qmul`, each on desktop and mobile (needs Playwright and Chrome; frames go to `/tmp/shots`).
+6. Read the lag numbers that `render_intro.py` prints for each run:
+   - `engine up` time;
+   - shader programs and vertices;
+   - for each frame: ms between frames, draw calls and triangles.
+
+   Under swiftshader, only the before → after change in these numbers means anything. Run the renders one at a time so the ms figures are not skewed.
+7. Compare against the previous night's renders, which are kept in `tools/city/renders/`.
+8. Merge to main only if the change is clearly better and nothing broke:
    - no console errors;
+   - lag is lower, or at worst level within noise. No university or device may be clearly worse on engine up, ms per frame, draw calls or triangles. If a realism change adds lag, win it back the same night, for example with a cheaper far-distance path, a distance cut-off or fewer draw calls;
    - `engine up` within about 60 seconds under swiftshader;
    - the mobile render still works;
    - UCL, Imperial, LSE and Queen Mary all still look right.
-7. Tick the item, add a line to the log at the bottom, and save the 4-frame sheet to `tools/city/renders/<date>.jpg`.
+9. Tick the items. Add a line to the log at the bottom with the before → after lag numbers for each university, and save the 4-frame sheet to `tools/city/renders/<date>.jpg`.
 
 Keep to these limits:
 
 - Download stays under about 1.5 MB gzipped per city.
 - Desktop stays under about 900k city vertices, and mobile under about 350k.
+- No lag regressions (see step 8).
 - Never use paid APIs or keys.
 - No "Claude", "Anthropic" or "AI" wording on the site.
 
-## Backlog (top = next)
+## Lag backlog (top = next)
+
+- [x] **One shader program for all four wall families.** They ran the same patched shader under four cache keys, so it compiled four times at start-up.
+- [x] **Low-poly tree canopies far off.** Use a `THREE.LOD` per 400 m tile: 80-triangle lobes near, 20 beyond 650 m. The canopies were the largest share of each aerial frame's triangles.
+- [x] **No interior draw calls from the air.** The furnished reading rooms and halls (about 500 small draw calls) are hidden until the camera is within 300 m.
+- [ ] **One wall mesh per tile.** Put the four wall families in a texture array (or one atlas) so each 400 m tile is one wall draw instead of four. This cuts about 150–200 draw calls a frame.
+- [ ] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
+- [ ] **Merge the interiors' furniture.** Merge the furniture (chairs, frames, lamp shades, gilt and so on) into a few instanced or merged meshes per material. Then the close-up shots draw tens of calls, not hundreds.
+- [ ] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones.
+- [ ] **Railings and bay windows by distance.** Give them a `THREE.LOD` or a distance fade, so far tiles do not draw them at all.
+- [ ] **Measure on a real GPU.** Swiftshader is CPU-bound. If a free GitHub Actions runner or a browser trace can give GPU frame times, add that to `render_intro.py`.
+
+## Realism backlog (top = next)
 
 
 - [x] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
@@ -77,6 +98,37 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-13: lag pass, at Ammaar's request (branch `city-perf-2026-11-13`). From now on every night reduces lag as well as adding realism; see the lag backlog and steps 4, 6 and 8.
+  - `render_intro.py` now prints the lag numbers: engine up time, shader programs, vertices, and for each frame the ms between frames, draw calls and triangles.
+  - Three changes, none of which shows in the frames:
+    - the four wall families share one shader program;
+    - tree canopies use 20-triangle lobes beyond 650 m, through a `THREE.LOD` per tile;
+    - each campus's furnished interior is hidden until the camera is within 300 m of it.
+  - Before → after at the intro frames. Swiftshader ms are only useful as a relative measure; on a real GPU they are much lower.
+
+    | Desktop | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|
+    | UCL | 20.0 → 8.1 s / 911 → 417 / 4.5 → 1.0M | 18.0 → 7.1 s / 786 → 292 / 3.9 → 0.9M | 18.9 → 16.1 s / 799 → 799 / 3.4 → 3.1M |
+    | Imperial | 14.1 → 8.9 s / 824 → 637 / 3.1 → 1.1M | 12.5 → 9.3 s / 751 → 564 / 2.5 → 1.2M | 10.9 → 9.6 s / 609 → 609 / 2.0 → 1.5M |
+    | LSE | 14.4 → 10.0 s / 566 → 475 / 2.8 → 1.1M | 12.4 → 8.8 s / 438 → 347 / 1.9 → 0.8M | 13.3 → 11.7 s / 363 → 363 / 1.6 → 1.0M |
+    | Queen Mary | 15.7 → 8.5 s / 755 → 652 / 3.6 → 1.1M | 14.3 → 8.0 s / 599 → 496 / 3.1 → 1.1M | 12.0 → 10.4 s / 458 → 458 / 2.3 → 1.7M |
+
+    | Mobile | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|
+    | UCL | 2.4 → 1.3 s / 600 → 255 / 2.5 → 0.5M | 2.8 → 1.6 s / 544 → 200 / 2.3 → 0.5M | 3.0 → 3.0 s / 549 → 549 / 2.3 → 2.2M |
+    | Imperial | 1.8 → 1.3 s / 646 → 459 / 1.3 → 0.5M | 1.7 → 1.4 s / 584 → 397 / 1.2 → 0.6M | 1.6 → 1.6 s / 489 → 489 / 1.1 → 1.0M |
+    | LSE | 1.9 → 1.3 s / 357 → 266 / 1.1 → 0.4M | 1.8 → 1.3 s / 311 → 220 / 1.0 → 0.4M | 2.1 → 1.9 s / 274 → 274 / 0.8 → 0.7M |
+    | Queen Mary | 1.6 → 1.1 s / 497 → 394 / 1.4 → 0.5M | 1.5 → 1.2 s / 434 → 331 / 1.3 → 0.5M | 1.6 → 1.6 s / 355 → 355 / 0.9 → 0.9M |
+
+  - Engine up was within noise in the batch runs. Run alone and back to back, it was UCL 30 / 29 s → 28 / 29 s and Imperial 70 / 75 s → 68 / 67 s.
+  - Checks:
+    - no console errors at any of the four universities, on desktop or mobile;
+    - the frames are unchanged;
+    - the reading room (UCL) and the exam hall (Imperial) still render at 0.8;
+    - the hand-built UCL fallback still works.
+  - The 0.56 frames improve least, because the interior is already in range there. The next lag items (one wall mesh per tile, cheaper far facades, merged interior furniture) target exactly that.
+  - Sheet: `renders/2026-11-13-lag.jpg`.
 
 - 2026-11-12: facade periods are live (branch `city-refine-2026-11-12`).
   - `bake_city.py` gives every building a period, written as `e` in the city JSON: 0 as before, 1 Georgian and Regency, 2 Victorian, 3 inter-war Portland stone, 4 post-war concrete.

@@ -57,6 +57,8 @@ with sync_playwright() as p:
         pg.screenshot(path=S+name+f"-{int(fv*1000):04d}.png")
         ms, calls, tris = pg.evaluate(LAG)
         print("lag at %s: %.0f ms a frame, %d draw calls, %.2fM triangles" % (v, ms, calls, tris / 1e6), flush=True)
+    # programs again at the end: textures and furniture load in the background, so the start-up count varies run to run
+    print("lag programs at end %d" % pg.evaluate("window.__smgIntro.debug.renderer.info.programs.length"))
     print("classes", pg.evaluate("document.documentElement.className"))
     if len(sys.argv)>3:
         pg.click("[data-testid=intro-skip]"); pg.wait_for_timeout(1500)
