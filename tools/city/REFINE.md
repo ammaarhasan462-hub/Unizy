@@ -43,7 +43,7 @@ Keep to these limits:
 - [x] **Shopfronts.** Put ground-floor shopfronts on high streets (Tottenham Court Road, Euston Road, Marchmont Street, Gloucester Road, Old Brompton Road):
   - use OSM `shop=*` and `amenity=*` nodes inside or next to a footprint to flag the building;
   - draw glazed fronts with fascia bands and warm interiors.
-- [ ] **Facade eras and dressings:**
+- [x] **Facade eras and dressings:**
   - Georgian stock brick with a rusticated stucco ground floor and black railings;
   - Victorian red brick with stone dressings and bay windows;
   - inter-war Portland stone;
@@ -77,6 +77,44 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-12: facade periods are live (branch `city-refine-2026-11-12`).
+  - `bake_city.py` gives every building a period, written as `e` in the city JSON: 0 as before, 1 Georgian and Regency, 2 Victorian, 3 inter-war Portland stone, 4 post-war concrete.
+    - The period comes from the building's own `start_date`, `building:architecture` or `heritage` tags first. Only about 1% of buildings have these.
+    - Next it comes from the street: `addr:street`, or else the nearest named road. Each site has a list of streets with a known period (Gower Street and Bedford Square, Queen's Gate, Lincoln's Inn Fields, Kingsway, Antill Road and so on). Streets not on the list take the most common period among their tagged buildings.
+    - Otherwise the building's type decides: houses take the site's terrace period, tall flats are post-war.
+    - Where OSM gives no wall material, the period now picks the walls, the same along a whole street. South Kensington is mostly stucco, Mile End mostly stock-brick Victorian, Harrington Gardens red brick.
+    - Counts: UCL 7.4k Georgian, 1.8k Victorian, 0.5k stone, 0.8k post-war; Imperial 8.2k / 1.5k / 0.1k / 0.2k; LSE 6.6k / 1.7k / 0.7k / 0.8k; Queen Mary 0.2k / 7.4k / 0.1k / 0.7k.
+  - The street fronts of the period terraces are written as `ef` (building, wall, kind).
+  - `city.js` dresses the periods in the facade shader:
+    - Georgian: rusticated stucco ground floors, a first-floor band and a cornice under the top storey, six-over-six sashes, tall first-floor windows with iron balconettes, front doors with fanlights;
+    - Victorian: stone string courses, keyed window surrounds and two-over-two sashes, with quoins on whole buildings' corners;
+    - Portland stone: banded rustication, ashlar courses, steel casements and a deep cornice;
+    - post-war: ribbon windows, board-marked and rain-streaked spandrels, and a dark ground floor on columns.
+  - New geometry:
+    - black area railings with spear heads, with a gap at each door, over a dark basement area painted into the map. They blend into their average cover with distance, with no dither;
+    - canted bay windows with lead roofs on Victorian houses, within 1.1 km on desktop and 0.5 km on mobile.
+  - The first pass put quoins on every terrace house, so they read as white stripes. They now only go on the corners of whole buildings, and the stone dressings are toned down.
+  - Results by university:
+    - UCL: Gower Street and Bedford Square read as Georgian Bloomsbury;
+    - Imperial: the Queen's Gate stucco has balconettes, and Harrington Gardens is red brick with bays;
+    - LSE: Lincoln's Inn Fields reads as Georgian. Kingsway barely changes, because its mapped brick blocks keep their tagged material;
+    - Queen Mary: the Mile End terraces have bay windows and doors.
+    - From the intro's own camera path the change is small: South Kensington and Bloomsbury are a little creamier at street level.
+  - Checks, before → after, at `render_intro`-style frames 0.25 / 0.36 / 0.47 / 0.56 plus street cameras:
+    - no console errors at any of the four universities, on desktop or mobile;
+    - engine up on desktop: UCL 35 → 41 s, Imperial 84 → 89 s, LSE 64 → 68 s, Queen Mary 63 → 69 s;
+    - engine up on mobile: UCL 28 → 31 s, Imperial 63 → 76 s, LSE 46 → 51 s, Queen Mary 46 → 52 s. The longer facade shader takes longer to compile under swiftshader;
+    - city JSON gzipped is 0.86 MB (UCL), 0.76 MB (Imperial), 1.03 MB (LSE) and 0.84 MB (Queen Mary);
+    - city mesh vertices go up by 48k (UCL), 32k (Imperial), 36k (LSE) and 89k (Queen Mary) on desktop, and by 4k to 20k on mobile. All of these are under 5%.
+    - Note: counted as every mesh with a `city*` material, instances included, the city was already about 2.0M vertices on desktop and 0.7M on mobile before tonight. That is over the 900k / 350k limits above, so the limits should be checked against how they were meant to be counted.
+  - Fallback: UCL still drops to the hand-built city when `ucl.json` is missing. LSE without its JSON shows only the outer ring and the campus, which is how it was already, since it has no hand-built city.
+  - Sheets: `renders/2026-11-12.jpg` (one after frame per university, at street level), `-pairs.jpg` (Bedford Square and Harrington Gardens, before and after), `-intro.jpg` (intro frames, before and after).
+  - Next period ideas:
+    - columned porches on Italianate stucco;
+    - Edwardian terracotta and the red-brick mansion blocks;
+    - mews;
+    - polychrome Victorian brick.
 
 - 2026-11-11: shopfronts are live (finishes the unmerged attempt on `city-refine-2026-11-10`).
   - The extract now carries shop, cafe, pub and bank nodes (about 5k at UCL, 3k at Imperial). `bake_city.py` flags each street-facing ground-floor wall they sit on, plus unmapped units between two shops on the same parade, and writes them as `sf` in the city JSON: 4,987 walls at UCL, 1,685 at Imperial (QMUL and LSE get them too).
