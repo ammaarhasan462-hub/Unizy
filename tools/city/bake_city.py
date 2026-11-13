@@ -290,7 +290,16 @@ def classify(t, hgt, a, site, seed):
     return 'stock' if seed < 0.62 else ('stucco' if seed < 0.78 else ('stone' if seed < 0.9 else 'redbrick'))
 
 
-def height_of(t, a, site, seed):
+def load_lidar(site):
+    """{"<element id>/<outer ring>": [median, p90, pixels]} measured by lidar_heights.py (Environment Agency LiDAR, OGL), or {}"""
+    p = os.path.join(RAW, f'{site}.lidar.json.gz')
+    if not os.path.exists(p):
+        return {}
+    with gzip.open(p, 'rt') as f:
+        return json.load(f).get('h', {})
+
+
+def height_of(t, a, site, seed, lid=None):
     h = num(t.get('height')) or num(t.get('building:height'))
     lv = num(t.get('building:levels'))
     rl = num(t.get('roof:levels')) or 0
@@ -310,6 +319,11 @@ def height_of(t, a, site, seed):
                 base = 6 if a < 40 else 11 if a < 120 else 15 if a < 700 else 19
             h = base * (0.85 + 0.3 * seed)
             src = 'guess'
+            # measured from LiDAR (median height above ground under the footprint) where enough of it was seen; a
+            # footprint built after the survey reads as near-ground and keeps the guess
+            if lid and lid[2] >= max(6, 0.25 * a) and 2.5 <= lid[0] <= 160:
+                h = lid[0]
+                src = 'lidar'
     return max(h, minh + 2.5), minh, src
 
 
@@ -742,7 +756,7 @@ def bake(site):
             if ps:
                 landmarks[nm] = [round(sum(p[0] for p in ps) / len(ps), 1), round(sum(p[1] for p in ps) / len(ps), 1)]
             continue
-        for outer, inners in rings_of(el, fr):
+        for ri, (outer, inners) in enumerate(rings_of(el, fr)):
             o = clean_ring(outer)
             if not o:
                 continue
@@ -756,7 +770,7 @@ def bake(site):
                 c = clean_ring(hr)
                 if c:
                     hs.append(c[::-1] if area(c) > 0 else c)
-            rec = {'t': t, 'o': o, 'h': hs, 'c': (cx, cz), 'a': abs(area(o)), 'id': el['id'], 'part': isp and not isb}
+            rec = {'t': t, 'o': o, 'h': hs, 'c': (cx, cz), 'a': abs(area(o)), 'id': el['id'], 'ri': ri, 'part': isp and not isb}
             (parts if rec['part'] else blds).append(rec)
     # outlines that have parts are drawn by their parts (Simple 3D Buildings)
     grid = {}
@@ -778,7 +792,8 @@ def bake(site):
                 break
     out_b = []
     bring = []  # (out index, ring, min height, height, style, own tags) for the shopfronts
-    stats = {'h': 0, 'lv': 0, 'guess': 0}
+    stats = {'h': 0, 'lv': 0, 'guess': 0, 'lidar': 0}
+    lidar = load_lidar(site)
     style_n = {}
     drecs = []  # what dress() needs to pick each building's period
     for i, b in enumerate(blds + parts):
@@ -786,7 +801,7 @@ def bake(site):
             continue
         t = dict(b.get('parent', {}), **b['t']) if b['part'] else b['t']
         seed = h32(b['id'])
-        hgt, minh, src = height_of(t, b['a'], site, seed)
+        hgt, minh, src = height_of(t, b['a'], site, seed, lidar.get(f"{b['id']}/{b['ri']}"))
         stats[src] += 1
         st = classify(t, hgt, b['a'], site, h32(str(b['id']) + 's'))
         style_n[st] = style_n.get(st, 0) + 1
