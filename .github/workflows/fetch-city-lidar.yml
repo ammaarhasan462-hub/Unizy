@@ -1,0 +1,47 @@
+# Building heights for the intro cities from Environment Agency LiDAR (Composite DSM minus DTM, 1 m, Open Government
+# Licence v3.0): writes tools/city/raw/<site>.lidar.json.gz (median height above ground under each footprint), rebakes
+# site/assets/city/*.json with them, and commits both. bake_city.py uses them only where OSM has no height or levels.
+# Runs the day after the monthly extract, so newly mapped footprints get measured too.
+name: Fetch city heights (LiDAR)
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fetch-city-lidar.yml'
+      - 'tools/city/lidar_heights.py'
+  workflow_dispatch:
+  schedule:
+    - cron: '23 5 3 * *' # monthly, after fetch-city-pbf
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-city-pbf
+  cancel-in-progress: false
+
+jobs:
+  lidar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tools
+        run: pip install -q numpy tifffile imagecodecs pyproj pillow
+      - name: Measure
+        id: measure
+        continue-on-error: true
+        run: python3 tools/city/lidar_heights.py
+      - name: Bake
+        if: steps.measure.outcome == 'success'
+        run: |
+          python3 tools/city/bake_city.py > tools/city/raw/bake.log 2>&1 || (cat tools/city/raw/bake.log; exit 1)
+          grep -A6 '"heights"' tools/city/raw/bake.log || true
+      - name: Commit
+        if: always()
+        run: |
+          git config user.name "city-fetch"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A tools/city/raw site/assets/city
+          git commit -m "Fetch city heights (LiDAR, ${{ steps.measure.outcome }})" || exit 0
+          for i in 1 2 3 4; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 5; done
