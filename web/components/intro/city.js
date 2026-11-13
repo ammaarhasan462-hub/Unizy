@@ -82,7 +82,9 @@ function facade(fam, T) {
     uSash: { value: STYLES.map((s) => s.sash) }, uLit: { value: STYLES.map((s) => s.lit) }, uGlassR: { value: STYLES.map((s) => (s.glass != null ? s.glass : 0.06)) },
     uFrame: { value: STYLES.map((s) => new THREE.Color(s.frame)) }, uTexSc: { value: sc }, uHasTex: { value: t ? 1 : 0 },
   };
-  m.userData.key = 'cityf-' + fam + (t ? 't' : '');
+  // one shader program for all four wall families: the patch is the same for each, only the uniforms and textures differ,
+  // so the engine compiles it once rather than four times (a shorter start-up and no compile hitch)
+  m.userData.key = 'cityf' + (t ? 't' : '') + (t && t.nrm ? 'n' : '');
   m.userData.patch = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = shader.vertexShader

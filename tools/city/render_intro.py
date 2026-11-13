@@ -1,5 +1,7 @@
 """Render intro frames from the built site/ with headless Chrome (swiftshader).
-Usage: [UNI=imperial] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png"""
+Usage: [UNI=imperial] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png
+Also prints the lag numbers for each frame (compare before and after; software rendering is slow, so only the change counts):
+  engine up (s), shader programs, city vertices, and per frame: ms between frames, draw calls and triangles per frame."""
 import http.server, socketserver, threading, sys, time, os
 from playwright.sync_api import sync_playwright
 SITE=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "site")
@@ -32,6 +34,18 @@ with sync_playwright() as p:
     pg.evaluate(f"window.__smgIntroPick && window.__smgIntroPick('{UNI}')"); pg.wait_for_timeout(1200)
     pg.wait_for_function("window.__smgIntro && window.__smgIntro.state && window.__smgIntro.state.beginAt != null", timeout=240000)
     print("engine up after %.1fs"%(time.time()-t))
+    # lag probe: count draw calls and triangles over every render() call in a frame, and time the frames
+    pg.evaluate("""(() => { const r = window.__smgIntro.debug.renderer, o = r.render.bind(r); window.__lag = { calls: 0, tris: 0 };
+      r.render = (s, c) => { o(s, c); window.__lag.calls += r.info.render.calls; window.__lag.tris += r.info.render.triangles; }; })()""")
+    print("lag programs %d, vertices %d (city %d)" % tuple(pg.evaluate("""(() => { const r = window.__smgIntro.debug.renderer; let v = 0, cv = 0;
+      window.__smgIntro.debug.scene.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position) { const n = o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); v += n;
+        const k = o.material && o.material.userData && o.material.userData.key; if (k && String(k).startsWith('city')) cv += n; } });
+      return [r.info.programs.length, v, cv]; })()""")))
+    LAG = """() => new Promise((res) => { const ts = []; let calls = 0, tris = 0, n = 0;
+      const f = (t) => { ts.push(t); if (n > 0) { calls += window.__lag.calls; tris += window.__lag.tris; } window.__lag.calls = 0; window.__lag.tris = 0; n++;
+        if (n < 6) requestAnimationFrame(f); else { const d = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
+          res([d[Math.floor(d.length / 2)], calls / (n - 1), tris / (n - 1)]); } };
+      window.__lag.calls = 0; window.__lag.tris = 0; requestAnimationFrame(f); })"""
     pg.wait_for_timeout(3000)
     for v in ps:
         if v.startswith("f"):
@@ -41,6 +55,8 @@ with sync_playwright() as p:
         fv=float(v)
         pg.evaluate(f"window.__smgIntro.jump({fv})"); pg.wait_for_timeout(int(__import__("os").environ.get("WAITMS","2600")))
         pg.screenshot(path=S+name+f"-{int(fv*1000):04d}.png")
+        ms, calls, tris = pg.evaluate(LAG)
+        print("lag at %s: %.0f ms a frame, %d draw calls, %.2fM triangles" % (v, ms, calls, tris / 1e6), flush=True)
     print("classes", pg.evaluate("document.documentElement.className"))
     if len(sys.argv)>3:
         pg.click("[data-testid=intro-skip]"); pg.wait_for_timeout(1500)
