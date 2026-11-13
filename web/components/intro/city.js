@@ -247,11 +247,11 @@ function facade(fam, T) {
             diffuseColor.rgb *= 1.0 - 0.3 * (step(flo + 0.24, yy) * step(yy, flo + 0.34) + step(yc - 0.16, yy) * step(yy, yc - 0.06) * step(3.0, topF)) * off;
           } else if (era > 1.5 && era < 2.5) {
             // Victorian: stone string courses, quoins, and stone surrounds with keystones round the windows
-            vec3 dst = vec3(0.82, 0.78, 0.69) * (0.95 + 0.1 * fh(vec2(seed, 3.0)));
+            vec3 dst = vec3(0.7, 0.66, 0.58) * (0.94 + 0.12 * fh(vec2(seed, 3.0)));
             float notSt = st == 1 ? 0.0 : 1.0;
             float sc = step(fract(yg / flo) * flo, 0.16) * step(flo * 0.9, yg) * step(yg, bh - 0.6);
             float qw = mod(floor(yy / 0.32), 2.0) > 0.5 ? 0.78 : 0.46;
-            float qn = (step(u, qw) + step(wl - qw, u)) * step(4.0, wl) * (1.0 - isBay) * notSt;
+            float qn = (step(u, qw) + step(wl - qw, u)) * step(9.0, wl) * step(frontF, 0.5) * notSt;  // corners of whole buildings, not every house
             float dx = abs(fx - 0.5), dy = fy - 0.5;
             float inE = step(dx, ww * 0.5 + 0.11 / bwM) * step(-wh * 0.5 - 0.06 / flo, dy) * step(dy, wh * 0.5 + 0.3 / flo)
                       * step(gnd, yy) * step(yy, bh - topM) * max(step(3.2, wl), isBay) * (1.0 - doorBay);
@@ -698,7 +698,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const rail = { p: [], n: [], w: [], i: [] };
   const areaPaint = [];
   const LEAD = new THREE.Color('#5a5f64');
-  const DRESS_R = mobile ? 600 : 1400;
+  const DRESS_R = mobile ? 500 : 1100;
   let nBays = 0;
   data.b.forEach((rec, bi) => {
     const [st, h, minh, rs, rhIn, colH, rcolH, of, ...hf] = rec;
