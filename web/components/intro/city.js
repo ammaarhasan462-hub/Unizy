@@ -68,36 +68,75 @@ export function loadCity(site) {
 }
 
 // ------------------------------------------------------------------ facade material
-function facade(fam, T) {
-  const t = T[fam];
-  const m = new THREE.MeshStandardMaterial({ roughness: fam === 'concrete' ? 0.8 : 0.9, vertexColors: true, color: '#ffffff' });
-  if (t) {
-    m.map = t.map;
-    if (t.nrm) { m.normalMap = t.nrm; m.normalScale = new THREE.Vector2(0.8, 0.8); }
+// the four wall families' photo textures stacked as layers of one array texture (row 0 at the bottom, as the image
+// textures are drawn with flipY), so every wall in a tile shares one material and is one draw call
+function layerStack(imgs, srgb) {
+  const S = 512;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const cx = cv.getContext('2d', { willReadFrequently: true });
+  const data = new Uint8Array(S * S * 4 * imgs.length);
+  imgs.forEach((im, i) => {
+    cx.setTransform(1, 0, 0, 1, 0, 0);
+    cx.fillStyle = srgb ? '#ffffff' : '#8080ff';
+    cx.fillRect(0, 0, S, S);
+    if (im) { cx.setTransform(1, 0, 0, -1, 0, S); cx.drawImage(im, 0, 0, S, S); }
+    data.set(cx.getImageData(0, 0, S, S).data, i * S * S * 4);
+  });
+  const t = new THREE.DataArrayTexture(data, S, S, imgs.length);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = THREE.LinearFilter;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true;
+  t.anisotropy = 8;
+  t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+  t.needsUpdate = true;
+  return t;
+}
+
+const px1 = (rgba) => { const t = new THREE.DataTexture(new Uint8Array(rgba), 1, 1); t.needsUpdate = true; return t; };
+
+function facade(T) {
+  const has = FAMS.map((f) => (T[f] ? 1 : 0)), hasN = FAMS.map((f) => (T[f] && T[f].nrm ? 1 : 0));
+  const anyT = has.some((v) => v), anyN = hasN.some((v) => v);
+  const m = new THREE.MeshStandardMaterial({ roughness: 0.9, vertexColors: true, color: '#ffffff' });
+  let wallMap = null, wallNrm = null;
+  if (anyT) {
+    try {
+      wallMap = layerStack(FAMS.map((f) => (T[f] ? T[f].map.image : null)), true);
+      if (anyN) wallNrm = layerStack(FAMS.map((f) => (T[f] && T[f].nrm ? T[f].nrm.image : null)), false);
+    } catch { wallMap = wallNrm = null; }
   }
-  const sc = t ? 1 / t.size : 1;
+  // 1-pixel stand-ins keep the engine's map and normal-map code paths (uvs, tangent frame); the shader samples the stacks
+  if (wallMap) m.map = px1([255, 255, 255, 255]);
+  if (wallNrm) { m.normalMap = px1([128, 128, 255, 255]); m.normalScale = new THREE.Vector2(0.8, 0.8); }
+  const lay = STYLES.map((s) => FAMS.indexOf(s.fam));
   const U = {
     uFloor: { value: STYLES.map((s) => s.floor) }, uBay: { value: STYLES.map((s) => s.bay) },
     uWinW: { value: STYLES.map((s) => s.winW) }, uWinH: { value: STYLES.map((s) => s.winH) },
     uSash: { value: STYLES.map((s) => s.sash) }, uLit: { value: STYLES.map((s) => s.lit) }, uGlassR: { value: STYLES.map((s) => (s.glass != null ? s.glass : 0.06)) },
-    uFrame: { value: STYLES.map((s) => new THREE.Color(s.frame)) }, uTexSc: { value: sc }, uHasTex: { value: t ? 1 : 0 },
+    uFrame: { value: STYLES.map((s) => new THREE.Color(s.frame)) },
+    // per style: its family's layer, texture scale (1 / metres the texture spans), whether that layer has a photo and a normal map
+    uLay: { value: lay }, uTexScS: { value: STYLES.map((s) => (T[s.fam] ? 1 / T[s.fam].size : 1)) },
+    uLayT: { value: STYLES.map((s, i) => has[lay[i]]) }, uLayN: { value: STYLES.map((s, i) => hasN[lay[i]]) },
+    uRoughS: { value: STYLES.map((s) => (s.fam === 'concrete' ? 0.8 : 0.9)) },
+    uWallMap: { value: wallMap }, uWallNrm: { value: wallNrm },
   };
-  // one shader program for all four wall families: the patch is the same for each, only the uniforms and textures differ,
-  // so the engine compiles it once rather than four times (a shorter start-up and no compile hitch)
-  m.userData.key = 'cityf' + (t ? 't' : '') + (t && t.nrm ? 'n' : '');
+  // one material and one shader program for all four wall families: the style slot picks the family's texture layer
+  m.userData.key = 'cityf' + (wallMap ? 'a' : '') + (wallNrm ? 'n' : '');
   m.userData.patch = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec4 aB; varying vec4 vB; varying vec2 vW; varying vec2 vTexUv; varying vec3 vWN;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvB = aB; vW = uv; vTexUv = uv * uTexSc; vWN = normal;')
-      .replace('#include <common>', '#include <common>\nuniform float uTexSc;');
+      .replace('#include <common>', '#include <common>\nattribute vec4 aB; varying vec4 vB; varying vec2 vW; varying vec3 vWN;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvB = aB; vW = uv; vWN = normal;');
     const N = STYLES.length;
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
-        varying vec4 vB; varying vec2 vW; varying vec2 vTexUv; varying vec3 vWN;
+        varying vec4 vB; varying vec2 vW; varying vec3 vWN;
         uniform float uFloor[${N}], uBay[${N}], uWinW[${N}], uWinH[${N}], uSash[${N}], uLit[${N}], uGlassR[${N}];
         uniform vec3 uFrame[${N}];
-        uniform float uHasTex;
+        uniform float uLay[${N}], uTexScS[${N}], uLayT[${N}], uLayN[${N}], uRoughS[${N}];
+        uniform highp sampler2DArray uWallMap, uWallNrm;
         float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }
         // shopfront fascia paints (linear): kind 0 shop, 1 cafe or restaurant, 2 pub or bar, 3 bank, chemist and services, 4 empty
         vec3 fasC(float kd, float h) {
@@ -113,17 +152,24 @@ function facade(fam, T) {
         }`)
       // walls sample the photo textures in metres along the wall (aW.x) and up it (aW.y)
       .replace('#include <map_fragment>', `
+        // the wall's style (the low four bits of the style slot) picks its family's layer and texture scale
+        int stL = int(mod(floor(vB.x + 0.5), 16.0) + 0.5);
+        vec3 texL = vec3(vW * uTexScS[stL], uLay[stL]);
         #ifdef USE_MAP
-          vec4 tx = texture2D(map, vTexUv);
-          float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
-          // keep the texture's mortar, weathering and grain; take the hue from the building's colour
-          diffuseColor.rgb *= mix(tx.rgb * 1.6, vec3(tl) * 2.1, 0.7);
+          if (uLayT[stL] > 0.5) {
+            vec4 tx = texture(uWallMap, texL);
+            float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
+            // keep the texture's mortar, weathering and grain; take the hue from the building's colour
+            diffuseColor.rgb *= mix(tx.rgb * 1.6, vec3(tl) * 2.1, 0.7);
+          }
         #endif`)
       .replace('#include <normal_fragment_maps>', `
         #ifdef USE_NORMALMAP_TANGENTSPACE
-          vec3 mapN = texture2D(normalMap, vTexUv).xyz * 2.0 - 1.0;
-          mapN.xy *= normalScale * (1.0 - fWin);
-          normal = normalize(tbn * mapN);
+          if (uLayN[stL] > 0.5) {
+            vec3 mapN = texture(uWallNrm, texL).xyz * 2.0 - 1.0;
+            mapN.xy *= normalScale * (1.0 - fWin);
+            normal = normalize(tbn * mapN);
+          }
         #endif`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         float fWin = 0.0, fLit = 0.0, fGR = 0.06;
@@ -437,7 +483,7 @@ function facade(fam, T) {
             roomE = mix(avgE, pEc, sa);
           }
         }`)
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, fGR, fWin);')
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(uRoughS[stL], fGR, fWin);')
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * roomE * 2.6;');
   };
   return atmo(m);
@@ -672,7 +718,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const tiles = new Map();
   const tile = (x, z) => {
     const k = tileOf(x, z);
-    if (!tiles.has(k)) { const f = {}; FAMS.forEach((n) => { f[n] = new Buf(); }); tiles.set(k, { fam: f, roofs: new Buf() }); }
+    if (!tiles.has(k)) tiles.set(k, { walls: new Buf(), roofs: new Buf() });
     return tiles.get(k);
   };
   const chim = [];
@@ -713,7 +759,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     const seed = ((Math.abs(of[0] * 31 + of[1] * 17) % 9973) / 9973);
     const col = hexCol(colH, S.tint[Math.floor(seed * S.tint.length) % S.tint.length]);
     const T0 = tile(cx, cz);
-    const b = T0.fam[S.fam], roofs = T0.roofs;
+    const b = T0.walls, roofs = T0.roofs;
     const a = Math.abs(ringArea(outer));
     let rs2 = rs, rh = rhIn;
     const o = (rs2 || ['stock', 'stucco', 'redbrick'].includes(S.k)) ? obb(outer) : null;
@@ -820,17 +866,17 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       });
     }
   });
-  const famMat = {}; FAMS.forEach((f) => { famMat[f] = facade(f, tex); });
+  // one wall material (all four families) and so one wall draw per tile
+  const wallMat = facade(tex);
   const roofMat = roofMaterial(tex);
   const near = (k) => { const [x, z] = tileC(k); return Math.hypot(x, z) < CAST_R; };
   tiles.forEach((T1, k) => {
     const cast = near(k);
-    FAMS.forEach((f) => {
-      if (!T1.fam[f].i.length) return;
-      const m = new THREE.Mesh(T1.fam[f].geo(true), famMat[f]);
+    if (T1.walls.i.length) {
+      const m = new THREE.Mesh(T1.walls.geo(true), wallMat);
       m.castShadow = cast; m.receiveShadow = true;
       group.add(m);
-    });
+    }
     if (T1.roofs.i.length) {
       const m = new THREE.Mesh(T1.roofs.geo(false), roofMat);
       m.castShadow = cast; m.receiveShadow = true;
@@ -1092,7 +1138,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       walls(sb, ring, minh, h, col, st, seed);
       try { flatRoof(sb, ring, [], h, col.clone().multiplyScalar(0.6), 0); } catch { /* skip */ }
     });
-    const m = new THREE.Mesh(sb.geo(true), famMat.concrete);
+    const m = new THREE.Mesh(sb.geo(true), wallMat);
     group.add(m);
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });

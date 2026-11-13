@@ -290,7 +290,7 @@ export default function Intro() {
       <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
 
       {/* top bar */}
-      {osm && <div className="pointer-events-none absolute bottom-2 left-3 z-30 text-[10px] tracking-wide text-white/35">Map data © OpenStreetMap contributors</div>}
+      {osm && <div className="pointer-events-none absolute bottom-2 left-3 z-30 text-[10px] tracking-wide text-white/35">Map data © OpenStreetMap contributors · Heights © Environment Agency LiDAR (OGL)</div>}
       <TopBar authed={authed} uniShort={picked ? (UNIS.find((u) => u.id === uni) || {}).short : ''} onSkip={() => finish('skip')} />
 
       {/* chapters */}
