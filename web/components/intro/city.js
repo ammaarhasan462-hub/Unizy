@@ -838,19 +838,30 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     }
   });
   // instanced pieces (trees, chimneys) are tiled the same way
-  const inst = (geo, mat, list, cast = true) => {
+  // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile)
+  const inst = (geo, mat, list, cast = true, farGeo = null, farAt = 650) => {
     if (!list.length) return null;
     const by = new Map();
     const pos = new THREE.Vector3();
     list.forEach((it) => { pos.setFromMatrixPosition(it[0]); const k = tileOf(pos.x, pos.z); if (!by.has(k)) by.set(k, []); by.get(k).push(it); });
     by.forEach((items, k) => {
-      const im = new THREE.InstancedMesh(geo, mat, items.length);
-      items.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); if (c) im.setColorAt(i, c); });
-      im.instanceMatrix.needsUpdate = true;
-      if (im.instanceColor) im.instanceColor.needsUpdate = true;
-      im.computeBoundingSphere();
-      im.castShadow = cast && near(k); im.receiveShadow = true;
-      group.add(im);
+      const [tx, tz] = tileC(k);
+      const mk = (g, off) => {
+        const im = new THREE.InstancedMesh(g, mat, items.length);
+        items.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); if (c) im.setColorAt(i, c); });
+        im.instanceMatrix.needsUpdate = true;
+        if (im.instanceColor) im.instanceColor.needsUpdate = true;
+        if (off) im.position.set(-tx, 0, -tz);
+        im.computeBoundingSphere();
+        im.castShadow = cast && near(k); im.receiveShadow = true;
+        return im;
+      };
+      if (!farGeo) { group.add(mk(geo, false)); return; }
+      const lod = new THREE.LOD();
+      lod.position.set(tx, 0, tz);
+      lod.addLevel(mk(geo, true), 0);
+      lod.addLevel(mk(farGeo, true), farAt);
+      group.add(lod);
     });
     return true;
   };
@@ -1065,7 +1076,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
   const bx2 = baseBox();
-  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy);
+  // canopies: 80-triangle lobes near the camera, 20-triangle lobes beyond 650 m (a few pixels across from there)
+  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0));
   inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false);
 
   // ---------------------------------------------------------------- the real skyline beyond the map

@@ -365,6 +365,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   let frames = 0, slow = 0, level = 0;
   let shadowZone = -1;
   let wasBelow = false;
+  const libPos = new THREE.Vector3();
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
@@ -493,6 +494,11 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     const below = camera.position.y < CLOUD_BOTTOM - 5;
     london.group.visible = below && (W.glass ? p < 0.97 : inside < 1);
     ucl.group.visible = below;
+    // the furnished interior (hundreds of small draw calls) only once the camera is within 300 m of it
+    if (ucl.lib) {
+      ucl.lib.getWorldPosition(libPos);
+      ucl.lib.visible = camera.position.distanceTo(libPos) < 300;
+    }
     if (below !== wasBelow) { wasBelow = below; renderer.shadowMap.needsUpdate = true; }
 
     if (p < (W.glass ? 0.97 : 0.76)) {
