@@ -213,6 +213,7 @@ imperial: BNG box 524698,177322 - 528611,181221 (3913 x 3899 m)
     national_lidar_programme_vom 2020 1 TQ2580 https://environment.data.gov.uk/tiles/collections/survey/national_lidar_programme_vom/2020/1/TQ2580
     vertical_aerial_photography_tiles_night_time 2012 0.2 TQ2580 https://environment.data.gov.uk/tiles/collections/survey/vertical_aerial_photography_tiles_night_time/2012/0.2/TQ2580
     vertical_aerial_photography_tiles_rgb 2008 0.4 TQ2580 https://environment.data.gov.uk/tiles/collections/survey/vertical_aerial_photography_tiles_rgb/2008/0.4/TQ2580
+  get failed 1 https://environment.data.gov.uk/tiles/collections/survey/lidar_composite_last_return_dsm/2022/1/TQ2075 <HTTPError 404: 'Not Found'>
   dsm 2022: 100.0% covered
   dtm 2022: 100.0% covered
 imperial: 18761 of 18816 footprints measured
@@ -287,7 +288,6 @@ qmul: BNG box 534107,180433 - 538011,184327 (3904 x 3894 m)
     national_lidar_programme_vom 2020 1 TQ3580 https://environment.data.gov.uk/tiles/collections/survey/national_lidar_programme_vom/2020/1/TQ3580
     vertical_aerial_photography_tiles_night_time 2012 0.2 TQ3580 https://environment.data.gov.uk/tiles/collections/survey/vertical_aerial_photography_tiles_night_time/2012/0.2/TQ3580
     vertical_aerial_photography_tiles_rgb 2008 0.4 TQ3580 https://environment.data.gov.uk/tiles/collections/survey/vertical_aerial_photography_tiles_rgb/2008/0.4/TQ3580
-  get failed 1 https://environment.data.gov.uk/tiles/collections/survey/lidar_composite_last_return_dsm/2022/1/TQ3580 <HTTPError 504: 'Gateway Time-out'>
   dsm 2022: 100.0% covered
   dtm 2022: 100.0% covered
 qmul: 14746 of 14817 footprints measured
