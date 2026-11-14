@@ -6,13 +6,15 @@ The intros' cities are built from free sources only:
 |---|---|---|
 | OpenStreetMap, via the Geofabrik Greater London extract | ODbL; the intro shows "Map data © OpenStreetMap contributors" | Building footprints, heights and levels, streets, parks, water, rail and trees |
 | Poly Haven textures | CC0 | Brick, render, stone, concrete and slate |
+| Environment Agency LiDAR Composite DSM and DTM, 1 m (2022) | Open Government Licence v3.0; the intro credits "Heights © Environment Agency LiDAR (OGL)" | Heights of the buildings that OSM has no height or levels for |
 
 How the data flows:
 
 1. `.github/workflows/fetch-city-pbf.yml` downloads the extract and writes `tools/city/raw/*.geojsonseq.gz`.
-2. `tools/city/bake_city.py` turns those into `site/assets/city/<site>.json` and `site/assets/city/tex/`.
-3. `web/components/intro/city.js` builds the geometry. It is called from `london.js` (UCL) and `southken.js` (Imperial).
-4. If the data fails to load, the hand-built city is used instead.
+2. `.github/workflows/fetch-city-lidar.yml` runs `tools/city/lidar_heights.py` (needs numpy, tifffile, imagecodecs and pyproj, so CI only). It downloads the 5 km LiDAR tiles over each site from the survey download API, takes the last-return DSM minus the DTM, and writes the median height above ground under every footprint to `tools/city/raw/<site>.lidar.json.gz`. It runs monthly, the day after the extract.
+3. `tools/city/bake_city.py` turns those into `site/assets/city/<site>.json` and `site/assets/city/tex/`.
+4. `web/components/intro/city.js` builds the geometry. It is called from `london.js` (UCL) and `southken.js` (Imperial).
+5. If the data fails to load, the hand-built city is used instead.
 
 The workflow runs monthly, so newly mapped buildings arrive on their own.
 
@@ -51,7 +53,7 @@ Keep to these limits:
 - [x] **One shader program for all four wall families.** They ran the same patched shader under four cache keys, so it compiled four times at start-up.
 - [x] **Low-poly tree canopies far off.** Use a `THREE.LOD` per 400 m tile: 80-triangle lobes near, 20 beyond 650 m. The canopies were the largest share of each aerial frame's triangles.
 - [x] **No interior draw calls from the air.** The furnished reading rooms and halls (about 500 small draw calls) are hidden until the camera is within 300 m.
-- [ ] **One wall mesh per tile.** Put the four wall families in a texture array (or one atlas) so each 400 m tile is one wall draw instead of four. This cuts about 150–200 draw calls a frame.
+- [x] **One wall mesh per tile.** Put the four wall families in a texture array (or one atlas) so each 400 m tile is one wall draw instead of four. This cuts about 150–200 draw calls a frame.
 - [ ] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
 - [ ] **Merge the interiors' furniture.** Merge the furniture (chairs, frames, lamp shades, gilt and so on) into a few instanced or merged meshes per material. Then the close-up shots draw tens of calls, not hundreds.
 - [ ] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones.
@@ -70,7 +72,7 @@ Keep to these limits:
   - inter-war Portland stone;
   - 1960s concrete;
   - choose by `start_date`, `building:architecture` or `heritage`, then by street.
-- [ ] **Heights for guessed buildings.** Fill buildings whose height was guessed (about 40% at UCL) using Environment Agency LiDAR. Use the National LIDAR Programme DSM minus the DTM, at 1 m, under the Open Government Licence; download it in CI from environment.data.gov.uk and take the median per footprint.
+- [x] **Heights for guessed buildings.** Fill buildings whose height was guessed (about 40% at UCL) using Environment Agency LiDAR. Use the National LIDAR Programme DSM minus the DTM, at 1 m, under the Open Government Licence; download it in CI from environment.data.gov.uk and take the median per footprint.
 - [ ] **Roofs:**
   - mansards with dormers on terraces over 3 storeys;
   - parapets with copings;
@@ -98,6 +100,60 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-13 (night, branch `city-refine-2026-11-13`): LiDAR heights for the guessed buildings, and one wall mesh per tile.
+  - Realism: heights from Environment Agency LiDAR.
+    - `lidar_heights.py` runs in CI (`fetch-city-lidar.yml`). It fetches the 2022 LiDAR Composite last-return DSM and DTM, 1 m, as 5 km tiles from the survey download API, and takes the median of DSM minus DTM under each footprint. It skips the 1 m pixels on the footprint's edge, where the beam mixes roof and street. The ArcGIS image service found no LiDAR layers, so the tile route is the one in use.
+    - `bake_city.py` uses the measured height only where OSM has no height or levels tag, and only when at least 6 pixels and a quarter of the footprint were seen and the height is 2.5 to 160 m. A footprint built after the survey reads as near-ground, so it keeps its guess.
+    - Measured: UCL 5,584 buildings, Imperial 1,201, LSE 4,533, Queen Mary 4,239. That is 97% of the guessed buildings; 184, 122, 220 and 401 stay guessed.
+    - Check against buildings that do have tags: LiDAR over OSM `height` has a median ratio of 1.02 (UCL), 0.98 (LSE) and 0.85 (Queen Mary), with a median error of 2–3 m. Over levels × 3.3 m the ratio is 1.03, 1.01 and 0.88, with a median error of 1.4–2.1 m.
+    - Change from the guesses: 3,290 buildings at UCL move by more than 3 m (median 3.8 m, no overall bias). Imperial: 719 (median 4.1 m). LSE: 2,727 (median 3.9 m). Queen Mary: 3,197 (median 5.4 m), where the guesses were about 5 m too tall on average. The Mile End terraces now sit lower.
+    - The intro credit now reads "Map data © OpenStreetMap contributors · Heights © Environment Agency LiDAR (OGL)". On mobile it wraps to two lines.
+    - City JSON gzipped: 0.85 MB (UCL), 0.76 MB (Imperial), 1.02 MB (LSE), 0.83 MB (Queen Mary). The LiDAR caches in `raw/` are 0.1–0.17 MB each.
+  - Results by university, from the intro frames: the change is moderate from the air.
+    - UCL: blocks around the Main Quad change height. The 0.47 frame shows the clearest differences in the foreground and on the right.
+    - Imperial: few buildings were guessed (1.2k), so the frames barely change.
+    - LSE: the blocks between the campus and the river change height, and the skyline in the 0.47 frame is more uneven.
+    - Queen Mary: the guessed terraces drop by about 5 m on average. From the intro's height this is a subtle change.
+  - Lag: the four wall families are layers of one array texture (`DataArrayTexture`), so every tile draws its walls in one call instead of up to four. This also applies to the shadow pass.
+    - Walls beyond 650 m use their layer's average colour, and skip the photo and normal-map samples.
+    - `textureGrad` keeps the mip level right across that branch.
+  - Before → after, batch runs (one after another, desktop then mobile per university). Ms are swiftshader seconds a frame, so only the change matters. The machine slowed down during the night, and the before batch ran first, so the UCL desktop row is skewed; see the interleaved runs below.
+
+    | Desktop | engine up | 0.36: s / draws / tris | 0.47: s / draws / tris | 0.56: s / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 41 → 62 s (drift; interleaved: 58 → 48 s) | 8.8 → 10.0 / 417 → 324 / 0.97 → 0.97M | 8.2 → 9.5 / 292 → 234 / 0.93 → 0.92M | 19.9 → 20.7 / 799 → 736 / 3.05 → 3.05M |
+    | Imperial | 113 → 106 s | 10.8 → 10.0 / 637 → 539 / 1.11 → 1.11M | 11.7 → 10.5 / 563 → 488 / 1.23 → 1.24M | 12.2 → 11.1 / 609 → 552 / 1.47 → 1.46M |
+    | LSE | 74 → 82 s (interleaved: 77 → 75 s) | 10.7 → 10.2 / 474 → 361 / 1.05 → 1.05M | 9.8 → 9.5 / 347 → 265 / 0.77 → 0.77M | 13.0 → 12.6 / 363 → 306 / 1.01 → 1.02M |
+    | Queen Mary | 90 → 84 s | 10.2 → 8.9 / 652 → 524 / 1.12 → 1.13M | 9.8 → 9.3 / 497 → 410 / 1.12 → 1.11M | 12.9 → 12.1 / 458 → 410 / 1.72 → 1.71M |
+
+    | Mobile | engine up | 0.36: s / draws / tris | 0.47: s / draws / tris | 0.56: s / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 38 → 33 s | 1.4 → 1.5 / 256 → 215 / 0.50 → 0.51M | 1.6 → 1.6 / 200 → 171 / 0.50 → 0.51M | 3.1 → 3.2 / 549 → 522 / 2.24 → 2.24M |
+    | Imperial | 77 → 73 s | 1.5 → 1.4 / 459 → 421 / 0.46 → 0.46M | 1.7 → 1.6 / 397 → 373 / 0.56 → 0.56M | 1.8 → 1.6 / 489 → 467 / 1.01 → 0.99M |
+    | LSE | 56 → 53 s | 1.6 → 1.4 / 266 → 219 / 0.42 → 0.42M | 1.5 → 1.5 / 220 → 187 / 0.42 → 0.42M | 2.3 → 2.3 / 274 → 248 / 0.73 → 0.72M |
+    | Queen Mary | 48 → 55 s (interleaved: 54 → 56 s) | 1.3 → 1.3 / 394 → 329 / 0.48 → 0.48M | 1.3 → 1.2 / 331 → 289 / 0.48 → 0.48M | 2.0 → 1.8 / 355 → 338 / 0.86 → 0.87M |
+
+  - Interleaved runs, alternating before and after so drift cancels:
+    - UCL desktop, 3 pairs: engine up 65 / 60 / 48 → 48 / 43 / 53 s; 0.36 at 10.3 / 9.9 / 9.7 → 9.6 / 9.7 / 9.4 s; 0.47 at 9.5 / 9.1 / 8.3 → 9.3 / 9.8 / 8.7 s; 0.56 at 19.4 → 19.2 s.
+    - UCL mobile, 2 pairs: engine up 33 / 30 → 31 / 31 s; 0.36 at 1.43 / 1.43 → 1.40 / 1.53 s; 0.47 at 1.65 / 1.68 → 1.65 / 1.80 s; 0.56 at 3.02 / 3.05 → 3.02 / 3.12 s.
+    - LSE desktop, 1 pair: engine up 77 → 75 s; 0.36 at 9.6 → 9.5 s; 0.47 at 8.9 → 9.6 s.
+    - Queen Mary mobile, 1 pair: engine up 54 → 56 s; 0.36 at 1.18 → 1.15 s; 0.47 at 1.18 → 1.23 s.
+    - Run to run, the same build varies by about ±7% in ms and ±10 s in engine up.
+  - Overall: draw calls are down at every frame, university and device (by 5–25%), triangles are level, and engine up is lower or within noise. Ms per frame is lower at Imperial and Queen Mary in the batch, and level within noise at UCL and LSE in the interleaved runs.
+    - The far-wall path did not show as a measurable ms win under swiftshader. Its cost is the texture samples, which are cheap there next to the interior-mapping code.
+    - City vertices are level, from -0.3% to +0.4% with the new heights. Shader programs are unchanged (199 UCL, 149 Imperial, 91 LSE, 89 Queen Mary at start-up).
+  - A harness note: the intro steps its quality down (AO off, then lower resolution, then fewer cloud steps) after enough slow frames. How many frames a run has rendered before a shot therefore changes the ground's look between runs.
+    - The after batch's Queen Mary park came out darker. A single-shot rerun of the same build, with and without the far-wall path, matched the before batch's brightness (20.0 / 20.0 against 20.1 in the park).
+    - So compare like-for-like sequences.
+  - Checks:
+    - no console errors at any of the four universities, on desktop or mobile;
+    - the engine starts everywhere;
+    - the hand-built UCL fallback still works with `ucl.json` missing (only its expected 404 is logged).
+  - Sheets: `renders/2026-11-13.jpg` (one after frame per university at 0.47) and `-pairs.jpg` (UCL and LSE before and after at 0.47, guessed heights against LiDAR).
+  - Next:
+    - The LiDAR caches also store the 90th percentile. Where it sits 2 m or more above the median on a small footprint, the roof is pitched, which can feed the Roofs item (roof shape and ridge height).
+    - The far-facade program (the next lag item) should skip the interior mapping beyond about 600 m, which is where swiftshader spends its time.
 
 - 2026-11-13: lag pass, at Ammaar's request (branch `city-perf-2026-11-13`). From now on every night reduces lag as well as adding realism; see the lag backlog and steps 4, 6 and 8.
   - `render_intro.py` now prints the lag numbers: engine up time, shader programs, vertices, and for each frame the ms between frames, draw calls and triangles.
