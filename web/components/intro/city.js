@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { atmo } from './atmo';
 import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox } from './materials';
 
-const V = 2;
+const V = 3;
 const BASE = '/assets/city/';
 const cache = {};
 
@@ -24,6 +24,7 @@ export const STYLES = [
 ];
 const FAMS = ['brick', 'plaster', 'stone', 'concrete'];
 const FAR_TEX = 650; // metres: walls further off use their texture layer's average (see facade())
+const FAR_WALL = 720; // metres from a tile's centre: beyond it the tile draws with the far facade program and no roof detail
 
 async function texIndex() {
   try {
@@ -108,7 +109,119 @@ function layerStack(imgs, srgb) {
 
 const px1 = (rgba) => { const t = new THREE.DataTexture(new Uint8Array(rgba), 1, 1); t.needsUpdate = true; return t; };
 
-function facade(T) {
+// the far facade's shader: see facade(). It keeps the near program's own averages, so a tile changing program as the
+// camera moves does not show: the window grid, the lit rooms' mean glow, the shopfronts' fascia-and-glass average
+function farPatch(U, N) {
+  return (shader) => {
+    Object.assign(shader.uniforms, U);
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec4 aB; varying vec4 vB; varying vec2 vW;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvB = aB; vW = uv;');
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', `#include <common>
+        varying vec4 vB; varying vec2 vW;
+        uniform float uFloor[${N}], uBay[${N}], uWinW[${N}], uWinH[${N}], uSash[${N}], uLit[${N}], uGlassR[${N}];
+        uniform vec3 uFrame[${N}];
+        uniform float uLayT[${N}], uRoughS[${N}];
+        uniform vec3 uAvgS[${N}];
+        float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }
+        // shopfront fascia paints (linear): kind 0 shop, 1 cafe or restaurant, 2 pub or bar, 3 bank, chemist and services, 4 empty
+        vec3 fasC(float kd, float h) {
+          float i = floor(h * 6.0);
+          if (kd < 0.5) return i < 1.0 ? vec3(0.012, 0.012, 0.014) : i < 2.0 ? vec3(0.012, 0.022, 0.06) : i < 3.0 ? vec3(0.01, 0.045, 0.026)
+                             : i < 4.0 ? vec3(0.07, 0.01, 0.014) : i < 5.0 ? vec3(0.72, 0.7, 0.64) : vec3(0.13, 0.16, 0.19);
+          if (kd < 1.5) return i < 2.0 ? vec3(0.6, 0.52, 0.37) : i < 3.0 ? vec3(0.02, 0.08, 0.04) : i < 4.0 ? vec3(0.42, 0.035, 0.02)
+                             : i < 5.0 ? vec3(0.3, 0.085, 0.03) : vec3(0.015, 0.015, 0.016);
+          if (kd < 2.5) return i < 2.0 ? vec3(0.08, 0.01, 0.01) : i < 4.0 ? vec3(0.008, 0.032, 0.016) : vec3(0.01, 0.01, 0.012);
+          if (kd < 3.5) return i < 2.0 ? vec3(0.5, 0.012, 0.012) : i < 3.0 ? vec3(0.01, 0.05, 0.26) : i < 4.0 ? vec3(0.02, 0.24, 0.06)
+                             : i < 5.0 ? vec3(0.09, 0.02, 0.19) : vec3(0.75, 0.74, 0.7);
+          return vec3(0.42, 0.4, 0.36);
+        }`)
+      .replace('#include <map_fragment>', `
+        int stL = int(mod(floor(vB.x + 0.5), 16.0) + 0.5);
+        #ifdef USE_MAP
+          if (uLayT[stL] > 0.5) diffuseColor.rgb *= uAvgS[stL];
+        #endif`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        float fWin = 0.0, fLit = 0.0, fGR = 0.06;
+        vec3 roomE = vec3(1.0);
+        vec3 litC = vec3(1.0, 0.7, 0.4);
+        {
+          float sxk = floor(vB.x + 0.5);
+          float frontF = floor(sxk / 1024.0 + 0.001); sxk -= frontF * 1024.0;
+          float era = floor(sxk / 128.0 + 0.001); sxk -= era * 128.0;
+          float shopK = floor(sxk / 16.0 + 0.001);
+          int st = int(sxk - shopK * 16.0 + 0.5);
+          float seed = floor(vB.y * 997.0 + 0.5) * 0.1373, wl = vB.z, bh = vB.w;
+          float flo = uFloor[st], bay = uBay[st], ww = uWinW[st], wh = uWinH[st];
+          if (era > 3.5) { bay = 3.0; ww = 0.97; wh = 0.5; }
+          float u = vW.x, yy = vW.y;
+          float shopTop = shopK > 0.5 ? clamp(flo + 1.0, 4.3, 5.0) : 0.0;
+          float yg = yy - (shopK > 0.5 ? shopTop - flo : 0.0);
+          diffuseColor.rgb *= 0.92 + 0.16 * fh(vec2(floor(u * 0.25), floor(yy * 0.3)) + seed);
+          float nb = max(1.0, floor(wl / bay + 0.25));
+          float bu = u / (wl / nb);
+          float fx = fract(bu), fy = fract(yg / flo), fl = floor(yg / flo);
+          float gnd = shopK > 0.5 ? shopTop + 0.25 : st == 3 ? 0.2 : 0.65;
+          float inWin = step(0.5 - ww*0.5, fx) * step(fx, 0.5 + ww*0.5) * step(0.5 - wh*0.5, fy) * step(fy, 0.5 + wh*0.5)
+                      * step(gnd, yy) * step(yy, bh - 1.1) * step(3.2, wl);
+          float gl = inWin * step(0.5 - ww*0.5 + 0.04, fx) * step(fx, 0.5 + ww*0.5 - 0.04) * step(0.5 - wh*0.5 + 0.035, fy) * step(fy, 0.5 + wh*0.5 - 0.035);
+          float frameM = inWin - gl;
+          float aa = clamp(1.0 - max(fwidth(bu), fwidth(yg / flo)) * 2.0, 0.0, 1.0);
+          float hs = fh(vec2(floor(bu), fl) + seed);
+          float bLit = step(0.45, fract(seed * 4.5313));
+          float roomLit = step(1.0 - uLit[st], hs) * bLit;
+          // the room behind the glass at its mean: dim, a third of the lit ones' glow
+          vec3 glass = vec3(0.045, 0.042, 0.038);
+          roomE = roomLit * vec3(0.4, 0.37, 0.33);
+          // the period colours that still read from afar: Georgian stucco ground floors and bands, post-war dark ground floors
+          if (era > 0.5 && era < 1.5 && shopK < 0.5) {
+            vec3 stuc = vec3(0.72, 0.7, 0.64) * (0.94 + 0.12 * fh(vec2(seed, 2.0)));
+            float topF = floor((bh - 0.6) / flo) - 1.0, yc = topF * flo;
+            float bnd = max(step(yy, flo) * (1.0 - inWin), max(step(flo, yy) * step(yy, flo + 0.24), step(yc - 0.06, yy) * step(yy, yc + 0.22) * step(3.0, topF)));
+            diffuseColor.rgb = mix(diffuseColor.rgb, stuc, bnd);
+          } else if (era > 3.5) {
+            diffuseColor.rgb *= 1.0 - 0.6 * step(yy, flo - 0.3) * (1.0 - step(fract(u / 6.0), 0.08)) * step(shopK, 0.5) * step(12.0, wl);
+          }
+          vec3 frC = era > 2.5 && era < 3.5 ? vec3(0.045, 0.045, 0.042) : uFrame[st];
+          vec3 pc = mix(diffuseColor.rgb, frC, frameM);
+          pc = mix(pc, glass, gl);
+          float avgW = ww * wh * 0.75;
+          vec3 avgc = mix(diffuseColor.rgb, vec3(0.06, 0.065, 0.07), avgW);
+          diffuseColor.rgb = mix(avgc, pc, aa);
+          fWin = gl * aa + avgW * 0.5 * (1.0 - aa);
+          fGR = uGlassR[st];
+          litC = mix(vec3(1.0, 0.7, 0.42), vec3(0.85, 0.9, 1.0), step(0.8, fh(vec2(hs, seed))));
+          litC *= 0.6 + 0.8 * fh(vec2(fl, seed + 1.0));
+          fLit = gl * aa + (1.0 - aa) * uLit[st] * ww * wh * 0.6 * bLit;
+          roomE = mix(vec3(1.0), roomE, aa);
+          diffuseColor.rgb *= 1.0 - 0.2 * step(bh - 0.8, yy) * step(yy, bh - 0.5);
+          diffuseColor.rgb = mix(diffuseColor.rgb, uFrame[st] * 0.9, step(bh - 0.45, yy) * 0.6);
+          diffuseColor.rgb *= 0.78 + 0.22 * smoothstep(0.0, 3.0, yy);
+          // shopfronts at their own far average (as the near program draws them from about 500 m)
+          if (shopK > 0.5 && yy < shopTop) {
+            float kd = shopK - 1.0;
+            float nU = max(1.0, floor(wl / 5.6 + 0.4)), uw = wl / nU;
+            float ui = floor(u / uw);
+            float uh = fh(vec2(ui + wl * 0.731, seed * 3.7 + 11.0)), uh2 = fh(vec2(uh * 7.3, ui + 3.1));
+            vec3 fas = fasC(kd, uh);
+            vec3 sLit = kd > 0.5 && kd < 2.5 ? vec3(1.0, 0.66, 0.36) : mix(vec3(0.95, 0.9, 0.82), vec3(1.0, 0.78, 0.55), step(0.5, fh(vec2(uh, 4.0))));
+            float pOpen = kd < 0.5 ? 0.55 : kd < 1.5 ? 0.8 : kd < 2.5 ? 0.3 : kd < 3.5 ? 0.6 : 0.0;
+            float pShut = kd < 0.5 ? 0.3 : kd < 1.5 ? 0.12 : kd < 2.5 ? 0.05 : kd < 3.5 ? 0.3 : 0.0;
+            float open = step(uh2, pOpen), shut = (1.0 - open) * step(1.0 - pShut, uh2);
+            diffuseColor.rgb = mix(diffuseColor.rgb, mix(fas, vec3(0.04), 0.6), 0.8);
+            fWin = 0.7; fGR = 0.05; fLit = 1.0; litC = vec3(1.0);
+            roomE = (open * 0.7 * sLit * 0.2 + 0.06 * step(0.55, fh(vec2(uh, 8.0)))) * (1.0 - shut);
+          }
+        }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(uRoughS[stL], fGR, fWin);')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += fLit * litC * roomE * 2.6;');
+  };
+}
+
+// far: the stripped program for tiles beyond FAR_WALL metres (the window grid and its averaged rooms, the plain
+// period colours and the shopfronts' averages; no interior mapping, photo textures, doors, glazing bars or ironwork)
+function facade(T, far = false) {
   const has = FAMS.map((f) => (T[f] ? 1 : 0)), hasN = FAMS.map((f) => (T[f] && T[f].nrm ? 1 : 0));
   const anyT = has.some((v) => v), anyN = hasN.some((v) => v);
   const m = new THREE.MeshStandardMaterial({ roughness: 0.9, vertexColors: true, color: '#ffffff' });
@@ -121,8 +234,9 @@ function facade(T) {
   }
   // 1-pixel stand-ins keep the engine's map and normal-map code paths (uvs, tangent frame); the shader samples the stacks
   if (wallMap) m.map = px1([255, 255, 255, 255]);
-  if (wallNrm) { m.normalMap = px1([128, 128, 255, 255]); m.normalScale = new THREE.Vector2(0.8, 0.8); }
+  if (wallNrm && !far) { m.normalMap = px1([128, 128, 255, 255]); m.normalScale = new THREE.Vector2(0.8, 0.8); }
   const lay = STYLES.map((s) => FAMS.indexOf(s.fam));
+  const N0 = STYLES.length;
   const U = {
     uFloor: { value: STYLES.map((s) => s.floor) }, uBay: { value: STYLES.map((s) => s.bay) },
     uWinW: { value: STYLES.map((s) => s.winW) }, uWinH: { value: STYLES.map((s) => s.winH) },
@@ -138,7 +252,8 @@ function facade(T) {
     uAvgS: { value: STYLES.map((s, i) => (wallMap ? wallMap.userData.avg[lay[i]] : new THREE.Vector3(1, 1, 1))) }, uFarTex: { value: FAR_TEX },
   };
   // one material and one shader program for all four wall families: the style slot picks the family's texture layer
-  m.userData.key = 'cityf' + (wallMap ? 'a' : '') + (wallNrm ? 'n' : '');
+  m.userData.key = 'cityf' + (wallMap ? 'a' : '') + (wallNrm ? 'n' : '') + (far ? '-far' : '');
+  if (far) { m.userData.patch = farPatch(U, N0); return atmo(m); }
   m.userData.patch = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = shader.vertexShader
@@ -512,6 +627,10 @@ function facade(T) {
   return atmo(m);
 }
 
+// roof coverings, carried per vertex in aP (a byte): felt and gravel, slate, a dome's lead, and the roof furniture
+const RC = { felt: 0, plain: 26, glass: 51, glassLit: 64, win: 77, winLit: 90, dome: 102, zinc: 153, copper: 166, deck: 204, slate: 255 };
+const rcv = (k) => RC[k] / 255;
+
 function roofMaterial(T) {
   const t = T.roof;
   const m = new THREE.MeshStandardMaterial({ roughness: 0.75, vertexColors: true, color: '#ffffff' });
@@ -521,32 +640,75 @@ function roofMaterial(T) {
   m.userData.patch = (shader) => {
     shader.uniforms.uTexSc = { value: sc };
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float aP; varying vec2 vTexUv; varying float vP; uniform float uTexSc;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvTexUv = uv * uTexSc; vP = aP;');
+      .replace('#include <common>', '#include <common>\nattribute float aP; varying vec2 vTexUv; varying vec2 vRUv; varying float vP; uniform float uTexSc;')
+      .replace('#include <uv_vertex>', '#include <uv_vertex>\nvTexUv = uv * uTexSc; vRUv = uv; vP = aP;');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec2 vTexUv; varying float vP;\nfloat rh(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }')
+      .replace('#include <common>', `#include <common>
+        varying vec2 vTexUv; varying vec2 vRUv; varying float vP;
+        float rh(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }`)
       .replace('#include <map_fragment>', `
-        #ifdef USE_MAP
-          vec4 tx = texture2D(map, vTexUv);
-          float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
-          // pitched roofs show the slate texture; flat roofs are felt and gravel: just its grain
-          diffuseColor.rgb *= mix(vec3(0.75 + tl * 0.5), tx.rgb * 1.5, vP);
-        #endif
-        diffuseColor.rgb *= 0.88 + 0.24 * rh(floor(vTexUv * 3.0));`)
+        // covering: 0 felt and gravel, 26 painted or stone (copings, dormer cheeks), 51 / 64 glass (64 lit beneath),
+        // 77 / 90 a dormer's window (90 lit), 102 a dome's lead, 153 zinc, 166 copper, 204 timber decking, 255 slate
+        float rCode = floor(vP * 255.0 + 0.5);
+        float rGl = 0.0, rLit = 0.0, rRough = 0.75, rMet = 0.0, rNrm = 1.0;
+        if (rCode > 20.5 && rCode < 30.5) {
+          diffuseColor.rgb *= 0.92 + 0.12 * rh(floor(vRUv * 4.0)); rNrm = 0.0; rRough = 0.8;
+        } else if (rCode > 45.5 && rCode < 70.5) {
+          // glass: rooflights and roof glazing reflect the sky; some are lit from below
+          float mpp = max(fwidth(vRUv.x), fwidth(vRUv.y));
+          float bar = (step(fract(vRUv.x / 0.9), 0.05) + step(fract(vRUv.y / 1.2), 0.04)) * clamp(1.0 - mpp * 8.0, 0.0, 1.0);
+          diffuseColor.rgb = mix(vec3(0.02, 0.025, 0.03), vec3(0.18), clamp(bar, 0.0, 1.0));
+          rGl = 1.0 - clamp(bar, 0.0, 1.0); rLit = step(60.0, rCode) * rGl; rRough = mix(0.5, 0.06, rGl); rNrm = 0.0;
+        } else if (rCode > 70.5 && rCode < 95.5) {
+          // a dormer's window: a white frame and sash bar round two lights; vRUv is metres across and up the face
+          float W = 1.1, Hh = 1.45, u = vRUv.x, v = vRUv.y;
+          float fr = 1.0 - step(0.1, u) * step(u, W - 0.1) * step(0.12, v) * step(v, Hh - 0.1);
+          fr = max(fr, step(abs(v - Hh * 0.55), 0.03));
+          float mpp = max(fwidth(u), fwidth(v));
+          fr = mix(0.4, fr, clamp(1.0 - mpp * 6.0, 0.0, 1.0));
+          diffuseColor.rgb = mix(vec3(0.025, 0.028, 0.03), diffuseColor.rgb, fr);
+          rGl = 1.0 - fr; rLit = step(85.0, rCode) * rGl; rRough = mix(0.6, 0.08, rGl); rNrm = 0.0;
+        } else if (rCode > 145.5 && rCode < 175.5) {
+          // standing-seam zinc (or copper gone green): a seam every half metre down the slope, a soft metallic sheen
+          float mpp = max(fwidth(vRUv.x), 1e-4);
+          float seam = step(fract(vRUv.x / 0.52), 0.06) * clamp(1.0 - mpp * 10.0, 0.0, 1.0);
+          diffuseColor.rgb *= (0.94 + 0.1 * rh(vec2(floor(vRUv.x / 0.52), floor(vRUv.y / 3.0)))) * (1.0 + 0.35 * seam);
+          rRough = 0.42; rMet = rCode < 160.0 ? 0.45 : 0.2; rNrm = 0.0;
+        } else if (rCode > 195.5 && rCode < 215.5) {
+          // timber decking on a roof terrace
+          float mpp = max(fwidth(vRUv.y), 1e-4);
+          float gap = step(fract(vRUv.y / 0.15), 0.12) * clamp(1.0 - mpp * 12.0, 0.0, 1.0);
+          diffuseColor.rgb *= (0.85 + 0.25 * rh(vec2(floor(vRUv.y / 0.15), floor(vRUv.x / 2.4)))) * (1.0 - 0.5 * gap);
+          rRough = 0.85; rNrm = 0.0;
+        } else {
+          #ifdef USE_MAP
+            vec4 tx = texture2D(map, vTexUv);
+            float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
+            // pitched roofs show the slate texture; flat roofs are felt and gravel: just its grain
+            diffuseColor.rgb *= mix(vec3(0.75 + tl * 0.5), tx.rgb * 1.5, vP);
+          #endif
+          diffuseColor.rgb *= 0.88 + 0.24 * rh(floor(vTexUv * 3.0));
+        }`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = rRough;')
+      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\nmetalnessFactor = rMet;')
       .replace('#include <normal_fragment_maps>', `
         #ifdef USE_NORMALMAP_TANGENTSPACE
-          vec3 mapN = texture2D(normalMap, vTexUv).xyz * 2.0 - 1.0;
-          mapN.xy *= 0.9 * vP + 0.25;
-          normal = normalize(tbn * mapN);
-        #endif`);
+          if (rNrm > 0.5) {
+            vec3 mapN = texture2D(normalMap, vTexUv).xyz * 2.0 - 1.0;
+            mapN.xy *= 0.9 * vP + 0.25;
+            normal = normalize(tbn * mapN);
+          }
+        #endif`)
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += rLit * vec3(1.0, 0.68, 0.4) * 0.55;');
   };
   return atmo(m);
 }
 
 // ------------------------------------------------------------------ geometry
 const NOB = [7, 0, 9, 0];
+// i: the base triangles; d: detail triangles (parapets, dormers, rooflights, roof terraces, bay windows) that far tiles skip
 class Buf {
-  constructor() { this.p = []; this.n = []; this.c = []; this.b = []; this.w = []; this.ex = []; this.i = []; }
+  constructor() { this.p = []; this.n = []; this.c = []; this.b = []; this.w = []; this.ex = []; this.i = []; this.d = []; }
   v(x, y, z, nx, ny, nz, col, b, wu, wv, ex = 0) {
     this.p.push(x, y, z); this.n.push(nx, ny, nz); this.c.push(col.r, col.g, col.b);
     const bb = b || NOB;
@@ -564,12 +726,48 @@ class Buf {
     g.setAttribute('uv', new THREE.Float32BufferAttribute(this.w, 2));
     if (wall) g.setAttribute('aB', new THREE.Float32BufferAttribute(this.b, 4));
     else g.setAttribute('aP', new THREE.BufferAttribute(Uint8Array.from(this.ex, (v) => Math.round(v * 255)), 1, true));
-    const n = this.p.length / 3;
-    g.setIndex(n > 65535 ? new THREE.Uint32BufferAttribute(this.i, 1) : new THREE.Uint16BufferAttribute(this.i, 1));
+    const n = this.p.length / 3, ni = this.i.length;
+    const idx = new (n > 65535 ? Uint32Array : Uint16Array)(ni + this.d.length);
+    idx.set(this.i); idx.set(this.d, ni);
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeBoundingSphere();
-    this.p = this.n = this.c = this.b = this.w = this.ex = this.i = null;
+    g.userData.nBase = ni;
+    this.p = this.n = this.c = this.b = this.w = this.ex = this.i = this.d = null;
     return g;
   }
+}
+
+// the same vertices and index, drawing only the base triangles (no GPU copy: the attributes are shared)
+function baseOnly(g) {
+  const f = new THREE.BufferGeometry();
+  Object.entries(g.attributes).forEach(([k, a]) => f.setAttribute(k, a));
+  f.setIndex(g.index);
+  f.setDrawRange(0, g.userData.nBase);
+  f.boundingSphere = g.boundingSphere;
+  return f;
+}
+
+// push a triangle into idx so that it faces along (nx, ny, nz)
+function triTo(buf, idx, a, b, c, nx, ny, nz) {
+  const P = buf.p;
+  const ax = P[a * 3], ay = P[a * 3 + 1], az = P[a * 3 + 2];
+  const ux = P[b * 3] - ax, uy = P[b * 3 + 1] - ay, uz = P[b * 3 + 2] - az, vx = P[c * 3] - ax, vy = P[c * 3 + 1] - ay, vz = P[c * 3 + 2] - az;
+  const d = (uy * vz - uz * vy) * nx + (uz * vx - ux * vz) * ny + (ux * vy - uy * vx) * nz;
+  if (d >= 0) idx.push(a, b, c); else idx.push(a, c, b);
+}
+
+// a flat quad (corners in order round it) in the roof buffer, facing n, with uv in metres across it (u along p0 -> p1,
+// v along p0 -> p3) and its covering code (see roofMaterial)
+function quadR(buf, idx, q, n, col, code, uvs = null) {
+  const [p0, p1, , p3] = q;
+  const ex = [p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2]], ey = [p3[0] - p0[0], p3[1] - p0[1], p3[2] - p0[2]];
+  const lx = Math.hypot(...ex) || 1, ly = Math.hypot(...ey) || 1;
+  const uv = uvs || q.map((p) => {
+    const d = [p[0] - p0[0], p[1] - p0[1], p[2] - p0[2]];
+    return [(d[0] * ex[0] + d[1] * ex[1] + d[2] * ex[2]) / lx, (d[0] * ey[0] + d[1] * ey[1] + d[2] * ey[2]) / ly];
+  });
+  const v = q.map((p, k) => buf.v(p[0], p[1], p[2], n[0], n[1], n[2], col, null, uv[k][0], uv[k][1], code));
+  triTo(buf, idx, v[0], v[1], v[2], ...n); triTo(buf, idx, v[0], v[2], v[3], ...n);
 }
 
 const dec = (f) => { const o = []; for (let i = 0; i < f.length; i += 2) o.push([f[i] / 10, f[i + 1] / 10]); return o; };
@@ -628,7 +826,7 @@ function obb(r) {
 }
 
 // gabled (hip = 0) or hipped roof on a rectangle, eaves at y, ridge at y + rh, ridge along the long axis
-function pitchedRoof(buf, wallBuf, o, y, rh, hip, col, wallCol, st, seed) {
+function pitchedRoof(buf, wallBuf, o, y, rh, hip, col, wallCol, st, seed, code = 1) {
   const { cx, cz, ux, uz, hl, hw } = o;
   const P = (a, b, yy) => [cx + a * ux - b * uz, yy, cz + a * uz + b * ux];
   const hr = hip ? Math.min(hl * 0.8, hw) : 0;
@@ -639,9 +837,9 @@ function pitchedRoof(buf, wallBuf, o, y, rh, hip, col, wallCol, st, seed) {
     let n = [ab[1] * ac[2] - ab[2] * ac[1], ab[2] * ac[0] - ab[0] * ac[2], ab[0] * ac[1] - ab[1] * ac[0]];
     if (n[1] < 0) { [b, c] = [c, b]; n = n.map((v) => -v); }
     const l = Math.hypot(...n) || 1;
-    const i0 = buf.v(a[0], a[1], a[2], n[0] / l, n[1] / l, n[2] / l, col, null, a[0] * ux + a[2] * uz, (a[1] - y) * 1.6 + (-a[0] * uz + a[2] * ux), 1);
-    const i1 = buf.v(b[0], b[1], b[2], n[0] / l, n[1] / l, n[2] / l, col, null, b[0] * ux + b[2] * uz, (b[1] - y) * 1.6 + (-b[0] * uz + b[2] * ux), 1);
-    const i2 = buf.v(c[0], c[1], c[2], n[0] / l, n[1] / l, n[2] / l, col, null, c[0] * ux + c[2] * uz, (c[1] - y) * 1.6 + (-c[0] * uz + c[2] * ux), 1);
+    const i0 = buf.v(a[0], a[1], a[2], n[0] / l, n[1] / l, n[2] / l, col, null, a[0] * ux + a[2] * uz, (a[1] - y) * 1.6 + (-a[0] * uz + a[2] * ux), code);
+    const i1 = buf.v(b[0], b[1], b[2], n[0] / l, n[1] / l, n[2] / l, col, null, b[0] * ux + b[2] * uz, (b[1] - y) * 1.6 + (-b[0] * uz + b[2] * ux), code);
+    const i2 = buf.v(c[0], c[1], c[2], n[0] / l, n[1] / l, n[2] / l, col, null, c[0] * ux + c[2] * uz, (c[1] - y) * 1.6 + (-c[0] * uz + c[2] * ux), code);
     buf.i.push(i0, i1, i2);
   };
   // the two long slopes
@@ -677,6 +875,119 @@ function domeRoof(buf, o, y, rh, col) {
   for (let j = 0; j < rings; j++) for (let i = 0; i < seg; i++) {
     const a = base + j * (seg + 1) + i, b = a + seg + 1;
     buf.i.push(a, b, a + 1, a + 1, b, b + 1);
+  }
+}
+
+const fract = (v) => v - Math.floor(v);
+const hsh = (s, k) => fract(Math.sin(s * 127.1 + k * 311.7) * 43758.5453);
+const inRing = (x, z, ring) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, zi] = ring[i], [xj, zj] = ring[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi + 1e-12) + xi) ins = !ins; } return ins; };
+// the local frame of a rectangle o: a along its long axis, b across it
+const frame = (o) => ({
+  P: (a, b, y) => [o.cx + a * o.ux - b * o.uz, y, o.cz + a * o.uz + b * o.ux],
+  D: (da, db) => [da * o.ux - db * o.uz, 0, da * o.uz + db * o.ux],
+});
+const nrm3 = (v) => { const l = Math.hypot(...v) || 1; return v.map((x) => x / l); };
+
+// a parapet round a flat roof: the coping along the wall top (yTop) and the parapet's inner face down to the roof (yRoof),
+// as one strip from the wall line to a line `inset` inside it, light at the coping, the wall's colour in shade below.
+// Holes (courtyards) get one too, facing back into the roof
+function parapet(buf, ringIn, isHole, yTop, yRoof, inset, copCol, inCol) {
+  const ring = ringIn.filter((p, i) => { const q = ringIn[(i + 1) % ringIn.length]; return Math.hypot(q[0] - p[0], q[1] - p[1]) > 0.05; });
+  const n = ring.length;
+  if (n < 3) return;
+  const sg = Math.sign(ringArea(ring)) * (isHole ? -1 : 1);
+  const en = ring.map(([x0, z0], i) => { const [x1, z1] = ring[(i + 1) % n]; const L = Math.hypot(x1 - x0, z1 - z0); return [(-(z1 - z0) / L) * sg, ((x1 - x0) / L) * sg]; });
+  const T = [], C = [];
+  ring.forEach(([x, z], i) => {
+    const n0 = en[(i + n - 1) % n], n1 = en[i];
+    let mx = n0[0] + n1[0], mz = n0[1] + n1[1];
+    const ml = Math.hypot(mx, mz) || 1; mx /= ml; mz /= ml;
+    const k = inset / Math.max(0.4, mx * n1[0] + mz * n1[1]);
+    const tn = nrm3([mx * 0.5, 0.86, mz * 0.5]), cn = nrm3([mx * 0.92, 0.38, mz * 0.92]);
+    T.push(buf.v(x, yTop, z, tn[0], tn[1], tn[2], copCol, null, i, 0, rcv('plain')));
+    C.push(buf.v(x + mx * k, yRoof, z + mz * k, cn[0], cn[1], cn[2], inCol, null, i, 1, rcv('plain')));
+  });
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n, f = [en[i][0] * 0.9, 0.45, en[i][1] * 0.9];
+    triTo(buf, buf.d, T[i], T[j], C[j], ...f); triTo(buf, buf.d, T[i], C[j], C[i], ...f);
+  }
+}
+
+// a dormer on a mansard slope: its window face just behind the eave line at E0 along the outward direction (da, db),
+// centred c along the eave, cheeks and a flat lead top running back into the roof
+const FRAME = new THREE.Color('#e6e2d8');
+function dormer(buf, F, da, db, E0, c, y, lead, lit) {
+  const ta = -db, tb = da; // along the eave
+  const at = (e, t, yy) => F.P(da * e + ta * t, db * e + tb * t, yy);
+  const f = E0 - 0.08, bk = E0 - 0.75, y0 = y + 0.25, y1 = y + 1.7, y2 = y + 1.76;
+  const out = F.D(da, db), side = F.D(ta, tb);
+  quadR(buf, buf.d, [at(f, c - 0.55, y0), at(f, c + 0.55, y0), at(f, c + 0.55, y1), at(f, c - 0.55, y1)], out, FRAME, rcv(lit ? 'winLit' : 'win'),
+    [[0, 0], [1.1, 0], [1.1, 1.45], [0, 1.45]]);
+  [-1, 1].forEach((sd) => {
+    const t = c + sd * 0.55;
+    quadR(buf, buf.d, [at(f, t, y0), at(bk, t, y0), at(bk, t, y2), at(f, t, y1)], side.map((v) => v * sd), lead, rcv('plain'));
+  });
+  quadR(buf, buf.d, [at(f + 0.08, c - 0.62, y2), at(f + 0.08, c + 0.62, y2), at(bk, c + 0.62, y2 + 0.06), at(bk, c - 0.62, y2 + 0.06)], [0, 1, 0], lead, rcv('zinc'));
+}
+
+// a mansard on the rectangle o: steep slopes from just behind the parapet (foot at y) up to a flat top mh above, on the
+// two ends only (a terrace house between its party walls) or all round (a block); dormers in the slopes when asked.
+// Returns false when the rectangle is too small for one
+function mansard(roofs, wallBuf, o, y, mh, all, col, code, topCol, wallCol, st, seed, dormers) {
+  const F = frame(o), run = 0.85, dy = mh - 0.1, y1 = y + dy;
+  const A0 = o.hl - 0.3, B0 = all ? o.hw - 0.3 : o.hw, A1 = A0 - run, B1 = all ? B0 - run : B0;
+  if (A1 < 0.6 || B1 < 0.6) return false;
+  const slope = (da, db) => nrm3([...F.D(da * dy, db * dy)].map((v, i) => (i === 1 ? run : v)));
+  [-1, 1].forEach((sd) => {
+    quadR(roofs, roofs.i, [F.P(sd * A0, -B0, y), F.P(sd * A0, B0, y), F.P(sd * A1, B1, y1), F.P(sd * A1, -B1, y1)], slope(sd, 0), col, code);
+    if (all) quadR(roofs, roofs.i, [F.P(-A0, sd * B0, y), F.P(A0, sd * B0, y), F.P(A1, sd * B1, y1), F.P(-A1, sd * B1, y1)], slope(0, sd), col, code);
+    else {
+      // the mansard's ends on the party walls
+      const nn = F.D(0, sd), L = 2 * A0, bb = [st, seed, L, y1];
+      const q = [F.P(-A0, sd * B0, y), F.P(A0, sd * B0, y), F.P(A1, sd * B0, y1), F.P(-A1, sd * B0, y1)], u = [0, L, A0 + A1, A0 - A1];
+      const v = q.map((p, k) => wallBuf.v(p[0], p[1], p[2], nn[0], 0, nn[2], wallCol, bb, u[k], p[1]));
+      triTo(wallBuf, wallBuf.i, v[0], v[1], v[2], nn[0], 0, nn[2]); triTo(wallBuf, wallBuf.i, v[0], v[2], v[3], nn[0], 0, nn[2]);
+    }
+  });
+  quadR(roofs, roofs.i, [F.P(-A1, -B1, y1), F.P(A1, -B1, y1), F.P(A1, B1, y1), F.P(-A1, B1, y1)], [0, 1, 0], topCol, rcv('felt'), [[F.P(-A1, -B1, 0)[0], F.P(-A1, -B1, 0)[2]], [F.P(A1, -B1, 0)[0], F.P(A1, -B1, 0)[2]], [F.P(A1, B1, 0)[0], F.P(A1, B1, 0)[2]], [F.P(-A1, B1, 0)[0], F.P(-A1, B1, 0)[2]]]);
+  if (dormers) {
+    if (!all) {
+      const n = Math.max(1, Math.min(3, Math.round((2 * B0) / 2.4)));
+      [-1, 1].forEach((sd) => { for (let j = 0; j < n; j++) dormer(roofs, F, sd, 0, A0, (j + 0.5 - n / 2) * ((2 * B0) / n), y, LEADC, hsh(seed, j + sd * 5) < 0.14); });
+    } else {
+      const n = Math.min(12, Math.floor((2 * A1) / 3.0));
+      [-1, 1].forEach((sd) => { for (let j = 0; j < n; j++) dormer(roofs, F, 0, sd, B0, -((j + 0.5 - n / 2) * ((2 * A1) / n)), y, LEADC, hsh(seed, j + sd * 17) < 0.14); });
+    }
+  }
+  return true;
+}
+const LEADC = new THREE.Color('#4f5459');
+
+// a modern block's top storey set back behind a terrace: glazed walls in a zinc-grey frame, a zinc roof
+function setback(roofs, wallBuf, o, outer, y, mh, seed) {
+  const F = frame(o), A = o.hl - 1.8, B = o.hw - 1.8;
+  if (A < 3 || B < 3) return false;
+  let ring = [F.P(-A, -B, 0), F.P(A, -B, 0), F.P(A, B, 0), F.P(-A, B, 0)].map((p) => [p[0], p[2]]);
+  if (!ring.every(([x, z]) => inRing(x, z, outer))) return false;
+  if (Math.sign(ringArea(ring)) !== Math.sign(ringArea(outer))) ring = ring.reverse();
+  const zc = new THREE.Color('#6a7075').multiplyScalar(0.92 + 0.16 * hsh(seed, 3));
+  walls(wallBuf, ring, y, y + mh, zc, 3, seed);
+  quadR(roofs, roofs.i, [F.P(-A, -B, y + mh), F.P(A, -B, y + mh), F.P(A, B, y + mh), F.P(-A, B, y + mh)], [0, 1, 0], zc, rcv('zinc'));
+  return { A, B };
+}
+
+// rooflights let into a pitched roof's long slopes (eaves at y, ridge rh above)
+function slopeLights(roofs, o, y, rh, hip, seed) {
+  const F = frame(o), hr = hip ? Math.min(o.hl * 0.8, o.hw) : 0, sl = Math.hypot(o.hw, rh);
+  if (sl < 2.4) return;
+  const n = 1 + Math.floor(hsh(seed, 21) * 2);
+  for (let j = 0; j < n; j++) {
+    const sd = hsh(seed, 22 + j) < 0.5 ? -1 : 1;
+    const ac = (hsh(seed, 24 + j) - 0.5) * Math.max(0, (o.hl - hr) * 2 - 2);
+    const t0 = 0.25, t1 = t0 + 1.0 / sl;
+    const nn = nrm3([...F.D(0, sd * rh)].map((v, i) => (i === 1 ? o.hw : v)));
+    const at = (a, t) => { const p = F.P(a, sd * o.hw * (1 - t), y + rh * t); return [p[0] + nn[0] * 0.05, p[1] + nn[1] * 0.05, p[2] + nn[2] * 0.05]; };
+    quadR(roofs, roofs.d, [at(ac - 0.4, t0), at(ac + 0.4, t0), at(ac + 0.4, t1), at(ac - 0.4, t1)], nn, LEADC, rcv(hsh(seed, 26 + j) < 0.12 ? 'glassLit' : 'glass'));
   }
 }
 
@@ -770,9 +1081,14 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const areaPaint = [];
   const LEAD = new THREE.Color('#5a5f64');
   const DRESS_R = mobile ? 500 : 1100;
+  // parapets round the flat roofs out to PAR_R; planters on the roof terraces
+  const PAR_R = mobile ? 700 : 1600;
+  const PLANTER = ['#3e5a2b', '#4a6631', '#38512a', '#56703a'];
   let nBays = 0;
   data.b.forEach((rec, bi) => {
-    const [st, h, minh, rs, rhIn, colH, rcolH, of, ...hf] = rec;
+    const [st, h, minh, rsIn, rhIn, colH, rcolH, of, ...hf] = rec;
+    // roof shape (0 flat, 1 gabled, 2 hipped, 3 pyramidal, 4 dome, 5 mansard or gambrel) + 10 * covering (1 glass, 2 zinc, 3 copper)
+    const rs = rsIn % 10, rmat = Math.floor(rsIn / 10);
     const outer = dec(of);
     const holes = hf.map(dec);
     let cx = 0, cz = 0; outer.forEach(([x, z]) => { cx += x; cz += z; }); cx /= outer.length; cz /= outer.length;
@@ -785,16 +1101,34 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     const b = T0.walls, roofs = T0.roofs;
     const a = Math.abs(ringArea(outer));
     let rs2 = rs, rh = rhIn;
-    const o = (rs2 || ['stock', 'stucco', 'redbrick'].includes(S.k)) ? obb(outer) : null;
-    // London terraces: low pitched roofs on individually mapped houses, ridge front to back
-    if (!rs2 && o && o.fill > 0.86 && a < 420 && h < 26 && ['stock', 'stucco', 'redbrick'].includes(S.k)) { rs2 = seed < 0.7 ? 1 : 2; rh = 1.8 + seed * 1.4; }
+    const era = +ERA[bi] || 0;
+    const terr = ['stock', 'stucco', 'redbrick'].includes(S.k);
+    const modern = era === 4 || st === 3 || st === 5;
+    const dist = Math.hypot(cx, cz);
+    const s2 = fract(seed * 7.31), s3 = fract(seed * 13.7);
+    const o = (rs2 || terr || modern) ? obb(outer) : null;
+    // mansards: 1 a terrace house's (slopes front and back, party walls at the sides), 2 a block's (slopes all round),
+    // 3 a modern block's glazed, zinc-grey top storey set back behind a roof terrace
+    let mans = 0;
+    if (rs2 === 5) { rs2 = 0; if (o && o.fill > 0.8 && h - minh > 8) mans = a < 420 && o.hl > 1.3 * o.hw ? 1 : 2; }
+    // London terraces: individually mapped houses. Over three storeys most carry a slate mansard with dormers; lower ones
+    // a low pitched roof, ridge front to back
+    if (!rs2 && !mans && o && o.fill > 0.86 && a < 420 && h < 26 && terr) {
+      if (h >= 13 && s2 < 0.62) mans = 1;
+      else { rs2 = seed < 0.7 ? 1 : 2; rh = 1.8 + seed * 1.4; }
+    }
+    if (!rs2 && !mans && modern && o && o.fill > 0.85 && h >= 15 && h < 70 && a > 180 && a < 4000 && o.hw > 6 && s3 < 0.3) mans = 3;
     if (rs2 === 3) rs2 = 2;
     const pitched = rs2 && o && o.fill > 0.8 && rh > 0.5;
-    const eave = pitched ? h - (rs2 === 4 ? rh : rh) : h;
+    // mansard height: one storey in the roof
+    const mh = mans === 3 ? 3.4 : 2.8;
+    // flat roofs sit behind a parapet (a coping on top, its inner face down to the roof); modern ones behind a lower upstand
+    const ph = !pitched && !mans && st !== 7 && a > 40 && h - minh > 5 && dist < PAR_R ? (modern ? 0.55 : 0.95) : 0;
+    const eave = pitched ? h - rh : mans ? h - mh : h;
     const shops = shopAt.get(bi) || null;
-    const era = +ERA[bi] || 0;
     const fronts = frontAt.get(bi) || null;
-    walls(b, outer, minh, eave, col, st, seed, shops, era, fronts);
+    // walls rise past a mansard's foot as its parapet
+    walls(b, outer, minh, eave + (mans && mans < 3 ? 0.6 : 0), col, st, seed, shops, era, fronts);
     if (fronts && minh < 0.7 && Math.hypot(cx, cz) < DRESS_R) {
       fronts.forEach((kd, ei) => {
         const [x0, z0] = outer[ei], [x1, z1] = outer[(ei + 1) % outer.length];
@@ -836,11 +1170,11 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
               const bb = [st + 128 * era + 1024 * 4, seed, fl, yb];
               const i0 = b.v(ax, minh, az, fnx, 0, fnz, col, bb, 0, minh), i1 = b.v(bx2, minh, bz2, fnx, 0, fnz, col, bb, fl, minh);
               const i2 = b.v(bx2, yb, bz2, fnx, 0, fnz, col, bb, fl, yb), i3 = b.v(ax, yb, az, fnx, 0, fnz, col, bb, 0, yb);
-              b.i.push(i0, i3, i1, i1, i3, i2);
+              b.d.push(i0, i3, i1, i1, i3, i2);
             }
             const r0 = roofs.p.length / 3;
-            P.forEach(([x, z]) => roofs.v(x, yb, z, 0, 1, 0, LEAD, null, x, z, 0));
-            roofs.i.push(r0, r0 + 2, r0 + 1, r0, r0 + 3, r0 + 2);
+            P.forEach(([x, z]) => roofs.v(x, yb, z, 0, 1, 0, LEAD, null, x, z, rcv('plain')));
+            roofs.d.push(r0, r0 + 2, r0 + 1, r0, r0 + 3, r0 + 2);
             nBays++;
           });
         }
@@ -861,30 +1195,108 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       });
     }
     holes.forEach((hr) => walls(b, hr, minh, eave, col, st, seed));
-    const rc = hexCol(rcolH, (pitched ? SLATE : FLAT)[Math.floor(seed * 97) % 5]);
-    if (pitched && rs2 === 4) domeRoof(roofs, o, eave, rh, rc);
-    else if (pitched) pitchedRoof(roofs, b, o, eave, rh, rs2 === 2, rc, col, st, seed);
-    else {
-      try { flatRoof(roofs, outer, holes, eave, rc, 0); } catch { /* degenerate ring */ }
-      // rooftop plant and lift overruns on larger flat roofs
-      if (a > 500 && !mobile && seed < 0.7) {
-        const oo = obb(outer);
-        if (oo && oo.fill > 0.7) {
-          const n = 1 + Math.floor(seed * 3);
-          for (let i = 0; i < n; i++) {
-            const t = (r() - 0.5) * oo.hl, s = (r() - 0.5) * oo.hw;
-            m4.compose(new THREE.Vector3(oo.cx + t * oo.ux - s * oo.uz, eave, oo.cz + t * oo.uz + s * oo.ux), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-oo.uz, oo.ux)), new THREE.Vector3(3 + r() * 5, 1.6 + r() * 2.2, 3 + r() * 4));
-            chim.push([m4.clone(), new THREE.Color(FLAT[Math.floor(r() * 5)]).multiplyScalar(1.15)]);
+    // coverings: OpenStreetMap roof:material first; modern pitched roofs are zinc, older ones slate
+    const zincy = rmat === 2 || (pitched && rs2 !== 4 && modern && !rmat);
+    const rcol = rmat === 3 ? new THREE.Color('#6f9886').multiplyScalar(0.9 + 0.2 * s2) : zincy ? new THREE.Color('#6b7075').multiplyScalar(0.88 + 0.2 * s2)
+      : hexCol(rcolH, (pitched || mans ? SLATE : FLAT)[Math.floor(seed * 97) % 5]);
+    const rcode = rmat === 1 ? rcv('glass') : rmat === 3 ? rcv('copper') : zincy ? rcv('zinc') : null;
+    const detail = dist < DRESS_R;
+    let plantY = eave, plantK = 1, flatY = null;
+    if (pitched && rs2 === 4) domeRoof(roofs, o, eave, rh, rcol);
+    else if (pitched) {
+      pitchedRoof(roofs, b, o, eave, rh, rs2 === 2, rcol, col, st, seed, rcode == null ? 1 : rcode);
+      // rooflights in some terrace roofs
+      if (terr && detail && hsh(seed, 20) < 0.4) slopeLights(roofs, o, eave, rh, rs2 === 2, seed);
+    } else if (mans === 3) {
+      // the main roof at the terrace's level behind a low upstand, the set-back storey on it
+      const ty = eave - 0.5;
+      try { flatRoof(roofs, outer, holes, ty, new THREE.Color('#8a8781'), 0); } catch { /* degenerate ring */ }
+      parapet(roofs, outer, false, eave, ty, 0.2, new THREE.Color('#9a9ea2'), col.clone().multiplyScalar(0.7));
+      const sb = setback(roofs, b, o, outer, ty, mh + 0.5, seed);
+      if (sb) { plantY = ty + mh + 0.5; plantK = Math.min(sb.A / o.hl, sb.B / o.hw); } else plantY = ty;
+      if (sb && detail) {
+        // decking on part of the terrace
+        const F = frame(o), sd = hsh(seed, 30) < 0.5 ? -1 : 1, a0 = sb.A + 0.2, a1 = o.hl - 0.35;
+        if (a1 - a0 > 0.8) quadR(roofs, roofs.d, [F.P(sd * a0, -sb.B, ty + 0.06), F.P(sd * a1, -sb.B, ty + 0.06), F.P(sd * a1, sb.B, ty + 0.06), F.P(sd * a0, sb.B, ty + 0.06)], [0, 1, 0], new THREE.Color('#7d6249'), rcv('deck'));
+      }
+    } else if (mans) {
+      // a mansard: slate (or the mapped covering), dormers within the dressing radius
+      if (!mansard(roofs, b, o, eave + 0.05, mh - 0.05, mans === 2, rcol, rcode == null ? 1 : rcode, new THREE.Color(FLAT[Math.floor(seed * 97) % 5]), col, st, seed, detail)) {
+        try { flatRoof(roofs, outer, holes, eave + 0.6, rcol, 0); } catch { /* degenerate ring */ }
+      }
+    } else {
+      const roofY = h - ph;
+      flatY = roofY; plantY = roofY;
+      try { flatRoof(roofs, outer, holes, roofY, rcol, rcode == null ? 0 : rcode); } catch { /* degenerate ring */ }
+      if (ph) {
+        const cop = modern ? new THREE.Color('#8f9397') : new THREE.Color(S.k === 'stucco' ? '#d9d4c6' : '#c4bcab').multiplyScalar(0.85 + 0.15 * s3);
+        const inner = col.clone().multiplyScalar(0.7);
+        parapet(roofs, outer, false, h, roofY, 0.3, cop, inner);
+        holes.forEach((hr) => parapet(roofs, hr, true, h, roofY, 0.3, cop, inner));
+      }
+    }
+    // rooftop plant and lift overruns on larger flat roofs (on a set-back storey's roof when there is one)
+    if (!pitched && mans !== 1 && mans !== 2 && a > 500 && !mobile && seed < 0.7) {
+      const oo = obb(outer);
+      if (oo && oo.fill > 0.7) {
+        const n = 1 + Math.floor(seed * 3);
+        for (let i = 0; i < n; i++) {
+          const t = (r() - 0.5) * oo.hl * plantK, s = (r() - 0.5) * oo.hw * plantK;
+          m4.compose(new THREE.Vector3(oo.cx + t * oo.ux - s * oo.uz, plantY, oo.cz + t * oo.uz + s * oo.ux), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-oo.uz, oo.ux)), new THREE.Vector3((3 + r() * 5) * Math.min(1, plantK * 1.5), 1.6 + r() * 2.2, (3 + r() * 4) * Math.min(1, plantK * 1.5)));
+          chim.push([m4.clone(), new THREE.Color(FLAT[Math.floor(r() * 5)]).multiplyScalar(1.15)]);
+        }
+        // banks of condenser units beside the plant
+        if (flatY != null && detail) {
+          const F = frame(oo), na = 2 + Math.floor(hsh(seed, 40) * 4), a0 = (hsh(seed, 41) - 0.5) * oo.hl, b0 = (hsh(seed, 42) - 0.5) * oo.hw;
+          for (let i = 0; i < na; i++) {
+            const p = F.P(a0 + (i - na / 2) * 1.4, b0, flatY);
+            if (!inRing(p[0], p[2], outer)) continue;
+            m4.compose(new THREE.Vector3(...p), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-oo.uz, oo.ux)), new THREE.Vector3(1.0, 0.9, 0.8));
+            chim.push([m4.clone(), new THREE.Color('#a9aca8')]);
           }
         }
       }
     }
-    // chimney stacks on the party walls of terrace houses
-    if (pitched && rs2 !== 4 && ['stock', 'stucco', 'redbrick'].includes(S.k) && seed < 0.85) {
+    if (flatY != null && detail) {
+      const oo = o || (a > 60 ? obb(outer) : null);
+      const F = oo ? frame(oo) : null;
+      const inside = (q) => q.every((p) => inRing(p[0], p[2], outer) && !holes.some((hr) => inRing(p[0], p[2], hr)));
+      // rooflights: a few on most mid-sized roofs, a long glazed strip down the middle of some big ones
+      if (F && a > 120 && hsh(seed, 50) < 0.55) {
+        const n = Math.min(6, 1 + Math.floor(hsh(seed, 51) * 2 + a / 900));
+        for (let j = 0; j < n; j++) {
+          const ac = (hsh(seed, 52 + j) - 0.5) * oo.hl * 1.4, bc = (hsh(seed, 60 + j) - 0.5) * oo.hw * 1.2, y = flatY + 0.14;
+          const q = [F.P(ac - 0.9, bc - 0.55, y), F.P(ac + 0.9, bc - 0.55, y), F.P(ac + 0.9, bc + 0.55, y), F.P(ac - 0.9, bc + 0.55, y)];
+          if (inside(q)) quadR(roofs, roofs.d, q, [0, 1, 0], LEADC, rcv(hsh(seed, 70 + j) < 0.15 ? 'glassLit' : 'glass'));
+        }
+        if (a > 2500 && hsh(seed, 53) < 0.35) {
+          const y = flatY + 0.2, L = oo.hl * 0.55, W = Math.min(2.4, oo.hw * 0.2);
+          const q = [F.P(-L, -W, y), F.P(L, -W, y), F.P(L, W, y), F.P(-L, W, y)];
+          if (inside(q)) quadR(roofs, roofs.d, q, [0, 1, 0], LEADC, rcv('glass'));
+        }
+      }
+      // roof terraces: decking and planters on some flats and houses
+      if (F && a > 60 && a < 1500 && h >= 9 && st !== 7 && hsh(seed, 80) < 0.2) {
+        const sd = hsh(seed, 81) < 0.5 ? -1 : 1, L = Math.min(6, oo.hl * 0.45), W = Math.min(5, oo.hw * 0.75), a1 = oo.hl - 0.45, a0 = a1 - L, y = flatY + 0.08;
+        const q = [F.P(sd * a0, -W, y), F.P(sd * a1, -W, y), F.P(sd * a1, W, y), F.P(sd * a0, W, y)];
+        if (L > 1.5 && inside(q)) {
+          quadR(roofs, roofs.d, q, [0, 1, 0], new THREE.Color('#7f6448').multiplyScalar(0.85 + 0.3 * hsh(seed, 82)), rcv('deck'));
+          const np = 2 + Math.floor(hsh(seed, 83) * 3);
+          for (let j = 0; j < np; j++) {
+            const pb = -W + 0.4 + ((2 * W - 0.8) * (j + 0.5)) / np;
+            m4.compose(new THREE.Vector3(...F.P(sd * (a1 - 0.35), pb, flatY)), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-oo.uz, oo.ux)), new THREE.Vector3(0.55, 0.55 + 0.6 * hsh(seed, 84 + j), Math.min(1.6, (2 * W) / np - 0.3)));
+            chim.push([m4.clone(), new THREE.Color(PLANTER[Math.floor(hsh(seed, 90 + j) * PLANTER.length)])]);
+          }
+        }
+      }
+    }
+    // chimney stacks on the party walls of terrace houses (mansard terraces keep theirs)
+    if ((pitched || mans === 1 || mans === 2) && rs2 !== 4 && terr && seed < 0.85) {
+      const crh = pitched ? rh : mh;
       [-1, 1].forEach((sg) => {
         if (r() < 0.35) return;
         const t = (r() - 0.5) * o.hl * 0.6, s = sg * (o.hw - 0.3);
-        m4.compose(new THREE.Vector3(o.cx + t * o.ux - s * o.uz, eave, o.cz + t * o.uz + s * o.ux), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-o.uz, o.ux)), new THREE.Vector3(1.6 + r() * 1.8, rh + 1.1 + r() * 0.6, 0.7));
+        m4.compose(new THREE.Vector3(o.cx + t * o.ux - s * o.uz, eave, o.cz + t * o.uz + s * o.ux), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-o.uz, o.ux)), new THREE.Vector3(1.6 + r() * 1.8, crh + 1.1 + r() * 0.6, 0.7));
         chim.push([m4.clone(), (S.k === 'stucco' ? col.clone() : new THREE.Color(STYLES[st === 1 ? 0 : st].tint[Math.floor(r() * 4)])).multiplyScalar(0.92)]);
       });
     }
@@ -892,19 +1304,31 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   // one wall material (all four families) and so one wall draw per tile
   const wallMat = facade(tex);
   const roofMat = roofMaterial(tex);
+  const wallFar = facade(tex, true);
   const near = (k) => { const [x, z] = tileC(k); return Math.hypot(x, z) < CAST_R; };
+  // each tile is a THREE.LOD: near the camera the full facade program and every roof and bay detail; beyond FAR_WALL
+  // metres (from the tile's centre) the stripped facade program and the base triangles only, on the same vertices
   tiles.forEach((T1, k) => {
     const cast = near(k);
-    if (T1.walls.i.length) {
-      const m = new THREE.Mesh(T1.walls.geo(true), wallMat);
-      m.castShadow = cast; m.receiveShadow = true;
-      group.add(m);
-    }
-    if (T1.roofs.i.length) {
-      const m = new THREE.Mesh(T1.roofs.geo(false), roofMat);
-      m.castShadow = cast; m.receiveShadow = true;
-      group.add(m);
-    }
+    const [tx, tz] = tileC(k);
+    const lod = new THREE.LOD();
+    lod.position.set(tx, 0, tz);
+    const nearG = new THREE.Group(), farG = new THREE.Group();
+    const add = (geo, matN, matF) => {
+      [[nearG, geo, matN], [farG, baseOnly(geo), matF]].forEach(([g, gg, mm]) => {
+        const m = new THREE.Mesh(gg, mm);
+        // the far copy shares the near mesh's vertices (render_intro.py counts them once)
+        if (g === farG) m.userData.lodCopy = true;
+        m.position.set(-tx, 0, -tz);
+        m.castShadow = cast; m.receiveShadow = true;
+        g.add(m);
+      });
+    };
+    if (T1.walls.i.length) add(T1.walls.geo(true), wallMat, wallFar);
+    if (T1.roofs.i.length) add(T1.roofs.geo(false), roofMat, roofMat);
+    lod.addLevel(nearG, 0);
+    lod.addLevel(farG, FAR_WALL);
+    group.add(lod);
   });
   // instanced pieces (trees, chimneys) are tiled the same way
   // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile)
@@ -1161,7 +1585,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       walls(sb, ring, minh, h, col, st, seed);
       try { flatRoof(sb, ring, [], h, col.clone().multiplyScalar(0.6), 0); } catch { /* skip */ }
     });
-    const m = new THREE.Mesh(sb.geo(true), wallMat);
+    // the skyline is always kilometres off: the far facade program
+    const m = new THREE.Mesh(sb.geo(true), wallFar);
     group.add(m);
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });

@@ -1,7 +1,7 @@
 """Render intro frames from the built site/ with headless Chrome (swiftshader).
 Usage: [UNI=imperial] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png
 Also prints the lag numbers for each frame (compare before and after; software rendering is slow, so only the change counts):
-  engine up (s), shader programs, city vertices, and per frame: ms between frames, draw calls and triangles per frame."""
+  engine up (s), shader programs, city vertices (a far LOD copy that shares its near mesh's vertices counts once), and per frame: ms between frames, draw calls and triangles per frame."""
 import http.server, socketserver, threading, sys, time, os
 from playwright.sync_api import sync_playwright
 SITE=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "site")
@@ -38,7 +38,7 @@ with sync_playwright() as p:
     pg.evaluate("""(() => { const r = window.__smgIntro.debug.renderer, o = r.render.bind(r); window.__lag = { calls: 0, tris: 0 };
       r.render = (s, c) => { o(s, c); window.__lag.calls += r.info.render.calls; window.__lag.tris += r.info.render.triangles; }; })()""")
     print("lag programs %d, vertices %d (city %d)" % tuple(pg.evaluate("""(() => { const r = window.__smgIntro.debug.renderer; let v = 0, cv = 0;
-      window.__smgIntro.debug.scene.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position) { const n = o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); v += n;
+      window.__smgIntro.debug.scene.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position && !o.userData.lodCopy) { const n = o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); v += n;
         const k = o.material && o.material.userData && o.material.userData.key; if (k && String(k).startsWith('city')) cv += n; } });
       return [r.info.programs.length, v, cv]; })()""")))
     LAG = """() => new Promise((res) => { const ts = []; let calls = 0, tris = 0, n = 0;
