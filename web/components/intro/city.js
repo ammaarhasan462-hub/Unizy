@@ -23,6 +23,7 @@ export const STYLES = [
   { k: 'shed', fam: 'concrete', floor: 9.0, bay: 9.0, winW: 0.0, winH: 0.0, frame: '#777', sash: 0, lit: 0, tint: ['#8c8a85', '#7b7a76', '#9a958c'] },
 ];
 const FAMS = ['brick', 'plaster', 'stone', 'concrete'];
+const FAR_TEX = 650; // metres: walls further off use their texture layer's average (see facade())
 
 async function texIndex() {
   try {
@@ -83,6 +84,16 @@ function layerStack(imgs, srgb) {
     if (im) { cx.setTransform(1, 0, 0, -1, 0, S); cx.drawImage(im, 0, 0, S, S); }
     data.set(cx.getImageData(0, 0, S, S).data, i * S * S * 4);
   });
+  // each layer's average shading factor (what the shader multiplies the wall colour by), for the far walls' cheap path
+  const avg = imgs.map((im, i) => {
+    const o = i * S * S * 4, lin = (v) => (srgb ? Math.pow(v / 255, 2.2) : v / 255);
+    let r = 0, g = 0, b = 0, n = 0;
+    for (let k = o; k < o + S * S * 4; k += 4 * 13) {
+      const R = lin(data[k]), G = lin(data[k + 1]), B = lin(data[k + 2]), l = 0.299 * R + 0.587 * G + 0.114 * B;
+      r += 0.3 * R * 1.6 + 0.7 * l * 2.1; g += 0.3 * G * 1.6 + 0.7 * l * 2.1; b += 0.3 * B * 1.6 + 0.7 * l * 2.1; n++;
+    }
+    return new THREE.Vector3(r / n, g / n, b / n);
+  });
   const t = new THREE.DataArrayTexture(data, S, S, imgs.length);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.magFilter = THREE.LinearFilter;
@@ -91,6 +102,7 @@ function layerStack(imgs, srgb) {
   t.anisotropy = 8;
   t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
   t.needsUpdate = true;
+  t.userData.avg = avg;
   return t;
 }
 
@@ -121,6 +133,9 @@ function facade(T) {
     uLayT: { value: STYLES.map((s, i) => has[lay[i]]) }, uLayN: { value: STYLES.map((s, i) => hasN[lay[i]]) },
     uRoughS: { value: STYLES.map((s) => (s.fam === 'concrete' ? 0.8 : 0.9)) },
     uWallMap: { value: wallMap }, uWallNrm: { value: wallNrm },
+    // beyond FAR_TEX metres a wall's photo texture is under a pixel or two a course: use the layer's average instead of
+    // sampling the photo and its normal map (anisotropic samples are the costliest part of a far wall's pixel)
+    uAvgS: { value: STYLES.map((s, i) => (wallMap ? wallMap.userData.avg[lay[i]] : new THREE.Vector3(1, 1, 1))) }, uFarTex: { value: FAR_TEX },
   };
   // one material and one shader program for all four wall families: the style slot picks the family's texture layer
   m.userData.key = 'cityf' + (wallMap ? 'a' : '') + (wallNrm ? 'n' : '');
@@ -137,6 +152,7 @@ function facade(T) {
         uniform vec3 uFrame[${N}];
         uniform float uLay[${N}], uTexScS[${N}], uLayT[${N}], uLayN[${N}], uRoughS[${N}];
         uniform highp sampler2DArray uWallMap, uWallNrm;
+        uniform vec3 uAvgS[${N}]; uniform float uFarTex;
         float fh(vec2 p){ return fract(sin(dot(p, vec2(41.3, 289.1))) * 15731.7); }
         // shopfront fascia paints (linear): kind 0 shop, 1 cafe or restaurant, 2 pub or bar, 3 bank, chemist and services, 4 empty
         vec3 fasC(float kd, float h) {
@@ -155,19 +171,26 @@ function facade(T) {
         // the wall's style (the low four bits of the style slot) picks its family's layer and texture scale
         int stL = int(mod(floor(vB.x + 0.5), 16.0) + 0.5);
         vec3 texL = vec3(vW * uTexScS[stL], uLay[stL]);
+        vec2 texDx = dFdx(texL.xy), texDy = dFdy(texL.xy);
+        // 0 near, 1 beyond uFarTex: far walls take the layer's average and skip the photo and normal samples
+        float texFar = smoothstep(uFarTex * 0.75, uFarTex, length(vViewPosition));
         #ifdef USE_MAP
           if (uLayT[stL] > 0.5) {
-            vec4 tx = texture(uWallMap, texL);
-            float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
-            // keep the texture's mortar, weathering and grain; take the hue from the building's colour
-            diffuseColor.rgb *= mix(tx.rgb * 1.6, vec3(tl) * 2.1, 0.7);
+            vec3 tf = uAvgS[stL];
+            if (texFar < 0.999) {
+              vec4 tx = textureGrad(uWallMap, texL, texDx, texDy);
+              float tl = dot(tx.rgb, vec3(0.299, 0.587, 0.114));
+              // keep the texture's mortar, weathering and grain; take the hue from the building's colour
+              tf = mix(mix(tx.rgb * 1.6, vec3(tl) * 2.1, 0.7), tf, texFar);
+            }
+            diffuseColor.rgb *= tf;
           }
         #endif`)
       .replace('#include <normal_fragment_maps>', `
         #ifdef USE_NORMALMAP_TANGENTSPACE
-          if (uLayN[stL] > 0.5) {
-            vec3 mapN = texture(uWallNrm, texL).xyz * 2.0 - 1.0;
-            mapN.xy *= normalScale * (1.0 - fWin);
+          if (uLayN[stL] > 0.5 && texFar < 0.999) {
+            vec3 mapN = textureGrad(uWallNrm, texL, texDx, texDy).xyz * 2.0 - 1.0;
+            mapN.xy *= normalScale * (1.0 - fWin) * (1.0 - texFar);
             normal = normalize(tbn * mapN);
           }
         #endif`)
