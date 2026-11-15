@@ -549,4 +549,149 @@
   }
  }
 }
+{
+ "site": "kcl",
+ "buildings": 13433,
+ "heights": {
+  "h": 2307,
+  "lv": 6291,
+  "guess": 222,
+  "lidar": 4613
+ },
+ "styles": {
+  "church": 283,
+  "glass": 1056,
+  "concrete": 1114,
+  "stock": 6640,
+  "stucco": 1136,
+  "redbrick": 1360,
+  "stone": 1451,
+  "shed": 393
+ },
+ "roads": 21091,
+ "areas": 1977,
+ "rails": 408,
+ "trees": 6488,
+ "shop_points": 4967,
+ "shopfronts": [
+  1580,
+  1554,
+  572,
+  392,
+  200
+ ],
+ "eras": [
+  4211,
+  5923,
+  1543,
+  864,
+  892
+ ],
+ "era_by": {
+  "own": 1259,
+  "street": 2546,
+  "neighbours": 547,
+  "type": 7148
+ },
+ "fronts": [
+  4364,
+  354,
+  3119
+ ],
+ "shopfront_fill": 442,
+ "skyline": 1444,
+ "landmarks": {
+  "BT Tower": [
+   1103.6,
+   -1575.9
+  ],
+  "The Shard": [
+   -796.0,
+   2054.7
+  ],
+  "30 St Mary Axe": [
+   327.8,
+   2476.0
+  ]
+ },
+ "bytes": 2975522,
+ "anchor": [
+  "King's Building",
+  51.51153,
+  -0.11606,
+  false
+ ],
+ "places": {
+  "Gower Street": {
+   "x": [
+    908,
+    1577
+   ],
+   "z": [
+    -1379,
+    -938
+   ]
+  },
+  "Gordon Square": {
+   "x": [
+    1325,
+    1499
+   ],
+   "z": [
+    -1187,
+    -887
+   ]
+  },
+  "Russell Square": {
+   "x": [
+    1006,
+    1337
+   ],
+   "z": [
+    -918,
+    -560
+   ]
+  },
+  "Senate House": {
+   "x": [
+    983,
+    1126
+   ],
+   "z": [
+    -949,
+    -810
+   ]
+  },
+  "British Museum": {
+   "x": [
+    727,
+    1005
+   ],
+   "z": [
+    -888,
+    -549
+   ]
+  },
+  "Euston Road": {
+   "x": [
+    1376,
+    2141
+   ],
+   "z": [
+    -1952,
+    -448
+   ]
+  },
+  "Tottenham Court Road": {
+   "x": [
+    387,
+    1495
+   ],
+   "z": [
+    -1530,
+    -957
+   ]
+  }
+ }
+}
 textures ['brick', 'plaster', 'stone', 'concrete', 'roof']
