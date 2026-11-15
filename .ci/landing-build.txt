@@ -1,5 +1,5 @@
 status: success
-sha: bb3b70b86e31fa4822203328040ad847d2474636
+sha: 46859463d0a3a61c26ce7475556a57a106e792c2
 --- build
 
 > unizy-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: bb3b70b86e31fa4822203328040ad847d2474636
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 5.9s
+ ✓ Compiled successfully in 7.1s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
