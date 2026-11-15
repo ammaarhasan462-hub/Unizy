@@ -4,9 +4,9 @@
 //
 // Colours: UCL dark purple #361A54 / bright purple #993BFF / mid purple #BA82FF (UCL brand guidelines, 2025);
 // Imperial blue #003E74 (PMS 541); Queen Mary dark blue #21376A with dark purple #7B0E72 (QM technical guidance);
-// LSE red with black.
+// LSE red with black; King's red with a deep navy.
 
-export const UNI_IDS = ['ucl', 'imperial', 'qmul', 'lse'];
+export const UNI_IDS = ['ucl', 'imperial', 'qmul', 'lse', 'kcl'];
 export const UNI_KEY = 'unizy:uni';
 
 export const UNIS = {
@@ -50,6 +50,16 @@ export const UNIS = {
     mods: [['EC1A3', 'Microeconomics I'], ['GV100', 'Introduction to Political Theory'], ['MA100', 'Mathematical Methods'], ['AC102', 'Elements of Financial Accounting'], ['AN101', 'A History of Anthropological Theory'], ['EH102', 'Pre-industrial Economic History'], ['FM101', 'Finance'], ['GY100', 'Introduction to Geography'], ['PB100', 'Foundations of Behavioural Science'], ['PH111', 'Introduction to Logic']],
     pat: ['#FFB3B6', '#1A1A1A'],
   },
+  kcl: {
+    short: 'King’s', name: 'King’s College London', poss: 'King’s', bands: 'King’s grade bands', tutor: 'Professor King’s',
+    src: 'from King’s module pages', depts: 'departments and schools', unit: 'departments', modWord: 'modules',
+    stats: { modules: @@N@@, departments: @@D@@, rubrics: 0 },
+    course: @@COURSE@@,
+    book: @@BOOK@@,
+    tags: @@TAGS@@,
+    mods: @@MODS@@,
+    pat: ['#F7B4AE', '#141C2A'],
+  },
 };
 
 const ALL_MODS = [['ECON0013', 'Microeconomics'], ['MATH40001', 'Introduction to University Mathematics'], ['LAW4001', 'Public Law'], ['EC1A3', 'Microeconomics I'], ['HIST0003', 'Approaching History'], ['COMP40008', 'Graphs and Algorithms'], ['HST4000U', 'Europe since 1800'], ['GV100', 'Introduction to Political Theory'], ['LAWS0001', 'Contract Law'], ['PHYS40002', 'Mechanics and Relativity']];
@@ -88,16 +98,16 @@ export function uniCopy(id) {
   if (!U) {
     const mods = sum('modules');
     return {
-      id: '', all: true, short: 'your uni', name: 'UCL, Imperial, Queen Mary and LSE',
-      kick: 'Exam practice · 4 universities', modulesLine: n(mods) + ' modules to search, 4 universities',
+      id: '', all: true, short: 'your uni', name: 'UCL, Imperial, Queen Mary, LSE and King’s',
+      kick: 'Exam practice · 5 universities', modulesLine: n(mods) + ' modules to search, 5 universities',
       more: '+' + n(mods - 3), tags: ['ECON0013', 'MATH40001', 'EC1A3'], book: UNIS.ucl.book, course: UNIS.ucl.course,
-      bands: 'your university’s grade bands', corner: 'UCL · Imperial · Queen Mary · LSE',
+      bands: 'your university’s grade bands', corner: 'UCL · Imperial · Queen Mary · LSE · King’s',
       crit: 'Your department · Year 1 criteria', critShort: 'your department’s criteria', tutor: 'Your module professor', tutorH: 'A professor for<br>your modules',
       gapAt: 'At uni', anyOf: 'any of ' + n(mods) + ' modules',
-      numsH: 'Four universities. <span class="uz-serif">Start with the big modules.</span>',
-      nums: [[mods, 'modules to search at UCL, Imperial, Queen Mary and LSE'], [sum('departments'), 'departments, schools and units'], [sum('rubrics'), 'sets of marking criteria across 4 universities'], [4, 'London universities, one dashboard']],
-      backH: 'Your<br>modules.', back: [['Modules to search', n(mods)], ['Universities', '4'], ['Criteria sets', n(sum('rubrics'))]],
-      mods: ALL_MODS, mq: ['Marked against your uni’s grade bands', 'First answer marked free, no sign-up', 'Free 3-day trial', 'UCL · Imperial · Queen Mary · LSE', 'Full packs for 20 big first-year modules'],
+      numsH: 'Five universities. <span class="uz-serif">Start with the big modules.</span>',
+      nums: [[mods, 'modules to search at UCL, Imperial, Queen Mary, LSE and King’s'], [sum('departments'), 'departments, schools and units'], [sum('rubrics'), 'sets of marking criteria across 5 universities'], [5, 'London universities, one dashboard']],
+      backH: 'Your<br>modules.', back: [['Modules to search', n(mods)], ['Universities', '5'], ['Criteria sets', n(sum('rubrics'))]],
+      mods: ALL_MODS, mq: ['Marked against your uni’s grade bands', 'First answer marked free, no sign-up', 'Free 3-day trial', 'UCL · Imperial · Queen Mary · LSE · King’s', 'Full packs for 20 big first-year modules'],
       pat: ['#F1DDA9', '#17302A'],
     };
   }
@@ -109,8 +119,8 @@ export function uniCopy(id) {
     crit: U.short + ' Economics · Year 1 criteria', critShort: U.short + ' Economics criteria', tutor: U.tutor, tutorH: U.tutor + ',<br>on your modules',
     gapAt: 'At ' + U.short, anyOf: 'any of ' + U.poss + ' ' + n(s.modules),
     numsH: 'Built for ' + U.short + '. <span class="uz-serif">Module by module.</span>',
-    nums: [[s.modules, U.short + ' ' + U.modWord + ', ' + U.src], [s.departments, U.short + ' ' + U.depts], [s.rubrics, 'sets of marking criteria (' + U.short + '-wide' + (dep ? ' + ' + dep + ' ' + (dep === 1 ? U.unit.replace(/s$/, '') : U.unit) : '') + ')'], [3, 'concrete changes on every marked answer']],
-    backH: 'Your ' + U.short + '<br>modules.', back: [['Modules to search', n(s.modules)], [U.unit[0].toUpperCase() + U.unit.slice(1), n(s.departments)], ['Criteria sets', n(s.rubrics)]],
+    nums: [[s.modules, U.short + ' ' + U.modWord + ', ' + U.src], [s.departments, U.short + ' ' + U.depts], s.rubrics ? [s.rubrics, 'sets of marking criteria (' + U.short + '-wide' + (dep ? ' + ' + dep + ' ' + (dep === 1 ? U.unit.replace(/s$/, '') : U.unit) : '') + ')'] : [3, 'levels of practice question for every topic'], [3, 'concrete changes on every marked answer']],
+    backH: 'Your ' + U.short + '<br>modules.', back: [['Modules to search', n(s.modules)], [U.unit[0].toUpperCase() + U.unit.slice(1), n(s.departments)], s.rubrics ? ['Criteria sets', n(s.rubrics)] : ['Practice levels', '3']],
     mods: U.mods, mq: ['Marked against ' + U.bands, 'First answer marked free, no sign-up', 'Free 3-day trial', 'Search any ' + U.short + ' module', U.tutor],
     pat: U.pat,
   };
