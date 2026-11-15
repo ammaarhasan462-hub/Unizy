@@ -36,7 +36,7 @@ def header(current):
 
 def footer():
     return f"""<footer class="sx-foot"><div class="sx-foot-in">
-<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><p>{TAGLINE} Exam practice and marking for students at UCL, Imperial, Queen Mary and LSE.</p></div>
+<div class="sx-foot-brand"><a class="sx-brand" href="/"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><p>{TAGLINE} Exam practice and marking for students at UCL, Imperial, Queen Mary, LSE and King’s.</p></div>
 <nav class="sx-foot-col" aria-label="Product"><span>Product</span><a href="/mark">Find your module</a><a href="/#how">How it works</a><a href="/pricing">Pricing</a><a href="/dashboard">Dashboard</a></nav>
 <nav class="sx-foot-col" aria-label="About"><span>About</span><a href="/trust">Trust &amp; safety</a><a href="/reviews">Reviews</a><a href="/faq">FAQ</a></nav>
 <nav class="sx-foot-col" aria-label="Legal"><span>Legal</span><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="mailto:hello@{DOMAIN}">Contact</a></nav>
@@ -50,7 +50,7 @@ def scripts(*names):
 
 
 MARK_PAGE = head(f"Find your module · practice questions and marking · {BRAND}",
-                 "Search modules at UCL, Imperial, Queen Mary and LSE. Full packs for 20 big UCL first-year modules. Practise an exam-style question, get it marked against your university's grade bands, and see what a First looks like.",
+                 "Search modules at UCL, Imperial, Queen Mary, LSE and King’s. Full packs for 20 big UCL first-year modules. Practise an exam-style question, get it marked against your university's grade bands, and see what a First looks like.",
                  "/mark") + header("/mark") + """
 <main id="main" class="mk-wrap"><div id="mk"><noscript>Turn on JavaScript to search modules and get answers marked.</noscript></div></main>
 """ + footer() + scripts("study.js?v=2", "mark.js?v=8") + "</body></html>\n"

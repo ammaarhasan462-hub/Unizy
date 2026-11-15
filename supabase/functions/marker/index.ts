@@ -1,4 +1,4 @@
-// The marker: a Module Map (topics + practice questions at three levels) for any UCL, Imperial, Queen Mary or LSE module, and marking of
+// The marker: a Module Map (topics + practice questions at three levels) for any UCL, Imperial, Queen Mary, LSE or King's module, and marking of
 // a student's practice answer against the university's grade bands and the department's own published criteria.
 //
 // POST { action: "questions", code }                     -> topics + questions; starts writing them if the module has none yet
@@ -30,7 +30,7 @@ const CORS = {
 const SONNET = "claude-sonnet-5-5";
 const MAX_ANSWER = 14_000; // characters, roughly 2,300 words
 const MAX_QUESTION = 3_000;
-const CODE_RE = /^[A-Z]{2,4}[0-9][0-9A-Z]{1,5}$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1 / LSE100
+const CODE_RE = /^(?:[A-Z]{2,4}[0-9][0-9A-Z]{1,5}|[0-7][A-Z]{2,4}[0-9A-Z]{2,5})$/; // UCL ECON0013, Imperial MATH40001, Queen Mary ECN115, LSE EC1A1 / LSE100, King's 4SSPS101
 
 // Universities. Modules carry a `uni`; everything the examiner says follows it.
 const UNIS: Record<string, { name: string; long: string; source: string }> = {
@@ -38,6 +38,7 @@ const UNIS: Record<string, { name: string; long: string; source: string }> = {
   imperial: { name: "Imperial", long: "Imperial College London", source: "Imperial College London's official programme specifications" },
   qmul: { name: "Queen Mary", long: "Queen Mary University of London", source: "Queen Mary's official module directory" },
   lse: { name: "LSE", long: "the London School of Economics and Political Science", source: "the LSE Calendar's undergraduate course guides" },
+  kcl: { name: "King's", long: "King's College London", source: "King's College London's public module pages" },
 };
 const uniOf = (mod: any) => UNIS[mod?.uni] || UNIS.ucl;
 const bare = (U: { long: string }) => U.long.replace(/^the /, "");
@@ -66,14 +67,14 @@ function stripHtml(html: string): string {
 // The full description from the module's public UCL catalogue page, cached on the module row.
 async function moduleDetails(service: any, mod: any): Promise<string> {
   if (mod.uni && mod.uni !== "ucl") {
-    // Imperial, Queen Mary and LSE: describe the module from the verified facts held on the row
+    // Imperial, Queen Mary, LSE and King's: describe the module from the verified facts held on the row
     const U = uniOf(mod), size = sizeOf(mod);
     const facts = [
       `${mod.code} ${mod.title} is ${anU(U)} ${mod.uni === "lse" ? "course" : "module"} in ${mod.department || "its department"}${mod.faculty ? " (" + mod.faculty + ")" : ""}.`,
       [size, mod.year_of_study ? `usually taken in Year ${mod.year_of_study}` : "", mod.mtype ? mod.mtype : "", mod.term ? `term: ${mod.term}` : ""].filter(Boolean).join(", "),
       Array.isArray(mod.programmes) && mod.programmes.length ? `Programmes: ${mod.programmes.join("; ")}.` : "",
       mod.status ? mod.status + "." : "",
-      mod.summary || mod.details || "",
+      mod.details || mod.summary || "",
     ].filter(Boolean).join("\n");
     return facts;
   }

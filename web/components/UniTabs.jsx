@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { UNI_IDS, UNIS, getUni, setUni } from './story/unis';
 import { track } from '@/lib/site';
 
-const COL = { ucl: '#361A54', imperial: '#003E74', qmul: '#21376A', lse: '#C8102E' };
+const COL = { ucl: '#361A54', imperial: '#003E74', qmul: '#21376A', lse: '#C8102E', kcl: '#E2231A' };
 
 export default function UniTabs({ compact }) {
   const [uni, setU] = useState('');
@@ -52,7 +52,6 @@ export default function UniTabs({ compact }) {
           </button>
         );
       })}
-      <span className="shrink-0 cursor-default px-3 py-1.5 text-[13px] text-ink/35" title="King’s College London is coming soon">King’s · soon</span>
     </div>
   );
 }

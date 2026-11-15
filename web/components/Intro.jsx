@@ -32,7 +32,7 @@ const UNIS = [
   { id: 'qmul', short: 'Queen Mary', name: 'Queen Mary University of London', live: true },
   { id: 'lse', short: 'LSE', name: 'London School of Economics', live: true },
   { id: 'imperial', short: 'Imperial', name: 'Imperial College London', live: true },
-  { id: 'kcl', short: 'King’s', name: 'King’s College London' },
+  { id: 'kcl', short: 'King’s', name: 'King’s College London', live: true },
 ];
 
 const T = Em;

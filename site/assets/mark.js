@@ -12,21 +12,22 @@
   var HOOKS = window.MarkHooks || null; // set by the dashboard: my modules, add/remove, exam dates
   // inside the dashboard, answers can include files, photos (e.g. a handwritten answer) and videos: see attach.js
   function tray() { return HOOKS && window.UnizyAttach ? window.UnizyAttach.tray('mk:' + draftKey()) : null; }
-  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{2,4}[0-9][0-9A-Za-z]{1,5})\\/?$');
+  var MODRE = new RegExp('^' + MBASE.replace(/[\/]/g, '\\/') + '([A-Za-z]{2,4}[0-9][0-9A-Za-z]{1,5}|[0-7][A-Za-z]{2,4}[0-9A-Za-z]{2,5})\\/?$');
   // universities: UCL modules (4-digit codes) and Imperial modules (5-digit codes) share one catalogue table
   var UNIS = { ucl: { short: 'UCL', poss: 'UCL’s', exam: 'a UCL', src: 'Full description on UCL’s catalogue', cat: 'UCL’s module catalogue' },
     imperial: { short: 'Imperial', poss: 'Imperial’s', exam: 'an Imperial', src: 'Imperial’s programme specification', cat: 'Imperial’s programme specifications' },
     qmul: { short: 'Queen Mary', poss: 'Queen Mary’s', exam: 'a Queen Mary', src: 'Queen Mary’s module directory', cat: 'Queen Mary’s module directory' },
-    lse: { short: 'LSE', poss: 'LSE’s', exam: 'an LSE', src: 'the LSE course guide', cat: 'the LSE Calendar’s course guides' } };
+    lse: { short: 'LSE', poss: 'LSE’s', exam: 'an LSE', src: 'the LSE course guide', cat: 'the LSE Calendar’s course guides' },
+    kcl: { short: 'King’s', poss: 'King’s', exam: 'a King’s', src: 'King’s module page', cat: 'King’s College London’s module pages' } };
   function uniId() { return state.mod && state.mod.uni ? state.mod.uni : HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   function U() { return UNIS[uniId()] || UNIS.ucl; }
   // public search: the university picked on the homepage (or in its tabs here); '' searches all of them
-  var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579 };
+  var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579, kcl: 1082 };
   var pubUni = (function () { try { var u = localStorage.getItem('unizy:uni'); return UNIS[u] ? u : ''; } catch (e) { return ''; } })();
   function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : pubUni; }
   var uniOpen = false;
   function uniTabs() {
-    var ids = ['ucl', 'imperial', 'qmul', 'lse'];
+    var ids = ['ucl', 'imperial', 'qmul', 'lse', 'kcl'];
     // picked a university (in the intro or here)? Then it's only that university's modules, with a way to change it
     if (pubUni && !uniOpen) return '<div class="mk-unitabs one"><span class="mk-unione">' + esc(UNIS[pubUni].short) + ' ' + (pubUni === 'lse' ? 'courses' : 'modules') + ' only</span><button type="button" class="mk-clear" data-unichange="1">Change university</button></div>';
     return '<div class="mk-unitabs" role="tablist" aria-label="University"><button type="button" role="tab" data-puni=""' + (pubUni ? '' : ' class="on" aria-selected="true"') + '>All</button>' +
@@ -194,7 +195,7 @@
     if (term.length < 2) { state.results = []; renderList(); return; }
     searchTimer = setTimeout(function () {
       var seq = ++searchSeq, t = term.replace(/[%*,()]/g, ' ').trim();
-      var filt = (/^[A-Za-z]{4}\d{0,5}$/.test(t) || /^[A-Za-z]{2,4}\d[0-9A-Za-z]{0,4}$/.test(t)) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
+      var filt = (/^[A-Za-z]{4}\d{0,5}$/.test(t) || /^[A-Za-z]{2,4}\d[0-9A-Za-z]{0,4}$/.test(t) || /^[0-7][A-Za-z]{1,4}[0-9A-Za-z]{0,5}$/.test(t)) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
       rest('ucl_modules?select=code,title,level,credits,ects,department,uni' + (listUni() ? '&uni=eq.' + listUni() : '') + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
         if (seq !== searchSeq) return;
         state.results = rows || []; renderList();
@@ -415,7 +416,7 @@
     var mine = HOOKS ? HOOKS.myModules() : [];
     var picks = mine.length ? '<div class="mk-mine"><p class="mk-lab">Your modules</p><ul class="mk-results">' + mine.map(function (m) { return '<li><a href="' + MBASE + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + '</span></a></li>'; }).join('') + '</ul></div>' : '';
     if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
-    var pn = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary and LSE';
+    var pn = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary, LSE and King’s';
     var pl = packList.filter(function (p) { return packUni[p.code] && (!pubUni || packUni[p.code] === pubUni); });
     var pk = pl.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
     return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>Find your module.</h1>' + uniTabs() +
@@ -800,7 +801,7 @@
       try { if (pubUni) localStorage.setItem('unizy:uni', pubUni); else localStorage.removeItem('unizy:uni'); } catch (er) {}
       root.querySelectorAll('[data-puni]').forEach(function (b) { var on = b === pu; b.classList.toggle('on', on); if (on) b.setAttribute('aria-selected', 'true'); else b.removeAttribute('aria-selected'); });
       var k = root.querySelector('.mk-hero .kicker');
-      if (k) k.textContent = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary and LSE';
+      if (k) k.textContent = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary, LSE and King’s';
       render(); search(state.q); renderList(); return; // re-render so the full packs list follows the university
     }
     var hl = e.target.closest('mark[data-lost]');

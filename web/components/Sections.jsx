@@ -132,8 +132,8 @@ const QA = [
   ['Is this cheating?', 'No. Unizy is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
   ['Does it have my exact past papers?', 'We don’t host university exam papers. Paste a question from your own past paper and we’ll mark your answer to it, or use one of our exam-style questions written from the module’s official description.'],
   ['How accurate is the marking?', 'It’s a practice estimate, so you always see a mark range rather than a single number. It marks against your university’s published grade bands and, where your department publishes them, its own criteria. On every result you can tell us the real mark you got for a similar answer, and we use those to check the marker stays accurate.'],
-  ['Which universities and modules?', 'UCL, Imperial, Queen Mary and LSE, with King’s next. You can search over 10,000 modules from each university’s own published catalogue, programme specifications or module directory. 20 big UCL first-year modules have full packs, checked twice. Any other module gets a starter set of practice questions the first time someone opens it, saved for everyone.'],
-  ['Is Unizy part of my university?', 'No. Unizy is an independent revision tool built by a London student. It isn’t affiliated with or endorsed by UCL, Imperial, Queen Mary, LSE or any other university.'],
+  ['Which universities and modules?', 'UCL, Imperial, Queen Mary, LSE and King’s. You can search over 11,000 modules from each university’s own published catalogue, programme specifications or module directory. 20 big UCL first-year modules have full packs, checked twice. Any other module gets a starter set of practice questions the first time someone opens it, saved for everyone.'],
+  ['Is Unizy part of my university?', 'No. Unizy is an independent revision tool built by a London student. It isn’t affiliated with or endorsed by UCL, Imperial, Queen Mary, LSE, King’s or any other university.'],
 ];
 
 export function Faq() {

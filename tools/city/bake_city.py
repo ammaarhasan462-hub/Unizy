@@ -26,7 +26,11 @@ SITES = {
     # rectangles once their hand-built campus models exist.
     'qmul': {'centre': (51.52395, -0.04018), 'anchor': ["Queens' Building", 'Queens Building'], 'keep_out': []},
     'lse': {'centre': (51.51432, -0.11655), 'anchor': ['Old Building'], 'keep_out': []},
+    # King's College London (Strand): the origin on the King's Building (unnamed in the map, so its footprint's
+    # centre). The Strand lies inside LSE's extract, so King's reads LSE's raw files (raw)
+    'kcl': {'centre': (51.51153, -0.11606), 'anchor': ["King's Building"], 'keep_out': [], 'raw': 'lse'},
 }
+RAW_OF = lambda site: SITES.get(site, {}).get('raw', site)
 
 
 def load(name):
@@ -381,7 +385,7 @@ STREET_ERA = {
 STREET_ERA = {s: e for e, ss in STREET_ERA.items() for s in ss}
 # what the plain residential stock looks like where nothing else says (by site): era, then the share of whole streets in
 # stucco (era 1) or red brick (era 2)
-SITE_DRESS = {'ucl': {'house': 1, 'stucco': 0.18, 'red': 0.4}, 'lse': {'house': 1, 'stucco': 0.15, 'red': 0.45},
+SITE_DRESS = {'ucl': {'house': 1, 'stucco': 0.18, 'red': 0.4}, 'lse': {'house': 1, 'stucco': 0.15, 'red': 0.45}, 'kcl': {'house': 1, 'stucco': 0.15, 'red': 0.45},
               'imperial': {'house': 1, 'stucco': 0.88, 'red': 0.65}, 'qmul': {'house': 2, 'stucco': 0.08, 'red': 0.22}}
 
 
@@ -657,7 +661,7 @@ def shopfronts(bring, fr, bgrid, points):
 
 
 def bake(site):
-    els = load(site)
+    els = load(RAW_OF(site))
     # ------------------------------------------------------------------ anchors / frame
     tmp = Frame(*SITES[site]['centre'])
     named = {}
@@ -793,7 +797,7 @@ def bake(site):
     out_b = []
     bring = []  # (out index, ring, min height, height, style, own tags) for the shopfronts
     stats = {'h': 0, 'lv': 0, 'guess': 0, 'lidar': 0}
-    lidar = load_lidar(site)
+    lidar = load_lidar(RAW_OF(site))
     style_n = {}
     drecs = []  # what dress() needs to pick each building's period
     for i, b in enumerate(blds + parts):
@@ -1041,6 +1045,6 @@ def textures():
 
 
 if __name__ == '__main__':
-    for s in (sys.argv[1:] or [k for k in SITES if os.path.exists(os.path.join(RAW, f'{k}.geojsonseq.gz')) or os.path.exists(os.path.join(RAW, f'{k}.json.gz'))]):
+    for s in (sys.argv[1:] or [k for k in SITES if os.path.exists(os.path.join(RAW, f'{RAW_OF(k)}.geojsonseq.gz')) or os.path.exists(os.path.join(RAW, f'{RAW_OF(k)}.json.gz'))]):
         bake(s)
     textures()
