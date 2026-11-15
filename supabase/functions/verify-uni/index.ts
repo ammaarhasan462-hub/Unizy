@@ -18,6 +18,7 @@ const UNIS: Record<string, { name: string; re: RegExp; domain: string }> = {
   oxford: { name: "Oxford", re: /@([a-z0-9-]+\.)*ox\.ac\.uk$/, domain: "ox.ac.uk" },
   cambridge: { name: "Cambridge", re: /@([a-z0-9-]+\.)*cam\.ac\.uk$/, domain: "cam.ac.uk" },
   qmul: { name: "Queen Mary", re: /@([a-z0-9-]+\.)*qmul\.ac\.uk$/, domain: "qmul.ac.uk" },
+  kcl: { name: "King's", re: /@([a-z0-9-]+\.)*kcl\.ac\.uk$/, domain: "kcl.ac.uk" },
 };
 const EMAIL_RE = /^[a-z0-9._%+'-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
 

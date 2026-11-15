@@ -12,7 +12,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const SITE = "https://unizy.uk";
 const BASE = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "") + "/functions/v1/lti";
 const CLAIM = "https://purl.imsglobal.org/spec/lti/claim/";
-const UNI_NAMES: Record<string, string> = { ucl: "UCL", imperial: "Imperial", lse: "LSE", oxford: "Oxford", cambridge: "Cambridge", qmul: "Queen Mary" };
+const UNI_NAMES: Record<string, string> = { ucl: "UCL", imperial: "Imperial", lse: "LSE", oxford: "Oxford", cambridge: "Cambridge", qmul: "Queen Mary", kcl: "King's" };
 
 const service = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const jsonRes = (status: number, body: unknown) => new Response(JSON.stringify(body, null, 2), { status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" } });

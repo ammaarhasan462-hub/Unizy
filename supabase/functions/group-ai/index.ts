@@ -20,6 +20,7 @@ const UNI: Record<string, { short: string; full: string }> = {
   oxford: { short: "Oxford", full: "University of Oxford" },
   cambridge: { short: "Cambridge", full: "University of Cambridge" },
   qmul: { short: "Queen Mary", full: "Queen Mary University of London" },
+  kcl: { short: "King's", full: "King's College London" },
 };
 const clip = (v: unknown, n: number) => (typeof v === "string" ? v : "").slice(0, n);
 

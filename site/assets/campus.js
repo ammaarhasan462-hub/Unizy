@@ -18,9 +18,9 @@
     mkt: { view: 'browse', data: null, loading: false, at: 0, cat: null, q: '', mine: false, cur: null, form: null, photos: [], uploading: 0, inbox: null, thread: null, msgs: [], msgText: '', contactText: '', busy: false, msg: '', kind: '', delArm: null, timer: null },
     fo: { room: null, roomAt: 0, loading: false, pingAt: 0, mode: null, msg: '', tick: null, beep: true }
   };
-  var DOMAINS = { ucl: 'ucl.ac.uk', imperial: 'imperial.ac.uk', lse: 'lse.ac.uk', oxford: 'ox.ac.uk', cambridge: 'cam.ac.uk', qmul: 'qmul.ac.uk' };
-  var LMS = { ucl: 'Moodle', imperial: 'Blackboard', lse: 'Moodle', oxford: 'Canvas', cambridge: 'Moodle', qmul: 'QMplus (Moodle)' };
-  var UNI_NAMES = { ucl: 'UCL', imperial: 'Imperial', lse: 'LSE', oxford: 'Oxford', cambridge: 'Cambridge', qmul: 'Queen Mary' };
+  var DOMAINS = { ucl: 'ucl.ac.uk', imperial: 'imperial.ac.uk', lse: 'lse.ac.uk', oxford: 'ox.ac.uk', cambridge: 'cam.ac.uk', qmul: 'qmul.ac.uk', kcl: 'kcl.ac.uk' };
+  var LMS = { ucl: 'Moodle', imperial: 'Blackboard', lse: 'Moodle', oxford: 'Canvas', cambridge: 'Moodle', qmul: 'QMplus (Moodle)', kcl: 'KEATS (Moodle)' };
+  var UNI_NAMES = { ucl: 'UCL', imperial: 'Imperial', lse: 'LSE', oxford: 'Oxford', cambridge: 'Cambridge', qmul: 'Queen Mary', kcl: 'King’s' };
 
   function X() { return window.UnizyWeb && window.UnizyWeb._internal; }
   function signedIn() { return !!(X() && X().Auth.session); }
