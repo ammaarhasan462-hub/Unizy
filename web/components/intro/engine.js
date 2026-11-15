@@ -19,6 +19,7 @@ import { buildImperial, IMPERIAL_KEYS } from './imperial';
 import { buildCityWorld } from './cityworld';
 import { buildQMUL, QMUL_KEYS, QMUL_STRIKE, QMUL_SHADOW, QMUL_KEEP } from './qmul';
 import { buildLSE, LSE_KEYS, LSE_STRIKE, LSE_SHADOW, LSE_KEEP } from './lse';
+import { buildKCL, KCL_KEYS, KCL_STRIKE, KCL_SHADOW, KCL_KEEP } from './kcl';
 
 // [progress, camera position, look-at target]
 const KEYS = [
@@ -114,13 +115,14 @@ const WORLDS = {
   imperial: { keys: IMPERIAL_KEYS, strike: [2300, 0, 1600], glass: true, shadow: [[1100, [400, 0, 0]], [320, [250, 0, -10]], [115, [50, 10, -6]]] },
   qmul: { keys: QMUL_KEYS, strike: QMUL_STRIKE, glass: false, shadow: QMUL_SHADOW, keep: QMUL_KEEP, chair: 'dining_chair_02' },
   lse: { keys: LSE_KEYS, strike: LSE_STRIKE, glass: false, shadow: LSE_SHADOW, keep: LSE_KEEP, chair: 'SchoolChair_01', landmarks: { stPauls: [-57, 1264, 0] } },
+  kcl: { keys: KCL_KEYS, strike: KCL_STRIKE, glass: false, shadow: KCL_SHADOW, keep: KCL_KEEP, chair: 'SchoolChair_01', landmarks: { stPauls: [253, 1230, 0] } },
 };
 
 export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni = 'ucl', city = null } = {}) {
-  // one world per university: UCL (Bloomsbury), Imperial (South Kensington), Queen Mary (Mile End), LSE (Aldwych)
+  // one world per university: UCL (Bloomsbury), Imperial (South Kensington), Queen Mary (Mile End), LSE (Aldwych), King's (the Strand)
   const imp = uni === 'imperial';
   const W = WORLDS[uni] || WORLDS.ucl;
-  const generic = uni === 'qmul' || uni === 'lse';
+  const generic = uni === 'qmul' || uni === 'lse' || uni === 'kcl';
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance', alpha: false });
   let pr = Math.min(window.devicePixelRatio || 1, mobile ? 1.3 : 1.4);
   renderer.setPixelRatio(pr);
@@ -160,7 +162,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
   const london = imp ? buildSouthKen(renderer, { mobile, city }) : generic ? buildCityWorld(renderer, { mobile, city, site: uni, keepRects: W.keep, landmarks: W.landmarks || {} }) : buildLondon(renderer, { mobile, city });
   scene.add(london.group);
-  const ucl = imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : buildUCL({ mobile });
+  const ucl = imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : uni === 'kcl' ? buildKCL({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
   // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
   let intEnv = null, disposed = false;

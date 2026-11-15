@@ -67,6 +67,18 @@ COPY.lse = {
     '03': { s: 'Marked against LSE’s marking scale and, where your department publishes them, its own criteria.' },
   },
 };
+COPY.kcl = {
+  kicker: 'King’s College London',
+  title: 'The mark scheme your department *never sent.*',
+  sub: 'Search @@N@@ King’s modules. Practice questions are written the first time you open one.',
+  place: 'The *Strand*',
+  sample: { code: 'Practice question', title: 'Monopoly output and the deadweight loss', crit: 'King’s marking criteria', mark: '71', range: '70–74', cls: 'First', note: 'Right method and the right numbers. Shade the deadweight loss on the diagram and say why output falls.' },
+  ch: {
+    '01': { s: 'King’s keeps past exam papers for most modules and a worked answer for almost none of them. You find out what a First looks like when results come out.', r: ['Past exam papers', '2019–2025', 'worked answers: 0'] },
+    '02': { t: 'Straight from *the module pages*.', s: '@@N@@ undergraduate modules from @@D@@ departments, each checked against King’s own published module pages.', r: ['@@C1@@', '@@C2@@', '@@C3@@', '@@M@@ more'] },
+    '03': { s: 'Marked against King’s grade bands and, where your department publishes them, its own criteria.' },
+  },
+};
 export const chaptersFor = (uni) => CHAPTERS.map((c) => ({ ...c, ...((COPY[uni] || COPY.ucl).ch[c.n] || {}) }));
 
 // ------------------------------------------------------------------ top bar

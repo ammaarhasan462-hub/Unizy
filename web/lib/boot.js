@@ -11,4 +11,4 @@ if(force||(!off&&!inside&&!rm&&!phone&&window.WebGL2RenderingContext&&!navigator
 setTimeout(function(){if(!d.classList.contains('intro-live'))d.classList.remove('intro')},9000)}}catch(e){}})();`;
 
 // the university picked in the intro or the homepage tabs (see components/story/unis.js), so the colours are right
-export const UNI_BOOT = `(function(){try{var u=localStorage.getItem('unizy:uni');document.documentElement.setAttribute('data-uni',/^(ucl|imperial|qmul|lse)$/.test(u)?u:'all')}catch(e){}})();`;
+export const UNI_BOOT = `(function(){try{var u=localStorage.getItem('unizy:uni');document.documentElement.setAttribute('data-uni',/^(ucl|imperial|qmul|lse|kcl)$/.test(u)?u:'all')}catch(e){}})();`;

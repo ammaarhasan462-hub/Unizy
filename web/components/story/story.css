@@ -445,4 +445,11 @@ html[data-uni="lse"] .uz {
   --ink-rgb: 20 20 20; --ink-d-rgb: 8 8 8; --g2-rgb: 142 26 31; --gold-rgb: 200 16 46; --gold-b-rgb: 238 62 69;
   --gold-l-rgb: 250 217 218; --cream-rgb: 252 249 249; --paper-rgb: 245 244 244;
 }
+html[data-uni="kcl"] .uz {
+  --ink: #121925; --ink-d: #080C13; --g: #1E2A3D; --g2: #B81C15; --g3: #D9332B; --g-hi: #2C3A52; --g-lo: #0C121C;
+  --gold: #E2231A; --gold-b: #F2554D; --gold-l: #FADAD7; --gold-d: #A8150F; --brown: #B81C15; --chip-l: #F6CBC7; --bub: #F8ECEA;
+  --paper: #F5F4F2; --cream: #FCFAF8; --cv-hi: #263349; --cv-lo: #060910; --txt-m: #474C55; --txt-s: #646A73;
+  --ink-rgb: 18 25 37; --ink-d-rgb: 8 12 19; --g2-rgb: 184 28 21; --gold-rgb: 226 35 26; --gold-b-rgb: 242 85 77;
+  --gold-l-rgb: 250 218 215; --cream-rgb: 252 250 248; --paper-rgb: 245 244 242;
+}
 .uz, .uz-hero, .uz-stage, .uz-gap, .uz-nums, .uz-final, .uz-split, .uz-unlock { transition: background-color .5s ease, color .5s ease; }

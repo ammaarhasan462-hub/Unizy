@@ -17,6 +17,7 @@ const NEED = {
   imperial: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall'], hdr: false },
   qmul: { models: ['dining_chair_02'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall', 'dark_wood'], hdr: true },
   lse: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall'], hdr: false },
+  kcl: { models: ['SchoolChair_01'], surf: ['wood_floor', 'wood_table_001', 'painted_plaster_wall', 'dark_wood'], hdr: true },
 };
 
 const caches = {};
