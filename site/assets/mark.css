@@ -774,5 +774,11 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-guestcta{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:14px 0 18px;padding:16px 18px;border-radius:14px;background:#FBF7EE;border:1.5px solid #EADFC8}
 .mk-guestcta p{margin:4px 0 0;font-size:14.5px;color:var(--mute,#4B5C56)}
 .mk-guestcta .btn{flex:0 0 auto}
+.mk-save{flex-direction:column;align-items:stretch}
+.mk-saverow{display:flex;gap:10px;flex-wrap:wrap}
+.mk-saverow input{flex:1 1 220px;min-width:0;font:inherit;font-size:16px;padding:12px 14px;min-height:48px;border-radius:10px;border:1.5px solid #C8D1CB;background:#fff;color:#17302A}
+.mk-saverow input:focus{outline:none;border-color:#17302A;box-shadow:0 0 0 3px #B8862F}
+.mk-saveerr{margin:0;color:#A12C2C}
+.mk-savealt{font-size:14px;font-weight:600;color:#17302A}
 .mk-unitabs.one{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mk-unione{display:inline-block;font-weight:600;font-size:14px;padding:7px 14px;border-radius:999px;background:var(--ink,#16231F);color:#fff}

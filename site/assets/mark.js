@@ -419,7 +419,9 @@
     var pn = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary, LSE and King’s';
     var pl = packList.filter(function (p) { return packUni[p.code] && (!pubUni || packUni[p.code] === pubUni); });
     var pk = pl.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
-    return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>Find your module.</h1>' + uniTabs() +
+    // signed-out visitors (the home page's "Mark one answer free" lands here via /try): say how the free try works
+    var tryLine = canGuest() ? '<p class="mk-trybar"><b>Mark one answer free, no sign-up.</b> Pick a module, choose an exam-style question and write your answer. You’ll get your mark and exactly what would move you up.</p>' : '';
+    return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>' + (canGuest() ? 'Pick a module to try.' : 'Find your module.') + '</h1>' + tryLine + uniTabs() +
       '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'course' : 'module') + (pl.length === 1 ? '' : 's') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
       '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
@@ -747,7 +749,11 @@
     var html = head() + '<div class="mk-ws res"><div class="mk-wsmain"><section class="mk-card mk-result"><span class="mk-topic">' + esc(m.code) + ' · Your marked answer</span><h2 class="mk-question sm">' + esc(r.question || (state.cur && state.cur.question) || '') + '</h2>' +
       '<p class="mk-headline">' + esc(r.headline) + '</p>' +
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
-    if (r.guest) html += '<div class="mk-guestcta"><div><b>That was your free marked answer.</b><p>Sign up free and it’s saved to your account. Then rewrite your weakest paragraph and see your mark move, and practise every topic of ' + esc(m.code) + '. 3 days of marking with no card needed.</p></div><a class="btn primary" href="/signup?next=' + encodeURIComponent(MBASE + m.code) + '" data-guestsignup="1">Sign up free</a></div>';
+    // "Save this mark?": one email box. The sign-up page sends the code straight away (?send=1); once signed in,
+    // claimGuest() saves this result to the new account. Google / Microsoft are one tap away on the same page.
+    if (r.guest) html += '<form class="mk-guestcta mk-save" data-guestsave="1" novalidate><div><b>Save this mark?</b><p>Enter your email and it’s kept in your account. Then rewrite your weakest paragraph and watch your mark move. No password, no card.</p></div>' +
+      '<div class="mk-saverow"><input type="email" name="email" autocomplete="email" inputmode="email" placeholder="Personal or uni email" aria-label="Your email" required><button type="submit" class="btn primary">Save my mark</button></div>' +
+      '<p class="mk-fine mk-saveerr" hidden></p><a class="mk-savealt" href="/signup?next=' + encodeURIComponent(MBASE + m.code) + '" data-guestsignup="1">Or continue with Google or Microsoft</a></form>';
     var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
     if (lost.length) {
       html += '<h3>Where you lost marks</h3><p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
@@ -837,6 +843,14 @@
     else if (act === 'parse') runParse();
     else if (act === 'ucards') addUnitCards();
     else if (act === 'uclear') { if (confirm('Remove these study units? Flashcards already in your deck stay there.')) { unitsSet(state.mod.code, null); render(); } }
+  });
+  root.addEventListener('submit', function (e) {
+    var f = e.target.closest && e.target.closest('form[data-guestsave]'); if (!f) return;
+    e.preventDefault();
+    var em = (f.querySelector('input[name=email]').value || '').trim(), er = f.querySelector('.mk-saveerr');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { er.hidden = false; er.textContent = 'Enter a valid email address.'; f.querySelector('input').focus(); return; }
+    track('guest_save_email');
+    location.href = '/signup?send=1&email=' + encodeURIComponent(em) + '&next=' + encodeURIComponent(MBASE + state.mod.code);
   });
   function inScope() { var p = location.pathname.replace(/\/$/, ''); return p === BASE.replace(/\/$/, '') || MODRE.test(location.pathname); }
   window.addEventListener('popstate', function () { if (inScope()) route(); });

@@ -131,6 +131,73 @@
   function render(nodes) { root.innerHTML = ''; nodes.forEach(function (n) { if (n) root.appendChild(n); }); var f = root.querySelector('input:not([type=hidden])'); if (f && window.innerWidth > 700) setTimeout(function () { f.focus(); }, 20); }
   function h1(t, sub) { return el('div', { class: 'head' }, [el('h1', { text: t }), sub ? el('p', { class: 'sub', text: sub }) : null]); }
   function legal() { return el('p', { class: 'legal' }, ['By continuing you agree to Unizy’s ', el('a', { href: '/terms.html', text: 'terms' }), ' and ', el('a', { href: '/privacy.html', text: 'privacy policy' }), '. Unizy is for students aged 16 and over.']); }
+  // a brand-new account (made in the last hour, which is how long a code lasts) that has just signed in for the first time
+  function isNew(u) { var t = u && Date.parse(u.created_at); return !!t && Date.now() - t < 60 * 60000; }
+  function countSource() {
+    // where this new student first came from (set by the home page from ?ref= / the referrer), as an anonymous daily total
+    try { var sr = JSON.parse(localStorage.getItem('unizy-src') || 'null'); if (sr && sr.s && Date.now() - sr.at < 30 * 864e5) track('join_' + sr.s); } catch (x) { /* ignore */ }
+  }
+
+  // ---------- one-tap sign-in (Google, Microsoft) ----------
+  // Buttons only show for providers switched on in Supabase (Authentication → Providers), read from /auth/v1/settings,
+  // so nothing breaks before they're set up. The provider sends the student back to /login with a session in the URL hash.
+  var providersP = null;
+  function providers() {
+    if (!providersP) providersP = fetch(CFG.supabaseUrl + '/auth/v1/settings', { headers: { apikey: CFG.anonKey } })
+      .then(function (r) { return r.ok ? r.json() : {}; }).then(function (s) { return (s && s.external) || {}; }).catch(function () { return {}; });
+    return providersP;
+  }
+  function svgIcon(paths) {
+    var ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns, 'svg');
+    s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true');
+    paths.forEach(function (p) { var e = document.createElementNS(ns, p[0]); Object.keys(p[1]).forEach(function (k) { e.setAttribute(k, p[1][k]); }); s.appendChild(e); });
+    return s;
+  }
+  var ICONS = {
+    google: function () { return svgIcon([
+      ['path', { fill: '#4285F4', d: 'M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.2-2.1 3.5-5.1 3.5-8.8z' }],
+      ['path', { fill: '#34A853', d: 'M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z' }],
+      ['path', { fill: '#FBBC05', d: 'M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6H1.3a12 12 0 0 0 0 10.8l4-3.1z' }],
+      ['path', { fill: '#EA4335', d: 'M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z' }]]); },
+    azure: function () { return svgIcon([
+      ['rect', { x: '1', y: '1', width: '10.5', height: '10.5', fill: '#F25022' }], ['rect', { x: '12.5', y: '1', width: '10.5', height: '10.5', fill: '#7FBA00' }],
+      ['rect', { x: '1', y: '12.5', width: '10.5', height: '10.5', fill: '#00A4EF' }], ['rect', { x: '12.5', y: '12.5', width: '10.5', height: '10.5', fill: '#FFB900' }]]); }
+  };
+  function startOAuth(p) {
+    track((MODE === 'signup' ? 'signup' : 'login') + '_oauth_' + p);
+    try { sessionStorage.setItem('unizy.oauth', JSON.stringify({ p: p, t: Date.now() })); } catch (e) {}
+    var back = location.origin + '/login' + (next !== '/dashboard' ? '?next=' + encodeURIComponent(next) : '');
+    // Microsoft needs the email scope to share the address; work/uni and personal accounts both work ("common" tenant)
+    location.href = CFG.supabaseUrl + '/auth/v1/authorize?provider=' + p + '&redirect_to=' + encodeURIComponent(back) + (p === 'azure' ? '&scopes=' + encodeURIComponent('email openid profile') : '');
+  }
+  // returns [buttons, "or" divider]; both stay hidden until a provider is known to be on
+  function oauthBlock() {
+    var list = [['google', 'Continue with Google'], ['azure', 'Continue with Microsoft']];
+    var btns = list.map(function (x) {
+      var b = el('button', { type: 'button', class: 'btn wide oauth-btn', 'data-p': x[0], hidden: true }, [ICONS[x[0]](), el('span', { text: x[1] })]);
+      b.addEventListener('click', function () { busy(b, true); startOAuth(x[0]); });
+      return b;
+    });
+    var wrap = el('div', { class: 'oauth', hidden: true }, btns);
+    var or = el('div', { class: 'or', 'aria-hidden': 'true', hidden: true }, [el('span', { text: 'or use your email' })]);
+    providers().then(function (ext) {
+      var any = false;
+      btns.forEach(function (b) { var on = !!ext[b.getAttribute('data-p')]; b.hidden = !on; if (on) any = true; });
+      wrap.hidden = or.hidden = !any;
+    });
+    return [wrap, or];
+  }
+  // back from Google / Microsoft: the session is in the URL hash
+  function finishOAuth(tok) {
+    var was = null; try { was = JSON.parse(sessionStorage.getItem('unizy.oauth') || 'null'); sessionStorage.removeItem('unizy.oauth'); } catch (e) {}
+    render([h1('Logging you in…')]);
+    fetch(CFG.supabaseUrl + '/auth/v1/user', { headers: headers(tok.access_token) }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (u) {
+      saveSession(Object.assign({}, tok, { user: u || null }));
+      if (was) track('oauth_done');
+      if (isNew(u)) { track('signup_verified'); countSource(); }
+      go();
+    });
+  }
 
   // ---------- "check your inbox" ----------
   function inbox(email, kind) {
@@ -181,7 +248,10 @@
       busy(submit, true, 'Checking…'); showMsg(box, '');
       api('verify', { type: purpose === 'reset' ? 'recovery' : 'magiclink', email: email, token: v }).catch(function (e1) { if (purpose === 'reset' || e1.status === 429) throw e1; return api('verify', { type: 'email', email: email, token: v }); }).then(function (b) {
         if (purpose === 'reset') { resetView({ access_token: b.access_token, refresh_token: b.refresh_token, expires_at: b.expires_at || Math.floor(Date.now() / 1000) + (b.expires_in || 3600) }); return; }
-        saveSession(b); busy(submit, true, purpose === 'verify' ? 'Email verified' : 'Logged in'); if (purpose === 'verify') track('signup_verified'); go();
+        saveSession(b); busy(submit, true, purpose === 'verify' ? 'Email verified' : 'Logged in');
+        // count real new accounts only (a code on the log-in page can create one too; an old account on the sign-up page isn't new)
+        if (isNew(b.user)) { track('signup_verified'); countSource(); }
+        go();
       }).catch(function (err) {
         busy(submit, false, purpose === 'reset' ? 'Continue' : purpose === 'verify' ? 'Verify my email' : 'Log in');
         showMsg(box, err.status === 429 ? friendly(err) : 'That code didn’t work. Check it, or send a new one. Codes work once and expire after an hour.');
@@ -201,7 +271,7 @@
       el('p', { class: 'sub' }, ['We’ve emailed a ' + n + '-digit code to ', el('strong', { text: email }), purpose === 'reset' ? '. Enter it here to choose a new password.' : purpose === 'verify' ? '. Enter it here to verify your email and finish creating your account.' : '. Enter it here to log in.']),
       form,
       el('p', { class: 'hint', text: 'Can’t see it? Check Junk, Spam or Other. The email comes from noreply@unizy.uk. On a uni email, it can sometimes take a few minutes.' }),
-      el('div', { class: 'actions' }, [resend, el('a', { class: 'btn ghost', href: link('/login'), text: 'Use a different email' })])
+      el('div', { class: 'actions' }, [resend, el('a', { class: 'btn ghost', href: link(purpose === 'verify' ? '/signup' : '/login'), text: 'Use a different email' })])
     ]);
   }
 
@@ -256,7 +326,8 @@
             .catch(function (e2) { busy(magic, false, 'Email me a code instead'); showMsg(box, friendly(e2)); });
         });
     });
-    render([h1('Welcome back', 'Log in to pick up where you left off.'), form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
+    var oa = oauthBlock();
+    render([h1('Welcome back', 'Log in to pick up where you left off.'), oa[0], oa[1], form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
       el('p', { class: 'switch' }, ['New to Unizy? ', el('a', { href: link('/signup'), text: 'Create an account' })]), legal()]);
   }
 
@@ -283,60 +354,34 @@
     render([h1('Reset your password', 'Enter the email you use for Unizy and we’ll send you a code to choose a new password.'), form, el('p', { class: 'switch' }, [back])]);
   }
 
-  // ---------- sign up ----------
-  function strength(p) {
-    var s = 0; if (p.length >= 8) s++; if (p.length >= 12) s++; if (/[A-Z]/.test(p) && /[a-z]/.test(p)) s++; if (/\d/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
-    if (p.length < 8) return { n: 1, t: 'Too short: use at least 8 characters' };
-    return s <= 2 ? { n: 2, t: 'Okay: a longer password is safer' } : s === 3 ? { n: 3, t: 'Good' } : { n: 4, t: 'Strong' };
-  }
+  // ---------- sign up: one tap with Google / Microsoft, or just an email and a 6-digit code (no password, no name) ----------
+  // login-code makes the account if it's new and emails a code; typing the code verifies the email and logs in.
+  // A password can be added later (Forgot password? on the log-in page). If the email already has an account, the
+  // same code simply logs them in, so there's no "account exists" dead end.
   function signupView() {
     var box = msgBox();
-    var name = field({ name: 'name', label: 'First name', autocomplete: 'given-name', placeholder: 'e.g. Sam' });
-    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'Any email works, personal or uni.' });
-    var pw = field({ name: 'password', type: 'password', label: 'Password', autocomplete: 'new-password', required: true, minlength: 8 });
-    var meter = el('div', { class: 'meter', 'aria-hidden': 'true' }, [el('i'), el('i'), el('i'), el('i')]);
-    var meterText = el('p', { class: 'hint', id: 'f-password-hint', text: 'At least 8 characters.' });
-    pw.input.setAttribute('aria-describedby', 'f-password-hint');
-    pw.node.appendChild(meter); pw.node.appendChild(meterText);
-    pw.input.addEventListener('input', function () {
-      var v = pw.input.value, st = v ? strength(v) : null;
-      meter.setAttribute('data-n', st ? st.n : 0); meterText.textContent = st ? st.t : 'At least 8 characters.';
-    });
-    var submit = el('button', { type: 'submit', class: 'btn primary wide', text: 'Create account' });
-    var form = el('form', { novalidate: true, method: 'post', action: '#' }, [name.node, email.node, pw.node, box, submit]);
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var nm = name.input.value.trim().slice(0, 60), em = email.input.value.trim(), p = pw.input.value;
+    var email = field({ name: 'email', type: 'email', label: 'Email', autocomplete: 'email', placeholder: 'Personal or uni email', required: true, value: params.get('email') || '', inputmode: 'email', hint: 'No password needed. We’ll email you a 6-digit code.' });
+    var submit = el('button', { type: 'submit', class: 'btn primary wide', text: 'Email me a code' });
+    var form = el('form', { novalidate: true, method: 'post', action: '#' }, [email.node, box, submit]);
+    function send() {
+      var em = email.input.value.trim();
       if (!EMAIL_RE.test(em)) { showMsg(box, 'Enter a valid email address.'); email.input.focus(); return; }
-      if (p.length < 8) { showMsg(box, 'Your password needs at least 8 characters.'); pw.input.focus(); return; }
-      if (p.toLowerCase() === em.toLowerCase() || /^(password|12345678|qwerty)/i.test(p)) { showMsg(box, 'Choose a password that’s harder to guess.'); pw.input.focus(); return; }
-      busy(submit, true, 'Creating your account…'); showMsg(box, '');
+      busy(submit, true, 'Sending your code…'); showMsg(box, '');
       track('signup_submit');
-      // create the account (unverified), email a 6-digit code, then verify it here
-      fetch(CFG.supabaseUrl + '/functions/v1/signup', { method: 'POST', headers: headers(CFG.anonKey), body: JSON.stringify({ email: em, password: p, name: nm }) })
-        .then(function (r) {
-          return r.json().catch(function () { return {}; }).then(function (b) {
-            if (r.ok) return b;
-            var e = new Error(''); e.status = r.status;
-            e.code = b.error === 'exists' ? 'user_already_exists' : b.error === 'rate_limited' ? 'over_request_rate_limit' : b.error === 'weak_password' ? 'weak_password' : b.error === 'invalid_email' ? 'validation_failed' : '';
-            throw e;
-          });
-        }, function () { var e = new Error('offline'); e.code = 'offline'; throw e; })
-        .then(function (b) {
-          // where this new student first came from (set by the home page from ?ref= / the referrer), as an anonymous daily total
-          try { var sr = JSON.parse(localStorage.getItem('unizy-src') || 'null'); if (sr && sr.s && Date.now() - sr.at < 30 * 864e5) track('join_' + sr.s); } catch (x) { /* ignore */ }
-          return b;
-        })
-        .then(function (b) { codeView(em, 'verify', (b && b.digits) || 6); })
+      sendCode(em, 'verify').then(function (r) { codeView(em, 'verify', r.digits); })
         .catch(function (err) {
-          busy(submit, false, 'Create account');
-          var f = friendly(err);
-          if (f === 'exists') showMsg(box, el('span', {}, ['There’s already an account with that email. ', el('a', { href: '/login?email=' + encodeURIComponent(em) + (params.get('next') ? '&next=' + encodeURIComponent(next) : ''), text: 'Log in instead' }), '.']));
-          else showMsg(box, f === 'confirm' ? 'Your account was created. Log in to continue.' : f);
+          if (/^(invalid_email|too_soon|rate_limited)$/.test(err.code)) { busy(submit, false, 'Email me a code'); showMsg(box, friendly(err)); return; }
+          // backup route: Supabase's own sign-in link email
+          api('otp?redirect_to=' + encodeURIComponent(confirmUrl(getPair(true))), { email: em, create_user: true }).then(function () { inbox(em, 'link'); })
+            .catch(function (e2) { busy(submit, false, 'Email me a code'); showMsg(box, friendly(e2)); });
         });
-    });
-    render([h1('Create your account', 'Free for UCL students. Get your answers marked, ask your tutor and track every marked answer.'), form,
+    }
+    form.addEventListener('submit', function (e) { e.preventDefault(); send(); });
+    var oa = oauthBlock();
+    render([h1('Create your free account', 'Get your answers marked against your department’s own criteria. Free, no card needed.'), oa[0], oa[1], form,
       el('p', { class: 'switch' }, ['Already have an account? ', el('a', { href: link('/login'), text: 'Log in' })]), legal()]);
+    // arriving from "Save this mark? Enter your email" (?email=…&send=1): send the code straight away
+    if (params.get('send') === '1' && EMAIL_RE.test(email.input.value.trim())) send();
   }
 
   // ---------- choose a new password (from the reset email) ----------
@@ -396,10 +441,19 @@
     else forgotView(params.get('email') || '');
     return;
   }
-  if (hash.get('access_token')) { saveSession({ access_token: hash.get('access_token'), refresh_token: hash.get('refresh_token'), expires_in: +hash.get('expires_in') || 3600 }); go(); return; }
+  if (hash.get('access_token')) { finishOAuth({ access_token: hash.get('access_token'), refresh_token: hash.get('refresh_token'), expires_in: +hash.get('expires_in') || 3600 }); return; }
   var s = getSession();
   if (s && s.access_token && s.refresh_token) { signedIn(s); return; }
   track(MODE === 'signup' ? 'signup_view' : 'login_view');
   if (MODE === 'signup') signupView(); else loginView();
-  if (hash.get('error_description')) showMsg(root.querySelector('.msg'), 'That link has expired or was already used. Log in, or ask for a new link.');
+  // errors come back in the hash (links) or the query string (Google / Microsoft)
+  var oerr = hash.get('error_description') || params.get('error_description') || params.get('error');
+  if (oerr) {
+    var fromOAuth = false; try { fromOAuth = !!sessionStorage.getItem('unizy.oauth'); sessionStorage.removeItem('unizy.oauth'); } catch (e) {}
+    if (params.get('error')) history.replaceState(null, '', location.pathname + (next !== '/dashboard' ? '?next=' + encodeURIComponent(next) : ''));
+    if (fromOAuth) track('oauth_fail');
+    showMsg(root.querySelector('.msg'), fromOAuth
+      ? (/admin|consent|approv/i.test(oerr) ? 'Your university’s Microsoft account needs an admin to approve Unizy first. Use your email below instead, or continue with Google.' : 'That sign-in didn’t finish. Try again, or use your email below.')
+      : 'That link has expired or was already used. Log in, or ask for a new link.');
+  }
 })();

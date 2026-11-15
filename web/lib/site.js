@@ -9,6 +9,7 @@ const EV_MAP = {
   lp_view: 'home_view',
   lp_hero_signup: 'cta_explore_hero', lp_final_signup: 'cta_explore_final', intro_signup: 'cta_explore_demo',
   lp_nav_signup: 'nav_signup', lp_price_free: 'cta_signup_final', lp_price_pro: 'cta_signup_demo',
+  lp_hero_try: 'cta_try_hero',
 };
 export function track(ev) {
   ev = EV_MAP[ev] || ev;

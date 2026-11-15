@@ -130,8 +130,8 @@ export default function Hero() {
             className="mt-9 flex flex-wrap items-center gap-3"
           >
             <Magnetic>
-              <a href="/signup" onClick={() => track('lp_hero_signup')} className="btn btn-glow px-7 py-4 text-[16.5px]">
-                Get my first answer marked, free
+              <a href="/try" onClick={() => track('lp_hero_try')} className="btn btn-glow px-7 py-4 text-[16.5px]">
+                Mark one answer free
                 <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current stroke-2"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             </Magnetic>
@@ -146,7 +146,7 @@ export default function Hero() {
             variants={{ s: { transition: { staggerChildren: 0.08, delayChildren: 1.05 } } }}
             className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px] text-dim"
           >
-            {['All 6,682 UCL modules', 'Free 3-day trial', 'No card needed'].map((t) => (
+            {['No sign-up to try', 'All 6,682 UCL modules', 'No card needed'].map((t) => (
               <motion.li key={t} variants={{ h: { opacity: 0, y: 8 }, s: { opacity: 1, y: 0 } }} className="flex items-center gap-2">
                 <span className="size-1.5 rounded-full bg-cyan shadow-[0_0_10px_#B8862F]" />
                 {t}

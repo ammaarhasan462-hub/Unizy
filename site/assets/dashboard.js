@@ -394,9 +394,18 @@
   }
   var POPULAR = { ucl: ['Economics BSc (Econ)', 'Law LLB', 'Medicine MBBS BSc', 'History BA', 'Psychology BSc', 'Computer Science BSc', 'Linguistics BA', 'Philosophy, Politics and Economics BSc', 'English BA', 'Politics and International Relations BSc'] };
   function lsUni() { var u = lsGet('unizy:uni'); return UNI_ORDER.indexOf(u) >= 0 ? u : null; }
+  // a uni email tells us the university (student.ucl.ac.uk, live.ucl.ac.uk … match too)
+  var EMAIL_UNI = [[/(^|\.)ucl\.ac\.uk$/, 'ucl'], [/(^|\.)(imperial|ic)\.ac\.uk$/, 'imperial'], [/(^|\.)qmul\.ac\.uk$/, 'qmul'], [/(^|\.)lse\.ac\.uk$/, 'lse'], [/(^|\.)kcl\.ac\.uk$/, 'kcl']];
+  function emailUni() {
+    var s = getSession(), dom = String((s && s.user && s.user.email) || '').toLowerCase().split('@')[1] || '';
+    for (var i = 0; i < EMAIL_UNI.length; i++) if (EMAIL_UNI[i][0].test(dom)) return EMAIL_UNI[i][1];
+    return null;
+  }
   function startSetup(editing) {
     var p = S.profile || {};
-    S.setup = { step: 1, uni: p.uni || lsUni(), course: null, cq: '', name: '', subjects: [], subq: '', subres: null, year: null, picks: {}, sugg: null, q: '', results: [], editing: !!editing, current: {} };
+    var guess = !p.uni && !lsUni() ? emailUni() : null;
+    if (guess) track('setup_uni_guess');
+    S.setup = { step: 1, uni: p.uni || lsUni() || guess, guessed: !!guess, course: null, cq: '', name: '', subjects: [], subq: '', subres: null, year: null, picks: {}, sugg: null, q: '', results: [], editing: !!editing, current: {} };
     if (editing) {
       S.mods.forEach(function (m) { S.setup.picks[m.code] = m; S.setup.current[m.code] = true; });
       S.setup.year = p.year || null;
@@ -429,12 +438,13 @@
     var st = S.setup || startSetup(false) || S.setup;
     var U0 = UNIS[st.uni] || null;
     var cancel = st.editing ? '<button type="button" class="btn line" data-setup="cancel">Cancel</button>' : '';
-    var box = $('db-setup'), html = '<div class="db-setup-in"><p class="db-steps"><span' + (st.step === 1 ? ' class="on"' : '') + '>1. Course</span><span' + (st.step === 2 ? ' class="on"' : '') + '>2. Year</span><span' + (st.step === 3 ? ' class="on"' : '') + '>3. Modules</span></p>';
+    var box = $('db-setup'), html = '<div class="db-setup-in"><p class="db-steps"><span' + (st.step === 1 ? ' class="on"' : '') + '>1. Course and year</span><span' + (st.step === 3 ? ' class="on"' : '') + '>2. Modules</span></p>';
     if (st.step === 1) {
-      html += '<h1>' + (st.editing ? 'Change your course' : (firstName() ? 'Welcome, ' + esc(firstName()) + '. ' : '') + 'Where do you study?') + '</h1>';
-      if (st.editing) html += '<p class="lead">Pick a different university or course. You choose which modules to keep on the last step.</p>';
-      html += '<div class="db-unis">' + UNI_ORDER.map(function (u) { return '<button type="button" class="db-course db-uni-' + u + (st.uni === u ? ' on' : '') + '" data-uni="' + u + '"><b>' + esc(UNIS[u].short) + '</b><small>' + esc(UNIS[u].name) + '</small></button>'; }).join('') +
-        '<button type="button" class="db-course soon" disabled><b>King’s</b><small>King’s College London · coming soon</small></button></div>';
+      var changing = st.editing && S.profile && S.profile.course;
+      html += '<h1>' + (changing ? 'Change your course' : (firstName() ? 'Welcome, ' + esc(firstName()) + '. ' : '') + 'Where do you study?') + '</h1>';
+      if (changing) html += '<p class="lead">Pick a different university or course. You choose which modules to keep on the last step.</p>';
+      else if (st.guessed && U0) html += '<p class="lead">We’ve picked ' + esc(U0.short) + ' from your email. Tap another university if that’s wrong.</p>';
+      html += '<div class="db-unis">' + UNI_ORDER.map(function (u) { return '<button type="button" class="db-course db-uni-' + u + (st.uni === u ? ' on' : '') + '" data-uni="' + u + '"><b>' + esc(UNIS[u].short) + '</b><small>' + esc(UNIS[u].name) + '</small></button>'; }).join('') + '</div>';
       if (U0) {
         var all = S.coursesBy[st.uni], list = courseMatches(st);
         html += '<h2 class="db-sub">What do you study at ' + esc(U0.short) + '?</h2>';
@@ -454,12 +464,15 @@
             '<button type="button" class="mk-clear" data-setup="unpick">← Back to the course list</button></div>';
         }
       } else html += '<p class="lead">Pick your university to see its courses.</p>';
-      html += '<div class="db-setup-act">' + cancel + '<button type="button" class="btn primary" data-setup="next1"' + (st.course && (st.course !== 'other' || (st.name.trim() && st.subjects.length)) ? '' : ' disabled') + '>Continue</button></div>';
-    } else if (st.step === 2) {
-      var years = st.course && st.course !== 'other' ? st.course.y : /medic|mbbs/i.test(st.name) ? 6 : 4;
-      html += '<h1>Which year are you in?</h1><p class="lead">' + esc(st.course === 'other' ? st.name : st.course.n) + '</p><div class="db-years">';
-      for (var y = 1; y <= Math.max(1, years); y++) html += '<button type="button" class="db-course' + (st.year === y ? ' on' : '') + '" data-year="' + y + '">Year ' + y + '</button>';
-      html += '</div><div class="db-setup-act">' + cancel + '<button type="button" class="btn line" data-setup="back">Back</button><button type="button" class="btn primary" data-setup="next2"' + (st.year ? '' : ' disabled') + '>Continue</button></div>';
+      var courseOk = st.course && (st.course !== 'other' || (st.name.trim() && st.subjects.length));
+      if (courseOk) {
+        var years = st.course !== 'other' ? st.course.y : /medic|mbbs/i.test(st.name) ? 6 : 4;
+        html += '<h2 class="db-sub">Which year are you in?</h2><div class="db-years">';
+        for (var y = 1; y <= Math.max(1, years); y++) html += '<button type="button" class="db-course' + (st.year === y ? ' on' : '') + '" data-year="' + y + '">Year ' + y + '</button>';
+        html += '</div>';
+      }
+      var skip = st.editing ? '' : '<button type="button" class="btn line" data-setup="skip">Skip for now</button>';
+      html += '<div class="db-setup-act">' + cancel + skip + '<button type="button" class="btn primary" data-setup="next1"' + (courseOk && st.year ? '' : ' disabled') + '>Continue</button></div>';
     } else {
       html += '<h1>Pick your modules</h1><p class="lead">These sit in your sidebar so you can practise them in one click. ' + (st.sugg && st.sugg.some(function (m) { return m.compulsory; }) ? 'Compulsory modules are ticked for you.' : 'Tick the ones you take this year.') + '</p>';
       if (st.sugg === null) html += '<p class="mk-hint">Finding your modules…</p>';
@@ -552,6 +565,15 @@
       renderSetup();
     }).catch(function () { st.sugg = []; renderSetup(); });
   }
+  // "Skip for now": save just the university so the dashboard opens; Home then offers "Add your course"
+  function skipSetup() {
+    var st = S.setup, body = { user_id: uid(), uni: st.uni || 'ucl', updated_at: new Date().toISOString() };
+    var btn = document.querySelector('[data-setup="skip"]'); if (btn) { btn.disabled = true; btn.textContent = 'Opening…'; }
+    rest('study_profile', { method: 'POST', prefer: 'resolution=merge-duplicates,return=minimal', body: body }).then(function () {
+      S.profile = { uni: body.uni, course: null, course_id: null, department: null, year: null }; S.setup = null; S.today = null; lsSet('unizy:uni', body.uni);
+      track('setup_skip'); $('db').classList.remove('setup'); nav('/dashboard');
+    }).catch(function (e) { var er = $('db-serr'); if (er) { er.hidden = false; er.textContent = e.message; } if (btn) { btn.disabled = false; btn.textContent = 'Skip for now'; } });
+  }
   function finishSetup() {
     var st = S.setup, c = st.course;
     var picks = Object.keys(st.picks).filter(function (k) { return st.picks[k]; }).map(function (k) { return st.picks[k]; });
@@ -599,9 +621,9 @@
       if (m && (!m.uni || m.uni === st.uni)) st.picks[c] = m; st.q = ''; st.results = []; renderSetup();
     } else {
       var a = b.getAttribute('data-setup');
-      if (a === 'next1') { st.step = 2; renderSetup(); }
-      else if (a === 'next2') { st.step = 3; suggest(); }
-      else if (a === 'back') { st.step = Math.max(1, st.step - 1); renderSetup(); }
+      if (a === 'next1') { st.step = 3; suggest(); window.scrollTo(0, 0); }
+      else if (a === 'back') { st.step = 1; renderSetup(); }
+      else if (a === 'skip') skipSetup();
       else if (a === 'unpick') { st.course = null; renderSetup(); var cq = $('db-cq'); if (cq) cq.focus(); }
       else if (a === 'cancel') { S.setup = null; $('db').classList.remove('setup'); nav('/dashboard/account'); }
       else if (a === 'finish') finishSetup();
@@ -756,6 +778,7 @@
       if (tabOf(location.pathname) !== 'home') return;
       var a = S.attempts || [], st = stats(a), p = S.profile || {};
       var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', p.uni && p.uni !== 'ucl' ? UN(p.uni).short : ''].filter(Boolean).join(' · ') || UN().short) + '</p></header>';
+      if (!p.course && !S.mods.length) html += '<div class="mk-guestcta db-addcourse"><div><b>Add your course</b><p>Pick your course and year and we’ll add your modules, so practice questions and your tutor match what you study.</p></div><button type="button" class="btn primary" id="db-addcourse">Add my course</button></div>';
       var exams = S.mods.filter(function (m) { var d = ST.daysUntil(m.exam_date); return d != null && d >= 0; }).sort(function (x, y) { return ST.daysUntil(x.exam_date) - ST.daysUntil(y.exam_date); });
       if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
       else if (S.mods.length) html += '<p class="db-more" style="margin:0 0 14px">Add your exam dates on each module’s page for a countdown here.</p>';
@@ -773,6 +796,7 @@
       var b = e.target.closest('button'); if (!b) return;
       if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
       if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
+      if (b.id === 'db-addcourse') { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); }
     };
     refreshStudy();
   }
