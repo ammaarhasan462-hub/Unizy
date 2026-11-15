@@ -22,7 +22,7 @@
   function uniId() { return state.mod && state.mod.uni ? state.mod.uni : HOOKS && HOOKS.uni ? HOOKS.uni() : 'ucl'; }
   function U() { return UNIS[uniId()] || UNIS.ucl; }
   // public search: the university picked on the homepage (or in its tabs here); '' searches all of them
-  var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579 };
+  var PUB_N = { ucl: 6682, imperial: 1180, qmul: 2194, lse: 579, kcl: 1082 };
   var pubUni = (function () { try { var u = localStorage.getItem('unizy:uni'); return UNIS[u] ? u : ''; } catch (e) { return ''; } })();
   function listUni() { return HOOKS && HOOKS.uni ? HOOKS.uni() : pubUni; }
   var uniOpen = false;

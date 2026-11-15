@@ -53,11 +53,11 @@ export const UNIS = {
   kcl: {
     short: 'King’s', name: 'King’s College London', poss: 'King’s', bands: 'King’s grade bands', tutor: 'Professor King’s',
     src: 'from King’s module pages', depts: 'departments and schools', unit: 'departments', modWord: 'modules',
-    stats: { modules: @@N@@, departments: @@D@@, rubrics: 0 },
-    course: @@COURSE@@,
-    book: @@BOOK@@,
-    tags: @@TAGS@@,
-    mods: @@MODS@@,
+    stats: { modules: 1082, departments: 33, rubrics: 0 },
+    course: ['Computer Science BSc · Year 1', [['4CCS1PPA', 'Programming Practice and Applications', 1], ['4CCS1DST', 'Data Structures', 1], ['4CCS1ELA', 'Elementary Logic with Applications', 1], ['4CCS1DBS', 'Database Systems', 0]]],
+    book: ['4CCS1DST', 'Data Structures'],
+    tags: ['4CCS1PPA', '4FFLK904', '4SSW1001'],
+    mods: [['4CCS1PPA', 'Programming Practice and Applications'], ['4FFLK904', 'Public Law'], ['4SSW1001', 'The Causes and Consequences of War'], ['4CCM111A', 'Calculus I'], ['4CCS1DST', 'Data Structures'], ['4FFLK902', 'Elements of the Law of Contract'], ['4SSHM00A', 'Introduction to Global Health'], ['4CCM141A', 'Probability and Statistics I'], ['4CCS1ELA', 'Elementary Logic with Applications'], ['4CCM113A', 'Linear Algebra and Geometry I']],
     pat: ['#F7B4AE', '#141C2A'],
   },
 };

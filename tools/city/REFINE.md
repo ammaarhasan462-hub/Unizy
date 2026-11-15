@@ -13,7 +13,8 @@ How the data flows:
 1. `.github/workflows/fetch-city-pbf.yml` downloads the extract and writes `tools/city/raw/*.geojsonseq.gz`.
 2. `.github/workflows/fetch-city-lidar.yml` runs `tools/city/lidar_heights.py` (needs numpy, tifffile, imagecodecs and pyproj, so CI only). It downloads the 5 km LiDAR tiles over each site from the survey download API, takes the last-return DSM minus the DTM, and writes the median height above ground under every footprint to `tools/city/raw/<site>.lidar.json.gz`. It runs monthly, the day after the extract.
 3. `tools/city/bake_city.py` turns those into `site/assets/city/<site>.json` and `site/assets/city/tex/`.
-4. `web/components/intro/city.js` builds the geometry. It is called from `london.js` (UCL) and `southken.js` (Imperial).
+4. `web/components/intro/city.js` builds the geometry. It is called from `london.js` (UCL), `southken.js` (Imperial) and `cityworld.js` (Queen Mary, LSE and King's).
+   - King's (`kcl`, the Strand) has no extract of its own: `bake_city.py` reads LSE's raw files for it (`raw` in `SITES`), centred on the King's Building. Its hand-built campus is `kcl.js`: the King's Building's river front and the Great Hall.
 5. If the data fails to load, the hand-built city is used instead.
 
 The workflow runs monthly, so newly mapped buildings arrive on their own.
@@ -24,7 +25,7 @@ The workflow runs monthly, so newly mapped buildings arrive on their own.
 2. Branch from main.
 3. Implement the changes, then rebake if needed with `python3 tools/city/bake_city.py`.
 4. Render the before frames first, from a copy of `site/` and `render_intro.py`, because pulling a new build replaces `site/`.
-5. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial`, `UNI=lse` and `UNI=qmul`, each on desktop and mobile (needs Playwright and Chrome; frames go to `/tmp/shots`).
+5. Push the branch and wait for the "Build landing page" commit. Pull it, then render with `python3 tools/city/render_intro.py desktop 0.25,0.36,0.47,0.56` for UCL, and again with `UNI=imperial`, `UNI=lse`, `UNI=qmul` and `UNI=kcl`, each on desktop and mobile (needs Playwright and Chrome; frames go to `/tmp/shots`).
 6. Read the lag numbers that `render_intro.py` prints for each run:
    - `engine up` time;
    - shader programs and vertices;
@@ -37,7 +38,7 @@ The workflow runs monthly, so newly mapped buildings arrive on their own.
    - lag is lower, or at worst level within noise. No university or device may be clearly worse on engine up, ms per frame, draw calls or triangles. If a realism change adds lag, win it back the same night, for example with a cheaper far-distance path, a distance cut-off or fewer draw calls;
    - `engine up` within about 60 seconds under swiftshader;
    - the mobile render still works;
-   - UCL, Imperial, LSE and Queen Mary all still look right.
+   - UCL, Imperial, LSE, Queen Mary and King's all still look right.
 9. Tick the items. Add a line to the log at the bottom with the before → after lag numbers for each university, and save the 4-frame sheet to `tools/city/renders/<date>.jpg`.
 
 Keep to these limits:
