@@ -1,5 +1,5 @@
-status: success
-sha: cfe3c2cd9689b8f8647e492fdead4d81a6489c1a
+status: failure
+sha: 9fd3ea24db01031b283de4225df27c194ace349a
 --- build
 
 > unizy-landing@1.0.0 build
@@ -9,31 +9,49 @@ sha: cfe3c2cd9689b8f8647e492fdead4d81a6489c1a
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 10.6s
-   Skipping linting
-   Checking validity of types ...
-   Collecting page data ...
-   Generating static pages (0/4) ...
-   Generating static pages (1/4) 
-   Generating static pages (2/4) 
-   Generating static pages (3/4) 
- ✓ Generating static pages (4/4)
-   Finalizing page optimization ...
-   Collecting build traces ...
-   Exporting (0/2) ...
- ✓ Exporting (2/2)
+Failed to compile.
 
-Route (app)                                 Size  First Load JS
-┌ ○ /                                     114 kB         217 kB
-└ ○ /_not-found                            994 B         104 kB
-+ First Load JS shared by all             103 kB
-  ├ chunks/255-15b9cc804e0d9c7d.js       46.7 kB
-  ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
-  └ other shared chunks (total)          2.11 kB
+./components/story/unis.js
+Error:   [31mx[0m Expression expected
+    ,-[[36;1;4m/home/runner/work/Unizy/Unizy/web/components/story/unis.js[0m:56:1]
+ [2m53[0m |   kcl: {
+ [2m54[0m |     short: 'King’s', name: 'King’s College London', poss: 'King’s', bands: 'King’s grade bands', tutor: 'Professor King’s',
+ [2m55[0m |     src: 'from King’s module pages', depts: 'departments and schools', unit: 'departments', modWord: 'modules',
+ [2m56[0m |     stats: { modules: @@N@@, departments: @@D@@, rubrics: 0 },
+    : [35;1m                      ^[0m
+ [2m57[0m |     course: @@COURSE@@,
+ [2m58[0m |     book: @@BOOK@@,
+ [2m59[0m |     tags: @@TAGS@@,
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/story/unis.js
+./components/Intro.jsx
+
+./app/layout.jsx
+Error:   [31mx[0m Expected ',', got 's'
+    ,-[[36;1;4m/home/runner/work/Unizy/Unizy/web/app/layout.jsx[0m:15:1]
+ [2m12[0m |   title: TITLE,
+ [2m13[0m |   description: DESC,
+ [2m14[0m |   alternates: { canonical: '/' },
+ [2m15[0m |   openGraph: { title: TITLE, description: 'Exam practice and marking for UCL, Imperial, Queen Mary, LSE and King's modules. Your first answer marked free, no sign-up.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png?v=4'] },
+    : [35;1m                                                                                                                 ^[0m
+ [2m16[0m |   twitter: { card: 'summary_large_image' },
+ [2m17[0m |   icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }] },
+ [2m18[0m | };
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./app/layout.jsx
 
 
-○  (Static)  prerendered as static content
-
+> Build failed because of webpack errors
 unizy-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 ├── @emnapi/runtime@1.11.3 extraneous
 ├── @img/sharp-wasm32@0.35.5 extraneous
@@ -52,4 +70,4 @@ unizy-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 11s
+added 116 packages in 10s
