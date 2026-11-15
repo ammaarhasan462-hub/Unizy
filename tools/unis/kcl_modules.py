@@ -1,7 +1,8 @@
 """King's College London modules from KCL's public module pages (the study-abroad module options, one page per module:
 code, level, semester, credit value, department and description). Runs in GitHub Actions (fetch-kcl-modules.yml):
   python3 tools/unis/kcl_modules.py   -> tools/unis/out/kcl-modules.json and kcl.log
-Discovery: robots.txt -> sitemaps -> every /abroad/module-options/<slug> page."""
+Reads every page of the study-abroad module search (one card per module: code, level, semester, credit value,
+faculty and department, assessment), then each module's own page for its description."""
 import gzip, html, json, os, re, sys, time, urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
@@ -98,27 +99,69 @@ def parse(url):
     return {'code': code, 'title': title, 'level': lev, 'credits': cr, 'term': sem or None, 'summary': desc[:1500] or None,
             'assessment': assess[:600] or None, 'outcomes': outc[:900] or None, 'depts': deps, 'url': url}
 
+def cards(h):
+    """the modules on one page of the study-abroad module search: one card each"""
+    out = []
+    for c in h.split('<div class="card">')[1:]:
+        t = re.search(r'title="Expand to see more details about ([^"]+)"', c)
+        kv = dict((k.strip().rstrip(':').lower(), html.unescape(re.sub(r'<[^>]+>', '', v)).strip())
+                  for k, v in re.findall(r'(?is)<h4>([^<]+)</h4>\s*<p>(.*?)</p>', c))
+        code = kv.get('module code', '').upper()
+        if not t or not re.match(r'^[0-9][A-Z0-9]{5,9}$', code):
+            continue
+        deps = [(html.unescape(ti), html.unescape(re.sub(r'<[^>]+>', '', tx)).strip()) for ti, tx in re.findall(r'(?is)<a href="[^"]*" title="([^"]+)">(.*?)</a>', c.split('Department:')[1].split('</ul>')[0])] if 'Department:' in c else []
+        fac = next((x for ti, x in deps if ti.startswith('Faculty of')), None)
+        dep = next((x for ti, x in deps if ti.startswith('Department of')), None) or next((x for ti, x in deps if not ti.startswith('Faculty of')), None) or fac
+        ass = re.search(r'(?is)<h4>Assessment</h4>\s*<div>(.*?)</div>', c)
+        link = re.search(r'href="(/abroad/module-options/[a-z0-9-]+)"[^>]*>Module details', c)
+        lev = re.search(r'\d', kv.get('level', ''))
+        cr = re.search(r'\d+(\.\d+)?', kv.get('credit value', ''))
+        out.append({'code': code, 'title': html.unescape(t.group(1)).strip(), 'level': int(lev.group()) if lev else None,
+                    'credits': float(cr.group()) if cr else None, 'term': kv.get('semester') or None, 'faculty': fac, 'department': dep,
+                    'assessment': re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', ass.group(1)))).strip()[:600] if ass else None,
+                    'url': 'https://www.kcl.ac.uk' + link.group(1) if link else None})
+    return out
+
+
+def describe(m):
+    """the module's own page: its description"""
+    if not m.get('url'):
+        return m
+    h = get(m['url'])
+    if not h:
+        return m
+    L = text_lines(h)
+    for k in ('module description', 'description', 'module overview', 'overview'):
+        d = ' '.join(section(L, k))
+        if len(d) > 60:
+            m['summary'] = d[:1500]
+            break
+    o = ' '.join(section(L, 'learning outcomes'))
+    if o:
+        m['outcomes'] = o[:900]
+    return m
+
+
 if __name__ == '__main__':
-    urls = sitemaps()
-    pats = {}
-    for u in urls:
-        m = re.match(r'https?://[^/]+/([^/?#]+(?:/[^/?#]+)?)', u)
-        if m and 'module' in u.lower(): pats[m.group(1)] = pats.get(m.group(1), 0) + 1
-    log('url prefixes containing "module":', sorted(pats.items(), key=lambda x: -x[1])[:40])
-    mods = sorted({u.split('?')[0].rstrip('/') for u in urls if re.search(r'/abroad/module-options/[^/]+$', u.split('?')[0].rstrip('/'))
-                   and not re.search(r'/(search|index\.aspx)$', u.split('?')[0].rstrip('/'))})
-    lim = int(os.environ.get('LIMIT', '0') or 0)
-    if lim: mods = mods[:lim]
-    log('module pages', len(mods), mods[:5])
-    with ThreadPoolExecutor(6) as ex: res = list(ex.map(parse, mods))
-    ok = [r for r in res if r and not r.get('bad')]
-    log('parsed', len(ok), 'nocode', sum(1 for r in res if r and r.get('bad')), 'failed', sum(1 for r in res if not r))
+    B = 'https://www.kcl.ac.uk/abroad/module-options/search.aspx'
+    first = get(B) or ''
+    last = max([int(x) for x in re.findall(r'search\.aspx\?page=(\d+)', first)] or [1])
+    log('search pages', last)
+    pages = [first] + list(ThreadPoolExecutor(4).map(lambda i: get(f'{B}?page={i}') or '', range(2, last + 1)))
+    mods = [m for h in pages for m in cards(h)]
+    log('cards', len(mods), 'empty pages', sum(1 for h in pages if not cards(h)))
     by = {}
-    for r in ok:
-        if r['code'] not in by or len(r.get('summary') or '') > len(by[r['code']].get('summary') or ''): by[r['code']] = r
-    out = sorted(by.values(), key=lambda r: r['code'])
+    for m in mods:
+        by.setdefault(m['code'], m)
+    mods = sorted(by.values(), key=lambda m: m['code'])
+    lim = int(os.environ.get('LIMIT', '0') or 0)
+    with ThreadPoolExecutor(6) as ex:
+        mods = list(ex.map(describe, mods[:lim] if lim else mods))
     from collections import Counter
-    log('unique codes', len(out), 'levels', Counter(r['level'] for r in out), 'credits', Counter(r['credits'] for r in out).most_common(6))
-    log('dept samples', Counter(' | '.join(r['depts']) for r in out).most_common(25))
-    for r in out[:3]: log(json.dumps(r)[:900])
-    json.dump(out, open(os.path.join(OUT, 'kcl-modules.json'), 'w'))
+    log('unique codes', len(mods), 'with description', sum(1 for m in mods if m.get('summary')))
+    log('levels', Counter(m['level'] for m in mods), 'credits', Counter(m['credits'] for m in mods).most_common(6))
+    log('faculties', Counter(m['faculty'] for m in mods).most_common(12))
+    log('departments', len(Counter(m['department'] for m in mods)), Counter(m['department'] for m in mods).most_common(60))
+    for m in mods[:3]:
+        log(json.dumps(m)[:900])
+    json.dump(mods, open(os.path.join(OUT, 'kcl-modules.json'), 'w'))
