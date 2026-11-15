@@ -24,7 +24,8 @@ export const STYLES = [
 ];
 const FAMS = ['brick', 'plaster', 'stone', 'concrete'];
 const FAR_TEX = 650; // metres: walls further off use their texture layer's average (see facade())
-const FAR_WALL = 720; // metres from a tile's centre: beyond it the tile draws with the far facade program and no roof detail
+const FAR_WALL = 720; // metres from a tile's centre: beyond it the tile's walls draw with the far facade program, no bay windows
+const FAR_ROOF = 470; // and beyond this its roofs draw without parapets, dormers, rooflights or terraces
 
 async function texIndex() {
   try {
@@ -1306,32 +1307,31 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const roofMat = roofMaterial(tex);
   const wallFar = facade(tex, true);
   const near = (k) => { const [x, z] = tileC(k); return Math.hypot(x, z) < CAST_R; };
-  // each tile is a THREE.LOD: near the camera the full facade program and every roof and bay detail; beyond FAR_WALL
-  // metres (from the tile's centre) the stripped facade program and the base triangles only, on the same vertices
+  // each tile is two THREE.LODs on the same vertices. Walls: the full facade program near the camera, the stripped one
+  // (and no bay windows) beyond FAR_WALL metres from the tile's centre. Roofs: every parapet, dormer, rooflight and terrace
+  // out to FAR_ROOF metres, where they are a pixel or two across; the base roofs beyond
   tiles.forEach((T1, k) => {
     const cast = near(k);
     const [tx, tz] = tileC(k);
-    const lod = new THREE.LOD();
-    lod.position.set(tx, 0, tz);
-    const nearG = new THREE.Group(), farG = new THREE.Group();
-    const add = (geo, matN, matF) => {
-      [[nearG, geo, matN], [farG, baseOnly(geo), matF]].forEach(([g, gg, mm]) => {
+    const add = (geo, matN, matF, at) => {
+      const lod = new THREE.LOD();
+      lod.position.set(tx, 0, tz);
+      [[geo, matN, 0], [baseOnly(geo), matF, at]].forEach(([gg, mm, d], i) => {
         const m = new THREE.Mesh(gg, mm);
         // the far copy shares the near mesh's vertices (render_intro.py counts them once)
-        if (g === farG) m.userData.lodCopy = true;
+        if (i) m.userData.lodCopy = true;
         m.position.set(-tx, 0, -tz);
         m.castShadow = cast; m.receiveShadow = true;
-        g.add(m);
+        lod.addLevel(m, d);
       });
+      group.add(lod);
     };
-    if (T1.walls.i.length) add(T1.walls.geo(true), wallMat, wallFar);
-    if (T1.roofs.i.length) add(T1.roofs.geo(false), roofMat, roofMat);
-    lod.addLevel(nearG, 0);
-    lod.addLevel(farG, FAR_WALL);
-    group.add(lod);
+    if (T1.walls.i.length) add(T1.walls.geo(true), wallMat, wallFar, FAR_WALL);
+    if (T1.roofs.i.length) add(T1.roofs.geo(false), roofMat, roofMat, FAR_ROOF);
   });
   // instanced pieces (trees, chimneys) are tiled the same way
-  // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile)
+  // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile);
+  // 'none': nothing drawn from there
   const inst = (geo, mat, list, cast = true, farGeo = null, farAt = 650) => {
     if (!list.length) return null;
     const by = new Map();
@@ -1353,7 +1353,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       const lod = new THREE.LOD();
       lod.position.set(tx, 0, tz);
       lod.addLevel(mk(geo, true), 0);
-      lod.addLevel(mk(farGeo, true), farAt);
+      lod.addLevel(farGeo === 'none' ? new THREE.Object3D() : mk(farGeo, true), farAt);
       group.add(lod);
     });
     return true;
@@ -1372,7 +1372,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   group.userData.dress = { bays: nBays, railVerts: rail.p.length / 3 };
   const bx = baseBox();
   // chimneys and rooftop plant are centred boxes rotated to the building
-  inst(bx, plainMaterial({ roughness: 0.92 }, 'city-chim'), chim);
+  // chimneys, plant and planters: a couple of pixels across beyond 850 m, so not drawn from there
+  inst(bx, plainMaterial({ roughness: 0.92 }, 'city-chim'), chim, true, 'none', 850);
 
   // ---------------------------------------------------------------- ground: the real street plan
   const S = mobile ? 2048 : 4096;

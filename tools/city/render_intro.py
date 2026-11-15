@@ -57,6 +57,17 @@ with sync_playwright() as p:
         pg.screenshot(path=S+name+f"-{int(fv*1000):04d}.png")
         ms, calls, tris = pg.evaluate(LAG)
         print("lag at %s: %.0f ms a frame, %d draw calls, %.2fM triangles" % (v, ms, calls, tris / 1e6), flush=True)
+    # optional close-ups from fixed cameras (CAMS="x,y,z,lx,ly,lz;..." in the intro's metres, lit as at CAMP, default 0.47)
+    for i, cam in enumerate([c for c in os.environ.get("CAMS", "").split(";") if c.strip()]):
+        x, y, z, lx, ly, lz = [float(v) for v in cam.split(",")]
+        pg.evaluate(f"window.__smgIntro.jump({float(os.environ.get('CAMP', '0.47'))})")
+        pg.evaluate("""([x, y, z, lx, ly, lz]) => { const r = window.__smgIntro.debug.renderer, o = r.render;
+          r.render = (s, c) => { if (c.isPerspectiveCamera && !c.__ov && !window.__camC) { window.__camC = c; const u = c.updateMatrixWorld.bind(c); c.__ov = true;
+            c.updateMatrixWorld = (f) => { const v = window.__camO; if (v && c === window.__camC) { c.position.set(v[0], v[1], v[2]); c.up.set(0, 1, 0); c.lookAt(v[3], v[4], v[5]); } u(f); }; }
+            o(s, c); };
+          window.__camO = [x, y, z, lx, ly, lz]; }""", [x, y, z, lx, ly, lz])
+        pg.wait_for_timeout(int(os.environ.get("WAITMS", "2600")) + 1500)
+        pg.screenshot(path=S + name + f"-cam{i}.png")
     # programs again at the end: textures and furniture load in the background, so the start-up count varies run to run
     print("lag programs at end %d" % pg.evaluate("window.__smgIntro.debug.renderer.info.programs.length"))
     print("classes", pg.evaluate("document.documentElement.className"))
