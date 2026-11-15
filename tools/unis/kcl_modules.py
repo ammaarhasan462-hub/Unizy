@@ -13,16 +13,23 @@ def log(*a):
     s = ' '.join(str(x) for x in a); print(s, flush=True); LOG.write(s + '\n'); LOG.flush()
 UA = {'User-Agent': 'Mozilla/5.0 (compatible; unizy-module-index/1.0; +https://unizy.uk)'}
 
-def get(url, tries=3):
+DELAY = float(os.environ.get('DELAY', '1.6'))  # seconds between requests: the site rate-limits (429) anything faster
+_last = [0.0]
+def get(url, tries=7):
     for i in range(tries):
+        wait = _last[0] + DELAY - time.time()
+        if wait > 0: time.sleep(wait)
+        _last[0] = time.time()
         try:
             with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=40) as r:
                 b = r.read()
                 if url.endswith('.gz') or b[:2] == b'\x1f\x8b': b = gzip.decompress(b)
                 return b.decode('utf-8', 'replace')
         except Exception as e:
-            if i == tries - 1: log('fail', url, e); return None
-            time.sleep(2 + 3 * i)
+            code = getattr(e, 'code', None)
+            if i == tries - 1 or code in (404, 410): log('fail', url, e); return None
+            ra = getattr(e, 'headers', None) and e.headers.get('Retry-After')
+            time.sleep(int(ra) if ra and str(ra).isdigit() else (45 * (i + 1) if code == 429 else 4 + 4 * i))
 
 def sitemaps():
     seen, urls = set(), []
@@ -147,7 +154,7 @@ if __name__ == '__main__':
     first = get(B) or ''
     last = max([int(x) for x in re.findall(r'search\.aspx\?page=(\d+)', first)] or [1])
     log('search pages', last)
-    pages = [first] + list(ThreadPoolExecutor(4).map(lambda i: get(f'{B}?page={i}') or '', range(2, last + 1)))
+    pages = [first] + [get(f'{B}?page={i}') or '' for i in range(2, last + 1)]
     mods = [m for h in pages for m in cards(h)]
     log('cards', len(mods), 'empty pages', sum(1 for h in pages if not cards(h)))
     by = {}
@@ -155,8 +162,14 @@ if __name__ == '__main__':
         by.setdefault(m['code'], m)
     mods = sorted(by.values(), key=lambda m: m['code'])
     lim = int(os.environ.get('LIMIT', '0') or 0)
-    with ThreadPoolExecutor(6) as ex:
-        mods = list(ex.map(describe, mods[:lim] if lim else mods))
+    json.dump(mods, open(os.path.join(OUT, 'kcl-modules.json'), 'w'))  # the cards, in case the descriptions are cut short
+    out = []
+    for i, m in enumerate(mods[:lim] if lim else mods):
+        out.append(describe(m))
+        if i % 100 == 99:
+            log('described', i + 1)
+            json.dump(out + mods[i + 1:], open(os.path.join(OUT, 'kcl-modules.json'), 'w'))
+    mods = out
     from collections import Counter
     log('unique codes', len(mods), 'with description', sum(1 for m in mods if m.get('summary')))
     log('levels', Counter(m['level'] for m in mods), 'credits', Counter(m['credits'] for m in mods).most_common(6))
