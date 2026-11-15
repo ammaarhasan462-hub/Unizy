@@ -806,7 +806,9 @@ def bake(site):
         st = classify(t, hgt, b['a'], site, h32(str(b['id']) + 's'))
         style_n[st] = style_n.get(st, 0) + 1
         roof = (t.get('roof:shape') or '').lower()
-        rs = {'gabled': 1, 'hipped': 2, 'pyramidal': 3, 'dome': 4, 'onion': 4, 'mansard': 2, 'skillion': 0, 'flat': 0}.get(roof, 0)
+        rs = {'gabled': 1, 'hipped': 2, 'pyramidal': 3, 'dome': 4, 'onion': 4, 'mansard': 5, 'gambrel': 5, 'skillion': 0, 'flat': 0}.get(roof, 0)
+        # roof covering, written as rs + 10 * material: 1 glass, 2 zinc, lead or other sheet metal, 3 copper (verdigris)
+        rmat = {'glass': 1, 'metal': 2, 'zinc': 2, 'lead': 2, 'metal_sheet': 2, 'steel': 2, 'tin': 2, 'aluminium': 2, 'copper': 3}.get((t.get('roof:material') or '').lower(), 0)
         rh = num(t.get('roof:height')) or 0
         if not rh and rs:
             rh = min(6, 0.35 * math.sqrt(b['a']))
@@ -814,7 +816,7 @@ def bake(site):
             rh = max(0, hgt - minh - 2)
         drecs.append({'t': t, 'st': st, 'h': hgt, 'a': b['a'], 'c': b['c']})
         bring.append((len(out_b), b['o'], minh, hgt, STY[st], b['t']))
-        out_b.append([STY[st], round(hgt, 1), round(minh, 1), rs, round(rh, 1), colour(t.get('building:colour')) or '', colour(t.get('roof:colour')) or '',
+        out_b.append([STY[st], round(hgt, 1), round(minh, 1), rs + 10 * rmat, round(rh, 1), colour(t.get('building:colour')) or '', colour(t.get('roof:colour')) or '',
                       flat(b['o'])] + ([flat(hr) for hr in b['h']] if b['h'] else []))
 
     # ------------------------------------------------------------------ streets

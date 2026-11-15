@@ -54,10 +54,10 @@ Keep to these limits:
 - [x] **Low-poly tree canopies far off.** Use a `THREE.LOD` per 400 m tile: 80-triangle lobes near, 20 beyond 650 m. The canopies were the largest share of each aerial frame's triangles.
 - [x] **No interior draw calls from the air.** The furnished reading rooms and halls (about 500 small draw calls) are hidden until the camera is within 300 m.
 - [x] **One wall mesh per tile.** Put the four wall families in a texture array (or one atlas) so each 400 m tile is one wall draw instead of four. This cuts about 150–200 draw calls a frame.
-- [ ] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
+- [x] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
 - [ ] **Merge the interiors' furniture.** Merge the furniture (chairs, frames, lamp shades, gilt and so on) into a few instanced or merged meshes per material. Then the close-up shots draw tens of calls, not hundreds.
 - [ ] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones.
-- [ ] **Railings and bay windows by distance.** Give them a `THREE.LOD` or a distance fade, so far tiles do not draw them at all.
+- [ ] **Railings by distance.** The railings are still one city-wide mesh. Split them by tile into the wall `THREE.LOD`'s near level (no extra draw: merge them into a mesh that is already drawn, or accept the draw only on near tiles), so far tiles do not draw them at all. Bay windows are done: they are detail triangles that far tiles skip.
 - [ ] **Measure on a real GPU.** Swiftshader is CPU-bound. If a free GitHub Actions runner or a browser trace can give GPU frame times, add that to `render_intro.py`.
 
 ## Realism backlog (top = next)
@@ -73,7 +73,7 @@ Keep to these limits:
   - 1960s concrete;
   - choose by `start_date`, `building:architecture` or `heritage`, then by street.
 - [x] **Heights for guessed buildings.** Fill buildings whose height was guessed (about 40% at UCL) using Environment Agency LiDAR. Use the National LIDAR Programme DSM minus the DTM, at 1 m, under the Open Government Licence; download it in CI from environment.data.gov.uk and take the median per footprint.
-- [ ] **Roofs:**
+- [x] **Roofs:**
   - mansards with dormers on terraces over 3 storeys;
   - parapets with copings;
   - roof terraces and plant on large flat roofs;
@@ -100,6 +100,59 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-14 (night, branch `city-refine-2026-11-14`): roofs, and a stripped facade program for far tiles.
+  - Realism: roofs.
+    - `bake_city.py` now writes the roof shape as `rs + 10 × covering`. OSM `roof:shape=mansard` and `gambrel` are shape 5 (they were hipped, or unmapped). `roof:material` gives covering 1 glass, 2 zinc, lead or other sheet metal, 3 copper. Tagged: UCL 185 mansard or gambrel, 266 glass, 6 metal and 4 copper roofs; Imperial 66 mansards and 2 glass; LSE 125 mansards, 381 glass, 12 metal and 103 copper; Queen Mary 103 mansards, 7 glass and 2 metal. The city JSON version is now 3.
+    - Mansards: individually mapped terrace houses (brick or stucco) of 13 m and over get a slate mansard 62% of the time (the rest keep a low pitched roof). The slopes run front and back between the party walls, behind a 0.6 m parapet, with a felt top. OSM-mapped mansards on blocks slope all round. Each slope has dormers (two or three on a house, one every 3 m on a block), with white-framed windows, lead cheeks and a zinc top; about one in seven is lit. The party-wall chimney stacks stay.
+    - Parapets with copings on flat roofs (out to 1.6 km on desktop, 0.7 km on mobile): the roof drops 0.95 m (0.55 m on modern blocks) behind the wall top, and a strip runs from a stone or metal coping down to the roof, in the wall's colour in shade. Courtyards get one too.
+    - Modern blocks (post-war, glass or concrete, 15 to 70 m, a clean rectangle), 30% of them: the top storey is set back 1.8 m behind a terrace, glazed, in a zinc-grey frame under a standing-seam zinc roof, with decking on part of the terrace.
+    - Rooflights: on about half of the flat roofs over 120 m² (one to six, plus a long glazed strip on some large roofs), and in 40% of the terrace houses' slate roofs. They reflect the sky, and some are lit from below.
+    - Roof terraces: timber decking and planters on about a fifth of the flat roofs between 60 and 1,500 m² and 9 m or taller. Banks of condenser units sit beside the existing plant.
+    - Coverings: zinc with standing seams on modern pitched roofs and on mapped metal roofs, verdigris on copper, glass on mapped glass roofs (for example the Great Court and the LSE glass roofs).
+    - All of this is drawn by the roof shader from a per-vertex covering code, so it adds no shader program and no draw call.
+  - Results by university, from the close-up cameras (`renders/2026-11-14-pairs.jpg`):
+    - UCL: the Bloomsbury terraces carry mansards with rows of dormers, and the flat-roofed blocks have parapets and rooflights.
+    - Imperial: the stucco blocks south of the campus read as parapeted, with a dormered mansard terrace among them; flat roofs show their copings.
+    - LSE: the flat-roofed blocks get parapets, copings and plant. There are fewer mansards, because few houses there are individually mapped.
+    - Queen Mary: the tall Mile End terraces trade their street-facing gables for dormered mansards. The two-storey terraces keep their pitched roofs.
+    - From the intro's own frames, the change is subtle at 0.36 and visible at 0.47, where the roofs gain copings, rooflights and plant (`renders/2026-11-14-intro.jpg`).
+  - Lag:
+    - Walls: each 400 m tile is a `THREE.LOD`. Beyond 720 m from the tile's centre, its walls draw with a stripped facade program on the same vertices. That program keeps the window grid, the rooms' mean glow and the shopfronts' averages, so the switch does not show. It drops the interior mapping, the photo textures, the doors, the glazing bars, the ironwork and the bay windows. The skyline beyond the map always uses it.
+    - Roofs: a second `THREE.LOD` per tile draws the parapets, dormers, rooflights, decking and bay-window tops only within 470 m of the tile's centre. They are detail triangles at the end of the index, so the far level is a draw range on the same buffers, with no copy.
+    - Chimneys, plant and planters are not drawn beyond 850 m from their tile's centre, where they are a couple of pixels across.
+    - `render_intro.py` counts a far LOD copy's shared vertices once, and has close-up cameras (`CAMS="x,y,z,lx,ly,lz;…"`).
+  - Before → after, batch runs (all of before, then all of after). Swiftshader seconds a frame, so only the change counts.
+
+    | Desktop | engine up | 0.36: s / draws / tris | 0.47: s / draws / tris | 0.56: s / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 26 → 20 s | 2.42 → 2.07 / 324 → 292 / 0.97 → 0.93M | 2.12 → 1.93 / 234 → 219 / 0.92 → 0.93M | 4.77 → 3.68 / 736 → 721 / 3.05 → 3.03M |
+    | Imperial | 41 → 33 s | 2.60 → 2.33 / 539 → 504 / 1.11 → 1.04M | 2.67 → 2.48 / 489 → 466 / 1.25 → 1.20M | 2.70 → 2.47 / 552 → 535 / 1.46 → 1.46M |
+    | LSE | 34 → 28 s | 2.42 → 2.10 / 361 → 322 / 1.05 → 1.00M | 2.13 → 2.00 / 266 → 243 / 0.77 → 0.75M | 2.53 → 2.42 / 306 → 293 / 1.02 → 1.01M |
+    | Queen Mary | 35 → 28 s | 2.25 → 1.92 / 524 → 463 / 1.13 → 1.01M | 2.38 → 2.07 / 410 → 375 / 1.11 → 1.04M | 2.78 → 2.55 / 410 → 394 / 1.71 → 1.69M |
+
+    | Mobile | engine up | 0.36: s / draws / tris | 0.47: s / draws / tris | 0.56: s / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 16 → 14 s | 0.23 → 0.22 / 215 → 205 / 0.51 → 0.50M | 0.23 → 0.22 / 171 → 167 / 0.51 → 0.51M | 0.97 → 0.83 / 522 → 517 / 2.24 → 2.25M |
+    | Imperial | 26 → 24 s | 0.28 → 0.27 / 421 → 407 / 0.46 → 0.44M | 0.30 → 0.22 / 373 → 366 / 0.56 → 0.55M | 0.45 → 0.43 / 467 → 463 / 0.99 → 0.99M |
+    | LSE | 20 → 19 s | 0.25 → 0.18 / 217 → 201 / 0.42 → 0.40M | 0.20 → 0.18 / 187 → 178 / 0.42 → 0.42M | 0.28 → 0.25 / 248 → 242 / 0.72 → 0.73M |
+    | Queen Mary | 21 → 19 s | 0.28 → 0.23 / 329 → 303 / 0.48 → 0.44M | 0.23 → 0.23 / 289 → 273 / 0.48 → 0.46M | 0.40 → 0.33 / 336 → 333 / 0.86 → 0.86M |
+
+  - Interleaved runs (before, after, before, after), because the batch above may carry drift:
+    - UCL desktop: engine up 22 / 21 → 22 / 23 s; 0.36 at 2.25 / 2.33 → 2.20 / 2.25 s; 0.47 at 2.17 / 2.03 → 2.18 / 2.05 s; 0.56 at 4.47 / 4.12 → 4.17 s.
+    - LSE desktop: engine up 30 / 30 → 31 / 32 s; 0.36 at 2.42 / 2.42 → 2.32 / 2.27 s; 0.47 at 2.32 / 2.20 → 2.13 / 2.37 s; 0.56 at 2.63 / 2.68 → 2.65 / 2.62 s.
+    - So, under swiftshader: ms per frame is level within noise at UCL and LSE (LSE 0.36 a little lower), not the 10–15% of the batch. Engine up is level within noise.
+    - What does hold in every run: fewer draw calls at every frame, university and device (by 1–12%), and triangles lower or level (UCL desktop 0.47 at +0.01M, LSE and UCL mobile 0.56 at +0.01M, all within a run's rounding).
+    - A first version with all roof detail out to 720 m (the wall distance) had 3–5% more triangles at UCL and LSE. The shorter roof distance and the chimney cut-off won that back.
+  - Size: city JSON gzipped is 0.86 MB (UCL), 0.76 MB (Imperial), 1.03 MB (LSE) and 0.84 MB (Queen Mary), unchanged. City vertices are up on desktop by 9% (UCL 2.49 → 2.72M), 7% (Imperial 2.44 → 2.60M), 9% (LSE 2.46 → 2.68M) and 4% (Queen Mary 2.41 → 2.51M), and on mobile by 3–6% (0.81–0.87M). Shader programs: +1 at each university (the far facade program; LSE's start-up count varies by about 9 between runs).
+  - Checks:
+    - no console errors at any of the four universities, on desktop or mobile;
+    - the engine starts everywhere;
+    - the hand-built UCL fallback still works with `ucl.json` missing (only its expected 404 is logged).
+  - Sheets: `renders/2026-11-14.jpg` (one close-up after frame per university), `-pairs.jpg` (UCL, Imperial and Queen Mary before and after, close up), `-intro.jpg` (intro frames at 0.47, after).
+  - Next:
+    - The roofs read very dark at dawn from the intro's height. The felt and slate colours could be lifted a little, and the copings could catch the low sun more, so the new roofscape shows in the aerial frames as well as close up.
+    - The LiDAR 90th percentile (see 2026-11-13) could choose which terraces have pitched roofs and which have mansards, in place of the 62% split.
 
 - 2026-11-13 (night, branch `city-refine-2026-11-13`): LiDAR heights for the guessed buildings, and one wall mesh per tile.
   - Realism: heights from Environment Agency LiDAR.
