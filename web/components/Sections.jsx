@@ -189,7 +189,7 @@ export function Final() {
           <p className="mt-6 text-[18px] text-mute">Free to start. No card needed.</p>
           <div className="mt-10">
             <Magnetic>
-              <a href="/try" onClick={() => track('lp_final_signup')} className="btn btn-glow px-8 py-4.5 text-[17px]">Get my first answer marked, free</a>
+              <a href="/try" onClick={() => track('lp_final_signup')} className="btn btn-glow px-8 py-4.5 text-[17px]">Mark one answer free</a>
             </Magnetic>
           </div>
         </div>
