@@ -124,7 +124,11 @@ export function buildKCL({ mobile }) {
   box(front, 12, XR, 0, TOP, -D, 0);
   box(front, -12, 12, 0, TOP, -D, -3.2); // the centre, behind the columns
   // the hall's block behind the centre, and the back ranges round the quad
-  box(back, -11, 11, 0, TOP - 1, -46, -D);
+  // (built round the hall, not through it: a solid block's faces would show inside the hall)
+  const HY = HT + 0.3;
+  box(back, -11, 11, 0, TOP - 1, -46, H1 - 0.6);
+  box(back, -11, 11, HY, TOP - 1, H1 - 0.6, -D);
+  for (const s of [-1, 1]) box(back, s > 0 ? HW + 0.1 : -11, s > 0 ? 11 : -HW - 0.1, 0, HY, H1 - 0.6, -D);
   box(back, -XR, -15, 0, TOP - 1, -58, -D);
   box(back, 15, XR, 0, TOP - 1, -58, -D);
   box(stone, -XR - 0.3, XR + 0.3, 0, 1.0, -D, 0.3); // plinth
@@ -307,8 +311,8 @@ export function buildKCL({ mobile }) {
     sp.position.set(...toW([x, y, z])); sp.target.position.set(...toW([tx, ty, tz]));
     g.add(sp, sp.target); ext.push([sp, i]);
   };
-  flood(-8, 0.6, 18, -4, 12, 2, 2600, 0.4);
-  flood(8, 0.6, 18, 4, 12, 2, 2600, 0.4);
-  flood(0, 0.6, 9, 0, 5, -3, 700, 0.6, 0xffd6a6);
+  flood(-8, 0.6, 18, -4, 12, 2, 1100, 0.4);
+  flood(8, 0.6, 18, 4, 12, 2, 1100, 0.4);
+  flood(0, 0.6, 9, 0, 5, -3, 300, 0.6, 0xffd6a6);
   return { group: g, lib, int, ext, furn: out, dust: dustU, shaftMat };
 }
