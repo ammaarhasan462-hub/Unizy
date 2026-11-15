@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'tools/unis/kcl_modules.py'
+      - 'tools/unis/kcl_probe.py'
       - '.github/workflows/fetch-kcl-modules.yml'
   workflow_dispatch:
 
@@ -22,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Fetch
-        run: python3 tools/unis/kcl_modules.py || true
+        run: python3 tools/unis/kcl_probe.py || true; python3 tools/unis/kcl_modules.py || true
       - name: Commit
         if: always()
         run: |
