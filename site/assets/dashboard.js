@@ -1108,12 +1108,33 @@
       '<dl class="db-dl"><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || 'Not set') + '</dd><dt>Year</dt><dd>' + (p.year ? 'Year ' + p.year : '–') + '</dd></dl>' +
       '<p class="mk-fine">Changing course lets you pick a different university, course or year, then choose which modules to keep. Your marked answers and flashcards stay.</p>' +
       '<h3 class="db-h3">Modules (' + S.mods.length + ')</h3><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="db-rmbtn" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">Remove</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><div class="mk-row start"><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div></section>' +
+      '<section class="mk-card" id="db-promo"><h2>Got a society code?</h2><p class="mk-fine">Societies we partner with give their members free Pro. Enter the code they shared.</p><form class="mk-row start db-promoform" id="db-promoform"><input id="db-promoin" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. UCLEFS" aria-label="Society code" maxlength="24"><button type="submit" class="btn primary small">Apply code</button></form><p class="mk-fine" id="db-promomsg" role="status"></p></section>' +
       '<p class="db-more">Need help? Email <a href="mailto:' + esc(CFG.contactEmail || 'hello@unizy.uk') + '">' + esc(CFG.contactEmail || 'hello@unizy.uk') + '</a>. Notes and flashcards are in the <a href="/app">study tools</a>.</p>';
+    $('db-promoform').onsubmit = function (e) { e.preventDefault(); redeemPromo($('db-promoin').value, $('db-promomsg')); };
     $('db-logout').onclick = logout;
     $('db-tour').onclick = replayTour;
     $('db-recourse').onclick = function () { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); };
     el.querySelectorAll('[data-rm]').forEach(function (b) { b.onclick = function () { var c = b.getAttribute('data-rm'); if (!confirm('Remove ' + c + ' from your dashboard? Your marked answers and flashcards for it are kept.')) return; b.disabled = true; removeMod(c).then(function () { S.today = null; renderAccount(); refreshStudy(true); }); }; });
     if (location.hash === '#course') { var cs = $('db-course'); if (cs) cs.scrollIntoView({ block: 'start' }); }
+  }
+  // Society codes (rpc/redeem_code): free Pro until the code's date. A ?code= link (or /join/CODE) is remembered
+  // on the device and applied once the student is signed in.
+  function redeemPromo(code, msgEl) {
+    code = String(code || '').trim(); if (!code) return;
+    if (msgEl) msgEl.textContent = 'Checking…';
+    rest('rpc/redeem_code', { method: 'POST', body: { p_code: code } }).then(function (d) {
+      try { localStorage.removeItem('unizy:promo'); } catch (e) {}
+      if (d && d.ok) { track('promo_redeemed'); loadPlan().then(function () { renderTop(); if (tabOf(location.pathname) === 'account') renderAccount(); toastPromo(d.message); }); }
+      if (msgEl) msgEl.textContent = (d && d.message) || 'Something went wrong. Try again.';
+      else if (d && !d.ok) toastPromo(d.message);
+    }).catch(function () { if (msgEl) msgEl.textContent = 'Couldn’t check that code. Try again.'; });
+  }
+  function toastPromo(t) {
+    if (!t) return; var el = document.createElement('div'); el.className = 'db-toast'; el.setAttribute('role', 'status'); el.textContent = t;
+    document.body.appendChild(el); setTimeout(function () { el.classList.add('out'); setTimeout(function () { el.remove(); }, 400); }, 6000);
+  }
+  function pendingPromo() {
+    try { var q = new URLSearchParams(location.search).get('code'); if (q) localStorage.setItem('unizy:promo', q.toUpperCase()); return localStorage.getItem('unizy:promo'); } catch (e) { return null; }
   }
   function logout() {
     token().then(function (t) { if (t) fetch(CFG.supabaseUrl + '/auth/v1/logout', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t } }).catch(function () {}); });
@@ -1140,6 +1161,7 @@
         if (window.Marker && tabOf(location.pathname) === 'practice') window.Marker.render();
         rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});
         if (window.UnizyWelcome) window.UnizyWelcome.check(rawRest, null, uid());
+        var pc = pendingPromo(); if (pc) redeemPromo(pc, null);
       });
     }).catch(function (e) {
       if (e && e.message === 'signin') return;

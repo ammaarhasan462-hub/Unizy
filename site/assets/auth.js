@@ -6,6 +6,7 @@
   var SKEY = 'unizy.session';
   var root = document.getElementById('auth');
   var params = new URLSearchParams(location.search);
+  try { if (params.get('code')) localStorage.setItem('unizy:promo', params.get('code').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20)); } catch (e) {} // society code, applied in the dashboard
   var next = params.get('next') || '/dashboard';
   if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/dashboard';
   var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;

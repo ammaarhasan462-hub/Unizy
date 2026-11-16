@@ -784,3 +784,23 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-unione{display:inline-block;font-weight:600;font-size:14px;padding:7px 14px;border-radius:999px;background:var(--ink,#16231F);color:#fff}
 .mk-starter{margin:0 0 10px;padding:10px 14px;border-radius:12px;background:#F6EBCB;color:#5D4614;font-size:14.5px;line-height:1.45}.mk-starter b{margin-right:8px;color:#17302A}
 .mk-sample{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin:0 0 10px;padding:12px 14px;border-radius:12px;background:#EAF1EC;border:1px solid #CFE0D5;font-size:14px;line-height:1.45;color:#17302A}.mk-sample p{margin:0;flex:1 1 260px}.mk-sample .btn{flex:0 0 auto}
+/* Nov 2026: marking progress, grade bar with rewrite + share, how it was judged, sources, society codes */
+.mk-busybar{height:6px;border-radius:99px;background:#E4E9E2;overflow:hidden;margin:4px 0 2px}
+.mk-busybar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#3E6B5C,#B8862F);border-radius:99px;transition:width 1s linear}
+.mk-gbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin:14px 0 6px;padding:14px;border-radius:16px;background:#F4F1E6;border:1px solid #E6DEC4}
+.mk-gbar .mk-cls.big{min-width:84px;font-size:24px;padding:12px 14px}
+.mk-gnum b{display:block;font-size:24px;line-height:1.1;color:var(--ink)}
+.mk-gnum span{font-size:12.5px;color:#5D6D67}
+.mk-gbtns{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+.mk-crit{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:10px}
+.mk-crit li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.mk-crit li .mk-cls{min-width:56px;font-size:12.5px;padding:3px 8px;margin-top:2px}
+.mk-crit b{display:block;font-size:14.5px}
+.mk-crit p{margin:2px 0 0;font-size:14px;line-height:1.5;color:#44534D}
+.mk-src{margin:12px 0 0;font-size:13px;line-height:1.5;color:#5D6D67}
+.mk-src a{color:#2B4F44;text-decoration:underline;text-underline-offset:2px}
+.db-promoform input{flex:1 1 180px;min-width:0;height:42px;border-radius:12px;border:1.5px solid #CBD3CD;padding:0 12px;font:inherit;text-transform:uppercase;letter-spacing:.04em}
+.db-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:min(92vw,520px);background:#17302A;color:#F1DDA9;padding:14px 18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-weight:600;font-size:14.5px;line-height:1.45;transition:opacity .4s}
+.db-toast.out{opacity:0}
+@media (max-width:640px){.mk-gbtns{margin-left:0;width:100%}.mk-gbtns .btn{flex:1 1 auto;justify-content:center}}
+@media (max-width:1180px){.mk-gbar .mk-cls,.mk-gbar .mk-gnum{display:none}.mk-gbar{padding:10px;background:none;border:0;margin:8px 0 4px}.mk-gbtns{margin-left:0}}

@@ -104,9 +104,10 @@ export const TRY_HTML = `
       <ul class="th-trust">
         <li><b>Built by a UCL student</b> who wanted the mark scheme too</li>
         <li><b>Your answers stay private.</b> Only you can see them</li>
-        <li><b>Free to start:</b> 1 answer marked with no sign-up, then 3 days free. Pro is £5.99 a month. <a href="#pricing">Pricing</a></li>
+        <li><b>Free to start:</b> 1 answer marked with no sign-up, then 3 days free. Pro is £5.99 a month, or £12 for the whole exam season. <a href="#pricing">Pricing</a></li>
       </ul>
       <p class="th-week" data-week hidden></p>
+      <p class="th-week" data-acc hidden></p>
     </div>
   </div>
 </section>`;
@@ -210,7 +211,10 @@ export function mountTry(root, opts = {}) {
     if (words(answer) < 40) { err('Write a bit more first: at least a short paragraph (40+ words), ideally 150–200.'); ta.focus(); return; }
     if (ls.get(GKEY)) { err(`You’ve already used your free marked answer on this device. <a href="/signup?next=${encodeURIComponent('/modules/' + Q.code)}">Sign up free</a> for 3 days of marking, no card needed.`, true); return; }
     busy = true; err('');
-    const btn = card.querySelector('[data-mark]'); btn.disabled = true; btn.innerHTML = '<span class="th-spin"></span><span>Marking against UCL’s criteria… about 30 seconds</span>';
+    const btn = card.querySelector('[data-mark]'); btn.disabled = true;
+    const steps = ['Reading your answer…', 'Checking it against UCL’s grade bands…', 'Comparing it with the 2:1 and First descriptors…', 'Finding the sentences that cost marks…', 'Working out your 3 changes…', 'Nearly there…'];
+    const t0 = Date.now(), paint = () => { btn.innerHTML = '<span class="th-spin"></span><span>' + steps[Math.min(steps.length - 1, Math.floor((Date.now() - t0) / 5000))] + '</span>'; };
+    paint(); const tick = setInterval(() => { if (!btn.isConnected || !btn.disabled) { clearInterval(tick); return; } paint(); }, 1000);
     track('hero_mark_submit');
     fetch(opts.sbUrl + '/functions/v1/marker', {
       method: 'POST', headers: { apikey: opts.sbKey, 'Content-Type': 'application/json' },
@@ -247,6 +251,14 @@ export function mountTry(root, opts = {}) {
   });
   on(fres, 'click', (e) => { if (e.target.closest('[data-open]')) track('hero_find_open'); });
 
+  // accuracy from students' real marks: shown once at least 20 have been reported
+  if (opts.sbUrl) {
+    fetch(opts.sbUrl + '/rest/v1/rpc/accuracy_stats', { method: 'POST', headers: { apikey: opts.sbKey, 'Content-Type': 'application/json' }, body: '{}' })
+      .then((r) => (r.ok ? r.json() : null)).then((a) => {
+        const el = sec.querySelector('[data-acc]');
+        if (el && a && a.n >= 20 && a.pct != null) { el.hidden = false; el.textContent = `✦ Within 5 marks of students’ real marks ${a.pct}% of the time (${a.n} checked)`; }
+      }).catch(() => {});
+  }
   // real social proof only: shown once at least 25 answers were marked in the last 7 days
   if (opts.sbUrl) {
     fetch(opts.sbUrl + '/rest/v1/rpc/marks_this_week', { method: 'POST', headers: { apikey: opts.sbKey, 'Content-Type': 'application/json' }, body: '{}' })

@@ -333,6 +333,19 @@
   }
 
   // ---------- marking ----------
+  // What the marker is doing, shown step by step while it works (about 30 seconds; a minute with attachments).
+  function busySteps() {
+    var u = U().poss, att = state.busyAtt;
+    return (att ? ['Reading your photos and files…'] : []).concat(['Reading your answer…', 'Checking it against ' + u + ' grade bands…', 'Comparing it with the 2:1 and First-class descriptors…', 'Finding the exact sentences that cost you marks…', 'Working out the 3 changes that would move you up a class…', 'Writing a First-class paragraph to compare against…', 'Nearly there…']);
+  }
+  function busyText() { var st = busySteps(), t = (Date.now() - (state.busyAt || Date.now())) / 1000, per = state.busyAtt ? 9 : 5; return st[Math.min(st.length - 1, Math.floor(t / per))]; }
+  function busyPct() { var t = (Date.now() - (state.busyAt || Date.now())) / 1000, tot = state.busyAtt ? 60 : 32; return Math.min(95, Math.round(100 * (1 - Math.exp(-t / (tot / 1.6))))); }
+  setInterval(function () {
+    if (!state.busy) return;
+    var el = document.getElementById('mk-busytxt'), bar = document.getElementById('mk-busybar');
+    if (el) { var t = busyText(); if (el.textContent !== t) el.textContent = t; }
+    if (bar) bar.style.width = busyPct() + '%';
+  }, 1000);
   function submit() {
     var qEl = document.getElementById('mk-qtext'), aEl = document.getElementById('mk-answer'), ok = document.getElementById('mk-practice');
     var question = state.cur.own ? (qEl ? qEl.value.trim() : '') : state.cur.question;
@@ -345,7 +358,7 @@
     if (!ok || !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
     if (!getSession()) {
       if (state.cur.own || !canGuest()) { location.href = signinUrl(); return; }
-      state.busy = true; state.busyAtt = false; render();
+      state.busy = true; state.busyAt = Date.now(); state.busyAtt = false; render();
       track('guest_mark_submit');
       guestMarker({ action: 'guest_mark', code: state.mod.code, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true }).then(function (b) {
         state.busy = false; stopTimer(); timer.on = false;
@@ -363,7 +376,7 @@
       return;
     }
     if (state.cur.own) state.cur.question = question;
-    state.busy = true; state.busyAtt = hasAtt; render();
+    state.busy = true; state.busyAt = Date.now(); state.busyAtt = hasAtt; render();
     var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
     track(rw ? 'mark_rewrite' : hasAtt ? 'mark_submit_att' : 'mark_submit');
     var body = { action: 'mark', code: state.mod.code, question: question, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true };
@@ -773,14 +786,59 @@
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + (state.guestErr ? ' <a href="' + esc(signinUrl()) + '">Sign up free</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
-      (state.busy ? '<p class="mk-busy"><span class="spin"></span>Marking against ' + U().poss + ' criteria… about ' + (state.busyAtt ? 'a minute' : '30 seconds') + '</p>' : '<button type="button" class="btn primary big td-go" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : ex ? 'Hand it in' : 'Mark my answer') : canGuest() && !c.own ? 'Mark my answer free' : 'Sign up free to get it marked') + '<span class="arr" aria-hidden="true">→</span></button>') + '</div>' +
+      (state.busy ? '<div class="mk-busy"><span class="spin"></span><span id="mk-busytxt">' + esc(busyText()) + '</span></div><div class="mk-busybar"><i id="mk-busybar" style="width:' + busyPct() + '%"></i></div>' : '<button type="button" class="btn primary big td-go" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : ex ? 'Hand it in' : 'Mark my answer') : canGuest() && !c.own ? 'Mark my answer free' : 'Sign up free to get it marked') + '<span class="arr" aria-hidden="true">→</span></button>') + '</div>' +
       '<p class="mk-fine">' + (!getSession() && canGuest() && !c.own ? 'No account needed for your first marked answer. ' : '') + 'Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>' + inspectorBefore() + '</div>';
     return html;
+  }
+  // The published criteria behind a mark (rpc/rubric_sources): department grade descriptors first, then the uni-wide bands.
+  var srcCache = {};
+  function srcHtml() {
+    var m = state.mod; if (!m) return '';
+    var key = (m.uni || 'ucl') + '|' + (m.department || ''), v = srcCache[key];
+    if (v === undefined) {
+      srcCache[key] = null;
+      fetch(CFG.supabaseUrl + '/rest/v1/rpc/rubric_sources', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_uni: m.uni || 'ucl', p_department: m.department || null }) })
+        .then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) { srcCache[key] = rows || []; var el = document.getElementById('mk-src'); if (el) el.innerHTML = srcHtml(); }, function () { srcCache[key] = []; });
+      return '';
+    }
+    if (!v || !v.length) return '';
+    return '<b>Marked against:</b> ' + v.map(function (x) { return x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + '</a>' : esc(x.title); }).join(' and ') + '.';
+  }
+  // "Share my grade": a 1080x1920 story image drawn on a canvas (no server, no upload), shared or downloaded.
+  function shareCard() {
+    var r = state.result, m = state.mod; if (!r || !m) return;
+    track('share_grade');
+    var W = 1080, H = 1920, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    var x = cv.getContext('2d'), gold = '#D7A84A', cream = '#F1DDA9', bg = '#2B4F44';
+    x.fillStyle = bg; x.fillRect(0, 0, W, H);
+    x.fillStyle = 'rgba(241,221,169,0.07)'; for (var i = 0; i < W; i += 44) for (var j = 0; j < H; j += 44) { x.beginPath(); x.arc(i, j, 2, 0, 7); x.fill(); }
+    x.textAlign = 'center'; x.fillStyle = gold; x.font = '600 40px ui-monospace, Menlo, monospace'; x.fillText('UNIZY · ' + U().short.toUpperCase(), W / 2, 230);
+    x.fillStyle = cream; x.font = '700 64px system-ui, -apple-system, Segoe UI, sans-serif'; x.fillText('I just got a', W / 2, 520);
+    x.fillStyle = '#17302A'; var bw = 620, bh = 420; x.fillRect(W / 2 - bw / 2 + 18, 600 + 18, bw, bh);
+    x.fillStyle = r.class === 'First' ? '#B8862F' : r.class === '2:1' ? '#3E6B5C' : r.class === 'Third' ? '#9B4A3A' : '#8A6A3E'; x.fillRect(W / 2 - bw / 2, 600, bw, bh);
+    x.fillStyle = cream; x.font = '800 260px Impact, Anton, system-ui, sans-serif'; x.fillText(String(r.class || ''), W / 2, 600 + bh / 2 + 92);
+    x.font = '700 64px system-ui, -apple-system, Segoe UI, sans-serif'; x.fillText('on ' + m.code, W / 2, 1160);
+    x.fillStyle = 'rgba(241,221,169,0.75)'; x.font = '500 40px system-ui, -apple-system, Segoe UI, sans-serif';
+    var title = String(m.title || ''); if (title.length > 44) title = title.slice(0, 42) + '…'; x.fillText(title, W / 2, 1230);
+    x.fillText('Predicted ' + r.mark_low + '–' + r.mark_high + ' against ' + U().poss + ' grade bands', W / 2, 1300);
+    x.fillStyle = gold; x.font = '700 52px system-ui, -apple-system, Segoe UI, sans-serif'; x.fillText('Can you beat it?', W / 2, 1520);
+    x.fillStyle = cream; x.font = '800 76px system-ui, -apple-system, Segoe UI, sans-serif'; x.fillText('unizy.uk', W / 2, 1640);
+    x.fillStyle = 'rgba(241,221,169,0.6)'; x.font = '500 34px system-ui, -apple-system, Segoe UI, sans-serif'; x.fillText('Practice estimate · first answer marked free', W / 2, 1720);
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      var name = 'unizy-' + m.code + '-' + String(r.class).replace(/[^0-9A-Za-z]/g, '') + '.png';
+      var file = typeof File !== 'undefined' ? new File([blob], name, { type: 'image/png' }) : null;
+      var text = 'I got a ' + r.class + ' on ' + m.code + ' on Unizy. Try one free: https://unizy.uk/modules/' + m.code + '?q=start';
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) { navigator.share({ files: [file], text: text }).catch(function () {}); return; }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }, 'image/png');
   }
   function viewResult() {
     var r = state.result, m = state.mod, ma = state.cur && state.cur.id ? modelAnswers[state.cur.id] : null, q = state.cur && state.cur.id ? (state.questions || []).filter(function (x) { return x.id === state.cur.id; })[0] : null;
     var lost = r.lost || [];
     var html = head() + '<div class="mk-ws res"><div class="mk-wsmain"><section class="mk-card mk-result"><span class="mk-topic">' + esc(m.code) + ' · Your marked answer</span><h2 class="mk-question sm">' + esc(r.question || (state.cur && state.cur.question) || '') + '</h2>' +
+      '<div class="mk-gbar"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div class="mk-gnum"><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark · ' + esc(U().poss) + ' grade bands</span></div>' +
+        '<div class="mk-gbtns">' + (r.id ? '<button type="button" class="btn primary" data-act="rewrite">Rewrite it and remark</button>' : '') + '<button type="button" class="btn line" data-act="share">Share my grade</button></div></div>' +
       '<p class="mk-headline">' + esc(r.headline) + '</p>' +
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
     // "Save this mark?": one email box. The sign-up page sends the code straight away (?send=1); once signed in,
@@ -795,6 +853,8 @@
     } else html += '<details class="mk-det" open><summary>Your answer</summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
     if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
     if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
+    if (r.criteria && r.criteria.length) html += '<h3>How it was judged</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band) + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment || '') + '</p></div></li>'; }).join('') + '</ul>';
+    html += '<p class="mk-src" id="mk-src">' + srcHtml() + '</p>';
     if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
     html += '<div class="mk-row"><a class="btn line small" href="' + MBASE + m.code + (r.topic_pos != null ? '?t=' + r.topic_pos : '') + '" data-go="mod">Back to the Module Map</a></div></section>';
     if (r.id) html += '<section class="mk-card mk-realbox"><h3>Got a real mark for a similar answer?</h3><p>Tell us and we’ll use it to check the marker stays accurate for ' + esc(m.code) + '.</p><div class="mk-row start"><input id="mk-real" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64" aria-label="Your real mark"><button type="button" class="btn line small" data-real="' + r.id + '">Save</button></div><p id="mk-real-done" class="mk-fine"></p></section>';
@@ -870,6 +930,7 @@
     else if (act === 'timer') { startTimer(); render(); }
     else if (act === 'step') { state.steps[state.cur.id] = (state.steps[state.cur.id] || 0) + 1; track('step_reveal'); render(); }
     else if (act === 'submit') submit();
+    else if (act === 'share') shareCard();
     else if (act === 'clearsample') { if (state.cur && state.cur.id) state.noSample[state.cur.id] = true; track('start_sample_clear'); render(); var ta = document.getElementById('mk-answer'); if (ta) ta.focus(); }
     else if (act === 'clear') { if (confirm('Clear your answer? This can’t be undone.')) { saveDraft(draftKey(), ''); render(); } }
     else if (act === 'star' && HOOKS) { HOOKS.toggle(state.mod).then(render); }

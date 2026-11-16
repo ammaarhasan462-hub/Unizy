@@ -1,6 +1,8 @@
 /dashboard/*  /dashboard  200
 /try  /mark  302
 /modules/*  /mark  200
+# Society codes: unizy.uk/join/UCLEFS opens sign-up with the code remembered; it's applied once they're signed in.
+/join/:code  /signup?code=:code&ref=society  302
 /app/*  /app  200
 # Short links for bios, posts and posters: the home page counts each source (src_<name>) as an anonymous daily total.
 /tiktok  /?ref=tiktok  302
