@@ -33,7 +33,7 @@
     return '<div class="mk-unitabs" role="tablist" aria-label="University"><button type="button" role="tab" data-puni=""' + (pubUni ? '' : ' class="on" aria-selected="true"') + '>All</button>' +
       ids.map(function (id) { return '<button type="button" role="tab" data-puni="' + id + '"' + (pubUni === id ? ' class="on" aria-selected="true"' : '') + '>' + UNIS[id].short + '</button>'; }).join('') + '</div>';
   }
-  var state = {
+  var state = { noSample: {},
     q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
     attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, itab: 'alloc', rewrite: null, busy: false, err: '',
     tierF: '', wmode: 'study', exam: 0, mono: false, pbusy: false, perr: '', ptext: {}
@@ -150,6 +150,17 @@
   }
   // ?q=start (outreach links, 'Find your module', first question after set-up): open the quickest exam-style question
   // in the module (short answers first, then the earliest topic, then the shortest question) and label it a 5-minute question.
+  // A practice answer for each full pack's starter question (site/data/samples.json, built by tools/build_samples.py),
+  // pre-filled so a visitor can see the marking straight away; "Clear it and write my own" empties the box.
+  var SAMPLES = null, samplesLoading = false;
+  function loadSamples() {
+    if (SAMPLES || samplesLoading) return; samplesLoading = true;
+    fetch('/data/samples.json?v=1').then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { SAMPLES = j || {}; render(); }, function () { SAMPLES = {}; });
+  }
+  function sampleFor(m, c) {
+    if (!SAMPLES || !m || !c || !c.id || c.id !== state.starterId || state.noSample[c.id]) return null;
+    var x = SAMPLES[m.code]; return x && c.id.indexOf(x.q) === 0 ? x.a : null;
+  }
   function starterQ() {
     var rank = { short: 0, essay: 1, problem: 2 };
     var qs = (state.questions || []).filter(function (x) { return x.tier === 'exam'; });
@@ -171,7 +182,7 @@
       if (r.q === 'start') {
         if (!state.questions) { render(); return; } // loadMap() routes again
         var sq = starterQ();
-        if (sq) { state.starterId = sq.id; track('start_q_open'); go({ m: r.m, q: sq.id, v: 'answer' }, true); }
+        if (sq) { state.starterId = sq.id; loadSamples(); track('start_q_open'); go({ m: r.m, q: sq.id, v: 'answer' }, true); }
         else go({ m: r.m }, true);
         return;
       }
@@ -326,6 +337,7 @@
     var question = state.cur.own ? (qEl ? qEl.value.trim() : '') : state.cur.question;
     var answer = aEl ? aEl.value : '', t = tray(), hasAtt = !!(t && t.count());
     state.err = '';
+    var smpNow = sampleFor(state.mod, state.cur); if (smpNow && answer.trim() === smpNow.trim()) track('start_sample_mark');
     if (state.cur.own && question.length < 10) { state.err = 'Paste the question you’re answering first.'; render(); return; }
     if (hasAtt && t.busy()) { state.err = 'Your attachments are still being prepared. Try again in a moment.'; render(); return; }
     if (!hasAtt && words(answer) < 40) { state.err = 'Write at least a paragraph or two, or add photos of your answer, so there’s something to mark.'; render(); return; }
@@ -742,6 +754,7 @@
     var m = state.mod, c = state.cur, d = drafts()[draftKey()], ex = !!state.exam;
     var topic = !c.own && c.topic_pos != null && state.topics ? state.topics.filter(function (t) { return t.position === c.topic_pos; })[0] : null;
     var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
+    var smp = !d && !ex ? sampleFor(m, c) : null;
     var html = head() + '<div class="mk-ws"><section class="mk-card mk-answer' + (ex ? ' exam' : '') + '"><span class="mk-topic">' + (ex ? '<b class="mk-exbadge">Exam simulator</b> ' : '') + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
     if (rw) html += '<div class="mk-rwbox"><b>Rewrite challenge</b><p>Last time: <span class="mk-cls ' + clsSlug(rw.cls) + '">' + esc(rw.cls) + '</span> ' + rw.mark_low + '–' + rw.mark_high + '.' + (rw.quote ? ' Rewrite the paragraph starting “' + esc(rw.quote) + '…”' : '') + (rw.task ? ' ' + esc(rw.task) : '') + ' Then mark it again to see your new mark.</p><button type="button" class="mk-clear" data-act="norewrite">Cancel the challenge</button></div>';
     if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
@@ -752,8 +765,9 @@
         (n < c.steps.length ? '<button type="button" class="btn line small" data-act="step">' + (n ? 'Show step ' + (n + 1) + ' of ' + c.steps.length : 'Show step 1 of ' + c.steps.length) + '</button>' : '<p class="mk-fine">That’s the full worked solution. Now write it up in your own words below.</p>') + '</div>';
     }
     var starter = c.id && c.id === state.starterId && !ex;
-    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : starter ? '<span></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
-      '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea></div>' +
+    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : starter ? '<span></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d ? d.t : smp) + ' words</span></div>' +
+      (smp ? '<div class="mk-sample"><p><b>We’ve put a practice answer in the box</b> so you can see the marking straight away. Mark it as it is, or clear it and write your own to test how accurate the marking really is.</p><button type="button" class="btn line small" data-act="clearsample">Clear it and write my own</button></div>' : '') +
+      '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : smp || '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
       (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + (state.guestErr ? ' <a href="' + esc(signinUrl()) + '">Sign up free</a>' : '') + '</p>' : '') +
@@ -855,6 +869,7 @@
     else if (act === 'timer') { startTimer(); render(); }
     else if (act === 'step') { state.steps[state.cur.id] = (state.steps[state.cur.id] || 0) + 1; track('step_reveal'); render(); }
     else if (act === 'submit') submit();
+    else if (act === 'clearsample') { if (state.cur && state.cur.id) state.noSample[state.cur.id] = true; track('start_sample_clear'); render(); var ta = document.getElementById('mk-answer'); if (ta) ta.focus(); }
     else if (act === 'clear') { if (confirm('Clear your answer? This can’t be undone.')) { saveDraft(draftKey(), ''); render(); } }
     else if (act === 'star' && HOOKS) { HOOKS.toggle(state.mod).then(render); }
     else if (act === 'rewrite') startRewrite();

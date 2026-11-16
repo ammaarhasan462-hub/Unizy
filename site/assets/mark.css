@@ -783,3 +783,4 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-unitabs.one{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mk-unione{display:inline-block;font-weight:600;font-size:14px;padding:7px 14px;border-radius:999px;background:var(--ink,#16231F);color:#fff}
 .mk-starter{margin:0 0 10px;padding:10px 14px;border-radius:12px;background:#F6EBCB;color:#5D4614;font-size:14.5px;line-height:1.45}.mk-starter b{margin-right:8px;color:#17302A}
+.mk-sample{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;justify-content:space-between;margin:0 0 10px;padding:12px 14px;border-radius:12px;background:#EAF1EC;border:1px solid #CFE0D5;font-size:14px;line-height:1.45;color:#17302A}.mk-sample p{margin:0;flex:1 1 260px}.mk-sample .btn{flex:0 0 auto}

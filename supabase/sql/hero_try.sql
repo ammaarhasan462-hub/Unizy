@@ -13,7 +13,7 @@ begin
                      'cta_try_hero', 'guest_save_email', 'signup_oauth_google', 'signup_oauth_azure', 'login_oauth_google', 'login_oauth_azure',
                      'oauth_done', 'oauth_fail', 'setup_uni_guess', 'setup_skip',
                      'hero_sample', 'hero_type', 'hero_mark_submit', 'hero_mark_done', 'hero_mark_fail', 'hero_save', 'hero_find', 'hero_find_open',
-                     'start_q_open', 'setup_first_q')
+                     'start_q_open', 'setup_first_q', 'start_sample_clear', 'start_sample_mark')
      and p_event !~ '^(src|join)_(tiktok|instagram|snapchat|whatsapp|google|bing|youtube|linkedin|reddit|x|facebook|poster|friend|society|email|other|site)$' then return; end if;
   begin hdr := current_setting('request.headers', true)::json; exception when others then hdr := null; end;
   ua := coalesce(hdr ->> 'user-agent', '');
