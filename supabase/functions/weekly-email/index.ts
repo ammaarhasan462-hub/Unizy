@@ -3,7 +3,7 @@
 // No AI: the plan comes from rpc weekly_plan. Sent with Resend from noreply@unizy.uk.
 //   POST (header x-ops-key = ops_keys 'deepen')   -> sends this week's batch (pg_cron calls it on Mondays)
 //   POST { dry: true } with the same header       -> returns the emails it would send, sends nothing
-//   GET  ?unsub=<token>                            -> turns the weekly email off and shows a confirmation page
+//   GET  ?unsub=<token>                            -> turns the weekly email off, then redirects to unizy.uk/unsubscribed
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -12,12 +12,8 @@ const FN = Deno.env.get("SUPABASE_URL") + "/functions/v1/weekly-email";
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 const weeks = (d: number) => d <= 13 ? `${d} day${d === 1 ? "" : "s"}` : `${Math.round(d / 7)} weeks`;
 
-function page(title: string, body: string) {
-  return new Response(`<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Unizy</title></head>
-<body style="margin:0;background:#F4F4EF;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#17302A"><div style="max-width:480px;margin:12vh auto;padding:28px;background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-<h1 style="font-size:22px;margin:0 0 10px">${esc(title)}</h1><p style="line-height:1.55;margin:0 0 18px">${body}</p><a href="${SITE}/dashboard" style="color:#2B4F44;font-weight:600">Go to your dashboard</a></div></body></html>`,
-    { headers: { "Content-Type": "text/html; charset=utf-8" } });
-}
+// Supabase serves edge-function HTML as plain text, so the unsubscribe link lands on a page on unizy.uk instead
+const done = (ok: boolean) => new Response(null, { status: 302, headers: { Location: `${SITE}/unsubscribed${ok ? "" : "?bad=1"}` } });
 
 function build(u: any) {
   const name = u.name ? esc(u.name) : "there";
@@ -56,9 +52,9 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   if (req.method === "GET") {
     const t = url.searchParams.get("unsub") || "";
-    if (!/^[0-9a-f-]{36}$/i.test(t)) return page("Link not recognised", "This unsubscribe link isn’t valid. You can turn the weekly email off in your dashboard under Account.");
+    if (!/^[0-9a-f-]{36}$/i.test(t)) return done(false);
     await service.rpc("unsubscribe_weekly", { p_token: t });
-    return page("You’re unsubscribed", "You won’t get the weekly plan email any more. You can turn it back on any time under Account in your dashboard.");
+    return done(true);
   }
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
   if (url.searchParams.get("unsub")) { // one-click unsubscribe from the mail app (RFC 8058)
