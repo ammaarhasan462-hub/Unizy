@@ -152,9 +152,10 @@
   // in the module (short answers first, then the earliest topic, then the shortest question) and label it a 5-minute question.
   // A practice answer for each full pack's starter question (site/data/samples.json, built by tools/build_samples.py),
   // pre-filled so a visitor can see the marking straight away; "Clear it and write my own" empties the box.
+  var SHOW_SAMPLES = false; // switched off 16 Nov 2026 (Ammaar): course links open with an empty answer box for now
   var SAMPLES = null, samplesLoading = false;
   function loadSamples() {
-    if (SAMPLES || samplesLoading) return; samplesLoading = true;
+    if (!SHOW_SAMPLES || SAMPLES || samplesLoading) return; samplesLoading = true;
     fetch('/data/samples.json?v=1').then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { SAMPLES = j || {}; render(); }, function () { SAMPLES = {}; });
   }
   function sampleFor(m, c) {
