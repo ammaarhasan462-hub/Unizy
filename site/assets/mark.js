@@ -148,6 +148,17 @@
     if (replace) history.replaceState(null, '', href); else history.pushState(null, '', href);
     route();
   }
+  // ?q=start (outreach links, 'Find your module', first question after set-up): open the quickest exam-style question
+  // in the module (short answers first, then the earliest topic, then the shortest question) and label it a 5-minute question.
+  function starterQ() {
+    var rank = { short: 0, essay: 1, problem: 2 };
+    var qs = (state.questions || []).filter(function (x) { return x.tier === 'exam'; });
+    if (!qs.length) qs = (state.questions || []).filter(function (x) { return x.tier && x.tier !== 'foundation'; });
+    qs.sort(function (a, b) {
+      return ((rank[a.kind] != null ? rank[a.kind] : 3) - (rank[b.kind] != null ? rank[b.kind] : 3)) || ((a.topic_pos || 0) - (b.topic_pos || 0)) || (String(a.question).length - String(b.question).length);
+    });
+    return qs[0] || null;
+  }
   function routeParams() {
     var p = new URLSearchParams(location.search), m = MODRE.exec(location.pathname);
     return { m: m ? m[1].toUpperCase() : (p.get('m') || '').toUpperCase(), q: p.get('q') || '', v: p.get('v') || '', t: p.get('t'), exam: +p.get('exam') || 0, w: p.get('w') || '' };
@@ -157,6 +168,13 @@
     state.err = '';
     if (!r.m) { state.mod = null; render(); setTitle(); return; }
     var after = function () {
+      if (r.q === 'start') {
+        if (!state.questions) { render(); return; } // loadMap() routes again
+        var sq = starterQ();
+        if (sq) { state.starterId = sq.id; track('start_q_open'); go({ m: r.m, q: sq.id, v: 'answer' }, true); }
+        else go({ m: r.m }, true);
+        return;
+      }
       if (r.v === 'answer') {
         if (r.q === 'own') state.cur = { id: null, own: true, question: (state.cur && state.cur.own && state.cur.question) || '' };
         else if (state.questions) state.cur = state.questions.filter(function (x) { return x.id === r.q && x.tier !== 'foundation'; })[0] || null;
@@ -215,7 +233,7 @@
       if (!state.mod || state.mod.code !== code) return;
       state.topics = res[0] || []; state.questions = res[1] || [];
       var r = routeParams();
-      if (r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) route(); else render();
+      if ((r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) || r.q === 'start') route(); else render();
       if (state.questions.length) loadModelAnswers();
       if (!state.topics.length && getSession()) startMap();
     }).catch(function () { state.topics = []; state.questions = []; render(); });
@@ -727,13 +745,14 @@
     var html = head() + '<div class="mk-ws"><section class="mk-card mk-answer' + (ex ? ' exam' : '') + '"><span class="mk-topic">' + (ex ? '<b class="mk-exbadge">Exam simulator</b> ' : '') + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
     if (rw) html += '<div class="mk-rwbox"><b>Rewrite challenge</b><p>Last time: <span class="mk-cls ' + clsSlug(rw.cls) + '">' + esc(rw.cls) + '</span> ' + rw.mark_low + '–' + rw.mark_high + '.' + (rw.quote ? ' Rewrite the paragraph starting “' + esc(rw.quote) + '…”' : '') + (rw.task ? ' ' + esc(rw.task) : '') + ' Then mark it again to see your new mark.</p><button type="button" class="mk-clear" data-act="norewrite">Cancel the challenge</button></div>';
     if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
-    else html += '<h2 class="mk-question">' + esc(c.question) + '</h2>';
+    else html += (c.id && c.id === state.starterId && !ex ? '<p class="mk-starter"><b>⏱ 5-minute question</b> Aim for 150–200 words. Bullet points are fine.</p>' : '') + '<h2 class="mk-question">' + esc(c.question) + '</h2>';
     if (c.steps && c.steps.length && !ex) {
       var n = state.steps[c.id] || 0;
       html += '<div class="mk-steps"><p class="mk-lab">Stuck? Work through it one step at a time</p>' + (n ? '<ol>' + c.steps.slice(0, n).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') +
         (n < c.steps.length ? '<button type="button" class="btn line small" data-act="step">' + (n ? 'Show step ' + (n + 1) + ' of ' + c.steps.length : 'Show step 1 of ' + c.steps.length) + '</button>' : '<p class="mk-fine">That’s the full worked solution. Now write it up in your own words below.</p>') + '</div>';
     }
-    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
+    var starter = c.id && c.id === state.starterId && !ex;
+    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : starter ? '<span></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d && d.t) + ' words</span></div>' +
       '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +

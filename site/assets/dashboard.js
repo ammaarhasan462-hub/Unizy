@@ -588,7 +588,15 @@
         S.profile = body; var was = st.editing; S.setup = null; S.today = null; lsSet('unizy:uni', body.uni);
         track(was ? 'dash_course_changed' : 'dash_setup_done');
         $('db').classList.remove('setup');
-        nav(was ? '/dashboard/account' : '/dashboard'); if (was) refreshStudy(true);
+        if (was) { nav('/dashboard/account'); refreshStudy(true); return; }
+        // new students go straight into a 5-minute question on their first module with a full pack, not an empty Home
+        var codes = picks.map(function (m) { return m && m.code; }).filter(Boolean);
+        if (!codes.length) { nav('/dashboard'); return; }
+        rest('module_packs?status=eq.done&select=code&code=in.(' + codes.map(encodeURIComponent).join(',') + ')').then(function (rows) {
+          var have = (rows || []).map(function (r) { return r.code; });
+          var first = codes.filter(function (c) { return have.indexOf(c) >= 0; })[0];
+          if (first) { track('setup_first_q'); nav('/dashboard/practice/' + first + '?q=start'); } else nav('/dashboard');
+        }).catch(function () { nav('/dashboard'); });
       })
       .catch(function (e) { var er = $('db-serr'); if (er) { er.hidden = false; er.textContent = e.message; } if (btn) { btn.disabled = false; btn.textContent = 'Try again'; } });
   }

@@ -18,13 +18,13 @@ const ICONS = {
 export function Trust() {
   const cards = [
     ['doc', 'Your department’s criteria', 'Every answer is marked against your university’s grade bands for your year (UCL, Imperial, Queen Mary or LSE) and, where your department publishes them, its own grade descriptors.'],
-    ['shield', 'Practice, not coursework', 'Unizy is for exam practice. It refuses to mark work you’re going to submit, and it never writes work for you to hand in.'],
+    ['shield', 'Private, and practice only', 'Only you can see your answers and marks. Unizy is for exam practice: it refuses to mark work you’re going to submit, and never writes work for you to hand in.'],
     ['pulse', 'Honest ranges', 'You always get a mark range, not a fake-precise number, and you can tell us your real mark so we keep checking the marker’s accuracy.'],
   ];
   return (
     <section className="relative py-24 lg:py-32">
       <div className="wrap">
-        <Reveal><Kicker>Built to be trusted</Kicker></Reveal>
+        <Reveal><Kicker>Built by a UCL student, to be trusted</Kicker></Reveal>
         <Reveal delay={0.05}><h2 className="h2 mt-6">Not a chatbot. <span className="text-grad">A marker.</span></h2></Reveal>
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {cards.map(([ic, t, d], i) => (

@@ -6,6 +6,7 @@
 // opens to show an answer being marked against the mark scheme, gets stamped 2:1 and then First.
 
 import { uniCopy, getUni, loadStats } from './unis.js';
+import { TRY_HTML, mountTry } from './tryhero.js';
 
 const A = uniCopy(''); // server-rendered copy (all universities); applyUni() swaps it in the browser
 const u = (k, html) => `<span data-u="${k}">${html}</span>`;
@@ -90,7 +91,7 @@ const HERO = `
     <div class="uz-big-num" data-bignum aria-hidden="true">01</div>
     <div class="uz-vignette"></div>
 
-    <div class="uz-frame" data-f="0">${mega(['The mark scheme', 'your uni never', 'gave you.'], '', 'h1')}</div>
+    <div class="uz-frame" data-f="0">${mega(['The mark scheme', 'your uni never', 'gave you.'])}</div>
     <div class="uz-frame" data-f="1">${mega(['A new angle', 'on revision.'])}</div>
     <div class="uz-frame" data-f="2">${mega(['Open the', 'mark scheme.'])}</div>
     <div class="uz-frame" data-f="3">${mega(['See your', 'class. Then', 'go up one.'], 'sm')}</div>
@@ -107,7 +108,7 @@ const HERO = `
       <span class="uz-kick" data-u="kick">${A.kick}</span>
       <p>Write an answer to any exam question in your module. Unizy marks it against <b>your department’s own grading criteria</b>, tells you your class, and shows you exactly what would move you up one.</p>
       <div class="row">
-        <a href="/try" class="uz-btn uz-btn-gold" data-track="lp_hero_try" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Mark one answer free, no sign-up</span>${ARROW}</a>
+        <a href="#try" class="uz-btn uz-btn-gold" data-track="lp_hero_try" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Mark one answer free, no sign-up</span>${ARROW}</a>
         <a href="#how" class="uz-btn uz-btn-line">See how it works</a>
       </div>
       <ul><li data-u="modulesLine">${A.modulesLine}</li><li>Free 3-day trial</li><li>No card needed</li></ul>
@@ -247,7 +248,7 @@ const NUMS = `
   ${mq('mq', mqHtml(A.mq), 'mq-b rev', 34)}
 </section>`;
 
-export const STORY_TOP = `<div class="uz" data-uz>${HERO}${SPLIT}${GAP}${UNLOCK}${NUMS}</div>`;
+export const STORY_TOP = `<div class="uz" data-uz>${TRY_HTML}${HERO}${SPLIT}${GAP}${UNLOCK}${NUMS}</div>`;
 
 export const STORY_END = `<div class="uz" data-uz>
 <section class="uz-final" data-final aria-label="Get started">
@@ -259,7 +260,7 @@ export const STORY_END = `<div class="uz" data-uz>
     ${mega(['Let’s get', 'marking.'])}
     <p class="sub">Free to start. No card needed. Your first answer marked in about ten minutes.</p>
     <div class="row">
-      <a href="/try" class="uz-btn uz-btn-gold" data-track="lp_final_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Mark one answer free, no sign-up</span>${ARROW}</a>
+      <a href="#try" class="uz-btn uz-btn-gold" data-track="lp_final_signup" data-auth-href="/dashboard" data-auth-text="Practise in my dashboard"><span>Mark one answer free, no sign-up</span>${ARROW}</a>
       <a href="/mark" class="uz-btn uz-btn-line">Find your module</a>
     </div>
   </div>
@@ -323,6 +324,10 @@ export function mountStory(root, opts = {}) {
   // signed-in visitors: CTAs go to the dashboard
   if (opts.authed) $$('[data-auth-href]').forEach((a) => { a.href = a.dataset.authHref; const s = a.querySelector('span'); if (s) s.textContent = a.dataset.authText; });
   $$('[data-track]').forEach((a) => on(a, 'click', () => track(a.dataset.track)));
+
+  // the try-it hero at the top: a real question, answer box, sample marked answer and module search
+  const unTry = mountTry(root, { track, authed: !!opts.authed, sbUrl: opts.sbUrl, sbKey: opts.sbKey });
+  offs.push(unTry);
 
   // the university picked in the intro or in the tabs: its copy, modules and figures
   applyUni(root, getUni());

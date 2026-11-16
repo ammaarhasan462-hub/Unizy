@@ -782,3 +782,4 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-savealt{font-size:14px;font-weight:600;color:#17302A}
 .mk-unitabs.one{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .mk-unione{display:inline-block;font-weight:600;font-size:14px;padding:7px 14px;border-radius:999px;background:var(--ink,#16231F);color:#fff}
+.mk-starter{margin:0 0 10px;padding:10px 14px;border-radius:12px;background:#F6EBCB;color:#5D4614;font-size:14.5px;line-height:1.45}.mk-starter b{margin-right:8px;color:#17302A}
