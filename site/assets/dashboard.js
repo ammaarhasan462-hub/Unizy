@@ -791,6 +791,7 @@
       if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
       else if (S.mods.length) html += '<p class="db-more" style="margin:0 0 14px">Add your exam dates on each module’s page for a countdown here.</p>';
       html += '<div class="td-grid">' + (S.today ? nextHtml(nextUp()) : '<div class="td-card td-next"><span class="td-why">Today</span><h2>Finding your next question…</h2></div>') + cardsHtml() + '</div>';
+      html += planHtml();
       html += perfHtml(st);
       html += progressHtml();
       if (a.length) {
@@ -801,6 +802,7 @@
     };
     draw();
     el.onclick = function (e) {
+      var pl = e.target.closest('[data-plan]'); if (pl) track('plan_open');
       var b = e.target.closest('button'); if (!b) return;
       if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
       if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
@@ -809,6 +811,22 @@
     refreshStudy();
   }
   var homeDraw = null;
+  // This week's plan (rpc/my_weekly_plan): the 2 weakest topics in up to 3 modules, nearest exam first. The same
+  // plan goes out in the Monday email. Loaded once per visit; no marking credit used.
+  function loadWeekPlan() {
+    if (S.wplan !== undefined) return;
+    S.wplan = null;
+    rest('rpc/my_weekly_plan', { method: 'POST', body: '{}' }).then(function (d) { S.wplan = Array.isArray(d) ? d : []; if (homeDraw) homeDraw(); }).catch(function () { S.wplan = []; });
+  }
+  function planHtml() {
+    loadWeekPlan();
+    var w = S.wplan; if (!w || !w.length) return '';
+    return '<section class="db-sec db-week"><div class="mk-row"><h2>This week’s plan</h2><span class="mk-fine">Your weakest topics first. Also emailed to you on Mondays.</span></div><div class="db-weekgrid">' + w.map(function (m) {
+      return '<div class="db-weekmod"><div class="db-weekhd"><b>' + esc(m.code) + '</b>' + (m.days != null ? '<span>' + (m.days === 0 ? 'Exam today' : 'Exam in ' + m.days + ' day' + (m.days === 1 ? '' : 's')) + '</span>' : '') + '</div><p class="db-weekt">' + esc(m.title) + '</p><ul>' + (m.topics || []).map(function (t) {
+        return '<li><a href="/dashboard/practice/' + encodeURIComponent(m.code) + '?t=' + t.pos + '" data-plan="topic">' + esc(t.title) + '</a><small>' + (t.tried ? 'your mark so far ~' + t.score : 'not practised yet') + '</small></li>';
+      }).join('') + '</ul><a class="btn primary small" href="/dashboard/practice/' + encodeURIComponent(m.code) + '?q=start" data-plan="start">Start a 5-minute question</a></div>';
+    }).join('') + '</div></section>';
+  }
   function planChip() {
     var p = S.plan; if (!p) return '';
     if (p.tier === 'pro') return ' <span class="db-chip pro">Pro</span>';
@@ -1108,9 +1126,12 @@
       '<dl class="db-dl"><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || 'Not set') + '</dd><dt>Year</dt><dd>' + (p.year ? 'Year ' + p.year : '–') + '</dd></dl>' +
       '<p class="mk-fine">Changing course lets you pick a different university, course or year, then choose which modules to keep. Your marked answers and flashcards stay.</p>' +
       '<h3 class="db-h3">Modules (' + S.mods.length + ')</h3><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="db-rmbtn" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">Remove</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><div class="mk-row start"><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div></section>' +
+      '<section class="mk-card" id="db-invite"><h2>Invite a coursemate</h2><p class="mk-fine">Send them your link. When they sign up, you both get 7 days of Pro free.</p><div class="mk-row start db-promoform"><input id="db-invlink" type="text" readonly value="Loading your link…" aria-label="Your invite link" style="text-transform:none;letter-spacing:0"><button type="button" class="btn primary small" id="db-invcopy">Copy link</button>' + (navigator.share ? '<button type="button" class="btn line small" id="db-invshare">Share</button>' : '') + '</div><p class="mk-fine" id="db-invmsg" role="status"></p></section>' +
+      '<section class="mk-card" id="db-emails"><h2>Emails</h2><label class="db-check"><input type="checkbox" id="db-weekly" checked> <span><b>Weekly revision plan</b><br><span class="mk-fine">Every Monday: your weakest topics in each module and a 5-minute question to start on. One email a week.</span></span></label><p class="mk-fine" id="db-weeklymsg" role="status"></p></section>' +
       '<section class="mk-card" id="db-promo"><h2>Got a society code?</h2><p class="mk-fine">Societies we partner with give their members free Pro. Enter the code they shared.</p><form class="mk-row start db-promoform" id="db-promoform"><input id="db-promoin" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. UCLEFS" aria-label="Society code" maxlength="24"><button type="submit" class="btn primary small">Apply code</button></form><p class="mk-fine" id="db-promomsg" role="status"></p></section>' +
       '<p class="db-more">Need help? Email <a href="mailto:' + esc(CFG.contactEmail || 'hello@unizy.uk') + '">' + esc(CFG.contactEmail || 'hello@unizy.uk') + '</a>. Notes and flashcards are in the <a href="/app">study tools</a>.</p>';
     $('db-promoform').onsubmit = function (e) { e.preventDefault(); redeemPromo($('db-promoin').value, $('db-promomsg')); };
+    accountExtras();
     $('db-logout').onclick = logout;
     $('db-tour').onclick = replayTour;
     $('db-recourse').onclick = function () { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); };
@@ -1128,6 +1149,40 @@
       if (msgEl) msgEl.textContent = (d && d.message) || 'Something went wrong. Try again.';
       else if (d && !d.ok) toastPromo(d.message);
     }).catch(function () { if (msgEl) msgEl.textContent = 'Couldn’t check that code. Try again.'; });
+  }
+  // Invite link (rpc/my_referral) and the weekly email switch (email_prefs + rpc/set_weekly_email)
+  function accountExtras() {
+    var link = '';
+    rest('rpc/my_referral', { method: 'POST', body: '{}' }).then(function (d) {
+      if (!d || !d.code || !$('db-invlink')) return;
+      link = 'https://unizy.uk/r/' + d.code; $('db-invlink').value = link;
+      if (d.invited) $('db-invmsg').textContent = d.invited + ' coursemate' + (d.invited === 1 ? ' has' : 's have') + ' joined with your link' + (d.invited >= d.cap ? '. You’ve reached the ' + d.cap + '-invite reward limit, but they still get their 7 days.' : '.');
+    }).catch(function () { if ($('db-invlink')) $('db-invlink').value = 'Couldn’t load your link. Refresh to try again.'; });
+    $('db-invcopy').onclick = function () {
+      if (!link) return; var ok = function () { $('db-invmsg').textContent = 'Link copied. Send it to someone on your course.'; track('invite_copy'); };
+      if (navigator.clipboard) navigator.clipboard.writeText(link).then(ok, function () { $('db-invlink').select(); document.execCommand('copy'); ok(); });
+      else { $('db-invlink').select(); document.execCommand('copy'); ok(); }
+    };
+    if ($('db-invshare')) $('db-invshare').onclick = function () {
+      if (!link) return; track('invite_share');
+      navigator.share({ title: 'Unizy', text: 'I’ve been practising for exams on Unizy. It marks your answers like an examiner. Sign up with my link and we both get 7 days of Pro free:', url: link }).catch(function () {});
+    };
+    rest('email_prefs?select=weekly').then(function (r) { if (r && r[0] && $('db-weekly')) $('db-weekly').checked = !!r[0].weekly; }).catch(function () {});
+    $('db-weekly').onchange = function () {
+      var on = this.checked; $('db-weeklymsg').textContent = 'Saving…';
+      rest('rpc/set_weekly_email', { method: 'POST', body: { p_on: on } }).then(function () { track(on ? 'weekly_on' : 'weekly_off'); $('db-weeklymsg').textContent = on ? 'You’ll get your plan on Mondays.' : 'Weekly emails are off.'; })
+        .catch(function () { $('db-weeklymsg').textContent = 'Couldn’t save. Try again.'; });
+    };
+  }
+  // A friend's invite (/r/CODE -> ?invite=CODE) is remembered on the device and claimed once signed in
+  function claimInvite() {
+    var c; try { c = localStorage.getItem('unizy:invite'); } catch (e) {}
+    if (!c) return;
+    rest('rpc/claim_referral', { method: 'POST', body: { p_code: c } }).then(function (d) {
+      try { localStorage.removeItem('unizy:invite'); } catch (e) {}
+      if (d && d.ok) { track('invite_claimed'); loadPlan().then(function () { renderTop(); toastPromo(d.message); }); }
+      else if (d && d.message) toastPromo(d.message);
+    }).catch(function () {});
   }
   function toastPromo(t) {
     if (!t) return; var el = document.createElement('div'); el.className = 'db-toast'; el.setAttribute('role', 'status'); el.textContent = t;
@@ -1162,6 +1217,7 @@
         rest('rpc/touch_activity', { method: 'POST', body: '{}' }).then(function (d) { if (d && d.excluded) { try { localStorage.setItem('unizy:notrack', '1'); } catch (e) {} } }).catch(function () {});
         if (window.UnizyWelcome) window.UnizyWelcome.check(rawRest, null, uid());
         var pc = pendingPromo(); if (pc) redeemPromo(pc, null);
+        claimInvite();
       });
     }).catch(function (e) {
       if (e && e.message === 'signin') return;

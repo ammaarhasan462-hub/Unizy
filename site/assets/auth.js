@@ -7,6 +7,7 @@
   var root = document.getElementById('auth');
   var params = new URLSearchParams(location.search);
   try { if (params.get('code')) localStorage.setItem('unizy:promo', params.get('code').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20)); } catch (e) {} // society code, applied in the dashboard
+  try { if (params.get('invite')) localStorage.setItem('unizy:invite', params.get('invite').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)); } catch (e) {} // friend's invite, claimed in the dashboard
   var next = params.get('next') || '/dashboard';
   if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/dashboard';
   var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -131,7 +132,7 @@
   function busy(btn, on, label) { btn.disabled = on; btn.setAttribute('aria-busy', on ? 'true' : 'false'); if (label) btn.textContent = label; }
   function render(nodes) { root.innerHTML = ''; nodes.forEach(function (n) { if (n) root.appendChild(n); }); var f = root.querySelector('input:not([type=hidden])'); if (f && window.innerWidth > 700) setTimeout(function () { f.focus(); }, 20); }
   function h1(t, sub) { return el('div', { class: 'head' }, [el('h1', { text: t }), sub ? el('p', { class: 'sub', text: sub }) : null]); }
-  function legal() { return el('p', { class: 'legal' }, ['By continuing you agree to Unizy’s ', el('a', { href: '/terms.html', text: 'terms' }), ' and ', el('a', { href: '/privacy.html', text: 'privacy policy' }), '. Unizy is for students aged 16 and over.']); }
+  function legal() { return el('p', { class: 'legal' }, ['By continuing you agree to Unizy’s ', el('a', { href: '/terms.html', text: 'terms' }), ' and ', el('a', { href: '/privacy.html', text: 'privacy policy' }), '. Unizy is for students aged 16 and over. New accounts get a short weekly revision plan by email on Mondays; unsubscribe any time.']); }
   // a brand-new account (made in the last hour, which is how long a code lasts) that has just signed in for the first time
   function isNew(u) { var t = u && Date.parse(u.created_at); return !!t && Date.now() - t < 60 * 60000; }
   function countSource() {

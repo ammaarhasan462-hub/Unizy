@@ -804,3 +804,17 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .db-toast.out{opacity:0}
 @media (max-width:640px){.mk-gbtns{margin-left:0;width:100%}.mk-gbtns .btn{flex:1 1 auto;justify-content:center}}
 @media (max-width:1180px){.mk-gbar .mk-cls,.mk-gbar .mk-gnum{display:none}.mk-gbar{padding:10px;background:none;border:0;margin:8px 0 4px}.mk-gbtns{margin-left:0}}
+
+/* This week's plan (dashboard home) and Account: invite + email switch */
+.db-week .mk-row{align-items:baseline;gap:10px;flex-wrap:wrap}
+.db-weekgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.db-weekmod{border:1px solid #E6DEC4;background:#FBF7EC;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.db-weekhd{display:flex;justify-content:space-between;gap:8px;font-size:13px;letter-spacing:.05em;color:#8A5E1E}
+.db-weekhd span{font-weight:700;text-transform:uppercase;font-size:12px}
+.db-weekt{margin:0;font-weight:700;color:#17302A;line-height:1.3}
+.db-weekmod ul{list-style:none;margin:2px 0 8px;padding:0;display:flex;flex-direction:column;gap:7px}
+.db-weekmod li a{color:#17302A;font-weight:600;text-decoration:underline;text-decoration-color:#D9C48E;text-underline-offset:3px}
+.db-weekmod li small{display:block;color:#5D6D67;font-size:12.5px}
+.db-weekmod .btn{align-self:flex-start;margin-top:auto}
+.db-check{display:flex;gap:10px;align-items:flex-start;cursor:pointer;line-height:1.4}
+.db-check input{width:18px;height:18px;margin-top:2px;accent-color:#17302A;flex:none}
