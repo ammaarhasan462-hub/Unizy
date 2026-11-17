@@ -74,7 +74,8 @@
     return rawRest(path, opts).then(function (r) {
       if (r.status === 401) { toLogin(); throw new Error('signin'); }
       if (!r.ok) throw new Error('Couldn’t load that. Check your connection and try again.');
-      return r.status === 204 || r.status === 201 && !(opts && opts.prefer && /representation/.test(opts.prefer)) ? null : r.json();
+      // an upsert that updates an existing row answers 200 with an empty body, so parse only when there is a body
+      return r.text().then(function (t) { if (!t) return null; try { return JSON.parse(t); } catch (e) { return null; } });
     });
   }
   function uid() { var s = getSession(); return s && s.user && s.user.id; }

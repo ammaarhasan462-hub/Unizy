@@ -72,7 +72,7 @@
       if (t && opts.auth) h.Authorization = 'Bearer ' + t;
       if (opts.prefer) h.Prefer = opts.prefer;
       return fetch(CFG.supabaseUrl + '/rest/v1/' + path, { method: opts.method || 'GET', headers: h, body: opts.body ? JSON.stringify(opts.body) : undefined })
-        .then(function (r) { return r.ok ? (r.status === 204 || r.status === 201 ? null : r.json()) : Promise.reject(new Error('Couldn’t load that. Check your connection and try again.')); });
+        .then(function (r) { return r.ok ? r.text().then(function (t) { if (!t) return null; try { return JSON.parse(t); } catch (e) { return null; } }) : Promise.reject(new Error('Couldn’t load that. Check your connection and try again.')); });
     });
   }
   function marker(body) {
