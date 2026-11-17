@@ -126,7 +126,8 @@ export default function Intro() {
       engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u, city });
       setOsm(!!city);
       // fetch Imperial's map in the background while the picker is up
-      if (u === 'ucl') setTimeout(() => loadCity('imperial'), 1500);
+      // (only while the picker is still up: after a pick or a skip it would block the page while people scroll)
+      if (u === 'ucl') setTimeout(() => { if (!pickedRef.current && !doneRef.current) loadCity('imperial'); }, 1500);
       engineRef.current = engine;
       window.__smgIntro = engine;
     };

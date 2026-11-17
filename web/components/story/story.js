@@ -634,18 +634,20 @@ export function mountStory(root, opts = {}) {
 
     // ---- drifting cards and patterns ----
     if (!reduce) {
-      floats.forEach((f) => {
-        if (!f.sec) return;
-        const r = f.sec.getBoundingClientRect();
-        if (!near(r)) return;
+      const fr = floats.map((f) => (f.sec ? f.sec.getBoundingClientRect() : null));
+      const pr = pats.map((pt) => (pt.sec ? pt.sec.getBoundingClientRect() : null));
+      floats.forEach((f, i) => {
+        const r = fr[i];
+        if (!r || !near(r)) return;
         const off = r.top + r.height / 2 - innerHeight / 2;
         f.el.style.transform = `translate3d(${(Math.sin(t * 0.5 + f.ph) * 10).toFixed(1)}px,${(off * f.sp + Math.sin(t * 0.8 + f.ph) * 8).toFixed(1)}px,0) rotate(${(f.rot + Math.sin(t * 0.6 + f.ph) * 3).toFixed(2)}deg)`;
       });
-      pats.forEach((pt) => {
-        if (!pt.sec) return;
-        const r = pt.sec.getBoundingClientRect();
-        if (!near(r)) return;
-        pt.el.style.backgroundPosition = `${(Math.sin(t * 0.12) * 30).toFixed(1)}px ${(r.top * pt.sp - t * 8).toFixed(1)}px`;
+      const wrap = (v, n) => ((v % n) + n) % n;
+      pats.forEach((pt, i) => {
+        const r = pr[i];
+        if (!r || !near(r)) return;
+        // the layer is one tile (400 x 380) bigger on each side, so wrapping the offset never shows an edge
+        pt.el.style.transform = `translate3d(${(wrap(Math.sin(t * 0.12) * 30, 400) - 400).toFixed(1)}px,${(wrap(r.top * pt.sp - t * 8, 380) - 380).toFixed(1)}px,0)`;
       });
     }
   }
