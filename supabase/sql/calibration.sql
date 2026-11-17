@@ -75,3 +75,22 @@ returns int language sql stable security definer set search_path to 'public' as 
   select case when count(*) >= 8 and abs(avg(gap)) >= 2 then greatest(-6, least(6, round(avg(gap))))::int else 0 end from d
 $$;
 revoke all on function public.calib_offset(text, text) from public, anon, authenticated;
+
+-- Reward (Nov 2026, migration anchor_reward_week_pro): approve_marked_answer(id) switches a shared answer on and
+-- gives the student 7 days of Pro, once per answer; share_marked_answer's thank-you message mentions the reward.
+alter table public.marking_anchors add column if not exists rewarded_at timestamptz;
+create or replace function public.approve_marked_answer(p_id uuid)
+returns jsonb language plpgsql security definer set search_path to 'public' as $$
+declare a record;
+begin
+  select * into a from marking_anchors where id = p_id for update;
+  if a.id is null then return jsonb_build_object('ok', false, 'message', 'not found'); end if;
+  update marking_anchors set active = true where id = p_id;
+  if a.submitted_by is not null and a.rewarded_at is null then
+    perform give_pro_days(a.submitted_by, 7);
+    update marking_anchors set rewarded_at = now() where id = p_id;
+    return jsonb_build_object('ok', true, 'rewarded', true);
+  end if;
+  return jsonb_build_object('ok', true, 'rewarded', false);
+end $$;
+revoke all on function public.approve_marked_answer(uuid) from public, anon, authenticated;
