@@ -498,10 +498,20 @@ async function runMark(service: any, apiKey: string, mod: any, code: string, o: 
   question: string; answer: string; minutes: number | null; questionId: string | null; prevId: string | null; userId: string | null; att: any; hasAtt: boolean;
 }, refund: () => Promise<unknown>): Promise<any> {
   const { question, answer, minutes, questionId, prevId, att, hasAtt } = o;
-  const [details, rubric, { data: topics }] = await Promise.all([
-    moduleDetails(service, mod), rubricFor(service, mod.department, mod.uni || "ucl"),
+  const uniKey = mod.uni || "ucl";
+  const [details, rubric, { data: topics }, { data: anchors }, { data: offset }] = await Promise.all([
+    moduleDetails(service, mod), rubricFor(service, mod.department, uniKey),
     service.from("module_topics").select("position, title").eq("code", code).order("position"),
+    // real answers from this university with the marks they actually got (calibration examples), and the average
+    // gap between students' real marks and our predictions in this department (0 until there are 8+ reports)
+    service.rpc("anchors_for", { p_uni: uniKey, p_department: mod.department ?? null, p_code: code }),
+    service.rpc("calib_offset", { p_uni: uniKey, p_department: mod.department ?? null }),
   ]);
+  const anchorList = Array.isArray(anchors) ? (anchors as any[]) : [];
+  const anchorText = anchorList.length ? "\nCALIBRATION EXAMPLES: real answers from " + uniOf(mod).name + " " + (mod.department || "") +
+    " students, with the mark their examiners actually gave. Use them to set your scale for this department (how strict it is, what separates the bands). Do not compare content or reward similarity to them.\n" +
+    anchorList.map((a, i) => `--- Example ${i + 1}: ${a.code}, real mark ${a.mark}` + (a.question ? `\nQuestion: ${String(a.question).slice(0, 300)}` : "") +
+      `\nAnswer (extract): """${a.answer}"""` + (a.feedback ? `\nExaminer's comments: ${a.feedback}` : "")).join("\n") + "\n" : "";
   let guide = "", tier: string | null = null, topicPos: number | null = null;
   if (questionId) {
     const { data: q } = await service.from("module_questions").select("guide, tier, topic_pos").eq("id", questionId).eq("code", code).maybeSingle();
@@ -524,7 +534,7 @@ Module description: """${details.slice(0, 2500)}"""
 
 MARKING CRITERIA:
 ${rubric}
-${guide ? "\n" + guide + "\n" : ""}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
+${guide ? "\n" + guide + "\n" : ""}${anchorText}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
 QUESTION: """${question}"""
 ${minutes ? `Written in ${minutes} minutes (exam conditions).` : "Time taken not given."}
 
@@ -570,6 +580,9 @@ Return one JSON object:
   let lo = Math.max(0, Math.min(100, Math.round(+out.mark_low || 0))), hi = Math.max(0, Math.min(100, Math.round(+out.mark_high || lo)));
   if (hi < lo) [lo, hi] = [hi, lo];
   if (hi - lo > 6) hi = lo + 5;
+  // calibration from students' real marks in this department (see supabase/sql/calibration.sql)
+  const shift = Number.isInteger(offset) ? Math.max(-6, Math.min(6, offset as number)) : 0;
+  if (shift) { lo = Math.max(0, Math.min(100, lo + shift)); hi = Math.max(0, Math.min(100, hi + shift)); }
   const mid = (lo + hi) / 2;
   const cls = mid >= 70 ? "First" : mid >= 60 ? "2:1" : mid >= 50 ? "2:2" : mid >= 40 ? "Third" : "Fail";
   if (askTopic && Number.isInteger(+out.topic_pos) && tlist.some((t) => t.position === +out.topic_pos)) topicPos = +out.topic_pos;

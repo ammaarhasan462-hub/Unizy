@@ -785,7 +785,7 @@
     var draw = homeDraw = function () {
       if (tabOf(location.pathname) !== 'home') return;
       var a = S.attempts || [], st = stats(a), p = S.profile || {};
-      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', p.uni && p.uni !== 'ucl' ? UN(p.uni).short : ''].filter(Boolean).join(' · ') || UN().short) + '</p></header>';
+      var html = '<header class="db-hello"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Today') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', UN(p.uni).short].filter(Boolean).join(' · ') || UN().short) + (p.course ? ' <button type="button" class="db-chg" id="db-chgcourse">Change university or course</button>' : '') + '</p></header>';
       if (!p.course && !S.mods.length) html += '<div class="mk-guestcta db-addcourse"><div><b>Add your course</b><p>Pick your course and year and we’ll add your modules, so practice questions and your tutor match what you study.</p></div><button type="button" class="btn primary" id="db-addcourse">Add my course</button></div>';
       var exams = S.mods.filter(function (m) { var d = ST.daysUntil(m.exam_date); return d != null && d >= 0; }).sort(function (x, y) { return ST.daysUntil(x.exam_date) - ST.daysUntil(y.exam_date); });
       if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
@@ -806,7 +806,7 @@
       var b = e.target.closest('button'); if (!b) return;
       if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
       if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
-      if (b.id === 'db-addcourse') { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); }
+      if (b.id === 'db-addcourse' || b.id === 'db-chgcourse') { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); }
     };
     refreshStudy();
   }
@@ -1122,16 +1122,31 @@
     el.innerHTML = '<header class="db-hello"><h1>Account</h1></header>' +
       '<section class="mk-card"><dl class="db-dl"><dt>Name</dt><dd>' + esc(u.name || '–') + '</dd><dt>Email</dt><dd>' + esc(u.email || '') + '</dd><dt>Plan</dt><dd>' + esc(plan) + '</dd></dl>' +
       '<div class="mk-row start">' + (pl && pl.tier === 'pro' ? (CFG.stripe && CFG.stripe.portal ? '<a class="btn line small" href="' + esc(CFG.stripe.portal) + '" target="_blank" rel="noopener">Manage billing</a>' : '') : '<a class="btn primary small" href="/pricing">Go Pro</a>') + '<a class="btn line small" href="/reset.html">Change password</a><button type="button" class="btn line small" id="db-logout">Log out</button><button type="button" class="btn line small" id="db-tour">Replay the dashboard tour</button></div></section>' +
-      '<section class="mk-card" id="db-course"><div class="mk-row"><h2>Your course and modules</h2><button type="button" class="btn primary small" id="db-recourse">Change course</button></div>' +
+      '<section class="mk-card" id="db-course"><div class="mk-row"><h2>Your course and modules</h2><button type="button" class="btn primary small" id="db-recourse">Change university or course</button></div>' +
       '<dl class="db-dl"><dt>University</dt><dd>' + esc(UN().name) + '</dd><dt>Course</dt><dd>' + esc(p.course || 'Not set') + '</dd><dt>Year</dt><dd>' + (p.year ? 'Year ' + p.year : '–') + '</dd></dl>' +
-      '<p class="mk-fine">Changing course lets you pick a different university, course or year, then choose which modules to keep. Your marked answers and flashcards stay.</p>' +
+      '<p class="mk-fine">Picked the wrong university or course while trying Unizy out? Change it here: pick a different university, course or year, then choose your modules. Switching university swaps your modules for that university’s. Your marked answers and flashcards stay.</p>' +
       '<h3 class="db-h3">Modules (' + S.mods.length + ')</h3><ul class="db-mlist">' + (S.mods.length ? S.mods.map(function (m) { return '<li><span class="db-mcode">' + esc(m.code) + '</span><span>' + esc(m.title) + '</span><button type="button" class="db-rmbtn" data-rm="' + m.code + '" aria-label="Remove ' + esc(m.code) + '">Remove</button></li>'; }).join('') : '<li class="db-empty">No modules yet.</li>') + '</ul><div class="mk-row start"><a class="btn line small" href="/dashboard/practice">+ Add a module</a></div></section>' +
       '<section class="mk-card" id="db-invite"><h2>Invite a coursemate</h2><p class="mk-fine">Send them your link. When they sign up, you both get 7 days of Pro free.</p><div class="mk-row start db-promoform"><input id="db-invlink" type="text" readonly value="Loading your link…" aria-label="Your invite link" style="text-transform:none;letter-spacing:0"><button type="button" class="btn primary small" id="db-invcopy">Copy link</button>' + (navigator.share ? '<button type="button" class="btn line small" id="db-invshare">Share</button>' : '') + '</div><p class="mk-fine" id="db-invmsg" role="status"></p></section>' +
+      '<section class="mk-card" id="db-share"><h2>Got an essay back with its mark?</h2><p class="mk-fine">Share it and we’ll use it to calibrate the marking to how your department really marks, so Unizy’s predictions get closer to your real grades. It’s only used to set the marking scale, never shown to anyone else, and your name isn’t attached.</p>' +
+        '<details class="db-sharebox"><summary class="btn line small">Share a marked answer</summary><form id="db-shareform" class="db-shareform" novalidate>' +
+        '<div class="db-sharerow"><label>Module code<input name="code" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. ECON0002" maxlength="20" value="' + esc((S.mods[0] && S.mods[0].code) || '') + '"></label><label>Mark you got (out of 100)<input name="mark" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64"></label></div>' +
+        '<label>The question<textarea name="question" rows="2" maxlength="2000" placeholder="Paste the essay or exam question"></textarea></label>' +
+        '<label>Your answer<textarea name="answer" rows="8" maxlength="15000" placeholder="Paste the whole answer, as you handed it in"></textarea></label>' +
+        '<label>Examiner’s comments (optional)<textarea name="feedback" rows="3" maxlength="4000" placeholder="Any feedback you got with the mark"></textarea></label>' +
+        '<label class="db-check"><input type="checkbox" name="consent"> <span>I wrote this answer and I’m happy for Unizy to use it, without my name, to calibrate its marking.</span></label>' +
+        '<div class="mk-row start"><button type="submit" class="btn primary small">Share it</button></div><p class="mk-fine" id="db-sharemsg" role="status"></p></form></details></section>' +
       '<section class="mk-card" id="db-emails"><h2>Emails</h2><label class="db-check"><input type="checkbox" id="db-weekly" checked> <span><b>Weekly revision plan</b><br><span class="mk-fine">Every Monday: your weakest topics in each module and a 5-minute question to start on. One email a week.</span></span></label><p class="mk-fine" id="db-weeklymsg" role="status"></p></section>' +
       '<section class="mk-card" id="db-promo"><h2>Got a society code?</h2><p class="mk-fine">Societies we partner with give their members free Pro. Enter the code they shared.</p><form class="mk-row start db-promoform" id="db-promoform"><input id="db-promoin" type="text" autocomplete="off" autocapitalize="characters" placeholder="e.g. UCLEFS" aria-label="Society code" maxlength="24"><button type="submit" class="btn primary small">Apply code</button></form><p class="mk-fine" id="db-promomsg" role="status"></p></section>' +
       '<p class="db-more">Need help? Email <a href="mailto:' + esc(CFG.contactEmail || 'hello@unizy.uk') + '">' + esc(CFG.contactEmail || 'hello@unizy.uk') + '</a>. Notes and flashcards are in the <a href="/app">study tools</a>.</p>';
     $('db-promoform').onsubmit = function (e) { e.preventDefault(); redeemPromo($('db-promoin').value, $('db-promomsg')); };
     accountExtras();
+    $('db-shareform').onsubmit = function (e) {
+      e.preventDefault(); var f = e.target, msg = $('db-sharemsg'), btn = f.querySelector('button[type=submit]');
+      msg.textContent = 'Sending…'; btn.disabled = true;
+      rest('rpc/share_marked_answer', { method: 'POST', body: { p_code: f.code.value, p_mark: f.mark.value === '' ? null : +f.mark.value, p_question: f.question.value, p_answer: f.answer.value, p_feedback: f.feedback.value, p_consent: f.consent.checked } })
+        .then(function (d) { btn.disabled = false; msg.textContent = (d && d.message) || 'Something went wrong. Try again.'; if (d && d.ok) { track('anchor_shared'); f.reset(); } })
+        .catch(function () { btn.disabled = false; msg.textContent = 'Couldn’t send it. Try again.'; });
+    };
     $('db-logout').onclick = logout;
     $('db-tour').onclick = replayTour;
     $('db-recourse').onclick = function () { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); };

@@ -826,3 +826,14 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .mk-save .mk-savefine{margin:0}
 .mk-save .mk-savefine .mk-savealt{font-weight:600}
 .mk-save-end{margin-top:22px}
+
+/* change university link, share a marked answer */
+.db-chg{background:none;border:0;padding:0;margin-left:8px;font:inherit;font-size:13.5px;font-weight:600;color:#17302A;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.db-sharebox summary{list-style:none;display:inline-flex;cursor:pointer}
+.db-sharebox summary::-webkit-details-marker{display:none}
+.db-sharebox[open] summary{display:none}
+.db-shareform{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.db-shareform label:not(.db-check){display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;color:#17302A}
+.db-shareform input[type=text],.db-shareform input[type=number],.db-shareform textarea{font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border-radius:10px;border:1.5px solid #C8D1CB;background:#fff;color:#17302A;min-width:0}
+.db-sharerow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:600px){.db-sharerow{grid-template-columns:1fr}}
