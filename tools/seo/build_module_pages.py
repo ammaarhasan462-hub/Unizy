@@ -174,6 +174,10 @@ def meta_swap(page, title, desc, url):
     return page
 
 
+def pending_tail(lines):
+    return ''.join(l + '\n' for l in lines)
+
+
 def main():
     mods = load()
     if len(mods) < 10:
@@ -213,17 +217,31 @@ def main():
         if f.endswith('.html') and f not in keep:
             os.remove(os.path.join(out_dir, f))
 
-    # exact rewrites ahead of the catch-all
+    # Cloudflare Pages: fixed-path rules must come before wildcard/placeholder ones, or every rule after the first
+    # wildcard counts towards the 100 dynamic-rule cap and the rest are silently dropped (this broke /qr once).
+    # So the file is rebuilt as: module rules, other fixed rules, then wildcard rules, each keeping its comments.
     rpath = os.path.join(SITE, '_redirects')
     red = open(rpath, encoding='utf-8').read()
     red = re.sub(r'# BEGIN module pages.*?# END module pages\n', '', red, flags=re.S)
-    block = '# BEGIN module pages (tools/seo/build_module_pages.py): each full pack has its own page for search engines\n' + \
-            ''.join('/modules/%s  /m/%s  200\n' % (m['code'], m['code']) for m in mods) + '# END module pages\n'
-    catch = '/modules/*  /mark  200\n'
-    if catch not in red:
+    static, dynamic, pending = [], [], []
+    for line in red.splitlines():
+        if not line.strip():
+            continue
+        if line.lstrip().startswith('#'):
+            pending.append(line)
+            continue
+        src = line.split()[0]
+        (dynamic if ('*' in src or ':' in src) else static).extend(pending + [line])
+        pending = []
+    if not any(l.split()[0] == '/modules/*' for l in dynamic if not l.startswith('#')):
         sys.exit('catch-all /modules/* rule not found in _redirects')
-    red = red.replace(catch, block + catch, 1)
-    open(rpath, 'w', encoding='utf-8').write(red)
+    block = ['# BEGIN module pages (tools/seo/build_module_pages.py): each full pack has its own page for search engines'] + \
+            ['/modules/%s  /m/%s  200' % (m['code'], m['code']) for m in mods] + ['# END module pages']
+    rules = [l for l in static + dynamic if not l.startswith('#')]
+    n_dyn = sum(1 for l in dynamic if not l.startswith('#'))
+    if len(mods) + len(rules) > 2000 or n_dyn > 100:
+        sys.exit('too many _redirects rules for Cloudflare Pages')
+    open(rpath, 'w', encoding='utf-8').write('\n'.join(block + static + dynamic) + '\n' + pending_tail(pending))
 
     # sitemap
     urls = ['  <url><loc>%s%s</loc></url>' % (ORIGIN, p) for p in MAIN_PAGES]
