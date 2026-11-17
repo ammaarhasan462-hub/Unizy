@@ -1,0 +1,45 @@
+# Google-friendly pages for every finished practice pack (tools/seo/build_module_pages.py).
+# Runs daily so new packs get their own page and sitemap entry, and whenever the script or this file changes.
+# Commits to main without [skip ci] so Cloudflare Pages deploys it (GITHUB_TOKEN pushes never re-trigger workflows).
+name: Module pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/seo/**'
+      - '.github/workflows/module-pages.yml'
+  schedule:
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: module-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build module pages
+        run: python3 tools/seo/build_module_pages.py 2>&1 | tee seo.log
+      - name: Commit
+        if: always()
+        run: |
+          mkdir -p .ci
+          { echo "status: ${{ job.status }}"; echo "sha: ${{ github.sha }}"; cat seo.log 2>/dev/null; } > .ci/module-pages.txt
+          git config user.name "module-pages"
+          git config user.email "actions@users.noreply.github.com"
+          if [ "${{ job.status }}" = "success" ]; then git add -A site/m site/_redirects site/sitemap.xml site/mark.html; fi
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git add .ci/module-pages.txt
+          git commit -m "Module pages (${{ job.status }})"
+          for i in 1 2 3; do git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break; sleep 3; done
