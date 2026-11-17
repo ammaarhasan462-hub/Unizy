@@ -549,3 +549,19 @@ html[data-uni="kcl"] .uz {
   .th-cta .uz-btn { width: 100%; justify-content: center; white-space: normal; }
   .th-annot { max-height: 180px; }
 }
+
+/* sign-up ask after a free mark / when the free mark is used up */
+.th-save { margin: 16px 0 6px; padding: 16px 18px; border-radius: 16px; background: #FBF7EE; border: 1.5px solid #EADFC8; display: flex; flex-direction: column; gap: 10px; }
+.th-save.end { margin-top: 0; width: 100%; }
+.th-savehead { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 19px; line-height: 1.25; letter-spacing: -.01em; color: #17302A; }
+.uz .th-perks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 14.5px; line-height: 1.4; color: #34463F; }
+.uz .th-perks li { display: flex; gap: 9px; align-items: flex-start; }
+.uz .th-perks li::before { content: '\2713'; flex: none; width: 19px; height: 19px; margin-top: 1px; border-radius: 999px; background: #17302A; color: #F1DDA9; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.th-saverow { display: flex; flex-wrap: wrap; gap: 10px; }
+.th-saverow input { flex: 1 1 200px; min-width: 0; min-height: 48px; font: inherit; font-size: 16px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #C8D1CB; background: #fff; color: #17302A; }
+.th-saverow input:focus { outline: none; border-color: #17302A; box-shadow: 0 0 0 3px #B8862F; }
+.th-saverow .uz-btn { flex: 0 0 auto; }
+.uz .th-saveerr { margin: 0; font-size: 13.5px; color: #9B2C1F; }
+.uz .th-savefine { margin: 0; font-size: 12.5px; color: var(--txt-s); }
+.th-err.th-limitbox { background: none; padding: 0; color: inherit; font-size: inherit; }
+@media (max-width: 600px) { .th-saverow .uz-btn { width: 100%; justify-content: center; } }

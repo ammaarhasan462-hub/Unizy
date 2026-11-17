@@ -77,7 +77,7 @@ const QUESTION_CARD = `
   <label class="th-lab" for="th-ans">Your answer</label>
   <textarea id="th-ans" class="th-ans" data-ans rows="6" placeholder="Write 150–200 words. Bullet points are fine."></textarea>
   <div class="th-meta"><span data-wc>0 words · aim for 150–200</span><span>Saved on this device</span></div>
-  <p class="th-err" data-err hidden></p>
+  <div class="th-err" data-err role="status" hidden></div>
   <div class="th-btns">
     <button type="button" class="uz-btn uz-btn-gold th-go" data-mark><span>Mark my answer free</span>${ARROW}</button>
     <button type="button" class="th-sample" data-sample>Or see it marked with a sample answer</button>
@@ -130,6 +130,30 @@ function annotate(answer, lost) {
   return out.split(/\n{2,}/).map((p) => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
 }
 
+// The sign-up ask: after a free mark it leads with the visitor's grade; when the free mark is used up it offers
+// more practice. One email box: /signup?send=1 emails a code straight away (no password, no card).
+const NEXTCLS = { Fail: 'a Third', Third: 'a 2:2', '2:2': 'a 2:1', '2:1': 'a First', First: 'a high First' };
+function saveHtml(kind, r) {
+  let head, perks;
+  if (kind === 'limit') {
+    head = 'Keep practising, free';
+    perks = ['You’ve used your free marked answer. Sign up and get 3 marked answers a day for 3 days', 'Then 1 free marked answer every week, and a plan for your weakest topics every Monday', 'Your answer is kept, ready to mark'];
+  } else {
+    const c = r && r.class, nx = NEXTCLS[c];
+    head = c ? `Save your ${c === 'Fail' ? 'mark' : c}${nx ? ` and see how to reach ${nx}` : ''}` : 'Save this mark';
+    perks = ['Keep this mark and the feedback in your own account', 'Rewrite your weakest paragraph and watch your mark move', 'A plan for your weakest topics every Monday, and 1 free marked answer every week'];
+  }
+  const compact = kind === 'end';
+  return `<form class="th-save${compact ? ' end' : ''}" data-save-form="${kind}" novalidate>
+    <b class="th-savehead">${esc(head)}</b>
+    ${compact ? '' : `<ul class="th-perks">${perks.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`}
+    <div class="th-saverow"><input type="email" name="email" autocomplete="email" inputmode="email" placeholder="Personal or uni email" aria-label="Your email" required>
+      <button type="submit" class="uz-btn uz-btn-gold"><span>${kind === 'limit' ? 'Keep practising, free' : 'Save my grade, free'}</span>${ARROW}</button></div>
+    <p class="th-saveerr" hidden></p>
+    <p class="th-savefine">Takes 20 seconds: we email you a code, no password and no card.</p>
+  </form>`;
+}
+
 function resultHtml(r, answer, opts) {
   const lost = (r.lost || []).slice(0, 4), changes = (r.changes || []).slice(0, 3);
   const cls = esc(r.class || ''), range = r.mark_low != null ? `${r.mark_low}–${r.mark_high}` : '';
@@ -141,6 +165,7 @@ function resultHtml(r, answer, opts) {
   </div>
   <div class="th-grade"><span class="th-cls ${ccls}">${cls}</span><div><b>${range}</b><small>predicted mark range · ${esc(Q.poss)} grade bands</small></div></div>
   <p class="th-headline">${esc(r.headline || '')}</p>
+  ${opts.sample ? '' : saveHtml('top', r)}
   <div class="th-sec"><h3>Where you lost marks</h3>
     <div class="th-annot">${annotate(answer, lost)}</div>
     <ol class="th-lost">${lost.map((l, i) => `<li data-n="${i + 1}"><span class="n">${i + 1}</span><div><p>${esc(l.issue)}</p><p class="fix"><b>Fix:</b> ${esc(l.fix)}</p></div></li>`).join('')}</ol>
@@ -152,8 +177,7 @@ function resultHtml(r, answer, opts) {
     ${opts.sample
       ? `<button type="button" class="uz-btn uz-btn-gold" data-back><span>Now mark my own answer free</span>${ARROW}</button>
          <a class="th-link" href="/modules/${Q.code}?q=start" data-track-local="hero_find_open">Or practise on your own module</a>`
-      : `<a class="uz-btn uz-btn-gold" href="/signup?next=${encodeURIComponent('/modules/' + Q.code)}" data-save><span>Save this mark, free</span>${ARROW}</a>
-         <a class="th-link" href="/modules/${Q.code}">Rewrite it and watch your mark move</a>`}
+      : saveHtml('end', r)}
   </div>
   <p class="th-fine">${opts.sample ? 'This is real output from the Unizy marker for the sample answer, trimmed to fit.' : 'A practice estimate, not an official mark. Saved to your account when you sign up (email only, no card).'}</p>`;
 }
@@ -183,7 +207,32 @@ export function mountTry(root, opts = {}) {
     wc.textContent = `${n} word${n === 1 ? '' : 's'} · ${n < 40 ? 'aim for 150–200' : n <= 260 ? 'good length' : 'longer is fine too'}`;
     wc.classList.toggle('ok', n >= 40);
   }
-  function err(msg, html) { const e = card.querySelector('[data-err]'); if (!e) return; e.hidden = !msg; e.innerHTML = html ? msg : esc(msg); }
+  function err(msg, html) { const e = card.querySelector('[data-err]'); if (!e) return; e.classList.remove('th-limitbox'); e.hidden = !msg; e.innerHTML = html ? msg : esc(msg); }
+  function limit() {
+    const e = card.querySelector('[data-err]'); if (!e) return;
+    track('hero_limit_seen');
+    e.hidden = false; e.classList.add('th-limitbox'); e.innerHTML = saveHtml('limit');
+    e.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  // email box -> sign-up page, which sends the code straight away. A visitor who hit the limit gets their answer
+  // carried over to the module page (mark.js drafts), so it's in the box when they come back signed in.
+  card.addEventListener('submit', (ev) => {
+    const f = ev.target.closest && ev.target.closest('form[data-save-form]'); if (!f) return;
+    ev.preventDefault();
+    const em = (f.querySelector('input[name=email]').value || '').trim(), er = f.querySelector('.th-saveerr');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { er.hidden = false; er.textContent = 'Enter a valid email address.'; f.querySelector('input').focus(); return; }
+    const kind = f.getAttribute('data-save-form');
+    let next = '/modules/' + Q.code;
+    if (kind === 'limit') {
+      next = `/modules/${Q.code}?q=${Q.id}&v=answer`;
+      try {
+        const t = ls.get(DKEY), d = JSON.parse(localStorage.getItem('mark:drafts') || '{}');
+        if (t) { d[Q.code + ':' + Q.id] = { t, at: Date.now() }; localStorage.setItem('mark:drafts', JSON.stringify(d)); }
+      } catch (x) { /* storage off */ }
+    }
+    track(kind === 'limit' ? 'guest_limit_email' : 'hero_save_email');
+    location.href = `/signup?send=1&email=${encodeURIComponent(em)}&next=${encodeURIComponent(next)}`;
+  });
   function showResult(r, answer, sample) {
     card.innerHTML = resultHtml(r, answer, { sample });
     card.classList.add('res');
@@ -209,7 +258,7 @@ export function mountTry(root, opts = {}) {
     const ta = card.querySelector('[data-ans]'), answer = (ta.value || '').trim();
     if (opts.authed) { location.href = `/dashboard/practice/${Q.code}?q=${Q.id}&v=answer`; return; }
     if (words(answer) < 40) { err('Write a bit more first: at least a short paragraph (40+ words), ideally 150–200.'); ta.focus(); return; }
-    if (ls.get(GKEY)) { err(`You’ve already used your free marked answer on this device. <a href="/signup?next=${encodeURIComponent('/modules/' + Q.code)}">Sign up free</a> for 3 days of marking, no card needed.`, true); return; }
+    if (ls.get(GKEY)) { limit(); return; }
     busy = true; err('');
     const btn = card.querySelector('[data-mark]'); btn.disabled = true;
     const steps = ['Reading your answer…', 'Checking it against UCL’s grade bands…', 'Comparing it with the 2:1 and First descriptors…', 'Finding the sentences that cost marks…', 'Working out your 3 changes…', 'Nearly there…'];
@@ -225,7 +274,8 @@ export function mountTry(root, opts = {}) {
         if (!ok) {
           if (b.code === 'guest_used') ls.set(GKEY, 'used');
           track('hero_mark_fail'); btn.disabled = false; btn.innerHTML = `<span>Mark my answer free</span>${ARROW}`;
-          err((b.message || 'Something went wrong. Try again.') + (b.code === 'guest_used' || b.code === 'guest_busy' ? ` <a href="/signup?next=${encodeURIComponent('/modules/' + Q.code)}">Sign up free</a>` : ''), true);
+          if (b.code === 'guest_used' || b.code === 'guest_busy') { limit(); return; }
+          err(b.message || 'Something went wrong. Try again.');
           return;
         }
         ls.set(GKEY, 'used');

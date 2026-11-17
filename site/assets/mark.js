@@ -103,6 +103,25 @@
       if (b && b.saved && !b.already) { track('guest_mark_claimed'); if (state.mod && state.mod.code === c.code) loadMine(); changed(); }
     }).catch(function (e) { if (e && e.status === 400) try { localStorage.removeItem(CKEY); } catch (x) {} });
   }
+  // The sign-up ask for visitors. After a free mark it leads with their grade ("Save your 2:2 and see how to reach
+  // a 2:1"); when the free mark is used up it offers more practice instead of a dead end. One email box: the sign-up
+  // page sends a code straight away (?send=1), no password. The answer they wrote stays saved on this device.
+  var NEXTCLS = { Fail: 'a Third', Third: 'a 2:2', '2:2': 'a 2:1', '2:1': 'a First', First: 'a high First' };
+  function saveCard(kind, r) {
+    var head, perks;
+    if (kind === 'limit') {
+      head = 'Keep practising, free';
+      perks = ['You’ve used your free marked answer. Sign up and get 3 marked answers a day for 3 days', 'Then 1 free marked answer every week, and a plan for your weakest topics every Monday', 'Your answer stays in the box, ready to mark'];
+    } else {
+      var c = r && r.class, nx = NEXTCLS[c];
+      head = c ? 'Save your ' + (c === 'Fail' ? 'mark' : c) + (nx ? ' and see how to reach ' + nx : '') : 'Save this mark';
+      perks = ['Keep this mark and the feedback in your own account', 'Rewrite your weakest paragraph and watch your mark move', 'A plan for your weakest topics every Monday, and 1 free marked answer every week'];
+    }
+    return '<form class="mk-guestcta mk-save' + (kind === 'end' ? ' mk-save-end' : '') + '" data-guestsave="' + kind + '" novalidate><div><b class="mk-savehead">' + esc(head) + '</b>' +
+      (kind === 'end' ? '<p>Free account, email only. No password, no card.</p>' : '<ul class="mk-perks">' + perks.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>') + '</div>' +
+      '<div class="mk-saverow"><input type="email" name="email" autocomplete="email" inputmode="email" placeholder="Personal or uni email" aria-label="Your email" required><button type="submit" class="btn primary">' + (kind === 'limit' ? 'Keep practising, free' : 'Save my grade, free') + '</button></div>' +
+      '<p class="mk-fine mk-saveerr" hidden></p><p class="mk-fine mk-savefine">' + (kind === 'end' ? '' : 'Takes 20 seconds: we email you a code, no password and no card. ') + '<a class="mk-savealt" href="' + esc(signinUrl()) + '" data-guestsignup="1">Prefer a password? Sign up here</a></p></form>';
+  }
   function guestUsed() { try { return !!localStorage.getItem(GKEY); } catch (e) { return true; } }
   function canGuest() { return !getSession() && !guestUsed() && !HOOKS; }
   function guestMarker(body) {
@@ -177,7 +196,7 @@
   }
   function route() {
     var r = routeParams();
-    state.err = '';
+    state.err = ''; state.guestErr = false;
     if (!r.m) { state.mod = null; render(); setTitle(); return; }
     var after = function () {
       if (r.q === 'start') {
@@ -350,14 +369,15 @@
     var qEl = document.getElementById('mk-qtext'), aEl = document.getElementById('mk-answer'), ok = document.getElementById('mk-practice');
     var question = state.cur.own ? (qEl ? qEl.value.trim() : '') : state.cur.question;
     var answer = aEl ? aEl.value : '', t = tray(), hasAtt = !!(t && t.count());
-    state.err = '';
+    state.err = ''; state.guestErr = false;
     var smpNow = sampleFor(state.mod, state.cur); if (smpNow && answer.trim() === smpNow.trim()) track('start_sample_mark');
     if (state.cur.own && question.length < 10) { state.err = 'Paste the question you’re answering first.'; render(); return; }
     if (hasAtt && t.busy()) { state.err = 'Your attachments are still being prepared. Try again in a moment.'; render(); return; }
     if (!hasAtt && words(answer) < 40) { state.err = 'Write at least a paragraph or two, or add photos of your answer, so there’s something to mark.'; render(); return; }
     if (!ok || !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
     if (!getSession()) {
-      if (state.cur.own || !canGuest()) { location.href = signinUrl(); return; }
+      if (state.cur.own) { location.href = signinUrl(); return; }
+      if (!canGuest()) { state.guestErr = true; track('guest_limit_seen'); render(); var lc = document.querySelector('form[data-guestsave="limit"]'); if (lc) lc.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
       state.busy = true; state.busyAt = Date.now(); state.busyAtt = false; render();
       track('guest_mark_submit');
       guestMarker({ action: 'guest_mark', code: state.mod.code, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true }).then(function (b) {
@@ -784,7 +804,7 @@
       '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : smp || '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
       '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
-      (state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + (state.guestErr ? ' <a href="' + esc(signinUrl()) + '">Sign up free</a>' : '') + '</p>' : '') +
+      (state.guestErr ? saveCard('limit') : state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
       '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
       (state.busy ? '<div class="mk-busy"><span class="spin"></span><span id="mk-busytxt">' + esc(busyText()) + '</span></div><div class="mk-busybar"><i id="mk-busybar" style="width:' + busyPct() + '%"></i></div>' : '<button type="button" class="btn primary big td-go" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : ex ? 'Hand it in' : 'Mark my answer') : canGuest() && !c.own ? 'Mark my answer free' : 'Sign up free to get it marked') + '<span class="arr" aria-hidden="true">→</span></button>') + '</div>' +
       '<p class="mk-fine">' + (!getSession() && canGuest() && !c.own ? 'No account needed for your first marked answer. ' : '') + 'Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>' + inspectorBefore() + '</div>';
@@ -843,9 +863,7 @@
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
     // "Save this mark?": one email box. The sign-up page sends the code straight away (?send=1); once signed in,
     // claimGuest() saves this result to the new account. Google / Microsoft are one tap away on the same page.
-    if (r.guest) html += '<form class="mk-guestcta mk-save" data-guestsave="1" novalidate><div><b>Save this mark?</b><p>Enter your email and it’s kept in your account. Then rewrite your weakest paragraph and watch your mark move. No password, no card.</p></div>' +
-      '<div class="mk-saverow"><input type="email" name="email" autocomplete="email" inputmode="email" placeholder="Personal or uni email" aria-label="Your email" required><button type="submit" class="btn primary">Save my mark</button></div>' +
-      '<p class="mk-fine mk-saveerr" hidden></p><a class="mk-savealt" href="/signup?next=' + encodeURIComponent(MBASE + m.code) + '" data-guestsignup="1">Or continue with Google or Microsoft</a></form>';
+    if (r.guest) html += saveCard('top', r);
     var text = String(r.answer || '').replace(/^\[Attached:[^\]]*\]\s*/m, '');
     if (lost.length) {
       html += '<h3>Where you lost marks</h3><p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
@@ -856,6 +874,7 @@
     if (r.criteria && r.criteria.length) html += '<h3>How it was judged</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band) + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment || '') + '</p></div></li>'; }).join('') + '</ul>';
     html += '<p class="mk-src" id="mk-src">' + srcHtml() + '</p>';
     if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
+    if (r.guest) html += saveCard('end', r);
     html += '<div class="mk-row"><a class="btn line small" href="' + MBASE + m.code + (r.topic_pos != null ? '?t=' + r.topic_pos : '') + '" data-go="mod">Back to the Module Map</a></div></section>';
     if (r.id) html += '<section class="mk-card mk-realbox"><h3>Got a real mark for a similar answer?</h3><p>Tell us and we’ll use it to check the marker stays accurate for ' + esc(m.code) + '.</p><div class="mk-row start"><input id="mk-real" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64" aria-label="Your real mark"><button type="button" class="btn line small" data-real="' + r.id + '">Save</button></div><p id="mk-real-done" class="mk-fine"></p></section>';
     return html + '</div>' + inspectorAfter(r, q, ma) + '</div>';
@@ -945,8 +964,10 @@
     e.preventDefault();
     var em = (f.querySelector('input[name=email]').value || '').trim(), er = f.querySelector('.mk-saveerr');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { er.hidden = false; er.textContent = 'Enter a valid email address.'; f.querySelector('input').focus(); return; }
-    track('guest_save_email');
-    location.href = '/signup?send=1&email=' + encodeURIComponent(em) + '&next=' + encodeURIComponent(MBASE + state.mod.code);
+    var kind = f.getAttribute('data-guestsave');
+    track(kind === 'limit' ? 'guest_limit_email' : 'guest_save_email');
+    var back = kind === 'limit' ? location.pathname + location.search : MBASE + state.mod.code;
+    location.href = '/signup?send=1&email=' + encodeURIComponent(em) + '&next=' + encodeURIComponent(back);
   });
   function inScope() { var p = location.pathname.replace(/\/$/, ''); return p === BASE.replace(/\/$/, '') || MODRE.test(location.pathname); }
   window.addEventListener('popstate', function () { if (inScope()) route(); });
