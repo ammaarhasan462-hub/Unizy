@@ -32,7 +32,7 @@ export default function Nav() {
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       className="fixed inset-x-0 top-0 z-50"
     >
-      <div className={`mx-auto mt-3 flex max-w-[1240px] items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 sm:px-5 ${scrolled || open ? 'glass mx-3 shadow-[0_10px_40px_-12px_rgba(0,0,0,.8)] sm:mx-6 xl:mx-auto' : 'border border-transparent'}`}>
+      <div className={`mx-auto mt-3 flex max-w-[1240px] items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 sm:px-5 ${scrolled || open ? 'nav-solid mx-3 shadow-[0_10px_40px_-12px_rgba(0,0,0,.8)] sm:mx-6 xl:mx-auto' : 'border border-transparent'}`}>
         <Logo className={scrolled || open ? '' : 'text-paper!'} />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
           {LINKS.map(([t, h]) => (

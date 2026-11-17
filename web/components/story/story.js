@@ -412,12 +412,25 @@ export function mountStory(root, opts = {}) {
   let mx = 0, my = 0, smx = 0, smy = 0;
   on(window, 'pointermove', (e) => { if (e.pointerType !== 'mouse') return; mx = e.clientX / innerWidth - 0.5; my = e.clientY / innerHeight - 0.5; }, { passive: true });
 
-  let raf = 0, lastY = scrollY, vel = 0;
+  let raf = 0, lastY = scrollY, vel = 0, lastSkew = 0;
+  const megas = $$('.uz-mega');
+  // the booklet's size only changes on resize: reading offsetWidth/Height inside the frame, after writing styles,
+  // forced a full layout every frame (the main cause of the jank around the book)
+  let bookW = 0, bookH = 0;
+  const measureBook = () => { if (H && H.book) { bookW = H.book.offsetWidth; bookH = H.book.offsetHeight; } };
+  measureBook();
+  on(window, 'resize', measureBook);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureBook);
+  // sparks: font size is fixed per screen size, so set it once (changing it every frame re-laid out the text)
+  const sizeSparks = () => { if (H) H.sparks.forEach((sp, i) => { sp.style.fontSize = (innerWidth <= 900 ? 13 : 18) + (i % 3) * 5 + 'px'; }); };
+  sizeSparks();
+  on(window, 'resize', sizeSparks);
+  const sparkFront = [];
   const cur = { x: 0, y: 34, rx: 16, ry: -30, rz: 9, s: 1, open: 0 };
   let first = true, lastF = -1;
 
   const progress = (r) => clamp(-r.top / Math.max(1, r.height - innerHeight));
-  const near = (r) => r.bottom > -innerHeight * 0.2 && r.top < innerHeight * 1.2;
+  const near = (r) => r.height > 0 && r.bottom > -innerHeight * 0.2 && r.top < innerHeight * 1.2; // height 0 = hidden (phones)
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
@@ -426,8 +439,8 @@ export function mountStory(root, opts = {}) {
     const y = scrollY;
     vel = lerp(vel, y - lastY, 0.18);
     lastY = y;
-    const skew = reduce ? 0 : clamp(-vel * 0.06, -5, 5);
-    root.style.setProperty('--skew', skew.toFixed(2) + 'deg');
+    const skew = reduce ? 0 : Math.round(clamp(-vel * 0.06, -5, 5) * 10) / 10;
+    if (skew !== lastSkew) { lastSkew = skew; const v = skew.toFixed(1) + 'deg'; megas.forEach((m) => m.style.setProperty('--skew', v)); }
     smx = lerp(smx, mx, 0.06); smy = lerp(smy, my, 0.06);
 
     // ---- hero ----
@@ -477,7 +490,7 @@ export function mountStory(root, opts = {}) {
         const rx = cur.rx + Math.sin(t * 0.9) * 3 * idle - smy * 10;
         const ry = cur.ry + Math.sin(t * 0.6) * 6 * idle + smx * 16;
         const rz = cur.rz + Math.sin(t * 0.7 + 1) * 2 * idle;
-        const bw = H.book.offsetWidth;
+        const bw = bookW;
         const bx = cur.x * vw + cur.open * bw * 0.5 * cur.s;
         const by = cur.y * vh + Math.sin(t * 1.15) * 7 * idle;
         H.objin.style.transform = `translate3d(${bx.toFixed(1)}px,${by.toFixed(1)}px,0) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${cur.s.toFixed(3)})`;
@@ -485,7 +498,7 @@ export function mountStory(root, opts = {}) {
         const ryr = (ry * Math.PI) / 180;
         H.book.style.setProperty('--sh', (((ry % 360) + 360) % 360 / 360 * 160 - 30).toFixed(1) + '%');
         H.shades.forEach((s) => { s.style.setProperty('--dk', (0.42 * Math.abs(Math.sin(ryr)) + 0.18 * Math.abs(Math.sin((rx * Math.PI) / 180))).toFixed(3)); });
-        const bh = H.book.offsetHeight * cur.s;
+        const bh = bookH * cur.s;
         H.shadow.style.transform = `translate3d(${(bx - (cur.open ? bw * 0.5 * cur.s * cur.open : 0)).toFixed(1)}px,${(cur.y * vh + bh * 0.62).toFixed(1)}px,0) scale(${(cur.s * (1 + cur.open * 0.8) * (bw / 260)).toFixed(3)},${(cur.s * (bw / 260)).toFixed(3)})`;
         H.shadow.style.opacity = (0.75 - Math.sin(t * 1.15) * 0.12 * idle).toFixed(3);
 
@@ -498,13 +511,14 @@ export function mountStory(root, opts = {}) {
         const cx = innerWidth / 2 + (cur.x * vw + cur.open * bw * 0.5 * cur.s) - cur.open * bw * 0.5 * cur.s;
         const cy = innerHeight / 2 + by;
         const half = bw * cur.s * (cur.open > 0.5 ? 1 : 0.5);
-        const bhh = H.book.offsetHeight * cur.s * 0.5;
+        const bhh = bookH * cur.s * 0.5;
         const CALL = mobile
           ? [[0, -bhh - 52, 0], [0, -bhh - 18, 1], [0, bhh + 20, 0], [0, bhh + 54, 1]]
           : [[-half - 40, -bhh * 0.55, 0], [half + 40, -bhh * 0.25, 1], [-half - 30, bhh * 0.35, 0], [half + 30, bhh * 0.7, 1]];
         H.calls.forEach((c, i) => {
           const showC = p > 0.6 + i * 0.025 && p < 0.715;
-          c.classList.toggle('on', showC);
+          if (c.classList.contains('on') !== showC) c.classList.toggle('on', showC);
+          if (!showC) return; // hidden callouts keep their last position while they fade out
           const [ox, oy, right] = CALL[i];
           c.style.top = (cy + oy).toFixed(0) + 'px';
           if (mobile) {
@@ -523,8 +537,7 @@ export function mountStory(root, opts = {}) {
           const R = (bw * 0.95 + i * 18) * cur.s * (1 + cur.open * 0.5);
           const sx = Math.cos(ang) * R, sy = Math.sin(ang) * R * 0.42;
           const front = Math.sin(ang) > 0;
-          s.style.zIndex = front ? 6 : 3;
-          s.style.fontSize = (mobile ? 13 : 18) + (i % 3) * 5 + 'px';
+          if (sparkFront[i] !== front) { sparkFront[i] = front; s.style.zIndex = front ? 6 : 3; }
           s.style.opacity = ((front ? 0.9 : 0.35) * (1 - ss(0.95, 1, p))).toFixed(2);
           s.style.transform = `translate3d(${(cx - innerWidth / 2 + sx).toFixed(1)}px,${(cy - innerHeight / 2 + sy).toFixed(1)}px,0) translate(-50%,-50%) rotate(${(ang * 40).toFixed(1)}deg) scale(${front ? 1 : 0.7})`;
         });

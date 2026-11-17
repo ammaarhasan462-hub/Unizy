@@ -28,7 +28,7 @@ export default function UniTabs({ compact }) {
     track('lp_uni_' + (next || 'all'));
   };
   return (
-    <div ref={bar} className={`mx-auto flex w-max max-w-[calc(100vw-24px)] items-center gap-1 overflow-x-auto rounded-full border border-white/40 bg-white/80 p-1 shadow-[0_8px_30px_-14px_rgba(0,0,0,.45)] backdrop-blur-md transition-all duration-500 [scrollbar-width:none] ${compact ? 'mt-1.5 scale-[.94]' : 'mt-2.5'}`} role="tablist" aria-label="Choose your university">
+    <div ref={bar} className={`mx-auto flex w-max max-w-[calc(100vw-24px)] items-center gap-1 overflow-x-auto rounded-full border border-white/40 bg-white/95 p-1 shadow-[0_8px_30px_-14px_rgba(0,0,0,.45)] transition-all duration-500 [scrollbar-width:none] ${compact ? 'mt-1.5 scale-[.94]' : 'mt-2.5'}`} role="tablist" aria-label="Choose your university">
       <button type="button" role="tab" aria-selected={!uni} onClick={() => uni && choose(uni)} className={`shrink-0 rounded-full px-3.5 py-2.5 text-[13px] md:py-1.5 font-semibold transition-colors ${!uni ? 'bg-ink text-paper' : 'text-ink/70 hover:bg-ink/5 hover:text-ink'}`}>
         All unis
       </button>
