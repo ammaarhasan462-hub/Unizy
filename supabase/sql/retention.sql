@@ -167,7 +167,7 @@ begin
                      'oauth_done', 'oauth_fail', 'setup_uni_guess', 'setup_skip',
                      'hero_sample', 'hero_type', 'hero_mark_submit', 'hero_mark_done', 'hero_mark_fail', 'hero_save', 'hero_find', 'hero_find_open',
                      'start_q_open', 'setup_first_q', 'start_sample_clear', 'start_sample_mark',
-                     'promo_redeemed', 'share_grade', 'invite_copy', 'invite_share', 'invite_claimed', 'weekly_on', 'weekly_off', 'plan_open', 'email_open', 'guest_limit_seen', 'guest_limit_email', 'hero_limit_seen', 'hero_save_email', 'anchor_shared')
+                     'promo_redeemed', 'share_grade', 'invite_copy', 'invite_share', 'invite_claimed', 'weekly_on', 'weekly_off', 'plan_open', 'email_open', 'guest_limit_seen', 'guest_limit_email', 'hero_limit_seen', 'hero_save_email', 'anchor_shared', 'a2hs_install', 'a2hs_dismiss')
      and p_event !~ '^(src|join)_(tiktok|instagram|snapchat|whatsapp|google|bing|youtube|linkedin|reddit|x|facebook|poster|friend|society|email|other|site)$' then return; end if;
   begin hdr := current_setting('request.headers', true)::json; exception when others then hdr := null; end;
   ua := coalesce(hdr ->> 'user-agent', '');

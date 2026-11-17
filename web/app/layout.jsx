@@ -14,7 +14,9 @@ export const metadata = {
   alternates: { canonical: '/' },
   openGraph: { title: TITLE, description: 'Exam practice and marking for UCL, Imperial, Queen Mary, LSE and King’s modules. Your first answer marked free, no sign-up.', type: 'website', url: 'https://unizy.uk/', images: ['/assets/og.png?v=4'] },
   twitter: { card: 'summary_large_image' },
-  icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }] },
+  icons: { icon: [{ url: '/assets/favicon.svg', type: 'image/svg+xml' }], apple: [{ url: '/assets/icons/icon-180.png', sizes: '180x180' }] },
+  manifest: '/manifest.webmanifest',
+  appleWebApp: { capable: true, title: 'Unizy', statusBarStyle: 'default' },
 };
 
 export const viewport = { themeColor: '#F4F4EF', width: 'device-width', initialScale: 1 };

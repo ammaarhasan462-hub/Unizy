@@ -791,6 +791,7 @@
       if (exams.length) html += '<div class="td-count">' + exams.map(function (m) { var d = ST.daysUntil(m.exam_date); return '<a href="/dashboard/practice/' + m.code + '"' + (d <= 14 ? ' class="soon"' : '') + '><b>' + esc(m.code) + '</b>' + esc(ST.countdown(m.exam_date)) + '</a>'; }).join('') + '</div>';
       else if (S.mods.length) html += '<p class="db-more" style="margin:0 0 14px">Add your exam dates on each module’s page for a countdown here.</p>';
       html += '<div class="td-grid">' + (S.today ? nextHtml(nextUp()) : '<div class="td-card td-next"><span class="td-why">Today</span><h2>Finding your next question…</h2></div>') + cardsHtml() + '</div>';
+      html += installHtml();
       html += planHtml();
       html += perfHtml(st);
       html += progressHtml();
@@ -806,6 +807,8 @@
       var b = e.target.closest('button'); if (!b) return;
       if (b.hasAttribute('data-flip')) { S.card.show = true; var box = $('td-cards'); if (box) box.outerHTML = cardsHtml(); }
       if (b.hasAttribute('data-grade')) gradeCard(b.getAttribute('data-grade'));
+      if (b.id === 'db-a2hs-x') { try { localStorage.setItem('unizy:a2hs', '1'); } catch (x) {} track('a2hs_dismiss'); if (homeDraw) homeDraw(); return; }
+      if (b.id === 'db-a2hs-go' && installEvt) { installEvt.prompt(); installEvt.userChoice.then(function (c) { if (c && c.outcome === 'accepted') { track('a2hs_install'); try { localStorage.setItem('unizy:a2hs', '1'); } catch (x) {} } installEvt = null; if (homeDraw) homeDraw(); }); return; }
       if (b.id === 'db-addcourse' || b.id === 'db-chgcourse') { track('dash_change_course'); startSetup(true); window.scrollTo(0, 0); }
     };
     refreshStudy();
@@ -817,6 +820,20 @@
     if (S.wplan !== undefined) return;
     S.wplan = null;
     rest('rpc/my_weekly_plan', { method: 'POST', body: '{}' }).then(function (d) { S.wplan = Array.isArray(d) ? d : []; if (homeDraw) homeDraw(); }).catch(function () { S.wplan = []; });
+  }
+  // "Add Unizy to your home screen" on phones (once per device, until dismissed or installed). Android/Chrome gets a
+  // real Install button via beforeinstallprompt; iPhone gets the Share > Add to Home Screen steps.
+  var installEvt = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEvt = e; if (homeDraw) homeDraw(); });
+  function installHtml() {
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    var off; try { off = localStorage.getItem('unizy:a2hs'); } catch (e) { off = '1'; }
+    if (standalone || off || window.innerWidth > 760) return '';
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (!ios && !installEvt) return '';
+    return '<div class="db-a2hs"><span class="ic" aria-hidden="true"><img src="/assets/icons/icon-192.png" alt="" width="40" height="40"></span><div><b>Add Unizy to your home screen</b><p>' +
+      (ios ? 'Tap <b>Share</b> <span aria-hidden="true">⎙</span> in Safari, then <b>Add to Home Screen</b>. It opens like an app.' : 'Open it like an app, straight to your plan and questions.') +
+      '</p></div>' + (!ios ? '<button type="button" class="btn primary small" id="db-a2hs-go">Install</button>' : '') + '<button type="button" class="db-a2hs-x" id="db-a2hs-x" aria-label="Dismiss">×</button></div>';
   }
   function planHtml() {
     loadWeekPlan();

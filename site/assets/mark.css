@@ -837,3 +837,25 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .db-shareform input[type=text],.db-shareform input[type=number],.db-shareform textarea{font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border-radius:10px;border:1.5px solid #C8D1CB;background:#fff;color:#17302A;min-width:0}
 .db-sharerow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:600px){.db-sharerow{grid-template-columns:1fr}}
+
+/* Phones: the symbols toolbar is one swipeable row (it used to take half the screen), bigger tap targets,
+   and the Mark button stays pinned to the bottom of the screen while writing */
+@media (max-width:700px){
+  .mk-fmt{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:4px 6px;gap:4px 12px}
+  .mk-fmt::-webkit-scrollbar{display:none}
+  .mk-fg{flex-wrap:nowrap;flex:none}
+  .mk-fmt button{min-width:38px;height:38px;font-size:15px}
+  .mk-actions{position:sticky;bottom:0;z-index:20;margin:0 -12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(255,255,255,.85),#fff 30%);border-top:1px solid var(--line2,#E4E8E3)}
+  .mk-actions .td-go{flex:1 1 auto;justify-content:center}
+  .mk-actions .mk-clear{flex:none}
+}
+
+/* add to home screen (phones) */
+.db-a2hs{display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:12px 14px;border-radius:16px;background:#17302A;color:#F4F4EF;position:relative}
+.db-a2hs .ic img{display:block;border-radius:10px}
+.db-a2hs b{color:#F1DDA9}
+.db-a2hs p{margin:2px 0 0;font-size:13.5px;line-height:1.4;color:#DCE3DE}
+.db-a2hs p b{color:#fff}
+.db-a2hs > div{flex:1 1 auto;min-width:0;padding-right:22px}
+.db-a2hs .btn{flex:none;background:#F1DDA9;color:#17302A}
+.db-a2hs-x{position:absolute;top:4px;right:6px;width:32px;height:32px;border:0;background:none;color:#DCE3DE;font-size:22px;line-height:1;cursor:pointer}

@@ -374,7 +374,7 @@
     if (state.cur.own && question.length < 10) { state.err = 'Paste the question you’re answering first.'; render(); return; }
     if (hasAtt && t.busy()) { state.err = 'Your attachments are still being prepared. Try again in a moment.'; render(); return; }
     if (!hasAtt && words(answer) < 40) { state.err = 'Write at least a paragraph or two, or add photos of your answer, so there’s something to mark.'; render(); return; }
-    if (!ok || !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
+    if (ok && !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
     if (!getSession()) {
       if (state.cur.own) { location.href = signinUrl(); return; }
       if (!canGuest()) { state.guestErr = true; track('guest_limit_seen'); render(); var lc = document.querySelector('form[data-guestsave="limit"]'); if (lc) lc.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
@@ -803,9 +803,9 @@
       (smp ? '<div class="mk-sample"><p><b>We’ve put a practice answer in the box</b> so you can see the marking straight away. Mark it as it is, or clear it and write your own to test how accurate the marking really is.</p><button type="button" class="btn line small" data-act="clearsample">Clear it and write my own</button></div>' : '') +
       '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : smp || '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
-      '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' +
+      (c.own || tray() ? '<label class="mk-check"><input type="checkbox" id="mk-practice"> This is exam practice, not coursework I’m going to submit.</label>' : '') +
       (state.guestErr ? saveCard('limit') : state.err ? '<p class="mk-err">' + esc(state.err) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
-      '<div class="mk-row end">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
+      '<div class="mk-row end mk-actions">' + (d ? '<button type="button" class="mk-clear" data-act="clear">× Clear my answer</button>' : '<span></span>') +
       (state.busy ? '<div class="mk-busy"><span class="spin"></span><span id="mk-busytxt">' + esc(busyText()) + '</span></div><div class="mk-busybar"><i id="mk-busybar" style="width:' + busyPct() + '%"></i></div>' : '<button type="button" class="btn primary big td-go" data-act="submit">' + (getSession() ? (rw ? 'Mark my rewrite' : ex ? 'Hand it in' : 'Mark my answer') : canGuest() && !c.own ? 'Mark my answer free' : 'Sign up free to get it marked') + '<span class="arr" aria-hidden="true">→</span></button>') + '</div>' +
       '<p class="mk-fine">' + (!getSession() && canGuest() && !c.own ? 'No account needed for your first marked answer. ' : '') + 'Your draft is saved on this device as you type. Marked answers are saved to your account, and only you can see them.</p></section>' + inspectorBefore() + '</div>';
     return html;

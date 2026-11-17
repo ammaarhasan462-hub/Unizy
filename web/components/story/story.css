@@ -535,7 +535,7 @@ html[data-uni="kcl"] .uz {
 .th-week { margin-top: 16px !important; font-family: var(--f-mono); font-size: 12.5px; letter-spacing: .06em; color: var(--gold-b); }
 
 @media (max-width: 900px) {
-  .th { padding: 134px 0 40px; }
+  .th { padding: 144px 0 40px; }
   .th-wrap { grid-template-columns: 1fr; grid-template-areas: "intro" "card" "extra"; padding: 0 16px; row-gap: 20px; }
   .th-intro { padding-top: 6px; }
   .th-h { font-size: clamp(34px, 10.4vw, 54px); margin-top: 10px !important; }
