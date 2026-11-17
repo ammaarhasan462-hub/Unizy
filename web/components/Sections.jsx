@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Kicker, Logo, Magnetic, Reveal, SpotCard } from './ui';
-import { fetchReviews, track } from '@/lib/site';
+import { SB_KEY, SB_URL, fetchReviews, hasSession, track } from '@/lib/site';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 const EASE = [0.16, 1, 0.3, 1];
@@ -128,6 +128,79 @@ export function Pricing() {
   );
 }
 
+// Society codes: a society gives its members a code (e.g. UCLLAWSOC) for free Pro. Visitors can check it here before they
+// have an account; it's remembered on this device and the dashboard applies it (rpc redeem_code) once they're signed in.
+export function CodeBox() {
+  const [val, setVal] = useState('');
+  const [st, setSt] = useState('idle'); // idle | checking | ok | bad
+  const [info, setInfo] = useState(null);
+  const [authed, setAuthed] = useState(false);
+  const ran = useRef(false);
+  const check = (raw) => {
+    const v = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+    if (v.length < 3) { setSt('bad'); setInfo({ message: 'Enter the code your society shared.' }); return; }
+    setSt('checking'); track('code_check');
+    fetch(SB_URL + '/rest/v1/rpc/check_code', { method: 'POST', headers: { apikey: SB_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_code: v }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d && d.ok) {
+          try { localStorage.setItem('unizy:promo', d.code); } catch (e) {}
+          track('code_ok'); setSt('ok'); setInfo(d);
+        } else { setSt('bad'); setInfo({ message: (d && d.message) || 'Couldn’t check that code. Try again.' }); }
+      })
+      .catch(() => { setSt('bad'); setInfo({ message: 'Couldn’t check that code. Try again.' }); });
+  };
+  useEffect(() => {
+    setAuthed(hasSession());
+    if (ran.current) return; ran.current = true;
+    try {
+      const q = new URLSearchParams(location.search).get('code');
+      if (q) {
+        const v = q.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20); setVal(v); check(v);
+        setTimeout(() => document.getElementById('code')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 900);
+      }
+    } catch (e) {}
+  }, []);
+  const go = authed ? '/dashboard?code=' + (info && info.code) : '/signup?code=' + (info && info.code) + '&ref=society';
+  return (
+    <section id="code" className="relative scroll-mt-24 pb-10 lg:pb-16">
+      <div className="wrap">
+        <Reveal>
+          <div className="glass mx-auto max-w-[900px] rounded-[30px] p-6 sm:p-8">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-[380px]">
+                <h3 className="font-display text-[22px] font-semibold">Got a society code?</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-mute">Societies we partner with give their members free Pro. Enter the code they shared with you.</p>
+              </div>
+              <form className="flex w-full gap-2 md:max-w-[400px]" onSubmit={(e) => { e.preventDefault(); check(val); }}>
+                <input
+                  value={val}
+                  onChange={(e) => { setVal(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20)); if (st !== 'checking') setSt('idle'); }}
+                  aria-label="Society code" placeholder="e.g. UCLLAWSOC" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={20}
+                  className="min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-5 py-3 font-mono text-[15px] uppercase tracking-wider outline-none focus:border-ink/40"
+                />
+                <button type="submit" disabled={st === 'checking'} className="btn btn-ghost shrink-0 px-5 py-3">{st === 'checking' ? 'Checking…' : 'Apply'}</button>
+              </form>
+            </div>
+            <div aria-live="polite">
+              {st === 'ok' && info && (
+                <div className="mt-5 flex flex-col gap-3 rounded-2xl bg-cyan/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-[15px]"><span className="font-semibold">{info.label}</span> code works: free Pro until {info.until_text}.{authed ? '' : ' Create your free account to switch it on.'}</p>
+                  <div className="flex shrink-0 flex-wrap items-center gap-3">
+                    <a href={go} onClick={() => track('code_apply')} className="btn btn-glow px-5 py-2.5">{authed ? 'Add Pro to my account' : 'Create my account'}</a>
+                    {!authed && <a href="/login?next=/dashboard" onClick={() => track('code_apply')} className="text-[14px] text-mute underline hover:text-ink">I have an account</a>}
+                  </div>
+                </div>
+              )}
+              {st === 'bad' && info && <p className="mt-4 text-[14.5px] text-[#b4412f]">{info.message}</p>}
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 const QA = [
   ['Is this cheating?', 'No. Unizy is for exam practice and revision. It refuses to mark coursework you’re going to submit, and it never writes work for you to hand in.'],
   ['Does it have my exact past papers?', 'We don’t host university exam papers. Paste a question from your own past paper and we’ll mark your answer to it, or use one of our exam-style questions written from the module’s official description.'],
@@ -199,7 +272,7 @@ export function Final() {
 }
 
 export function Footer() {
-  const links = [['Find your module', '/mark'], ['Pricing', '/pricing'], ['Reviews', '/reviews'], ['FAQ', '/faq'], ['Trust & safety', '/trust'], ['Privacy', '/privacy.html'], ['Terms', '/terms.html'], ['Contact', 'mailto:hello@unizy.uk']];
+  const links = [['Find your module', '/mark'], ['Pricing', '/pricing'], ['Society code', '/#code'], ['Reviews', '/reviews'], ['FAQ', '/faq'], ['Trust & safety', '/trust'], ['Privacy', '/privacy.html'], ['Terms', '/terms.html'], ['Contact', 'mailto:hello@unizy.uk']];
   return (
     <footer className="border-t border-ink/[.07] py-12">
       <div className="wrap">

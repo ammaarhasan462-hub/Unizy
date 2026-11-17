@@ -113,3 +113,10 @@ No AI credit used by any of this.
 - Pattern layers move with `transform` on their own GPU layer (they used to change `background-position`, repainting the full screen every frame). Background glows are on their own layer. The fixed nav and university tabs no longer use a live backdrop blur.
 - Intro: the background download of Imperial's city only runs while the picker is still on screen.
 - Measured on a 1280x800 window scrolling through the booklet: dropped frames went from about 30 in 145 to 0.
+
+## Society codes on the homepage (Nov 2026)
+- Homepage "Got a society code?" box (web/components/Sections.jsx `CodeBox`, under Pricing; footer link "Society code" → /#code).
+- It calls `rpc check_code` (anon, read-only) to show the society name and end date, remembers the code in localStorage `unizy:promo`, then sends the visitor to sign up (or their dashboard), where `redeem_code` switches Pro on.
+- `unizy.uk/?code=UCLHIST` pre-fills and checks the box; `unizy.uk/join/UCLHIST` still goes straight to sign-up.
+- Codes live in `promo_codes` (one per society; Pro until 31 Jan 2027). New codes: insert a row (see supabase/sql/home_codes.sql).
+- Events: code_check, code_ok, code_apply.

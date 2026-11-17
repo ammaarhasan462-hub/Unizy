@@ -3,7 +3,7 @@ import Boot from '@/components/Boot';
 import Intro from '@/components/Intro';
 import Nav from '@/components/Nav';
 import { StoryTop, StoryEnd } from '@/components/Story';
-import { Faq, Footer, Pricing, Reviews, Trust } from '@/components/Sections';
+import { CodeBox, Faq, Footer, Pricing, Reviews, Trust } from '@/components/Sections';
 
 export default function Page() {
   return (
@@ -20,6 +20,7 @@ export default function Page() {
         <Trust />
         <Reviews />
         <Pricing />
+        <CodeBox />
         <Faq />
         <StoryEnd />
       </main>
