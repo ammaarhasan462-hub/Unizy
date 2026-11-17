@@ -565,3 +565,32 @@ html[data-uni="kcl"] .uz {
 .uz .th-savefine { margin: 0; font-size: 12.5px; color: var(--txt-s); }
 .th-err.th-limitbox { background: none; padding: 0; color: inherit; font-size: inherit; }
 @media (max-width: 600px) { .th-saverow .uz-btn { width: 100%; justify-content: center; } }
+
+/* ---------- phones: a shorter page ----------
+   The scroll-driven showpieces (the animated hero, the long pinned "how it works", the zoom section) are built for
+   big screens; on a phone they added ~10 screens of scrolling before pricing. Here the page is: try-it hero, how it
+   works as three plain steps, why the mark scheme matters + the 3 features, numbers, trust, reviews, pricing, FAQ. */
+@media (max-width: 760px) {
+  .uz-hero, .uz-unlock { display: none; }
+  .uz-split { height: auto; }
+  .uz-split .sp-stage { position: relative; height: auto; display: block; overflow: visible; }
+  .sp-right, .sp-bar { display: none; }
+  .sp-left { padding: 52px 22px 44px; overflow: visible; }
+  .sp-left h2 { font-size: clamp(34px, 10vw, 52px); }
+  .sp-steps { margin-top: 26px; gap: 6px; }
+  .sp-step { opacity: 1; }
+  .sp-step p { max-height: none; }
+  .sp-step .n { background: var(--gold-b); color: var(--ink-d); }
+  .uz-gap { padding: 56px 0; }
+  .gap-top { min-height: 0; padding-top: 0; }
+  .gap-float { display: none; }
+  .gap-banner { font-size: clamp(28px, 8.4vw, 40px); }
+  .gap-banner .w { opacity: 1; }
+  .gap-banner .w.hi { color: #fff; text-shadow: 3px 3px 0 var(--ink-d); }
+  .gap-why { margin-top: 30px; }
+  .gap-why h2 { font-size: clamp(40px, 12vw, 64px); }
+  .gap-cols { margin-top: 30px; grid-template-columns: 1fr; gap: 16px; }
+  .gcol { padding: 20px; transform: none !important; }
+  .gcol h3 { font-size: 26px; }
+  .gcol .mini { display: none; }
+}
