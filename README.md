@@ -120,3 +120,9 @@ No AI credit used by any of this.
 - `unizy.uk/?code=UCLHIST` pre-fills and checks the box; `unizy.uk/join/UCLHIST` still goes straight to sign-up.
 - Codes live in `promo_codes` (one per society; Pro until 31 Jan 2027). New codes: insert a row (see supabase/sql/home_codes.sql).
 - Events: code_check, code_ok, code_apply.
+
+## Marking coverage without packs (Nov 2026)
+- Year-of-study expectations: `LEVEL_EXPECT` in supabase/functions/marker/index.ts adds Level 4/5/6/7 expectations to every marking prompt (FHEQ descriptors + King's College Marking Framework level differences).
+- King's had no marking criteria; `kcl-college` row in marking_rubrics (supabase/sql/marking_coverage.sql).
+- Examiner notes for languages/literature, built environment, education, archaeology and clinical medicine, plus wider department patterns: notes now match ~150 of 173 departments.
+- Marker deployed from commit 400547712d (stub pins the SHA).
