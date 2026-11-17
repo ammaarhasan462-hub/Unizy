@@ -578,7 +578,7 @@ html[data-uni="kcl"] .uz {
   .sp-left { padding: 52px 22px 44px; overflow: visible; }
   .sp-left h2 { font-size: clamp(34px, 10vw, 52px); }
   .sp-steps { margin-top: 26px; gap: 6px; }
-  .sp-step { opacity: 1; }
+  .sp-step, .sp-step:not(.on) { opacity: 1; display: grid; }
   .sp-step p { max-height: none; }
   .sp-step .n { background: var(--gold-b); color: var(--ink-d); }
   .uz-gap { padding: 56px 0; }
