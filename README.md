@@ -106,3 +106,10 @@ No AI credit used by any of this.
 - Answer page on phones: the symbols toolbar is one swipeable row, the Mark button stays pinned to the bottom of the screen, and the "this is exam practice" tick box only appears for the student's own question or uploaded files (Unizy's own questions are practice by definition).
 - Installable as an app: `site/manifest.webmanifest`, icons in `site/assets/icons/`, linked from every page (and `web/app/layout.jsx`). The dashboard home shows a one-time "Add Unizy to your home screen" card on phones (Install button on Android, Share steps on iPhone).
 - Homepage: bigger tap targets for the university tabs and footer links on phones.
+- Homepage on phones (≤760px): the animated booklet hero and the zoom section are hidden, "How it works" is three plain steps, and the "why the mark scheme matters" section drops its floating cards. About 9,400px tall instead of 18,400.
+
+## Scroll performance (Nov 2026)
+- `story.js` frame loop: no layout reads after style writes (book size cached on resize; rects read in a batch), `--skew` set only on the headlines and only when it changes, spark sizes set once, callouts positioned only while visible, hidden (0-height) sections skipped.
+- Pattern layers move with `transform` on their own GPU layer (they used to change `background-position`, repainting the full screen every frame). Background glows are on their own layer. The fixed nav and university tabs no longer use a live backdrop blur.
+- Intro: the background download of Imperial's city only runs while the picker is still on screen.
+- Measured on a 1280x800 window scrolling through the booklet: dropped frames went from about 30 in 145 to 0.
