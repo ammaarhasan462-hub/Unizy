@@ -104,6 +104,15 @@ async function rubricFor(service: any, department: string | null, uni = "ucl"): 
   return [dept ? `DEPARTMENT CRITERIA (${dept.title}) — apply these first:\n${dept.body.trim()}` : "", base ? `${U.name.toUpperCase()}-WIDE CRITERIA (${base.title}):\n${base.body.trim()}` : ""].filter(Boolean).join("\n\n");
 }
 
+// What examiners expect at each year of study, on the same 0-100 scale. Written from the FHEQ level descriptors and the
+// level differences in King's College Marking Framework, so 2nd/3rd-year and master's answers are held to their year.
+const LEVEL_EXPECT: Record<number, string> = {
+  4: "First-year (Level 4) standard: accurate knowledge of the core concepts and methods, and an emerging ability to analyse and argue rather than describe. A First shows clear critical engagement and judgement beyond restating the lecture material. Do not mark a first-year answer down for lacking the specialist depth or independent research expected in later years.",
+  5: "Second-year (Level 5) standard: on the same scale, more is expected than in year 1. Examiners look for a secure grasp of more complex theories and methods, awareness of competing perspectives or approaches and the ability to weigh them, and application to less familiar problems. Accurate, well-organised but mainly descriptive work sits lower at this level than it would in year 1.",
+  6: "Final-year (Level 6) standard: systematic, specialist understanding informed by the scholarly literature or current research, independent critical judgement, awareness of uncertainty and the limits of knowledge, and a sustained, well-structured argument. A First needs genuine critical insight or originality, not just thorough coverage; competent but conventional answers are 2:1s.",
+  7: "Master's (Level 7) standard: systematic understanding at the forefront of the field, critical awareness of current problems and research, originality in applying knowledge, and evaluation of methods and evidence. Hold the answer to these expectations; the pass mark at this level is normally 50.",
+};
+
 function levelWord(level: number | null) {
   return level === 4 ? "Level 4 (first-year undergraduate)" : level === 5 ? "Level 5 (second-year undergraduate)" : level === 6 ? "Level 6 (final-year undergraduate)" : level === 7 ? "Level 7 (integrated master's / postgraduate)" : "undergraduate";
 }
@@ -510,7 +519,7 @@ async function runMark(service: any, apiKey: string, mod: any, code: string, o: 
     service.rpc("notes_for", { p_department: mod.department ?? null }),
   ]);
   const noteList = Array.isArray(notes) ? (notes as any[]) : [];
-  const notesText = noteList.length ? "\nWHAT EXAMINERS REWARD AND PENALISE (from published examiners' reports; use it to place the answer within the bands above, the criteria above take priority):\n" +
+  const notesText = noteList.length ? "\nWHAT EXAMINERS REWARD AND PENALISE (from published examiners' reports and subject benchmark statements; use it to place the answer within the bands above, the criteria above take priority):\n" +
     noteList.map((n) => "- " + String(n.body || "").trim()).join("\n") + "\n" : "";
   const anchorList = Array.isArray(anchors) ? (anchors as any[]) : [];
   const anchorText = anchorList.length ? "\nCALIBRATION EXAMPLES: real answers from " + uniOf(mod).name + " " + (mod.department || "") +
@@ -536,7 +545,7 @@ async function runMark(service: any, apiKey: string, mod: any, code: string, o: 
 
 MODULE: ${mod.code} ${mod.title} · ${levelWord(mod.level)} · Department: ${mod.department || "unknown"}
 Module description: """${details.slice(0, 2500)}"""
-
+${LEVEL_EXPECT[mod.level as number] ? "\nLEVEL: " + LEVEL_EXPECT[mod.level as number] + "\n" : ""}
 MARKING CRITERIA:
 ${rubric}
 ${notesText}${guide ? "\n" + guide + "\n" : ""}${anchorText}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
