@@ -499,14 +499,19 @@ async function runMark(service: any, apiKey: string, mod: any, code: string, o: 
 }, refund: () => Promise<unknown>): Promise<any> {
   const { question, answer, minutes, questionId, prevId, att, hasAtt } = o;
   const uniKey = mod.uni || "ucl";
-  const [details, rubric, { data: topics }, { data: anchors }, { data: offset }] = await Promise.all([
+  const [details, rubric, { data: topics }, { data: anchors }, { data: offset }, { data: notes }] = await Promise.all([
     moduleDetails(service, mod), rubricFor(service, mod.department, uniKey),
     service.from("module_topics").select("position, title").eq("code", code).order("position"),
     // real answers from this university with the marks they actually got (calibration examples), and the average
     // gap between students' real marks and our predictions in this department (0 until there are 8+ reports)
     service.rpc("anchors_for", { p_uni: uniKey, p_department: mod.department ?? null, p_code: code }),
     service.rpc("calib_offset", { p_uni: uniKey, p_department: mod.department ?? null }),
+    // what examiners in this subject reward and penalise, from published examiners' reports (supabase/sql/examiner_notes.sql)
+    service.rpc("notes_for", { p_department: mod.department ?? null }),
   ]);
+  const noteList = Array.isArray(notes) ? (notes as any[]) : [];
+  const notesText = noteList.length ? "\nWHAT EXAMINERS REWARD AND PENALISE (from published examiners' reports; use it to place the answer within the bands above, the criteria above take priority):\n" +
+    noteList.map((n) => "- " + String(n.body || "").trim()).join("\n") + "\n" : "";
   const anchorList = Array.isArray(anchors) ? (anchors as any[]) : [];
   const anchorText = anchorList.length ? "\nCALIBRATION EXAMPLES: real answers from " + uniOf(mod).name + " " + (mod.department || "") +
     " students, with the mark their examiners actually gave. Use them to set your scale for this department (how strict it is, what separates the bands). Do not compare content or reward similarity to them.\n" +
@@ -534,7 +539,7 @@ Module description: """${details.slice(0, 2500)}"""
 
 MARKING CRITERIA:
 ${rubric}
-${guide ? "\n" + guide + "\n" : ""}${anchorText}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
+${notesText}${guide ? "\n" + guide + "\n" : ""}${anchorText}${tier === "first" ? "\nThis is a First-class stretch question: hold the answer to the First descriptors, but mark it fairly on the same scale.\n" : ""}
 QUESTION: """${question}"""
 ${minutes ? `Written in ${minutes} minutes (exam conditions).` : "Time taken not given."}
 
