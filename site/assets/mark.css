@@ -859,3 +859,10 @@ body.sx .mk-insp summary,body.sx .mk-ucards summary,body.sx .mk-unitsbox summary
 .db-a2hs > div{flex:1 1 auto;min-width:0;padding-right:22px}
 .db-a2hs .btn{flex:none;background:#F1DDA9;color:#17302A}
 .db-a2hs-x{position:absolute;top:4px;right:6px;width:32px;height:32px;border:0;background:none;color:#DCE3DE;font-size:22px;line-height:1;cursor:pointer}
+/* dashboard on phones: less chrome above the content, bigger tap targets in the weekly plan */
+@media (max-width:700px){
+  .db-replay{display:none}
+  .db-weekmod li a{display:inline-block;padding:6px 0}
+  .db-chg{display:inline-block;padding:8px 0;margin-left:0}
+  .db-ragf button{min-height:36px}
+}
