@@ -5,9 +5,12 @@
 // If the data or the textures fail to load, the intro falls back to its hand-built city.
 import * as THREE from 'three';
 import { atmo } from './atmo';
-import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox } from './materials';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox, groundBox } from './materials';
+import { buildBridges } from './bridges';
 
-const V = 3;
+const V = 4;
+export const RIVER_R = 12000; // metres: the river mask (for the cloud shader and the outer city) spans +-RIVER_R
 const BASE = '/assets/city/';
 const cache = {};
 
@@ -1373,7 +1376,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const bx = baseBox();
   // chimneys and rooftop plant are centred boxes rotated to the building
   // chimneys, plant and planters: a couple of pixels across beyond 850 m, so not drawn from there
-  inst(bx, plainMaterial({ roughness: 0.92 }, 'city-chim'), chim, true, 'none', 850);
+  inst(groundBox(), plainMaterial({ roughness: 0.92 }, 'city-chim'), chim, true, 'none', 850);
 
   // ---------------------------------------------------------------- ground: the real street plan
   const S = mobile ? 2048 : 4096;
@@ -1472,18 +1475,61 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
-  // water surfaces as real reflective geometry just above the map
+  // water surfaces as real reflective geometry just above the map, and the river beyond it (the Thames and the Lea
+  // as mapped, out to RIVER_R): all one mesh, one draw call
   const waterMat = plainMaterial({ color: '#25343b', roughness: 0.06, metalness: 0.05 }, 'city-water');
-  areas.filter((a) => a.kind === 0).forEach((a) => {
-    if (Math.abs(ringArea(a.rings[0])) < 60) return;
+  const waterGeos = [];
+  const shapeGeo = (rings, y) => {
     try {
-      const shp = new THREE.Shape(a.rings[0].map(([x, z]) => new THREE.Vector2(x, -z)));
-      a.rings.slice(1).forEach((h) => shp.holes.push(new THREE.Path(h.map(([x, z]) => new THREE.Vector2(x, -z)))));
-      const m = new THREE.Mesh(new THREE.ShapeGeometry(shp), waterMat);
-      m.rotation.x = -Math.PI / 2; m.position.y = 0.3; m.receiveShadow = true;
-      group.add(m);
+      const shp = new THREE.Shape(rings[0].map(([x, z]) => new THREE.Vector2(x, -z)));
+      rings.slice(1).forEach((h) => shp.holes.push(new THREE.Path(h.map(([x, z]) => new THREE.Vector2(x, -z)))));
+      const g = new THREE.ShapeGeometry(shp);
+      g.deleteAttribute('uv');
+      g.rotateX(-Math.PI / 2); g.translate(0, y, 0);
+      if (!g.index) g.setIndex([...Array(g.attributes.position.count).keys()]);
+      waterGeos.push(g);
     } catch { /* skip */ }
-  });
+  };
+  areas.filter((a) => a.kind === 0).forEach((a) => { if (Math.abs(ringArea(a.rings[0])) >= 60) shapeGeo(a.rings, 0.3); });
+  const rv = (data.rv || []).map((p) => p.map(dec));
+  rv.forEach((rings) => shapeGeo(rings, 0.22));
+  if (waterGeos.length) {
+    const wg = mergeGeometries(waterGeos);
+    waterGeos.forEach((g) => g.dispose());
+    if (wg) { const m = new THREE.Mesh(wg, waterMat); m.receiveShadow = true; group.add(m); }
+  }
+  // the river as a mask over +-RIVER_R (1 inside): the cloud shader's water, and kept clear by the outer city
+  let riverTex = null, inRiver = null;
+  if (rv.length) {
+    const RS = mobile ? 512 : 1024, rk = RS / (2 * RIVER_R);
+    riverTex = canvasTex(RS, RS, (ctx) => {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, RS, RS);
+      ctx.fillStyle = '#fff';
+      // softened by a pixel or so, so the shader's threshold draws a smooth bank rather than the texels' steps
+      ctx.filter = 'blur(1.4px)';
+      ctx.beginPath();
+      rv.forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
+      ctx.fill('evenodd');
+      ctx.filter = 'none';
+      // a black border, so the clamped edge never smears water across the far ground
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, RS, 2); ctx.fillRect(0, RS - 2, RS, 2); ctx.fillRect(0, 0, 2, RS); ctx.fillRect(RS - 2, 0, 2, RS);
+    }, { linear: true, aniso: 1 });
+    riverTex.wrapS = riverTex.wrapT = THREE.ClampToEdgeWrapping;
+    const px = riverTex.image.getContext('2d').getImageData(0, 0, RS, RS).data;
+    // is (x, z) on the river, or within m metres of it?
+    inRiver = (x, z, m = 0) => {
+      for (const [dx, dz] of [[0, 0], [m, 0], [-m, 0], [0, m], [0, -m]]) {
+        const i = Math.floor((x + dx + RIVER_R) * rk), j = Math.floor((z + dz + RIVER_R) * rk);
+        if (i >= 0 && j >= 0 && i < RS && j < RS && px[(j * RS + i) * 4] > 127) return true;
+        if (!m) break;
+      }
+      return false;
+    };
+  }
+  // the bridges over it
+  if (data.bg && data.bg.length) {
+    try { group.add(buildBridges(data.bg, { mobile }).group); } catch (e) { console.error(e); }
+  }
 
   // ---------------------------------------------------------------- traffic on the main roads
   const trafficU = { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
@@ -1569,7 +1615,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(0.45, h - cr * 0.8, 0.45));
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
-  const bx2 = baseBox();
+  const bx2 = groundBox();
   // canopies: 80-triangle lobes near the camera, 20-triangle lobes beyond 650 m (a few pixels across from there)
   inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0));
   inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false);
@@ -1592,5 +1638,5 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });
 
-  return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec) };
+  return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec), riverTex, inRiver };
 }

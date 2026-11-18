@@ -49,6 +49,25 @@
  ],
  "shopfront_fill": 554,
  "skyline": 1716,
+ "river_polys": 10,
+ "river_pts": 2321,
+ "bridges": [
+  "Waterloo Bridge",
+  "Blackfriars Bridge",
+  "Blackfriars Railway Bridge",
+  "Hungerford Bridge",
+  "Chelsea Bridge",
+  "Millennium Bridge",
+  "Vauxhall Bridge",
+  "Lambeth Bridge",
+  "Golden Jubilee Bridge",
+  "Golden Jubilee Bridge",
+  "Southwark Bridge",
+  "London Bridge",
+  "Tower Bridge",
+  "Grosvenor Bridge",
+  "Westminster Bridge"
+ ],
  "landmarks": {
   "BT Tower": [
    -101.6,
@@ -63,7 +82,7 @@
    2634.4
   ]
  },
- "bytes": 2707749,
+ "bytes": 2739243,
  "wilkins": {
   "x": [
    -71.1,
@@ -201,6 +220,26 @@
  ],
  "shopfront_fill": 151,
  "skyline": 1771,
+ "river_polys": 10,
+ "river_pts": 2414,
+ "bridges": [
+  "Chelsea Bridge",
+  "Battersea Bridge",
+  "Albert Bridge",
+  "Hungerford Bridge",
+  "Waterloo Bridge",
+  "Wandsworth Bridge",
+  "Putney Bridge",
+  "Vauxhall Bridge",
+  "Lambeth Bridge",
+  "Golden Jubilee Bridge",
+  "Golden Jubilee Bridge",
+  "Battersea Railway Bridge",
+  "Fulham Railway Bridge",
+  "Grosvenor Bridge",
+  "Hammersmith Bridge",
+  "Westminster Bridge"
+ ],
  "landmarks": {
   "Queen's Tower": [
    -0.0,
@@ -219,7 +258,7 @@
    6692.8
   ]
  },
- "bytes": 2278946,
+ "bytes": 2311387,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -370,6 +409,28 @@
  ],
  "shopfront_fill": 105,
  "skyline": 1732,
+ "river_polys": 10,
+ "river_pts": 1919,
+ "bridges": [
+  "Stratford Walk",
+  "Blackfriars Bridge",
+  "Blackfriars Railway Bridge",
+  "Temple Mills Bridge",
+  "Millennium Bridge",
+  "Southwark Bridge",
+  "London Bridge",
+  "Tower Bridge",
+  "Halfway Bridge",
+  "Thornton Bridge",
+  "Knights' Bridge",
+  "Eastcross Bridge",
+  "Eastcross Bridge",
+  "Iron Bridge",
+  "Canning Town Old Railway Bridge",
+  "The Blue Bridge",
+  "Leamouth Lifting Footbridge",
+  "Bridgewater Bridge"
+ ],
  "landmarks": {
   "BT Tower": [
    -244.1,
@@ -384,7 +445,7 @@
    -2743.8
   ]
  },
- "bytes": 2414156,
+ "bytes": 2440129,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -455,6 +516,26 @@
  ],
  "shopfront_fill": 465,
  "skyline": 1487,
+ "river_polys": 10,
+ "river_pts": 2100,
+ "bridges": [
+  "Blackfriars Bridge",
+  "Blackfriars Railway Bridge",
+  "Hungerford Bridge",
+  "Waterloo Bridge",
+  "Millennium Bridge",
+  "Golden Jubilee Bridge",
+  "Golden Jubilee Bridge",
+  "Southwark Bridge",
+  "Westminster Bridge",
+  "Chelsea Bridge",
+  "Vauxhall Bridge",
+  "Albert Bridge",
+  "Lambeth Bridge",
+  "London Bridge",
+  "Tower Bridge",
+  "Grosvenor Bridge"
+ ],
  "landmarks": {
   "BT Tower": [
    793.0,
@@ -469,7 +550,7 @@
    2509.8
   ]
  },
- "bytes": 3033755,
+ "bytes": 3061822,
  "anchor": [
   "Old Building",
   51.51432,
@@ -600,6 +681,26 @@
  ],
  "shopfront_fill": 443,
  "skyline": 1444,
+ "river_polys": 10,
+ "river_pts": 2101,
+ "bridges": [
+  "Blackfriars Bridge",
+  "Blackfriars Railway Bridge",
+  "Hungerford Bridge",
+  "Waterloo Bridge",
+  "Millennium Bridge",
+  "Golden Jubilee Bridge",
+  "Golden Jubilee Bridge",
+  "Southwark Bridge",
+  "Westminster Bridge",
+  "Chelsea Bridge",
+  "Vauxhall Bridge",
+  "Albert Bridge",
+  "Lambeth Bridge",
+  "London Bridge",
+  "Tower Bridge",
+  "Grosvenor Bridge"
+ ],
  "landmarks": {
   "BT Tower": [
    1103.6,
@@ -614,7 +715,7 @@
    2476.0
   ]
  },
- "bytes": 2975633,
+ "bytes": 3003478,
  "anchor": [
   "King's Building",
   51.51153,

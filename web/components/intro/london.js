@@ -3,7 +3,7 @@
 // nearby landmarks (Senate House, UCH, BT Tower, British Museum), the Thames, and the City and the Shard on the horizon.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, leafMaterial, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
 import { buildCity } from './city';
 
 const H = MAP_HALF;
@@ -165,18 +165,21 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   far.position.y = -0.4;
   group.add(far);
 
-  // the Thames
+  // the Thames: the mapped river comes with the city (city.js); the hand-built city keeps a ribbon
+  const riverTex = real && real.riverTex;
   const pts = [];
-  for (let z = -9000; z <= 12000; z += 150) pts.push([riverX(z), z]);
+  if (!riverTex) for (let z = -9000; z <= 12000; z += 150) pts.push([riverX(z), z]);
   const rv = [], ri = [];
   pts.forEach(([x, z], i) => { rv.push(x - 125, 0.25, z, x + 125, 0.25, z); if (i) { const a = (i - 1) * 2; ri.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); } });
   const rg = new THREE.BufferGeometry();
   rg.setAttribute('position', new THREE.Float32BufferAttribute(rv, 3));
   rg.setIndex(ri);
   rg.computeVertexNormals();
-  const river = new THREE.Mesh(rg, plainMaterial({ color: '#25343b', roughness: 0.07, metalness: 0.05 }, 'river'));
-  river.receiveShadow = true;
-  group.add(river);
+  if (pts.length) {
+    const river = new THREE.Mesh(rg, plainMaterial({ color: '#25343b', roughness: 0.07, metalness: 0.05 }, 'river'));
+    river.receiveShadow = true;
+    group.add(river);
+  }
 
   // traffic: headlights and tail lights moving along the main roads
   const trafficU = real ? real.trafficU : { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
@@ -285,12 +288,13 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     return im;
   };
   const bx = baseBox();
-  inst(bx, terraceMat, lists.terrace);
-  inst(bx, stuccoMat, lists.stucco);
-  inst(bx, modernMat, lists.modern);
-  inst(bx, stoneMat, lists.stone);
+  const gbx = groundBox(); // for the instanced boxes on the ground and the roofs
+  inst(gbx, terraceMat, lists.terrace);
+  inst(gbx, stuccoMat, lists.stucco);
+  inst(gbx, modernMat, lists.modern);
+  inst(gbx, stoneMat, lists.stone);
   inst(roofGeometry(), plainMaterial({ roughness: 0.7, metalness: 0.05 }, 'slate'), roofs);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'chim'), chim);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'chim'), chim);
 
   // ---------------------------------------------------------------- landmarks
   const lm = [];
@@ -325,11 +329,14 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     } else if (b.landmark === 'bt') {
       const mat = plainMaterial({ color: '#c9cdd1', roughness: 0.35, metalness: 0.3 }, 'bt');
       const dark = plainMaterial({ color: '#2b3036', roughness: 0.4, metalness: 0.4, emissive: '#7fc2ff', emissiveIntensity: 0.9 }, 'btd');
-      const cyl = (rad, y0, h, m) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), m); c.position.set(b.cx, y0 + h / 2, b.cz); c.castShadow = true; group.add(c); };
+      // built loose, then merged: two draw calls
+      const btg = new THREE.Group();
+      const cyl = (rad, y0, h, m) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), m); c.position.set(b.cx, y0 + h / 2, b.cz); c.castShadow = true; btg.add(c); };
       cyl(9, 0, 110, mat);
       for (let i = 0; i < 6; i++) cyl(10.5, 110 + i * 7, 3.5, dark), cyl(9.5, 113.5 + i * 7, 3.5, mat);
       cyl(7, 152, 16, mat);
       cyl(2, 168, 14, dark);
+      group.add(mergeStatic(btg));
       if (!b.real) addBox(stoneMat, b.cx, 0, b.cz, b.x1 - b.x0 - 10, 14, b.z1 - b.z0 - 10);
     } else if (b.landmark === 'euston') {
       addBox(modernMat, b.cx, 0, b.cz, b.x1 - b.x0 - 10, 18, b.z1 - b.z0 - 10);
@@ -369,7 +376,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
   inst(treeGeometry(5, 1), leafMaterial('leaf'), canopy);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
 
   // ---------------------------------------------------------------- outer city + skyline
   const outer = [];
@@ -377,12 +384,12 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   for (let x = -5200; x < 5200; x += 85) for (let z = -5200; z < 5200; z += 85) {
     const d = Math.max(Math.abs(x), Math.abs(z));
     if (d < R + 40 || ro() < 0.5) continue;
-    if (Math.abs(x - riverX(z)) < 170) continue;
+    if (riverTex ? real.inRiver(x, z, 50) : Math.abs(x - riverX(z)) < 170) continue;
     const h = 12 + Math.pow(ro(), 4) * 40;
     m4.compose(new THREE.Vector3(x + (ro() - 0.5) * 30, 0, z + (ro() - 0.5) * 30), q0, new THREE.Vector3(35 + ro() * 35, h, 35 + ro() * 35));
     outer.push([m4.clone(), new THREE.Color(ro() < 0.7 ? BRICK[Math.floor(ro() * 7)] : MOD[Math.floor(ro() * 4)])]);
   }
-  inst(bx, terraceMat, outer, false);
+  inst(gbx, terraceMat, outer, false);
 
   const towerMat = facadeMaterial({ floor: 4.0, bay: 1.5, winW: 0.9, winH: 0.75, sash: 0, color: '#7e8d98', frame: '#3c444b', roof: '#55595e', glassRough: 0.04, lit: 0.45, litI: 3.0, metalness: 0.2, roughness: 0.4 });
   const city = [];
@@ -400,7 +407,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(40, 140 + rc() * 100, 40));
     city.push([m4.clone(), new THREE.Color('#8a949c')]);
   }
-  inst(bx, towerMat, city, false);
+  inst(gbx, towerMat, city, false);
   // red aviation lights on the tall towers (blink in the engine)
   const av = [];
   if (realSky) real.tallTops.forEach(([x, h, z]) => av.push([new THREE.Matrix4().compose(new THREE.Vector3(x, h + 2, z), q0, new THREE.Vector3(2.2, 2.2, 2.2))]));
@@ -421,5 +428,5 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   if (rg2) gherkin.position.set(rg2[0], 0, rg2[1]); else gherkin.position.set(-520, 0, 2950);
   group.add(gherkin);
 
-  return { group, mapTex, emTex, blocks, trafficU, avMat };
+  return { group, mapTex, emTex, blocks, trafficU, avMat, riverTex };
 }
