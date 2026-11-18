@@ -155,6 +155,18 @@ export function baseBox() {
   return g;
 }
 
+// the same box without its bottom face, for boxes that stand on the ground or on a roof (outer blocks, trunks,
+// chimneys and plant): 10 triangles, not 12
+export function groundBox() {
+  const g = baseBox();
+  const idx = Array.from(g.index.array);
+  const bottom = g.groups[3]; // BoxGeometry's faces: +x, -x, +y, -y, +z, -z
+  idx.splice(bottom.start, bottom.count);
+  g.setIndex(idx);
+  g.clearGroups();
+  return g;
+}
+
 // pitched roof: ridge along local x, base 1 x 1 at y = 0, height 1
 export function roofGeometry() {
   const v = [];

@@ -3,7 +3,7 @@
 // nearby landmarks (Senate House, UCH, BT Tower, British Museum), the Thames, and the City and the Shard on the horizon.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
 import { buildCity } from './city';
 
 const H = MAP_HALF;
@@ -288,12 +288,13 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     return im;
   };
   const bx = baseBox();
-  inst(bx, terraceMat, lists.terrace);
-  inst(bx, stuccoMat, lists.stucco);
-  inst(bx, modernMat, lists.modern);
-  inst(bx, stoneMat, lists.stone);
+  const gbx = groundBox(); // for the instanced boxes on the ground and the roofs
+  inst(gbx, terraceMat, lists.terrace);
+  inst(gbx, stuccoMat, lists.stucco);
+  inst(gbx, modernMat, lists.modern);
+  inst(gbx, stoneMat, lists.stone);
   inst(roofGeometry(), plainMaterial({ roughness: 0.7, metalness: 0.05 }, 'slate'), roofs);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'chim'), chim);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'chim'), chim);
 
   // ---------------------------------------------------------------- landmarks
   const lm = [];
@@ -375,7 +376,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
   inst(treeGeometry(5, 1), leafMaterial('leaf'), canopy);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
 
   // ---------------------------------------------------------------- outer city + skyline
   const outer = [];
@@ -388,7 +389,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     m4.compose(new THREE.Vector3(x + (ro() - 0.5) * 30, 0, z + (ro() - 0.5) * 30), q0, new THREE.Vector3(35 + ro() * 35, h, 35 + ro() * 35));
     outer.push([m4.clone(), new THREE.Color(ro() < 0.7 ? BRICK[Math.floor(ro() * 7)] : MOD[Math.floor(ro() * 4)])]);
   }
-  inst(bx, terraceMat, outer, false);
+  inst(gbx, terraceMat, outer, false);
 
   const towerMat = facadeMaterial({ floor: 4.0, bay: 1.5, winW: 0.9, winH: 0.75, sash: 0, color: '#7e8d98', frame: '#3c444b', roof: '#55595e', glassRough: 0.04, lit: 0.45, litI: 3.0, metalness: 0.2, roughness: 0.4 });
   const city = [];
@@ -406,7 +407,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(40, 140 + rc() * 100, 40));
     city.push([m4.clone(), new THREE.Color('#8a949c')]);
   }
-  inst(bx, towerMat, city, false);
+  inst(gbx, towerMat, city, false);
   // red aviation lights on the tall towers (blink in the engine)
   const av = [];
   if (realSky) real.tallTops.forEach(([x, h, z]) => av.push([new THREE.Matrix4().compose(new THREE.Vector3(x, h + 2, z), q0, new THREE.Vector3(2.2, 2.2, 2.2))]));

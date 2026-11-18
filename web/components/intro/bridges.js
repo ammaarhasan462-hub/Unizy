@@ -117,8 +117,8 @@ export function buildBridges(list, { mobile = false } = {}) {
           if (ym - bm > 0.4) quad(at(sm0 - 0.18, sd * hv, bm), at(sm0 + 0.18, sd * hv, bm), at(sm0 + 0.18, sd * hv, ym), at(sm0 - 0.18, sd * hv, ym), paint, out);
         }
       }
-      // under the deck
-      quad(at(s0, -hv, y0 - fd), at(s1, -hv, y1 - fd), at(s1, hv, y1 - fd), at(s0, hv, y0 - fd), dark, DOWN);
+      // under the deck (masonry arches: hidden by the spandrels and the soffits)
+      if (style !== 0) quad(at(s0, -hv, y0 - fd), at(s1, -hv, y1 - fd), at(s1, hv, y1 - fd), at(s0, hv, y0 - fd), dark, DOWN);
       if (style <= 1) {
         const b0 = archY(s0), b1 = archY(s1);
         if (b0 > ys - 0.01 && b1 > ys - 0.01 && s0 >= w0 && s1 <= w1) {

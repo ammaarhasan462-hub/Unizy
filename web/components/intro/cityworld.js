@@ -4,7 +4,7 @@
 // Gherkin, St Paul's, the BT Tower) at their mapped positions. Used for Queen Mary (Mile End) and LSE (Aldwych).
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, mergeStatic, plainMaterial, rng } from './materials';
+import { baseBox, canvasTex, facadeMaterial, groundBox, mergeStatic, plainMaterial, rng } from './materials';
 import { buildCity } from './city';
 
 const H = MAP_HALF;
@@ -128,7 +128,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
     m4.compose(new THREE.Vector3(x + (ro() - 0.5) * 30, 0, z + (ro() - 0.5) * 30), q0, new THREE.Vector3(35 + ro() * 35, h, 35 + ro() * 35));
     outer.push([m4.clone(), new THREE.Color(ro() < 0.7 ? BRICK[Math.floor(ro() * 7)] : MOD[Math.floor(ro() * 4)])]);
   }
-  inst(bx, terraceMat, outer);
+  inst(groundBox(), terraceMat, outer);
 
   // ---------------------------------------------------------------- the skyline's landmarks at their mapped positions
   const L = real ? real.landmarks : {};

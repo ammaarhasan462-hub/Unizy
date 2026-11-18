@@ -7,7 +7,7 @@
 // imperial.js.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
+import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
 import { buildCity } from './city';
 
 const H = MAP_HALF;
@@ -361,6 +361,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
     return im;
   };
   const bx = baseBox();
+  const gbx = groundBox(); // for the instanced boxes on the ground and the roofs
 
   // ---------------------------------------------------------------- landmarks
   const shadowed = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
@@ -538,12 +539,12 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
     box(facadeMaterial({ floor: 6, bay: 4, winW: 0.6, winH: 0.75, lit: 0.1, color: '#b0624a', frame: '#efe7d8' }), 900, 912, 0, 9, -790, -700);
   }
 
-  inst(bx, terraceMat, lists.terrace);
-  inst(bx, stuccoMat, lists.stucco);
-  inst(bx, mansionMat, lists.mansion);
-  inst(bx, modernMat, lists.modern);
+  inst(gbx, terraceMat, lists.terrace);
+  inst(gbx, stuccoMat, lists.stucco);
+  inst(gbx, mansionMat, lists.mansion);
+  inst(gbx, modernMat, lists.modern);
   inst(roofGeometry(), plainMaterial({ roughness: 0.7, metalness: 0.05 }, 'sk-slate'), roofs);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'sk-chim'), chim);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'sk-chim'), chim);
 
   shiftSince(mKp, LANDMARK_FIX.kp);
   // ---------------------------------------------------------------- trees: the park's avenues and groves, street plane trees
@@ -588,7 +589,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
   inst(treeGeometry(5, 1), leafMaterial('sk-leaf'), canopy);
-  inst(bx, plainMaterial({ roughness: 0.9 }, 'sk-trunk'), trunk, false);
+  inst(gbx, plainMaterial({ roughness: 0.9 }, 'sk-trunk'), trunk, false);
 
   // ---------------------------------------------------------------- outer city + skyline
   const outer = [];
@@ -602,7 +603,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
     m4.compose(new THREE.Vector3(x + (ro() - 0.5) * 30, 0, z + (ro() - 0.5) * 30), q0, new THREE.Vector3(35 + ro() * 35, h, 35 + ro() * 35));
     outer.push([m4.clone(), new THREE.Color(ro() < 0.55 ? STUCCO[Math.floor(ro() * 4)] : ro() < 0.7 ? REDBRICK[Math.floor(ro() * 4)] : MOD[Math.floor(ro() * 4)])]);
   }
-  inst(bx, terraceMat, outer, false);
+  inst(gbx, terraceMat, outer, false);
 
   const towerMat = facadeMaterial({ floor: 4.0, bay: 1.5, winW: 0.9, winH: 0.75, sash: 0, color: '#7e8d98', frame: '#3c444b', roof: '#55595e', glassRough: 0.04, lit: 0.45, litI: 3.0, metalness: 0.2, roughness: 0.4 });
   const city = [];
@@ -625,7 +626,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(28, 80 + rc() * 90, 28));
     city.push([m4.clone(), new THREE.Color(MOD[Math.floor(rc() * 4)])]);
   }
-  inst(bx, towerMat, city, false);
+  inst(gbx, towerMat, city, false);
   const av = [];
   if (realSky) real.tallTops.forEach(([x, h, z]) => av.push(new THREE.Matrix4().compose(new THREE.Vector3(x, h + 2, z), q0, new THREE.Vector3(2.2, 2.2, 2.2))));
   city.forEach(([mm]) => { const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(); mm.decompose(p, q, s); av.push(new THREE.Matrix4().compose(new THREE.Vector3(p.x, s.y + 2, p.z), q0, new THREE.Vector3(2.2, 2.2, 2.2))); });

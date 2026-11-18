@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { atmo } from './atmo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox } from './materials';
+import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox, groundBox } from './materials';
 import { buildBridges } from './bridges';
 
 const V = 4;
@@ -1376,7 +1376,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const bx = baseBox();
   // chimneys and rooftop plant are centred boxes rotated to the building
   // chimneys, plant and planters: a couple of pixels across beyond 850 m, so not drawn from there
-  inst(bx, plainMaterial({ roughness: 0.92 }, 'city-chim'), chim, true, 'none', 850);
+  inst(groundBox(), plainMaterial({ roughness: 0.92 }, 'city-chim'), chim, true, 'none', 850);
 
   // ---------------------------------------------------------------- ground: the real street plan
   const S = mobile ? 2048 : 4096;
@@ -1612,7 +1612,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     m4.compose(new THREE.Vector3(x, 0, z), q0, new THREE.Vector3(0.45, h - cr * 0.8, 0.45));
     trunk.push([m4.clone(), new THREE.Color('#5a5047')]);
   });
-  const bx2 = baseBox();
+  const bx2 = groundBox();
   // canopies: 80-triangle lobes near the camera, 20-triangle lobes beyond 650 m (a few pixels across from there)
   inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0));
   inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false);
