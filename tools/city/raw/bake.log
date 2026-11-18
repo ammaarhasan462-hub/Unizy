@@ -21,7 +21,7 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
- "shop_points": 5015,
+ "shop_points": 5017,
  "shopfronts": [
   2302,
   1573,
@@ -192,10 +192,10 @@
  "areas": 1259,
  "rails": 94,
  "trees": 2831,
- "shop_points": 2977,
+ "shop_points": 2980,
  "shopfronts": [
-  901,
-  414,
+  903,
+  415,
   147,
   165,
   39
@@ -215,10 +215,10 @@
  },
  "fronts": [
   8789,
-  899,
-  2434
+  897,
+  2436
  ],
- "shopfront_fill": 151,
+ "shopfront_fill": 152,
  "skyline": 1771,
  "river_polys": 10,
  "river_pts": 2414,
@@ -258,7 +258,7 @@
    6692.8
   ]
  },
- "bytes": 2311387,
+ "bytes": 2311415,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -363,9 +363,9 @@
  "buildings": 10493,
  "heights": {
   "h": 95,
-  "lv": 5758,
+  "lv": 5761,
   "guess": 401,
-  "lidar": 4239
+  "lidar": 4236
  },
  "styles": {
   "stock": 6678,
@@ -377,14 +377,14 @@
   "stucco": 136,
   "shed": 489
  },
- "roads": 12636,
+ "roads": 12639,
  "areas": 4334,
  "rails": 286,
  "trees": 2485,
- "shop_points": 1108,
+ "shop_points": 1109,
  "shopfronts": [
   617,
-  308,
+  309,
   111,
   127,
   35
@@ -403,7 +403,7 @@
   "type": 7196
  },
  "fronts": [
-  1043,
+  1042,
   7689,
   1196
  ],
@@ -445,7 +445,7 @@
    -2743.8
   ]
  },
- "bytes": 2440129,
+ "bytes": 2440307,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -467,37 +467,37 @@
 }
 {
  "site": "lse",
- "buildings": 13550,
+ "buildings": 13551,
  "heights": {
-  "h": 1977,
-  "lv": 6820,
-  "guess": 220,
-  "lidar": 4533
+  "h": 1980,
+  "lv": 6818,
+  "guess": 221,
+  "lidar": 4532
  },
  "styles": {
   "church": 156,
-  "glass": 984,
+  "glass": 987,
   "concrete": 1072,
-  "stock": 7116,
-  "stone": 1342,
+  "stock": 7114,
+  "stone": 1341,
   "redbrick": 1378,
   "stucco": 1106,
-  "shed": 396
+  "shed": 397
  },
- "roads": 22172,
+ "roads": 22173,
  "areas": 2127,
  "rails": 350,
  "trees": 6274,
- "shop_points": 4969,
+ "shop_points": 4970,
  "shopfronts": [
   1687,
   1607,
   592,
-  413,
+  410,
   203
  ],
  "eras": [
-  3974,
+  3975,
   6325,
   1591,
   792,
@@ -507,12 +507,12 @@
   "own": 1157,
   "street": 2740,
   "neighbours": 455,
-  "type": 7479
+  "type": 7476
  },
  "fronts": [
-  4798,
+  4799,
   403,
-  3305
+  3304
  ],
  "shopfront_fill": 465,
  "skyline": 1487,
@@ -550,7 +550,7 @@
    2509.8
   ]
  },
- "bytes": 3061822,
+ "bytes": 3061789,
  "anchor": [
   "Old Building",
   51.51432,
@@ -634,31 +634,31 @@
  "site": "kcl",
  "buildings": 13433,
  "heights": {
-  "h": 2307,
-  "lv": 6291,
+  "h": 2310,
+  "lv": 6289,
   "guess": 222,
-  "lidar": 4613
+  "lidar": 4612
  },
  "styles": {
   "church": 283,
-  "glass": 1058,
+  "glass": 1061,
   "concrete": 1115,
-  "stock": 6638,
+  "stock": 6636,
   "stucco": 1135,
   "redbrick": 1360,
-  "stone": 1451,
+  "stone": 1450,
   "shed": 393
  },
- "roads": 21094,
+ "roads": 21093,
  "areas": 1977,
  "rails": 408,
  "trees": 6488,
- "shop_points": 4969,
+ "shop_points": 4970,
  "shopfronts": [
   1580,
   1556,
   572,
-  392,
+  389,
   201
  ],
  "eras": [
@@ -672,12 +672,12 @@
   "own": 1259,
   "street": 2546,
   "neighbours": 547,
-  "type": 7146
+  "type": 7143
  },
  "fronts": [
-  4363,
+  4364,
   354,
-  3118
+  3117
  ],
  "shopfront_fill": 443,
  "skyline": 1444,
@@ -715,7 +715,7 @@
    2476.0
   ]
  },
- "bytes": 3003478,
+ "bytes": 3003265,
  "anchor": [
   "King's Building",
   51.51153,
