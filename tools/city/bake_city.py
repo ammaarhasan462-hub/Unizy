@@ -235,7 +235,8 @@ def rings_of(el, fr):
 RIVER_R = 12500.0  # metres around the site: the river polygons are clipped to this square
 # Thames bridges by name: (style, spans, paint, deck height above the water)
 #   style 0 masonry or concrete arches (solid spandrels), 1 painted iron arches (open spandrels),
-#   2 beams or girders on piers, 3 suspension (towers and chains)
+#   2 beams or girders on piers, 3 suspension (towers and chains), 4 Tower Bridge (towers, walkways)
+BRIDGE_R = 5000.0  # metres from the site: bridges further off are left out
 BRIDGE_STYLE = {
     'Waterloo Bridge': (0, 5, '#d7d1c3', 8.0),
     'Westminster Bridge': (1, 7, '#3e6a56', 6.5),
@@ -254,7 +255,7 @@ BRIDGE_STYLE = {
     'Cannon Street Railway Bridge': (2, 5, '#4f5b5d', 8.0),
     'Chelsea Bridge': (3, 3, '#e6e2d8', 7.0),
     'Albert Bridge': (3, 3, '#cfa9a2', 6.5),
-    'Tower Bridge': (2, 3, '#6f93b3', 9.0),
+    'Tower Bridge': (4, 3, '#7ea6c9', 9.0),
 }
 
 
@@ -394,7 +395,7 @@ def bridge_of(ring, t, wet):
     if len(ring) < 4:
         return None
     cx, cz, ang, L, W = min_rect(ring)
-    if max(abs(cx), abs(cz)) > RIVER_R - 400 or L < 40 or W < 3 or W > 60:
+    if math.hypot(cx, cz) > BRIDGE_R or L < 40 or W < 3 or W > 60:
         return None
     ca, sa = math.cos(ang), math.sin(ang)
     ws = [s for s in [i * 3.0 - L / 2 for i in range(int(L / 3) + 1)] if wet(cx + ca * s, cz + sa * s)]

@@ -2,7 +2,8 @@
 // each one is a deck along its outline's long axis, ramped down to the banks, carried over the water on piers.
 // Styles: 0 masonry or concrete arches with solid spandrels (Waterloo), 1 painted iron arches with open spandrels on
 // granite piers (Westminster green, Vauxhall and Lambeth red), 2 beams or girders on piers (London Bridge, the
-// railway bridges, the footbridges), 3 suspension bridges with towers and chains (Chelsea, Albert).
+// railway bridges, the footbridges), 3 suspension bridges with towers and chains (Chelsea, Albert), 4 Tower Bridge.
+// Beyond 2.2 km from the campus a bridge drops its small parts (footways, inner parapets, lamp posts, hangers).
 // All of them are one mesh with vertex colours, and their lamps a second one, so the bridges cost two draw calls.
 import * as THREE from 'three';
 import { plainMaterial } from './materials';
@@ -42,9 +43,11 @@ export function buildBridges(list, { mobile = false } = {}) {
     const at = (s, v, y) => [cx + (s - L / 2) * ca - v * sa, y, cz + (s - L / 2) * sa + v * ca];
     const across = [-sa, 0, ca], back = [sa, 0, -ca];
     const paint = new THREE.Color(paintH);
+    // beyond 2.2 km of the campus a bridge is a few pixels tall: no footways, inner parapets, posts or hangers
+    const far = Math.hypot(cx, cz) > 2200;
     const foot = W < 8; // a footbridge: one walkway, no carriageway
     const rail = style === 2 && Hd >= 7.9 && !foot;
-    const fw = foot ? 0 : W > 14 ? 3.4 : 1.8;
+    const fw = foot || far ? 0 : W > 14 ? 3.4 : 1.8;
     const fd = style === 0 ? 1.4 : style === 1 ? 1.1 : style === 3 ? 1.2 : foot ? 0.7 : rail ? 2.6 : 1.7;
     const par = foot ? 1.2 : style === 2 && rail ? 1.4 : 1.1;
     const wl = Math.max(10, w1 - w0);
@@ -55,9 +58,10 @@ export function buildBridges(list, { mobile = false } = {}) {
     // piers: evenly over the water (suspension: the two towers at a quarter and three quarters)
     const piers = [];
     if (style === 3) piers.push(w0 + wl * 0.25, w0 + wl * 0.75);
+    else if (style === 4) piers.push(w0 + wl * 0.315, w0 + wl * 0.685);
     else for (let i = 1; i < spans; i++) piers.push(w0 + (wl * i) / spans);
     const span = wl / Math.max(1, spans);
-    const tp = style === 2 ? (foot ? 1.6 : 3.2) : style === 3 ? 4.5 : Math.min(7, Math.max(2.8, span * 0.085));
+    const tp = style === 2 ? (foot ? 1.6 : 3.2) : style === 3 ? 4.5 : style === 4 ? 21 : Math.min(7, Math.max(2.8, span * 0.085));
     const ys = style === 0 ? 1.0 : style === 1 ? 1.8 : 0;
     const edges = [w0, ...piers, w1];
     // the arch between two piers: from the springing to just under the deck
@@ -74,13 +78,13 @@ export function buildBridges(list, { mobile = false } = {}) {
 
     // stations along the deck: closer over the ramps and the arches
     const S = new Set([0, L, w0, w1]);
-    const nDeck = mobile ? 10 : 16;
+    const nDeck = far ? 6 : mobile ? 8 : 12, nRamp = far ? 3 : 5;
     for (let i = 1; i < nDeck; i++) S.add((L * i) / nDeck);
-    for (let i = 1; i < 6; i++) { S.add((r0 * i) / 6); S.add(L - (r1 * i) / 6); }
+    for (let i = 1; i < nRamp; i++) { S.add((r0 * i) / nRamp); S.add(L - (r1 * i) / nRamp); }
     if (style <= 1) edges.forEach((e, i) => {
       if (i < edges.length - 1) {
         const a0 = e + (i ? tp / 2 : 0), a1 = edges[i + 1] - (i < edges.length - 2 ? tp / 2 : 0);
-        const n = mobile ? 4 : 7;
+        const n = far ? 4 : mobile ? 4 : 7;
         for (let k = 0; k <= n; k++) S.add(a0 + ((a1 - a0) * k) / n);
       }
     });
@@ -97,9 +101,10 @@ export function buildBridges(list, { mobile = false } = {}) {
       if (fw) for (const sd of [-1, 1]) quad(at(s0, sd * (hv - 0.5), y0 + 0.15), at(s1, sd * (hv - 0.5), y1 + 0.15), at(s1, sd * (hv - 0.5 - fw), y1 + 0.15), at(s0, sd * (hv - 0.5 - fw), y0 + 0.15), footway, UP);
       for (const sd of [-1, 1]) {
         const out = sd > 0 ? across : back, inn = sd > 0 ? back : across;
-        const pc = style === 0 ? tmp.copy(paint).multiplyScalar(1.04) : style === 1 ? paint : style === 3 ? paint : granite;
-        quad(at(s0, sd * (hv - 0.5), y0 + 0.15), at(s1, sd * (hv - 0.5), y1 + 0.15), at(s1, sd * (hv - 0.5), y1 + par), at(s0, sd * (hv - 0.5), y0 + par), pc, inn);
-        quad(at(s0, sd * (hv - 0.5), y0 + par), at(s1, sd * (hv - 0.5), y1 + par), at(s1, sd * hv, y1 + par), at(s0, sd * hv, y0 + par), style === 1 ? paint : footway, UP);
+        const pc = style === 0 ? tmp.copy(paint).multiplyScalar(1.04) : style === 1 || style >= 3 ? paint : granite;
+        if (!far) {
+          quad(at(s0, sd * (hv - 0.5), y0 + 0.15), at(s1, sd * (hv - 0.5), y1 + 0.15), at(s1, sd * (hv - 0.5), y1 + par), at(s0, sd * (hv - 0.5), y0 + par), pc, inn);
+        }
         // the outer face: fascia and parapet
         const fc = style === 2 ? paint : style === 3 ? tmp.copy(paint).multiplyScalar(0.8) : paint;
         quad(at(s0, sd * hv, y0 - fd), at(s1, sd * hv, y1 - fd), at(s1, sd * hv, y1 + par), at(s0, sd * hv, y0 + par), fc, out);
@@ -112,6 +117,7 @@ export function buildBridges(list, { mobile = false } = {}) {
         } else if (style === 1 && b0 > ys - 0.01 && b1 > ys - 0.01) {
           // iron arches: the outer rib along the arch, and the spandrel posts up to the deck girder
           quad(at(s0, sd * hv, b0), at(s1, sd * hv, b1), at(s1, sd * hv, b1 + 1.0), at(s0, sd * hv, b0 + 1.0), paint, out);
+          if (far) continue;
           quad(at(s0, sd * hv, b0), at(s1, sd * hv, b1), at(s1, sd * (hv - 0.7), b1), at(s0, sd * (hv - 0.7), b0), tmp.copy(paint).multiplyScalar(0.6), DOWN);
           const sm0 = (s0 + s1) / 2, ym = (y0 + y1) / 2 - fd, bm = (b0 + b1) / 2 + 1.0;
           if (ym - bm > 0.4) quad(at(sm0 - 0.18, sd * hv, bm), at(sm0 + 0.18, sd * hv, bm), at(sm0 + 0.18, sd * hv, ym), at(sm0 - 0.18, sd * hv, ym), paint, out);
@@ -123,7 +129,7 @@ export function buildBridges(list, { mobile = false } = {}) {
         const b0 = archY(s0), b1 = archY(s1);
         if (b0 > ys - 0.01 && b1 > ys - 0.01 && s0 >= w0 && s1 <= w1) {
           if (style === 0) quad(at(s0, -hv, b0), at(s1, -hv, b1), at(s1, hv, b1), at(s0, hv, b0), tmp.copy(paint).multiplyScalar(0.5), DOWN);
-          else for (const v of [-hv / 3, hv / 3]) {
+          else if (!far) for (const v of [-hv / 3, hv / 3]) {
             // the inner ribs, seen from the river
             quad(at(s0, v, b0), at(s1, v, b1), at(s1, v, b1 + 0.9), at(s0, v, b0 + 0.9), tmp.copy(paint).multiplyScalar(0.7), across);
             quad(at(s0, v - 0.35, b0), at(s1, v - 0.35, b1), at(s1, v + 0.35, b1), at(s0, v + 0.35, b0), tmp.copy(paint).multiplyScalar(0.55), DOWN);
@@ -134,8 +140,8 @@ export function buildBridges(list, { mobile = false } = {}) {
 
     // piers with pointed cutwaters, up and downstream
     piers.forEach((sp) => {
-      const top = style === 0 ? ys + 0.4 : style === 1 ? yd(sp) - fd : style === 3 ? yd(sp) - fd : yd(sp) - fd;
-      const hw = hv + (style === 2 ? -0.3 : 0.4), nose = style === 2 ? 0.8 : tp * 0.7;
+      const top = style === 0 ? ys + 0.4 : yd(sp) - fd;
+      const hw = hv + (style === 2 ? -0.3 : style === 4 ? 3 : 0.4), nose = style === 2 ? 0.8 : style === 4 ? 6 : tp * 0.7;
       const ring = [[sp - tp / 2, -hw], [sp, -hw - nose], [sp + tp / 2, -hw], [sp + tp / 2, hw], [sp, hw + nose], [sp - tp / 2, hw]];
       const col = style === 0 ? tmp.copy(paint).multiplyScalar(0.92) : style === 2 ? paint : granite;
       const c2 = col.clone();
@@ -162,6 +168,55 @@ export function buildBridges(list, { mobile = false } = {}) {
       }
     });
 
+    // Tower Bridge: two Gothic towers of granite and Portland stone on the piers, pyramid roofs and corner turrets,
+    // the high-level walkways between them, and the side spans hung from curved chains (painted blue and white)
+    if (style === 4) {
+      const stone = new THREE.Color('#bfb6a3'), slate = new THREE.Color('#4b5157'), white = new THREE.Color('#e7e6e1');
+      const prism = (ring, y0, y1, col) => {
+        const c = ring.reduce((m, [s0, v0]) => [m[0] + s0 / ring.length, m[1] + v0 / ring.length], [0, 0]);
+        for (let i = 0; i < ring.length; i++) {
+          const [s0, v0] = ring[i], [s1, v1] = ring[(i + 1) % ring.length];
+          const mid = at((s0 + s1) / 2, (v0 + v1) / 2, 0), cen = at(c[0], c[1], 0);
+          quad(at(s0, v0, y0), at(s1, v1, y0), at(s1, v1, y1), at(s0, v0, y1), col, [mid[0] - cen[0], 0, mid[2] - cen[2]]);
+        }
+        quad(at(ring[0][0], ring[0][1], y1), at(ring[1][0], ring[1][1], y1), at(ring[2][0], ring[2][1], y1), at(ring[3][0], ring[3][1], y1), col, UP);
+      };
+      const pyramid = (sc, vc, hs, hvv, y0, h, col) => {
+        const apex = at(sc, vc, y0 + h);
+        const base = [[sc - hs, vc - hvv], [sc + hs, vc - hvv], [sc + hs, vc + hvv], [sc - hs, vc + hvv]];
+        for (let i = 0; i < 4; i++) {
+          const [s0, v0] = base[i], [s1, v1] = base[(i + 1) % 4];
+          const a0 = at(s0, v0, y0), a1 = at(s1, v1, y0), mid = at((s0 + s1) / 2, (v0 + v1) / 2, 0), cen = at(sc, vc, 0);
+          quad(a0, a1, apex, apex, col, [mid[0] - cen[0], 0.5, mid[2] - cen[2]]);
+        }
+      };
+      const tw = 8.5, tv = hv + 2.5, top = 52, walk0 = 38, walk1 = 43.5;
+      piers.forEach((sp) => {
+        prism([[sp - tw, -tv], [sp + tw, -tv], [sp + tw, tv], [sp - tw, tv]], yd(sp) - fd, top, stone);
+        pyramid(sp, 0, tw - 1, tv - 1, top, 9, slate);
+        for (const [ds, dv] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+          const ts = sp + ds * (tw - 1.2), tvv = dv * (tv - 1.2);
+          prism([[ts - 1.6, tvv - 1.6], [ts + 1.6, tvv - 1.6], [ts + 1.6, tvv + 1.6], [ts - 1.6, tvv + 1.6]], top - 4, top + 6, stone);
+          pyramid(ts, tvv, 1.6, 1.6, top + 6, 5, slate);
+        }
+      });
+      // the walkways, one on each side of the towers' axis
+      const [t0, t1] = piers;
+      for (const sd of [-1, 1]) {
+        const v0 = sd * (hv - 2.5), v1 = sd * (hv + 0.5);
+        prism([[t0 + tw, Math.min(v0, v1)], [t1 - tw, Math.min(v0, v1)], [t1 - tw, Math.max(v0, v1)], [t0 + tw, Math.max(v0, v1)]], walk0, walk1, tmp.copy(paint));
+        // the side spans' chains: from the tower at the walkway's height down to the deck at the bank
+        const v = sd * (hv + 0.3), n = far ? 6 : 12;
+        for (const [sa0, sa1, sgn] of [[0, t0 - tw, 1], [t1 + tw, L, -1]]) {
+          const yc = (s) => { const u = (s - sa0) / (sa1 - sa0); const k = sgn > 0 ? u : 1 - u; return yd(s) + par + (walk0 - 4 - par) * k * k; };
+          for (let i = 0; i < n; i++) {
+            const s0 = sa0 + ((sa1 - sa0) * i) / n, s1 = sa0 + ((sa1 - sa0) * (i + 1)) / n;
+            quad(at(s0, v, yc(s0) - 1.2), at(s1, v, yc(s1) - 1.2), at(s1, v, yc(s1)), at(s0, v, yc(s0)), white, sd > 0 ? across : back);
+          }
+        }
+      }
+    }
+
     // suspension chains: from the banks up over the towers, sagging to the deck mid-span; hangers every 5 m
     if (style === 3) {
       const ht = paintH === '#cfa9a2' ? 21 : 17;
@@ -172,14 +227,14 @@ export function buildBridges(list, { mobile = false } = {}) {
         const u = (s - t0) / (t1 - t0);
         return yd(s) + 1.6 + (ht - 1.6) * Math.pow(2 * u - 1, 2);
       };
-      const n = mobile ? 24 : 40;
+      const n = far ? 16 : mobile ? 24 : 40;
       for (const sd of [-1, 1]) {
         const v = sd * (hv + 0.3);
         for (let i = 0; i < n; i++) {
           const s0 = (L * i) / n, s1 = (L * (i + 1)) / n;
           quad(at(s0, v, chainY(s0) - 0.5), at(s1, v, chainY(s1) - 0.5), at(s1, v, chainY(s1)), at(s0, v, chainY(s0)), paint, sd > 0 ? across : back);
         }
-        for (let s = 5; s < L - 4; s += 5) {
+        if (!far) for (let s = 5; s < L - 4; s += 5) {
           const yc = chainY(s) - 0.5, y0 = yd(s) + par;
           if (yc - y0 > 0.5) quad(at(s - 0.07, v, y0), at(s + 0.07, v, y0), at(s + 0.07, v, yc), at(s - 0.07, v, yc), tmp.copy(paint).multiplyScalar(0.85), sd > 0 ? across : back);
         }
@@ -191,7 +246,7 @@ export function buildBridges(list, { mobile = false } = {}) {
       const step = style === 1 ? 16 : 22, hgt = foot ? 3.2 : 5.2;
       for (let s = 6; s < L - 4; s += step) for (const sd of [-1, 1]) {
         const v = sd * (hv - 0.25), y0 = yd(s) + par;
-        quad(at(s - 0.08, v, y0), at(s + 0.08, v, y0), at(s + 0.08, v, y0 + hgt), at(s - 0.08, v, y0 + hgt), post, sd > 0 ? across : back);
+        if (!far) quad(at(s - 0.08, v, y0), at(s + 0.08, v, y0), at(s + 0.08, v, y0 + hgt), at(s - 0.08, v, y0 + hgt), post, sd > 0 ? across : back);
         const p = at(s, v, y0 + hgt + 0.25);
         lampQuad(p[0], p[1], p[2], 0.32);
       }
