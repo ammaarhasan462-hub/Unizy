@@ -222,8 +222,8 @@ export function buildBridges(list, { mobile = false } = {}) {
       const ht = paintH === '#cfa9a2' ? 21 : 17;
       const [t0, t1] = piers;
       const chainY = (s) => {
-        if (s <= t0) return yd(s) + par + (ht - par) * Math.pow(s / t0, 1.6);
-        if (s >= t1) return yd(s) + par + (ht - par) * Math.pow((L - s) / (L - t1), 1.6);
+        if (s <= t0) return yd(s) + par + (ht - par) * Math.pow(Math.max(0, s / t0), 1.6);
+        if (s >= t1) return yd(s) + par + (ht - par) * Math.pow(Math.max(0, (L - s) / (L - t1)), 1.6);
         const u = (s - t0) / (t1 - t0);
         return yd(s) + 1.6 + (ht - 1.6) * Math.pow(2 * u - 1, 2);
       };
