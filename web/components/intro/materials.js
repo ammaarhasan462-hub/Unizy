@@ -1,7 +1,7 @@
 // Materials for the intro's London: a facade material that draws windows (frames, sash bars, sky-reflecting
 // glass, the odd lit room) onto plain boxes, plus small canvas textures. Every material gets atmo() haze.
 import * as THREE from 'three';
-import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { atmo } from './atmo';
 
 export function rng(seed) {
@@ -103,6 +103,34 @@ export function plainMaterial(params, key) {
   const m = new THREE.MeshStandardMaterial(params);
   m.userData.key = key || 'plain';
   return atmo(m);
+}
+
+// static meshes built in a loose group (not yet added anywhere) merged into one mesh per material, in the group's
+// parent frame: a landmark of tens of parts becomes a draw call or two. Falls back to the group as it was.
+export function mergeStatic(src) {
+  src.updateMatrixWorld(true);
+  const by = new Map();
+  src.traverse((o) => {
+    if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material)) return;
+    if (!by.has(o.material)) by.set(o.material, { geos: [], cast: false, recv: false });
+    const e = by.get(o.material);
+    const g = o.geometry.index ? o.geometry.clone() : o.geometry.clone().setIndex([...Array(o.geometry.attributes.position.count).keys()]);
+    g.applyMatrix4(o.matrixWorld);
+    e.geos.push(g);
+    e.cast = e.cast || o.castShadow; e.recv = e.recv || o.receiveShadow;
+  });
+  const out = new THREE.Group();
+  for (const [mat, e] of by) {
+    const keys = Object.keys(e.geos[0].attributes).filter((k) => e.geos.every((g) => g.attributes[k]));
+    e.geos.forEach((g) => { Object.keys(g.attributes).forEach((k) => { if (!keys.includes(k)) g.deleteAttribute(k); }); g.morphAttributes = {}; });
+    const mg = mergeGeometries(e.geos);
+    e.geos.forEach((g) => g.dispose());
+    if (!mg) { src.matrixAutoUpdate = true; return src; }
+    const m = new THREE.Mesh(mg, mat);
+    m.castShadow = e.cast; m.receiveShadow = e.recv;
+    out.add(m);
+  }
+  return out;
 }
 
 export function canvasTex(w, h, draw, opts = {}) {

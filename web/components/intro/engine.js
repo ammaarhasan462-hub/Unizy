@@ -17,6 +17,7 @@ import { buildUCL, tickLibrary } from './ucl';
 import { buildSouthKen, RIVER_GLSL } from './southken';
 import { buildImperial, IMPERIAL_KEYS } from './imperial';
 import { buildCityWorld } from './cityworld';
+import { RIVER_R } from './city';
 import { buildQMUL, QMUL_KEYS, QMUL_STRIKE, QMUL_SHADOW, QMUL_KEEP } from './qmul';
 import { buildLSE, LSE_KEYS, LSE_STRIKE, LSE_SHADOW, LSE_KEEP } from './lse';
 import { buildKCL, KCL_KEYS, KCL_STRIKE, KCL_SHADOW, KCL_KEEP } from './kcl';
@@ -215,7 +216,9 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   };
   const cloudScene = new THREE.Scene();
   const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: imp || generic ? CLOUD_FS.replace(/float riverX\(float z\)\{[^\n]*\}/, imp ? RIVER_GLSL : london.riverGLSL) : CLOUD_FS, uniforms: cloudU, depthTest: false, depthWrite: false }));
+  // the ground's river under the clouds: the mapped river's mask, or (hand-built city) a river function
+  if (london.riverTex) cloudU.uRiver = { value: london.riverTex };
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ vertexShader: QUAD_VS, fragmentShader: (imp || generic) && !london.riverTex ? CLOUD_FS.replace(/float riverX\(float z\)\{[^\n]*\}/, imp ? RIVER_GLSL : london.riverGLSL) : CLOUD_FS, uniforms: cloudU, defines: london.riverTex ? { RIVER_TEX: 1, RIVER_R: RIVER_R.toFixed(1) } : {}, depthTest: false, depthWrite: false }));
   quad.frustumCulled = false;
   cloudScene.add(quad);
   scene.background = cloudRT.texture;

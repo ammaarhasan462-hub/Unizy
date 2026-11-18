@@ -1,10 +1,10 @@
 // A London world around any campus, built only from the real map (OpenStreetMap via city.js): the baked city out to
-// 1.5 km, the real Thames from the map (with the matching river function for the cloud shader), a far ground and an
+// 1.5 km, the real Thames from the map (its surfaces, bridges and a mask for the cloud shader), a far ground and an
 // outer ring of low blocks to the horizon, the tall buildings of the skyline, and the far landmarks (the Shard, the
 // Gherkin, St Paul's, the BT Tower) at their mapped positions. Used for Queen Mary (Mile End) and LSE (Aldwych).
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, plainMaterial, rng } from './materials';
+import { baseBox, canvasTex, facadeMaterial, mergeStatic, plainMaterial, rng } from './materials';
 import { buildCity } from './city';
 
 const H = MAP_HALF;
@@ -73,7 +73,9 @@ const float RV_X[${rs.N}] = float[${rs.N}](${rs.xs.map((x) => x.toFixed(1)).join
 float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001).toFixed(3)}); int i = int(f); return mix(RV_X[i], RV_X[i + 1], fract(f)); }`
     : 'float riverX(float z){ return -2400.0 + sin(z * 0.0006) * 200.0; }';
   const waterMat = plainMaterial({ color: '#25343b', roughness: 0.07, metalness: 0.05 }, 'river-' + site);
-  {
+  // the mapped river surfaces come with the city (city.js); without them, a ribbon along the samples
+  const riverTex = real && real.riverTex;
+  if (!riverTex) {
     // the river as one ribbon along the samples (the map's own water polygons lie on top near the campus)
     const v = [], idx = [];
     for (let z = -12000, i = 0; z <= 12000; z += 150, i++) {
@@ -121,7 +123,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
   for (let x = -5200; x < 5200; x += 85) for (let z = -5200; z < 5200; z += 85) {
     const d = Math.max(Math.abs(x), Math.abs(z));
     if (d < R + 40 || ro() < 0.5) continue;
-    if (Math.abs(x - riverAt(z)) < 190) continue;
+    if (riverTex ? real.inRiver(x, z, 50) : Math.abs(x - riverAt(z)) < 190) continue;
     const h = 12 + Math.pow(ro(), 4) * 40;
     m4.compose(new THREE.Vector3(x + (ro() - 0.5) * 30, 0, z + (ro() - 0.5) * 30), q0, new THREE.Vector3(35 + ro() * 35, h, 35 + ro() * 35));
     outer.push([m4.clone(), new THREE.Color(ro() < 0.7 ? BRICK[Math.floor(ro() * 7)] : MOD[Math.floor(ro() * 4)])]);
@@ -148,10 +150,12 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
   if (bt) {
     const mat = plainMaterial({ color: '#c9cdd1', roughness: 0.35, metalness: 0.3 }, 'bt-' + site);
     const dark = plainMaterial({ color: '#2b3036', roughness: 0.4, metalness: 0.4, emissive: '#7fc2ff', emissiveIntensity: 0.9 }, 'btd-' + site);
-    const cyl = (rad, y0, h, mm) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), mm); c.position.set(bt[0], y0 + h / 2, bt[1]); group.add(c); };
+    const btg = new THREE.Group();
+    const cyl = (rad, y0, h, mm) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, h, 32), mm); c.position.set(bt[0], y0 + h / 2, bt[1]); btg.add(c); };
     cyl(9, 0, 110, mat);
     for (let i = 0; i < 6; i++) { cyl(10.5, 110 + i * 7, 3.5, dark); cyl(9.5, 113.5 + i * 7, 3.5, mat); }
     cyl(7, 152, 16, mat); cyl(2, 168, 14, dark);
+    group.add(mergeStatic(btg));
   }
   // St Paul's Cathedral: Portland stone drum, the peristyle, the dome, the lantern and the gilded cross
   const sp = landmarks.stPauls;
@@ -159,7 +163,8 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
     const stone = plainMaterial({ color: '#d8d0bf', roughness: 0.75 }, 'stpauls-' + site);
     const lead = plainMaterial({ color: '#6c7377', roughness: 0.45, metalness: 0.4 }, 'stpauls-lead-' + site);
     const gold = plainMaterial({ color: '#c9a35a', roughness: 0.3, metalness: 0.9 }, 'stpauls-gold-' + site);
-    const g = new THREE.Group(); g.position.set(sp[0], 0, sp[1]); g.rotation.y = sp[2] || 0; group.add(g);
+    // built loose, then merged into one mesh per material (three draw calls, not fifty)
+    const g = new THREE.Group(); g.position.set(sp[0], 0, sp[1]); g.rotation.y = sp[2] || 0;
     const add = (geo, mat, x, y, z) => { const mm = new THREE.Mesh(geo, mat); mm.position.set(x, y, z); mm.castShadow = true; g.add(mm); return mm; };
     add(new THREE.BoxGeometry(46, 30, 140), stone, 0, 15, 0); // nave and choir
     add(new THREE.BoxGeometry(76, 30, 34), stone, 0, 15, 8); // transepts
@@ -173,6 +178,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
     add(new THREE.SphereGeometry(1.6, 16, 10), gold, 0, 90, 8);
     add(new THREE.BoxGeometry(0.5, 6, 0.5), gold, 0, 94, 8);
     add(new THREE.BoxGeometry(3, 0.5, 0.5), gold, 0, 95, 8);
+    group.add(mergeStatic(g));
   }
   // aviation lights on the tallest towers
   const av = [];
@@ -182,5 +188,5 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
   inst(new THREE.SphereGeometry(1, 8, 6), avMat, av.map(([m]) => [m, new THREE.Color(1, 1, 1)]));
 
   const trafficU = real ? real.trafficU : { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
-  return { group, mapTex, emTex, trafficU, avMat, riverGLSL, riverAt, real };
+  return { group, mapTex, emTex, trafficU, avMat, riverGLSL, riverAt, riverTex, real };
 }

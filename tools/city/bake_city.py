@@ -231,6 +231,188 @@ def rings_of(el, fr):
     return res
 
 
+# ---------------------------------------------------------------------- the Thames and its bridges
+RIVER_R = 12500.0  # metres around the site: the river polygons are clipped to this square
+# Thames bridges by name: (style, spans, paint, deck height above the water)
+#   style 0 masonry or concrete arches (solid spandrels), 1 painted iron arches (open spandrels),
+#   2 beams or girders on piers, 3 suspension (towers and chains)
+BRIDGE_STYLE = {
+    'Waterloo Bridge': (0, 5, '#d7d1c3', 8.0),
+    'Westminster Bridge': (1, 7, '#3e6a56', 6.5),
+    'Vauxhall Bridge': (1, 5, '#8d2b24', 7.0),
+    'Lambeth Bridge': (1, 5, '#97302a', 7.0),
+    'Blackfriars Bridge': (1, 5, '#8a2a25', 7.0),
+    'Southwark Bridge': (1, 3, '#55704f', 7.5),
+    'Battersea Bridge': (1, 5, '#3f5b4b', 6.5),
+    'Grosvenor Bridge': (1, 4, '#6b6f72', 7.5),
+    'London Bridge': (2, 3, '#a3a19a', 8.0),
+    'Hungerford Bridge': (2, 9, '#4f5458', 7.5),
+    'Golden Jubilee Bridge': (2, 9, '#e3e3df', 7.8),
+    'Golden Jubilee Bridges': (2, 9, '#e3e3df', 7.8),
+    'Millennium Bridge': (2, 3, '#c5c9ca', 7.0),
+    'Blackfriars Railway Bridge': (2, 5, '#6c6f71', 8.0),
+    'Cannon Street Railway Bridge': (2, 5, '#4f5b5d', 8.0),
+    'Chelsea Bridge': (3, 3, '#e6e2d8', 7.0),
+    'Albert Bridge': (3, 3, '#cfa9a2', 6.5),
+    'Tower Bridge': (2, 3, '#6f93b3', 9.0),
+}
+
+
+def clip_box(ring, R):
+    """Sutherland-Hodgman: the ring clipped to |x|, |z| <= R"""
+    pts = list(ring)
+    for axis in (0, 1):
+        for sgn in (1, -1):
+            if not pts:
+                return []
+            out = []
+            for i in range(len(pts)):
+                a, b = pts[i - 1], pts[i]
+                ia, ib = a[axis] * sgn <= R, b[axis] * sgn <= R
+                if ia != ib:
+                    t = (sgn * R - a[axis]) / (b[axis] - a[axis])
+                    out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+                if ib:
+                    out.append(b)
+            pts = out
+    return pts
+
+
+def hull(pts):
+    p = sorted(set(pts))
+    if len(p) < 3:
+        return p
+    cr = lambda o, a, b: (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lo, hi = [], []
+    for q_ in p:
+        while len(lo) >= 2 and cr(lo[-2], lo[-1], q_) <= 0:
+            lo.pop()
+        lo.append(q_)
+    for q_ in reversed(p):
+        while len(hi) >= 2 and cr(hi[-2], hi[-1], q_) <= 0:
+            hi.pop()
+        hi.append(q_)
+    return lo[:-1] + hi[:-1]
+
+
+def min_rect(ring):
+    """the smallest rectangle round a ring: (cx, cz, angle of the long side, length, width)"""
+    h = hull(ring)
+    best = None
+    for i in range(len(h)):
+        a, b = h[i], h[(i + 1) % len(h)]
+        ang = math.atan2(b[1] - a[1], b[0] - a[0])
+        c, s = math.cos(ang), math.sin(ang)
+        us = [p[0] * c + p[1] * s for p in h]
+        vs = [-p[0] * s + p[1] * c for p in h]
+        ar = (max(us) - min(us)) * (max(vs) - min(vs))
+        if best is None or ar < best[0]:
+            best = (ar, ang, min(us), max(us), min(vs), max(vs))
+    _, ang, u0, u1, v0, v1 = best
+    c, s = math.cos(ang), math.sin(ang)
+    if v1 - v0 > u1 - u0:  # keep the angle along the long side
+        ang += math.pi / 2
+        u0, u1, v0, v1 = v0, v1, -u1, -u0
+        c, s = math.cos(ang), math.sin(ang)
+    uc, vc = (u0 + u1) / 2, (v0 + v1) / 2
+    return (uc * c - vc * s, uc * s + vc * c, ang, u1 - u0, v1 - v0)
+
+
+def river_water(fr):
+    """the river surfaces (OSM water=river: the Thames, the Lea) from the skyline extract, in the site frame,
+    clipped to RIVER_R: [(outer, [holes])]"""
+    try:
+        sk = load_seq('skyline')
+    except FileNotFoundError:
+        return []
+    polys = []
+    for el in sk:
+        t = el.get('tags', {})
+        if t.get('water') != 'river':
+            continue
+        for outer, inners in rings_of(el, fr):
+            o = clean_ring(outer, 2.5)
+            if not o or abs(area(o)) < 20000:
+                continue
+            o = clip_box(o, RIVER_R)
+            if len(o) < 3 or abs(area(o)) < 20000:
+                continue
+            hs = []
+            for hr in inners:
+                hh = clean_ring(hr, 2.5)
+                hh = clip_box(hh, RIVER_R) if hh and abs(area(hh)) > 1500 else None
+                if hh and len(hh) >= 3:
+                    hs.append(hh)
+            polys.append((o, hs))
+    return polys
+
+
+def river_bridges(site, fr, water):
+    """the bridges over the river: man_made=bridge outlines from the site's extract and the skyline extract that
+    cross a river surface. Each: [style, spans, paint, x, z, angle, length, width, wet from, wet to, deck height]
+    (x, z, lengths in decimetres, the angle in milliradians; wet: the stretch of the long axis over water)"""
+    boxes = []
+    for o, hs in water:
+        xs, zs = [p[0] for p in o], [p[1] for p in o]
+        boxes.append((min(xs), max(xs), min(zs), max(zs), o, hs))
+
+    def wet(x, z):
+        for x0, x1, z0, z1, o, hs in boxes:
+            if x0 <= x <= x1 and z0 <= z <= z1 and pip(x, z, o) and not any(pip(x, z, hh) for hh in hs):
+                return True
+        return False
+
+    seen, out, names = set(), [], []
+    for raw in (RAW_OF(site), 'skyline'):
+        p = os.path.join(RAW, f'{raw}.geojsonseq.gz')
+        if not os.path.exists(p):
+            continue
+        with gzip.open(p, 'rt') as f:
+            for line in f:
+                if '"man_made":"bridge"' not in line:
+                    continue
+                ft = json.loads(line.strip().lstrip('\x1e'))
+                geo = ft.get('geometry') or {}
+                if geo.get('type') not in ('Polygon', 'MultiPolygon'):
+                    continue
+                pid = str(ft.get('properties', {}).get('@id') or ft.get('id'))
+                if pid in seen:
+                    continue
+                seen.add(pid)
+                t = ft.get('properties', {})
+                polys = [geo['coordinates']] if geo['type'] == 'Polygon' else geo['coordinates']
+                for pl in polys:
+                    br = bridge_of([fr(c[1], c[0]) for c in pl[0]], t, wet)
+                    # the same deck mapped twice (an outline and a named area): keep the first
+                    if br and not any(math.hypot(br[3] - o[3], br[4] - o[4]) < 220 and abs(math.sin((br[5] - o[5]) / 1000)) < 0.2 for o in out):
+                        out.append(br)
+                        names.append(t.get('name') or '?')
+    return out, names
+
+
+def bridge_of(ring, t, wet):
+    if len(ring) < 4:
+        return None
+    cx, cz, ang, L, W = min_rect(ring)
+    if max(abs(cx), abs(cz)) > RIVER_R - 400 or L < 40 or W < 3 or W > 60:
+        return None
+    ca, sa = math.cos(ang), math.sin(ang)
+    ws = [s for s in [i * 3.0 - L / 2 for i in range(int(L / 3) + 1)] if wet(cx + ca * s, cz + sa * s)]
+    if len(ws) * 3 < 30:
+        return None
+    nm = t.get('name', '')
+    sty = BRIDGE_STYLE.get(nm)
+    if not sty:
+        st = t.get('bridge:structure', '')
+        rail = 'Railway' in nm or 'railway' in t
+        sty = (1 if st == 'arch' and not rail else 3 if st == 'suspension' else 2, 0, '#7c7a75' if rail else '#a29f97', 8.0 if rail else 7.0)
+    style, spans, paint, hd = sty
+    wl = max(ws) - min(ws) + 3
+    if not spans:
+        spans = max(1, round(wl / 55))
+    return [style, spans, paint, q(cx), q(cz), int(round(ang * 1000)), q(L), q(W), q(min(ws) + L / 2), q(max(ws) + L / 2), q(hd)]
+
+
 COL = {'white': '#eeeae2', 'grey': '#8d8d8a', 'gray': '#8d8d8a', 'red': '#8e4a3a', 'brown': '#7b5a44', 'yellow': '#c9b07a', 'beige': '#d3c4a3',
        'black': '#2d2e30', 'cream': '#e6dcc3', 'silver': '#a9aeb2', 'blue': '#6d7f92', 'green': '#5d7462', 'tan': '#c4a77f', 'orange': '#b46e3e',
        'darkgrey': '#5c5d5f', 'lightgrey': '#b9b8b3', 'pink': '#c99a8f'}
@@ -1005,16 +1187,19 @@ def bake(site):
                 o = o[::-1]
             sky.append([round(hgt, 1), round(minh, 1), colour(t.get('building:colour')) or '', flat(o)])
 
+    water = river_water(fr)
+    bridges, bnames = river_bridges(site, fr, water)
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
         'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
+        'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges,
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 

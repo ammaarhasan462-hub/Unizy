@@ -29,6 +29,9 @@ uniform float uHaze;
 uniform float uFlash;
 uniform vec3 uFlashPos;
 uniform sampler2D uEmis;
+#ifdef RIVER_TEX
+uniform sampler2D uRiver;
+#endif
 varying vec2 vUv;
 const float BOT = ${CLOUD_BOTTOM.toFixed(1)};
 const float TOP = ${CLOUD_TOP.toFixed(1)};
@@ -54,8 +57,13 @@ vec3 groundCol(vec2 p, vec3 rd, float t){
     vec2 g = abs(fract(p / vec2(95.0, 130.0)) - 0.5);
     alb = mix(vec3(0.09), alb, smoothstep(0.0, 0.06, min(g.x, g.y)));
   }
+#ifdef RIVER_TEX
+  // the mapped river (city.js), as a mask over +-RIVER_R
+  float water = smoothstep(0.25, 0.75, texture(uRiver, vec2(p.x / (2.0 * RIVER_R) + 0.5, 0.5 - p.y / (2.0 * RIVER_R))).r);
+#else
   float rv = abs(p.x - riverX(p.y));
   float water = 1.0 - smoothstep(110.0, 130.0, rv);
+#endif
   vec3 lit = alb * (uSunCol * 0.3 + skyL(uSkyLut, vec3(0.0, 1.0, 0.0)) * 1.4);
   vec3 refl = skyL(uSkyLut, reflect(rd, vec3(0.0, 1.0, 0.0))) * 0.35 + uSunCol * 2.0 * pow(max(dot(reflect(rd, vec3(0,1,0)), uSun), 0.0), 220.0);
   lit = mix(lit, vec3(0.012, 0.02, 0.026) + refl, water);
