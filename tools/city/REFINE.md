@@ -10,7 +10,7 @@ The intros' cities are built from free sources only:
 
 How the data flows:
 
-1. `.github/workflows/fetch-city-pbf.yml` downloads the extract and writes `tools/city/raw/*.geojsonseq.gz`.
+1. `.github/workflows/fetch-city-pbf.yml` downloads the extract and writes `tools/city/raw/*.geojsonseq.gz`. The skyline extract (`skyline.geojsonseq.gz`) also carries the river surfaces (`water=river`) and the named bridges for the Thames and its bridges.
 2. `.github/workflows/fetch-city-lidar.yml` runs `tools/city/lidar_heights.py` (needs numpy, tifffile, imagecodecs and pyproj, so CI only). It downloads the 5 km LiDAR tiles over each site from the survey download API, takes the last-return DSM minus the DTM, and writes the median height above ground under every footprint to `tools/city/raw/<site>.lidar.json.gz`. It runs monthly, the day after the extract.
 3. `tools/city/bake_city.py` turns those into `site/assets/city/<site>.json` and `site/assets/city/tex/`.
 4. `web/components/intro/city.js` builds the geometry. It is called from `london.js` (UCL), `southken.js` (Imperial) and `cityworld.js` (Queen Mary, LSE and King's).
@@ -56,6 +56,7 @@ Keep to these limits:
 - [x] **No interior draw calls from the air.** The furnished reading rooms and halls (about 500 small draw calls) are hidden until the camera is within 300 m.
 - [x] **One wall mesh per tile.** Put the four wall families in a texture array (or one atlas) so each 400 m tile is one wall draw instead of four. This cuts about 150–200 draw calls a frame.
 - [x] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
+- [x] **Merge the landmarks and the water.** St Paul's, the BT Tower, the London Eye, the Albert Memorial, the Royal Albert Hall, the Natural History Museum and the V&A are merged per material (`mergeStatic` in `materials.js`; facade boxes stay as they are, because their windows come from each box's scale). The map's water areas and the river are one mesh. Boxes on the ground or on a roof have no bottom face (`groundBox`).
 - [ ] **Merge the interiors' furniture.** Merge the furniture (chairs, frames, lamp shades, gilt and so on) into a few instanced or merged meshes per material. Then the close-up shots draw tens of calls, not hundreds.
 - [ ] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones.
 - [ ] **Railings by distance.** The railings are still one city-wide mesh. Split them by tile into the wall `THREE.LOD`'s near level (no extra draw: merge them into a mesh that is already drawn, or accept the draw only on near tiles), so far tiles do not draw them at all. Bay windows are done: they are detail triangles that far tiles skip.
@@ -80,7 +81,12 @@ Keep to these limits:
   - roof terraces and plant on large flat roofs;
   - skylights;
   - lead-grey zinc on modern roofs.
-- [ ] **The Thames.** Draw the real river from `river` in the baked data, and fit `riverX` (and the cloud shader's copy, `RIVER_GLSL`) to the real centreline. Add the bridges: Waterloo, Westminster and Vauxhall.
+- [x] **The Thames.** Draw the real river from `river` in the baked data, and fit `riverX` (and the cloud shader's copy, `RIVER_GLSL`) to the real centreline. Add the bridges: Waterloo, Westminster and Vauxhall.
+- [ ] **The Thames, part 2:**
+  - the tide: the river sits flush with the streets, so the bridges ramp down to meet it. Lower the water by about 4 m and draw the Embankment's granite river walls (and the South Bank's), so the decks run level onto the banks;
+  - boats: the moored barges and the river buses, and the lit pleasure boats along the Embankment;
+  - Westminster's lamps and Albert Bridge's lights strung along its chains;
+  - the Lea and the docks round Queen Mary are only as good as their OSM `water=river` outlines; the docks (`water=dock`) are not drawn yet.
 - [ ] **Trees:**
   - London plane silhouettes, taller and more open, with species from OSM `genus` / `species`;
   - more trees in Kensington Gardens and in the Bloomsbury squares;
@@ -101,6 +107,61 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-17 (night, branch `city-refine-2026-11-17`): the Thames as mapped, with its bridges; landmarks and water merged into fewer draw calls.
+  - Realism: the Thames.
+    - `bake_city.py` writes the river surfaces (OSM `water=river`: the Thames, and the Lea near Queen Mary) from the skyline extract, simplified to 2.5 m and clipped to 12.5 km round each site, as `rv` (about 2,100 to 2,400 points, 10 polygons).
+    - It also writes the bridges that cross them as `bg`, from the mapped `man_made=bridge` outlines in the site's and the skyline's extracts (within 5 km): the outline's smallest rectangle gives the deck's line, length and width, and sampling the river along it gives the stretch over water. Named bridges get a style, span count, paint and deck height (`BRIDGE_STYLE`); the rest go by `bridge:structure`. The skyline extract's filter now keeps named bridge outlines, so Lambeth, Vauxhall and Tower Bridge came with this run's fetch.
+    - `city.js` draws the river from its outline for all five intros, merged with the map's own water into one mesh. UCL and Imperial had a made-up curve (`riverX`); Queen Mary, LSE and King's had a ribbon through the centreline's x(z) samples, which cut the Westminster bend.
+    - A 1024 px mask of the river over ±12 km replaces the river functions in the cloud shader (the ground under the clouds) and keeps the outer ring of blocks off the water. It is softened by a pixel and a half before the shader's threshold, so the far banks are curves, not texel steps. The hand-built fallback keeps `riverX` and `RIVER_GLSL`.
+    - `bridges.js`: Waterloo in Portland stone with five shallow arches; Westminster (green), Vauxhall, Lambeth and Blackfriars (red), Southwark and Battersea as painted iron arches with open spandrels on granite piers with cutwaters; London Bridge, Hungerford, the Golden Jubilee footbridges, the Millennium Bridge and the railway bridges as girders on piers; Chelsea and Albert (pink) as suspension bridges with towers, chains and hangers; Tower Bridge with its two towers, pyramid roofs, corner turrets, high-level walkways and the side spans' chains. Decks ramp down to the banks, with footways, parapets and lit lamps. All bridges are one mesh with vertex colours plus one for the lamps. Beyond 2.2 km from the campus a bridge drops its footways, inner parapets, lamp posts and hangers.
+    - The London Eye and Battersea Power Station now stand at their mapped places in the Imperial intro (the Eye was about 1 km off, on the made-up river).
+  - Results by university (`renders/2026-11-17.jpg`, `-pairs.jpg`, `-intro.jpg`):
+    - UCL: the river beyond Bloomsbury follows the Embankment's bend, with Waterloo Bridge, Hungerford and the Jubilee footbridges on it. It was a straight synthetic band.
+    - Imperial: the Chelsea and Battersea reaches as mapped, with Albert, Battersea and Chelsea Bridges, and Vauxhall further off. The made-up river ran about 600 m north of the real one at Chelsea.
+    - LSE: the river now bends south at Westminster past the London Eye (it was land beyond the map's edge there), with Westminster Bridge; Waterloo Bridge crosses in front of Somerset House.
+    - Queen Mary: the Thames at Limehouse and Tower Bridge on the river to the south-west, and the Lea to the east, in the cloud stage and from the air.
+    - King's: Waterloo Bridge beside the King's Building's river front, Hungerford and Westminster up river.
+    - The intro's own frames at 0.36 to 0.56 barely change, as the bridges are small from there; the change shows along the river and in the cloud stage.
+  - Lag (the backlog's furniture merge is not done; this run's measured reduction instead):
+    - the map's water areas (31 to 77 meshes, one draw each) and the river are one mesh;
+    - St Paul's (about 50 meshes), the BT Tower (15), the London Eye, the Albert Memorial (about 65), the Royal Albert Hall, the Natural History Museum and the V&A are merged into one mesh per material (`mergeStatic`, `mergeSince` in `southken.js`). Facade boxes are left alone, as their windows come from each box's own scale;
+    - boxes standing on the ground or on a roof (outer blocks, trunks, chimneys, plant) lose their hidden bottom face (`groundBox`): 10 triangles each, not 12. That more than pays for the bridges' triangles.
+  - Before → after, batch runs (all before at 23:45, all after at 01:10). Ms are swiftshader ms between frames, so only the change counts.
+
+    | Desktop | engine up | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 27 → 18 s | 2033 → 2100 / 292 → 267 / 0.93 → 0.91M | 1917 → 1967 / 219 → 217 / 0.93 → 0.92M | 3716 → 3833 / 721 → 710 / 3.03 → 3.02M |
+    | Imperial | 40 → 39 s | 2200 → 2233 / 504 → 415 / 1.04 → 1.02M | 2333 → 2383 / 466 → 380 / 1.20 → 1.19M | 2383 → 2350 / 535 → 518 / 1.46 → 1.44M |
+    | LSE | 34 → 30 s | 2083 → 2067 / 321 → 296 / 0.99 → 0.99M | 1983 → 2050 / 243 → 239 / 0.75 → 0.74M | 2383 → 2383 / 293 → 293 / 1.01 → 1.01M |
+    | Queen Mary | 34 → 30 s | 1767 → 1883 / 463 → 418 / 1.01 → 0.99M | 1917 → 2017 / 375 → 347 / 1.04 → 1.02M | 2400 → 2516 / 394 → 384 / 1.69 → 1.67M |
+    | King's | 30 → 30 s | 1900 → 1950 / 292 → 284 / 0.88 → 0.88M | 1800 → 1867 / 243 → 240 / 0.62 → 0.62M | 2267 → 2300 / 333 → 333 / 0.85 → 0.85M |
+
+    | Mobile | engine up | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 14 → 14 s | 217 → 217 / 204 → 189 / 0.50 → 0.49M | 200 → 233 / 167 → 168 / 0.51 → 0.51M | 866 → 1000 / 517 → 506 / 2.25 → 2.24M |
+    | Imperial | 25 → 26 s | 250 → 233 / 407 → 321 / 0.44 → 0.44M | 217 → 233 / 366 → 294 / 0.55 → 0.55M | 433 → 483 / 463 → 451 / 0.99 → 0.98M |
+    | LSE | 19 → 21 s | 200 → 200 / 202 → 201 / 0.40 → 0.40M | 183 → 183 / 178 → 178 / 0.42 → 0.41M | 250 → 267 / 242 → 244 / 0.73 → 0.72M |
+    | Queen Mary | 19 → 20 s | 233 → 250 / 303 → 284 / 0.44 → 0.42M | 217 → 217 / 273 → 260 / 0.46 → 0.44M | 350 → 350 / 333 → 328 / 0.86 → 0.85M |
+    | King's | 20 → 20 s | 217 → 217 / 204 → 204 / 0.41 → 0.41M | 183 → 183 / 182 → 183 / 0.35 → 0.35M | 283 → 283 / 284 → 285 / 0.58 → 0.57M |
+
+  - Interleaved runs (before, after, before, after) where the batch showed ms up:
+    - King's desktop: 0.36 at 1917 / 1917 → 1917 / 1966 ms; 0.47 at 1833 / 1867 → 1883 / 1817 ms; 0.56 at 2333 / 2316 → 2333 ms.
+    - Queen Mary desktop: 0.36 at 1917 / 1950 → 1850 / 1950 ms; 0.47 at 2083 / 2066 → 2033 / 2100 ms; 0.56 at 2483 / 2483 → 2333 / 2483 ms.
+    - UCL mobile: 0.56 at 983 / 983 → 933 / 933 ms (the batch's 866 → 1000 was drift).
+    - Imperial mobile: 0.36 at 233 / 250 → 250 / 233 ms; 0.56 at 450 / 467 → 467 / 467 ms.
+    - So ms per frame is level within noise everywhere; engine up is lower or level (UCL desktop 27 → 18 s, LSE 34 → 30 s, Queen Mary 34 → 30 s).
+  - What holds in every run: draw calls lower or level at every frame, university and device (Imperial by 17–21%, from the Albert Memorial and Royal Albert Hall merges; UCL, Queen Mary and LSE desktop at 0.36 by 2–10%; elsewhere at LSE and King's level, within two draws), and triangles lower or level (by up to 0.02M).
+  - A note for later runs: a push that changes `bake_city.py` re-runs the fetch, which refreshes the site extracts too. Their small changes reshuffle the park trees (their random placement follows the map's areas) and moved King's 0.36 by +0.02M triangles (one more near tree tile). This branch keeps the site extracts as on main and takes only the new skyline extract; the monthly refresh brings the rest. The second push's fetch failed to reach Geofabrik (connection refused); nothing depended on it. Merging this into main re-runs the fetch there, which brings the refreshed extracts (and that tree reshuffle) to main, as the monthly refresh would.
+  - Size: city JSON gzipped is 0.87 MB (UCL), 0.77 MB (Imperial), 1.04 MB (LSE), 0.84 MB (Queen Mary) and 1.02 MB (King's): `rv` and `bg` add about 13 KB each. City vertices: desktop +0.3% to +1.2% (2.52M to 2.74M), mobile +1% to +3% (0.82M to 0.88M), counted as in the 2026-11-12 note. Shader programs: +2 (the bridges and their lamps).
+  - Checks:
+    - no console errors at any of the five universities, on desktop or mobile (an Albert Bridge NaN on mobile, from a chain sample just past the deck's end, was found and fixed in this run);
+    - the engine starts everywhere;
+    - the hand-built UCL fallback still works with `ucl.json` missing (only its expected 404 is logged; the skip button still works).
+  - Sheets: `renders/2026-11-17.jpg` (one after frame per university along the river), `-pairs.jpg` (LSE, King's, Imperial, UCL and Queen Mary before and after), `-intro.jpg` (intro frames at 0.47, after).
+  - Next:
+    - see "The Thames, part 2": the water sits flush with the streets, so the decks ramp down to it. Lowering the river with granite river walls would let them run level onto the banks;
+    - the furniture merge (lag backlog) is still the top lag item.
 
 - 2026-11-14 (night, branch `city-refine-2026-11-14`): roofs, and a stripped facade program for far tiles.
   - Realism: roofs.
