@@ -21,7 +21,7 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
- "shop_points": 5017,
+ "shop_points": 5015,
  "shopfronts": [
   2302,
   1573,
@@ -56,35 +56,16 @@
   "Blackfriars Bridge",
   "Blackfriars Railway Bridge",
   "Hungerford Bridge",
-  "Temple Mills Bridge",
   "Chelsea Bridge",
   "Millennium Bridge",
-  "Wandsworth Bridge",
-  "Putney Bridge",
   "Vauxhall Bridge",
-  "Battersea Bridge",
-  "Albert Bridge",
   "Lambeth Bridge",
   "Golden Jubilee Bridge",
   "Golden Jubilee Bridge",
   "Southwark Bridge",
   "London Bridge",
-  "Battersea Railway Bridge",
-  "Fulham Railway Bridge",
   "Tower Bridge",
   "Grosvenor Bridge",
-  "Halfway Bridge",
-  "Hammersmith Bridge",
-  "Thornton Bridge",
-  "Knights' Bridge",
-  "Eastcross Bridge",
-  "Eastcross Bridge",
-  "Stratford Walk",
-  "Iron Bridge",
-  "Canning Town Old Railway Bridge",
-  "The Blue Bridge",
-  "Leamouth Lifting Footbridge",
-  "Bridgewater Bridge",
   "Westminster Bridge"
  ],
  "landmarks": {
@@ -101,7 +82,7 @@
    2634.4
   ]
  },
- "bytes": 2740259,
+ "bytes": 2739243,
  "wilkins": {
   "x": [
    -71.1,
@@ -211,9 +192,9 @@
  "areas": 1259,
  "rails": 94,
  "trees": 2831,
- "shop_points": 2979,
+ "shop_points": 2977,
  "shopfronts": [
-  903,
+  901,
   414,
   147,
   165,
@@ -234,10 +215,10 @@
  },
  "fronts": [
   8789,
-  898,
-  2435
+  899,
+  2434
  ],
- "shopfront_fill": 152,
+ "shopfront_fill": 151,
  "skyline": 1771,
  "river_polys": 10,
  "river_pts": 2414,
@@ -245,33 +226,18 @@
   "Chelsea Bridge",
   "Battersea Bridge",
   "Albert Bridge",
-  "Blackfriars Bridge",
-  "Blackfriars Railway Bridge",
   "Hungerford Bridge",
   "Waterloo Bridge",
-  "Temple Mills Bridge",
-  "Millennium Bridge",
   "Wandsworth Bridge",
   "Putney Bridge",
   "Vauxhall Bridge",
   "Lambeth Bridge",
   "Golden Jubilee Bridge",
   "Golden Jubilee Bridge",
-  "Southwark Bridge",
-  "London Bridge",
   "Battersea Railway Bridge",
   "Fulham Railway Bridge",
-  "Tower Bridge",
   "Grosvenor Bridge",
-  "Halfway Bridge",
   "Hammersmith Bridge",
-  "Thornton Bridge",
-  "Knights' Bridge",
-  "Eastcross Bridge",
-  "Eastcross Bridge",
-  "Stratford Walk",
-  "Iron Bridge",
-  "Bridgewater Bridge",
   "Westminster Bridge"
  ],
  "landmarks": {
@@ -292,7 +258,7 @@
    6692.8
   ]
  },
- "bytes": 2312196,
+ "bytes": 2311387,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -397,9 +363,9 @@
  "buildings": 10493,
  "heights": {
   "h": 95,
-  "lv": 5761,
+  "lv": 5758,
   "guess": 401,
-  "lidar": 4236
+  "lidar": 4239
  },
  "styles": {
   "stock": 6678,
@@ -411,14 +377,14 @@
   "stucco": 136,
   "shed": 489
  },
- "roads": 12638,
+ "roads": 12636,
  "areas": 4334,
  "rails": 286,
  "trees": 2485,
- "shop_points": 1109,
+ "shop_points": 1108,
  "shopfronts": [
   617,
-  309,
+  308,
   111,
   127,
   35
@@ -437,7 +403,7 @@
   "type": 7196
  },
  "fronts": [
-  1042,
+  1043,
   7689,
   1196
  ],
@@ -449,25 +415,11 @@
   "Stratford Walk",
   "Blackfriars Bridge",
   "Blackfriars Railway Bridge",
-  "Hungerford Bridge",
-  "Waterloo Bridge",
   "Temple Mills Bridge",
-  "Chelsea Bridge",
   "Millennium Bridge",
-  "Wandsworth Bridge",
-  "Putney Bridge",
-  "Vauxhall Bridge",
-  "Battersea Bridge",
-  "Albert Bridge",
-  "Lambeth Bridge",
-  "Golden Jubilee Bridge",
-  "Golden Jubilee Bridge",
   "Southwark Bridge",
   "London Bridge",
-  "Battersea Railway Bridge",
-  "Fulham Railway Bridge",
   "Tower Bridge",
-  "Grosvenor Bridge",
   "Halfway Bridge",
   "Thornton Bridge",
   "Knights' Bridge",
@@ -477,8 +429,7 @@
   "Canning Town Old Railway Bridge",
   "The Blue Bridge",
   "Leamouth Lifting Footbridge",
-  "Bridgewater Bridge",
-  "Westminster Bridge"
+  "Bridgewater Bridge"
  ],
  "landmarks": {
   "BT Tower": [
@@ -494,7 +445,7 @@
    -2743.8
   ]
  },
- "bytes": 2441082,
+ "bytes": 2440129,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -516,37 +467,37 @@
 }
 {
  "site": "lse",
- "buildings": 13552,
+ "buildings": 13550,
  "heights": {
-  "h": 1980,
-  "lv": 6818,
-  "guess": 221,
+  "h": 1977,
+  "lv": 6820,
+  "guess": 220,
   "lidar": 4533
  },
  "styles": {
   "church": 156,
-  "glass": 987,
+  "glass": 984,
   "concrete": 1072,
-  "stock": 7114,
+  "stock": 7116,
   "stone": 1342,
   "redbrick": 1378,
   "stucco": 1106,
-  "shed": 397
+  "shed": 396
  },
- "roads": 22173,
+ "roads": 22172,
  "areas": 2127,
  "rails": 350,
  "trees": 6274,
- "shop_points": 4970,
+ "shop_points": 4969,
  "shopfronts": [
   1687,
   1607,
   592,
-  412,
+  413,
   203
  ],
  "eras": [
-  3976,
+  3974,
   6325,
   1591,
   792,
@@ -556,12 +507,12 @@
   "own": 1157,
   "street": 2740,
   "neighbours": 455,
-  "type": 7477
+  "type": 7479
  },
  "fronts": [
-  4799,
+  4798,
   403,
-  3304
+  3305
  ],
  "shopfront_fill": 465,
  "skyline": 1487,
@@ -577,31 +528,13 @@
   "Golden Jubilee Bridge",
   "Southwark Bridge",
   "Westminster Bridge",
-  "Temple Mills Bridge",
   "Chelsea Bridge",
-  "Wandsworth Bridge",
-  "Putney Bridge",
   "Vauxhall Bridge",
-  "Battersea Bridge",
   "Albert Bridge",
   "Lambeth Bridge",
   "London Bridge",
-  "Battersea Railway Bridge",
-  "Fulham Railway Bridge",
   "Tower Bridge",
-  "Grosvenor Bridge",
-  "Halfway Bridge",
-  "Hammersmith Bridge",
-  "Thornton Bridge",
-  "Knights' Bridge",
-  "Eastcross Bridge",
-  "Eastcross Bridge",
-  "Stratford Walk",
-  "Iron Bridge",
-  "Canning Town Old Railway Bridge",
-  "The Blue Bridge",
-  "Leamouth Lifting Footbridge",
-  "Bridgewater Bridge"
+  "Grosvenor Bridge"
  ],
  "landmarks": {
   "BT Tower": [
@@ -617,7 +550,7 @@
    2509.8
   ]
  },
- "bytes": 3062785,
+ "bytes": 3061822,
  "anchor": [
   "Old Building",
   51.51432,
@@ -699,37 +632,37 @@
 }
 {
  "site": "kcl",
- "buildings": 13434,
+ "buildings": 13433,
  "heights": {
-  "h": 2310,
-  "lv": 6289,
+  "h": 2307,
+  "lv": 6291,
   "guess": 222,
   "lidar": 4613
  },
  "styles": {
   "church": 283,
-  "glass": 1061,
+  "glass": 1058,
   "concrete": 1115,
-  "stock": 6636,
+  "stock": 6638,
   "stucco": 1135,
   "redbrick": 1360,
   "stone": 1451,
   "shed": 393
  },
- "roads": 21093,
+ "roads": 21094,
  "areas": 1977,
  "rails": 408,
  "trees": 6488,
- "shop_points": 4970,
+ "shop_points": 4969,
  "shopfronts": [
   1580,
   1556,
   572,
-  391,
+  392,
   201
  ],
  "eras": [
-  4214,
+  4213,
   5920,
   1543,
   864,
@@ -739,12 +672,12 @@
   "own": 1259,
   "street": 2546,
   "neighbours": 547,
-  "type": 7144
+  "type": 7146
  },
  "fronts": [
-  4364,
+  4363,
   354,
-  3117
+  3118
  ],
  "shopfront_fill": 443,
  "skyline": 1444,
@@ -760,31 +693,13 @@
   "Golden Jubilee Bridge",
   "Southwark Bridge",
   "Westminster Bridge",
-  "Temple Mills Bridge",
   "Chelsea Bridge",
-  "Wandsworth Bridge",
-  "Putney Bridge",
   "Vauxhall Bridge",
-  "Battersea Bridge",
   "Albert Bridge",
   "Lambeth Bridge",
   "London Bridge",
-  "Battersea Railway Bridge",
-  "Fulham Railway Bridge",
   "Tower Bridge",
-  "Grosvenor Bridge",
-  "Halfway Bridge",
-  "Hammersmith Bridge",
-  "Thornton Bridge",
-  "Knights' Bridge",
-  "Eastcross Bridge",
-  "Eastcross Bridge",
-  "Stratford Walk",
-  "Iron Bridge",
-  "Canning Town Old Railway Bridge",
-  "The Blue Bridge",
-  "Leamouth Lifting Footbridge",
-  "Bridgewater Bridge"
+  "Grosvenor Bridge"
  ],
  "landmarks": {
   "BT Tower": [
@@ -800,7 +715,7 @@
    2476.0
   ]
  },
- "bytes": 3004294,
+ "bytes": 3003478,
  "anchor": [
   "King's Building",
   51.51153,
