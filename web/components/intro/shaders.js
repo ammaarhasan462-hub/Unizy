@@ -59,7 +59,7 @@ vec3 groundCol(vec2 p, vec3 rd, float t){
   }
 #ifdef RIVER_TEX
   // the mapped river (city.js), as a mask over +-RIVER_R
-  float water = smoothstep(0.25, 0.75, texture(uRiver, vec2(p.x / (2.0 * RIVER_R) + 0.5, 0.5 - p.y / (2.0 * RIVER_R))).r);
+  float water = smoothstep(0.38, 0.62, texture(uRiver, vec2(p.x / (2.0 * RIVER_R) + 0.5, 0.5 - p.y / (2.0 * RIVER_R))).r);
 #else
   float rv = abs(p.x - riverX(p.y));
   float water = 1.0 - smoothstep(110.0, 130.0, rv);

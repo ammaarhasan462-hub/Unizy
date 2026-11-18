@@ -1505,9 +1505,12 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     riverTex = canvasTex(RS, RS, (ctx) => {
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, RS, RS);
       ctx.fillStyle = '#fff';
+      // softened by a pixel or so, so the shader's threshold draws a smooth bank rather than the texels' steps
+      ctx.filter = 'blur(1.4px)';
       ctx.beginPath();
       rv.forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
       ctx.fill('evenodd');
+      ctx.filter = 'none';
       // a black border, so the clamped edge never smears water across the far ground
       ctx.fillStyle = '#000'; ctx.fillRect(0, 0, RS, 2); ctx.fillRect(0, RS - 2, RS, 2); ctx.fillRect(0, 0, 2, RS); ctx.fillRect(RS - 2, 0, 2, RS);
     }, { linear: true, aniso: 1 });
