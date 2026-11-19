@@ -387,14 +387,29 @@
     for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
     return d[m][n];
   }
+  // Typo allowance only on longer words (8+ letters, one slip), never for numbers, and never where one letter makes a
+  // different term (ileum/ilium, peroneal/perineal, abduct/adduct, afferent/efferent…). A near miss is accepted with
+  // the correct spelling shown.
+  var CONFUSE = [['ileum', 'ilium'], ['peroneal', 'perineal'], ['abduct', 'adduct'], ['abductor', 'adductor'], ['afferent', 'efferent'], ['insulin', 'inulin'], ['malleus', 'malleolus'], ['humeral', 'humoral'], ['mucous', 'mucus'], ['prostate', 'prostrate'], ['dysphagia', 'dysphasia'], ['aphagia', 'aphasia'], ['hypercalcaemia', 'hypocalcaemia'], ['hyperkalaemia', 'hypokalaemia']];
+  function confusable(k, t) {
+    return CONFUSE.some(function (p) { var a = normAns(p[0]), b = normAns(p[1]); return (k.indexOf(a) >= 0 && k.replace(a, b) === t) || (k.indexOf(b) >= 0 && k.replace(b, a) === t); });
+  }
   function vsaOk(q, text) {
     var t = normAns(text); if (!t) return false;
-    return [q.answer].concat(q.accept || []).map(normAns).filter(Boolean).some(function (k) {
-      if (k === t) return true;
-      if (/\d/.test(k)) return false; // numbers and values must be exact
-      var n = Math.max(k.length, t.length), tol = n >= 10 ? 2 : n >= 5 ? 1 : 0;
-      return tol > 0 && lev(k, t) <= tol;
-    });
+    var keys = [q.answer].concat(q.accept || []).map(normAns).filter(Boolean);
+    if (keys.indexOf(t) >= 0) return 'exact';
+    return keys.some(function (k) {
+      if (/\d/.test(k) || /\d/.test(t) || confusable(k, t)) return false; // numbers and values must be exact
+      var kw = k.split(' '), tw = t.split(' ');
+      if (kw.length !== tw.length) return false;
+      var slips = 0;
+      for (var i = 0; i < kw.length; i++) {
+        if (kw[i] === tw[i]) continue;
+        if (kw[i].length < 8 || lev(kw[i], tw[i]) > 1) return false;
+        slips++;
+      }
+      return slips === 1;
+    }) ? 'close' : false;
   }
   function optText(q, l) { var i = 'ABCDE'.indexOf(l); return q.options && i >= 0 ? q.options[i] : ''; }
   function rightText(q) { return q.kind === 'sba' ? q.answer + '. ' + optText(q, q.answer) : q.answer; }
@@ -402,8 +417,8 @@
     if (!q) return;
     var prev = state.ians[q.id];
     if (prev && prev.done && !override) return;
-    var got = override ? true : q.kind === 'sba' ? val === q.answer : vsaOk(q, val);
-    state.ians[q.id] = { val: override ? prev.val : val, got: got, done: true, over: !!override };
+    var res = override ? 'exact' : q.kind === 'sba' ? (val === q.answer ? 'exact' : false) : vsaOk(q, val), got = !!res;
+    state.ians[q.id] = { val: override ? prev.val : val, got: got, done: true, over: !!override, close: res === 'close' };
     if (!override) track(q.kind === 'sba' ? 'sba_answer' : 'vsa_answer');
     var code = state.mod.code, row = { question_id: q.id, topic_pos: q.topic_pos, got: got, created_at: new Date().toISOString() };
     if (override && state.recalls[0] && state.recalls[0].question_id === q.id) state.recalls[0].got = true; else state.recalls.unshift(row);
@@ -428,7 +443,7 @@
       h += '<p class="mk-vyou">You wrote: <b>' + esc(a.val || '—') + '</b></p>';
     }
     if (a) {
-      h += '<div class="mk-iverd"><b>' + (a.got ? (a.over ? '✓ Counted as right' : '✓ Correct') : '✗ Not quite') + '</b>' + (a.got && !a.over && q.kind === 'sba' ? '' : '<span>Answer: <b>' + esc(rightText(q)) + '</b>' + (q.kind === 'vsa' && q.accept && q.accept.length ? ' <small>(also accepted: ' + esc(q.accept.join(', ')) + ')</small>' : '') + '</span>') + '</div>' +
+      h += '<div class="mk-iverd"><b>' + (a.got ? (a.over ? '✓ Counted as right' : a.close ? '✓ Correct, but check the spelling' : '✓ Correct') : '✗ Not quite') + '</b>' + (a.got && !a.over && q.kind === 'sba' ? '' : '<span>Answer: <b>' + esc(rightText(q)) + '</b>' + (q.kind === 'vsa' && q.accept && q.accept.length ? ' <small>(also accepted: ' + esc(q.accept.join(', ')) + ')</small>' : '') + '</span>') + '</div>' +
         (q.explain ? '<p class="mk-iexp">' + esc(q.explain) + '</p>' : '') +
         (q.kind === 'vsa' && !a.got ? '<button type="button" class="mk-clear" data-over="' + q.id + '">My answer means the same: count it as right</button>' : '');
     }
