@@ -1471,14 +1471,71 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     });
   });
   emTex.colorSpace = THREE.SRGBColorSpace;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1 }, 'city-ground-' + site));
+  // the river (the Thames and the Lea as mapped, out to RIVER_R) runs WL metres below the streets, between granite
+  // walls. The ground beyond the map is cut round it here (callers use farGeo for their far ground); the map's own
+  // ground has it cut out of its texture's alpha. If the cut fails, the river stays flush with the streets as before.
+  const rv = (data.rv || []).map((p) => p.map(dec));
+  let farGeo = null;
+  if (rv.length) {
+    try {
+      const FS = 30000, v2 = (ring) => ring.map(([x, z]) => new THREE.Vector2(x, -z));
+      const shp = new THREE.Shape(v2([[-FS, FS], [FS, FS], [FS, -FS], [-FS, -FS]]));
+      const isl = [];
+      let cut = 0;
+      rv.forEach((rings) => {
+        shp.holes.push(new THREE.Path(v2(rings[0])));
+        cut += Math.abs(ringArea(rings[0]));
+        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
+      });
+      const g = new THREE.ShapeGeometry([shp, ...isl]);
+      const pa = g.attributes.position, ix = g.index, uv = g.attributes.uv;
+      let got = 0;
+      for (let i = 0; i < ix.count; i += 3) {
+        const a = ix.getX(i), b = ix.getX(i + 1), c = ix.getX(i + 2);
+        got += Math.abs((pa.getX(b) - pa.getX(a)) * (pa.getY(c) - pa.getY(a)) - (pa.getX(c) - pa.getX(a)) * (pa.getY(b) - pa.getY(a))) / 2;
+      }
+      // the triangulation must leave exactly the river's area uncovered
+      if (Math.abs(4 * FS * FS - cut - got) < cut * 0.02) {
+        for (let i = 0; i < pa.count; i++) uv.setXY(i, pa.getX(i) / (2 * FS) + 0.5, pa.getY(i) / (2 * FS) + 0.5);
+        farGeo = g;
+      } else g.dispose();
+    } catch { farGeo = null; }
+  }
+  const low = !!farGeo;
+  const WL = -4.5;
+  if (low) {
+    // cut the river out of the map: the lowered water shows through
+    const cv = mapTex.image, ctx = cv.getContext('2d');
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.fillStyle = '#000';
+    rv.forEach((rings) => { poly(ctx, rings); ctx.fill('evenodd'); });
+    ctx.globalCompositeOperation = 'source-over';
+    mapTex.needsUpdate = true;
+  }
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(low ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
-  // water surfaces as real reflective geometry just above the map, and the river beyond it (the Thames and the Lea
-  // as mapped, out to RIVER_R): all one mesh, one draw call
+  // water surfaces as real reflective geometry just above the map, and the river (lowered: one plane under the
+  // ground, seen through the cut): all one mesh, one draw call
   const waterMat = plainMaterial({ color: '#25343b', roughness: 0.06, metalness: 0.05 }, 'city-water');
   const waterGeos = [];
+  // is (x, z) on the river as mapped, or within m metres of its bank? (exact, for the map's own water areas)
+  const rvBox = rv.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
+  const onRiver = (x, z, m) => rv.some((rings, i) => {
+    const [x0, x1, z0, z1] = rvBox[i];
+    if (x < x0 - m || x > x1 + m || z < z0 - m || z > z1 + m) return false;
+    let ins = false, d = Infinity;
+    rings.forEach((ring) => {
+      for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+        const [xa, za] = ring[a], [xb, zb] = ring[b];
+        if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins;
+        const dx = xb - xa, dz = zb - za, t = Math.max(0, Math.min(1, ((x - xa) * dx + (z - za) * dz) / (dx * dx + dz * dz || 1)));
+        d = Math.min(d, Math.hypot(x - xa - dx * t, z - za - dz * t));
+      }
+    });
+    return ins || d < m;
+  });
   const shapeGeo = (rings, y) => {
     try {
       const shp = new THREE.Shape(rings[0].map(([x, z]) => new THREE.Vector2(x, -z)));
@@ -1490,9 +1547,28 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       waterGeos.push(g);
     } catch { /* skip */ }
   };
-  areas.filter((a) => a.kind === 0).forEach((a) => { if (Math.abs(ringArea(a.rings[0])) >= 60) shapeGeo(a.rings, 0.3); });
-  const rv = (data.rv || []).map((p) => p.map(dec));
-  rv.forEach((rings) => shapeGeo(rings, 0.22));
+  areas.filter((a) => a.kind === 0).forEach((a) => {
+    if (Math.abs(ringArea(a.rings[0])) < 60) return;
+    const n0 = waterGeos.length;
+    shapeGeo(a.rings, 0.3);
+    if (!low || waterGeos.length === n0) return;
+    // the map's own outline of the lowered river: keep only the triangles off it (docks, ponds, canals stay at street level)
+    const g = waterGeos[n0], p = g.attributes.position, ix = g.index.array, keepI = [];
+    for (let i = 0; i < ix.length; i += 3) {
+      const x = (p.getX(ix[i]) + p.getX(ix[i + 1]) + p.getX(ix[i + 2])) / 3, z = (p.getZ(ix[i]) + p.getZ(ix[i + 1]) + p.getZ(ix[i + 2])) / 3;
+      if (!onRiver(x, z, 4)) keepI.push(ix[i], ix[i + 1], ix[i + 2]);
+    }
+    if (keepI.length) g.setIndex(keepI); else { waterGeos.pop(); g.dispose(); }
+  });
+  if (low) {
+    // the lowered river: one plane under everything, seen only through the cut
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    rvBox.forEach((b) => { x0 = Math.min(x0, b[0]); x1 = Math.max(x1, b[1]); z0 = Math.min(z0, b[2]); z1 = Math.max(z1, b[3]); });
+    const g = new THREE.PlaneGeometry(x1 - x0 + 20, z1 - z0 + 20);
+    g.deleteAttribute('uv');
+    g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, WL, (z0 + z1) / 2);
+    waterGeos.push(g);
+  } else rv.forEach((rings) => shapeGeo(rings, 0.22));
   if (waterGeos.length) {
     const wg = mergeGeometries(waterGeos);
     waterGeos.forEach((g) => g.dispose());
@@ -1527,8 +1603,9 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     };
   }
   // the bridges over it
-  if (data.bg && data.bg.length) {
-    try { group.add(buildBridges(data.bg, { mobile }).group); } catch (e) { console.error(e); }
+  // and, with the river lowered, its granite walls, the Embankment's lamps and festoons, and the boats on it
+  if ((data.bg && data.bg.length) || low) {
+    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
   }
 
   // ---------------------------------------------------------------- traffic on the main roads
@@ -1638,5 +1715,5 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });
 
-  return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec), riverTex, inRiver };
+  return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec), riverTex, inRiver, farGeo };
 }

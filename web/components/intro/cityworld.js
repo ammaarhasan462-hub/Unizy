@@ -102,7 +102,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
     for (let x = 0; x < W; x += 64 + rr() * 40) ctx.fillRect(x, 0, 4, W);
     for (let y = 0; y < W; y += 80 + rr() * 50) ctx.fillRect(0, y, W, 4);
   }, { repeat: [90, 90] });
-  const far = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), plainMaterial({ map: farTex, roughness: 0.95 }, 'far-' + site));
+  const far = new THREE.Mesh((real && real.farGeo) || new THREE.PlaneGeometry(60000, 60000), plainMaterial({ map: farTex, roughness: 0.95 }, 'far-' + site));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.4;
   group.add(far);

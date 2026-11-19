@@ -12,6 +12,7 @@ import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { makeNoise3D } from './noise';
 import { CLOUD_BOTTOM, CLOUD_FS, QUAD_VS } from './shaders';
 import { ATMO, makeSky, SUN_DIR, sunTransmittance } from './atmo';
+import { mergeInterior } from './materials';
 import { buildLondon } from './london';
 import { buildUCL, tickLibrary } from './ucl';
 import { buildSouthKen, RIVER_GLSL } from './southken';
@@ -165,6 +166,20 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   scene.add(london.group);
   const ucl = imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : uni === 'kcl' ? buildKCL({ mobile }) : buildUCL({ mobile });
   scene.add(ucl.group);
+  // the interior's static parts as one mesh per material: tens of draw calls in the close-ups, not hundreds. The parts
+  // that move (the watch's and clocks' hands) or get swapped for photo-scanned furniture (everything in furn) stay apart,
+  // and so do the reading room's wood parts, which the upgrade picks out by their box sizes.
+  try {
+    const keepApart = [];
+    const walk = (v, d) => {
+      if (!v || typeof v !== 'object' || d > 4) return;
+      if (v.isObject3D) { keepApart.push(v); return; }
+      if (v.isMaterial || v.isTexture || v.isBufferGeometry || v.isMatrix4 || v.isVector3 || v.isColor) return;
+      (Array.isArray(v) ? v : Object.values(v)).forEach((x) => walk(x, d + 1));
+    };
+    walk(ucl.furn, 0); walk(ucl.clockHands, 0);
+    mergeInterior(ucl.lib, keepApart, ['wood', 'wood2']);
+  } catch (e) { console.error(e); }
   // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
   let intEnv = null, disposed = false;
   {

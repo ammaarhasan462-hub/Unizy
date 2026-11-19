@@ -4,15 +4,20 @@
 // granite piers (Westminster green, Vauxhall and Lambeth red), 2 beams or girders on piers (London Bridge, the
 // railway bridges, the footbridges), 3 suspension bridges with towers and chains (Chelsea, Albert), 4 Tower Bridge.
 // Beyond 2.2 km from the campus a bridge drops its small parts (footways, inner parapets, lamp posts, hangers).
-// All of them are one mesh with vertex colours, and their lamps a second one, so the bridges cost two draw calls.
+// With the river lowered (opts.water < 0, city.js) the decks run nearly level onto the banks, the piers and arches go
+// down to the water, and the same mesh carries the river walls (granite, a parapet with a coping, darker below the
+// tide line), the Embankment's lamp standards with their festoons of bulbs, and boats moored along the walls and out
+// on the river. All of it is one mesh with vertex colours, and the lamps and lit windows a second one, so the river
+// costs two draw calls.
 import * as THREE from 'three';
-import { plainMaterial } from './materials';
+import { plainMaterial, rng } from './materials';
 
 const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function buildBridges(list, { mobile = false } = {}) {
+export function buildBridges(list, { mobile = false, water = 0, banks = null, river = [], seed = 1 } = {}) {
   const P = [], N = [], C = [], I = [];
-  const LP = [], LI = [];
+  const LP = [], LI = [], LC = [];
+  const BULB = new THREE.Color(3.2, 2.3, 1.35), CHAIN = new THREE.Color(3.4, 2.9, 2.1), FEST = new THREE.Color(3.0, 2.4, 1.5);
   const tmp = new THREE.Color();
   const push = (p, n, c) => { P.push(p[0], p[1], p[2]); N.push(n[0], n[1], n[2]); C.push(c.r, c.g, c.b); return P.length / 3 - 1; };
   // a quad a-b-c-d facing roughly along `want` (the winding is fixed to match the normal)
@@ -27,18 +32,28 @@ export function buildBridges(list, { mobile = false } = {}) {
     const i0 = push(a, n, col), i1 = push(b, n, col), i2 = push(c, n, col), i3 = push(d, n, col);
     I.push(i0, i1, i2, i0, i2, i3);
   };
-  const lampQuad = (x, y, z, s) => {
+  const lampQuad = (x, y, z, s, col = BULB) => {
     const o = LP.length / 3;
     LP.push(x - s, y - s, z, x + s, y - s, z, x + s, y + s, z, x - s, y + s, z, x, y - s, z - s, x, y - s, z + s, x, y + s, z + s, x, y + s, z - s);
     LI.push(o, o + 1, o + 2, o, o + 2, o + 3, o + 4, o + 5, o + 6, o + 4, o + 6, o + 7);
+    for (let i = 0; i < 8; i++) LC.push(col.r, col.g, col.b);
+  };
+  // a lit strip (boat windows): a quad from a to b, h tall, facing out
+  const lampStrip = (a, b, h, col) => {
+    const o = LP.length / 3;
+    LP.push(a[0], a[1], a[2], b[0], b[1], b[2], b[0], b[1] + h, b[2], a[0], a[1] + h, a[2]);
+    LI.push(o, o + 1, o + 2, o, o + 2, o + 3);
+    for (let i = 0; i < 4; i++) LC.push(col.r, col.g, col.b);
   };
   const UP = [0, 1, 0], DOWN = [0, -1, 0];
   const asphalt = new THREE.Color('#3d3f42'), footway = new THREE.Color('#a6a194'), granite = new THREE.Color('#8f8a80'), dark = new THREE.Color('#2a2b2c');
   const ballast = new THREE.Color('#4b4640'), post = new THREE.Color('#202224');
 
+  const rects = [];
   list.forEach(([style, spans, paintH, cxd, czd, angm, Ld, Wd, w0d, w1d, hdd]) => {
     const cx = cxd / 10, cz = czd / 10, a = angm / 1000, L = Ld / 10, W = Wd / 10, w0 = w0d / 10, w1 = w1d / 10, Hd = hdd / 10;
     const ca = Math.cos(a), sa = Math.sin(a);
+    rects.push([cx, cz, ca, sa, L, W]);
     // the bridge's frame: s along the deck from its start, v across it, y up
     const at = (s, v, y) => [cx + (s - L / 2) * ca - v * sa, y, cz + (s - L / 2) * sa + v * ca];
     const across = [-sa, 0, ca], back = [sa, 0, -ca];
@@ -54,7 +69,9 @@ export function buildBridges(list, { mobile = false } = {}) {
     // the deck: ramps down to the banks, a camber over the water
     const r0 = Math.max(w0, 14), r1 = Math.max(L - w1, 14);
     const camber = style <= 1 ? 0.9 : 0.35;
-    const yd = (s) => 0.5 + (Hd - 0.5) * sm(0, r0, s) * sm(L, L - r1, s) + camber * Math.sin(Math.PI * Math.min(1, Math.max(0, (s - w0) / wl)));
+    // Hd is the deck's height over the water: over a lowered river the crown is only a little above the street
+    const Hk = water < 0 ? Math.max(1.0, Hd + water - 0.5) : Hd;
+    const yd = (s) => 0.5 + (Hk - 0.5) * sm(0, r0, s) * sm(L, L - r1, s) + camber * Math.sin(Math.PI * Math.min(1, Math.max(0, (s - w0) / wl)));
     // piers: evenly over the water (suspension: the two towers at a quarter and three quarters)
     const piers = [];
     if (style === 3) piers.push(w0 + wl * 0.25, w0 + wl * 0.75);
@@ -62,7 +79,7 @@ export function buildBridges(list, { mobile = false } = {}) {
     else for (let i = 1; i < spans; i++) piers.push(w0 + (wl * i) / spans);
     const span = wl / Math.max(1, spans);
     const tp = style === 2 ? (foot ? 1.6 : 3.2) : style === 3 ? 4.5 : style === 4 ? 21 : Math.min(7, Math.max(2.8, span * 0.085));
-    const ys = style === 0 ? 1.0 : style === 1 ? 1.8 : 0;
+    const ys = Math.min(0, water) + (style === 0 ? 1.0 : style === 1 ? 1.8 : 0);
     const edges = [w0, ...piers, w1];
     // the arch between two piers: from the springing to just under the deck
     const archY = (s) => {
@@ -148,7 +165,7 @@ export function buildBridges(list, { mobile = false } = {}) {
       for (let i = 0; i < ring.length; i++) {
         const [s0, v0] = ring[i], [s1, v1] = ring[(i + 1) % ring.length];
         const mid = at((s0 + s1) / 2, (v0 + v1) / 2, 0), cen = at(sp, 0, 0);
-        quad(at(s0, v0, -0.3), at(s1, v1, -0.3), at(s1, v1, top), at(s0, v0, top), c2, [mid[0] - cen[0], 0, mid[2] - cen[2]]);
+        quad(at(s0, v0, Math.min(0, water) - 0.3), at(s1, v1, Math.min(0, water) - 0.3), at(s1, v1, top), at(s0, v0, top), c2, [mid[0] - cen[0], 0, mid[2] - cen[2]]);
       }
       quad(at(sp - tp / 2, -hw, top), at(sp + tp / 2, -hw, top), at(sp + tp / 2, hw, top), at(sp - tp / 2, hw, top), c2, UP);
       // suspension towers: two legs and a cross beam; Albert Bridge's are taller and lighter
@@ -234,6 +251,9 @@ export function buildBridges(list, { mobile = false } = {}) {
           const s0 = (L * i) / n, s1 = (L * (i + 1)) / n;
           quad(at(s0, v, chainY(s0) - 0.5), at(s1, v, chainY(s1) - 0.5), at(s1, v, chainY(s1)), at(s0, v, chainY(s0)), paint, sd > 0 ? across : back);
         }
+        // the strings of bulbs along the chains (Albert Bridge's thousands, Chelsea's along its cables), lit at dawn
+        const bs = mobile || far ? 3.2 : 1.6;
+        for (let s = bs / 2; s < L; s += bs) { const p = at(s, v + sd * 0.12, chainY(s) + 0.12); lampQuad(p[0], p[1], p[2], far ? 0.2 : 0.13, CHAIN); }
         if (!far) for (let s = 5; s < L - 4; s += 5) {
           const yc = chainY(s) - 0.5, y0 = yd(s) + par;
           if (yc - y0 > 0.5) quad(at(s - 0.07, v, y0), at(s + 0.07, v, y0), at(s + 0.07, v, yc), at(s - 0.07, v, yc), tmp.copy(paint).multiplyScalar(0.85), sd > 0 ? across : back);
@@ -253,6 +273,191 @@ export function buildBridges(list, { mobile = false } = {}) {
     }
   });
 
+  if (banks) riverside();
+
+  // ---------------------------------------------------------------- the river walls, the Embankment, the boats
+  function riverside() {
+    const rnd = rng(seed * 977 + 5);
+    const TOP = 0.95, TIDE = water + 2.3, LIP = 0.6;
+    const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 3000 : 4500;
+    const granite = new THREE.Color('#8f8b82'), wet = new THREE.Color('#47463d'), coping = new THREE.Color('#aaa69c'), farWall = new THREE.Color('#77736a');
+    const lampPost = new THREE.Color('#1e2724');
+    const g = new THREE.Color();
+    // is (x, z) under or beside a bridge (the walls drop their parapet there, lamps and boats keep clear)?
+    const bridgeAt = (x, z, m) => rects.some(([cx, cz, ca, sa, L, W]) => {
+      const dx = x - cx, dz = z - cz;
+      return Math.abs(dx * ca + dz * sa) <= L / 2 + m && Math.abs(-dx * sa + dz * ca) <= W / 2 + m;
+    });
+    const area = (r) => { let s2 = 0; for (let i = 0; i < r.length; i++) { const [x0, z0] = r[i], [x1, z1] = r[(i + 1) % r.length]; s2 += x0 * z1 - x1 * z0; } return s2 / 2; };
+    // the Thames is the largest mapped river polygon: its banks get the Embankment's lamps, festoons and boats
+    let thames = -1, best = 0;
+    banks.forEach((rings, i) => { const a = Math.abs(area(rings[0])); if (a > best) { best = a; thames = i; } });
+    const lamps = [];
+    banks.forEach((rings, pi) => rings.forEach((ring, ri) => {
+      const n = ring.length;
+      if (n < 3) return;
+      // which side the water is on: inside the outer ring, outside an island
+      const sg = (area(ring) > 0 ? 1 : -1) * (ri === 0 ? 1 : -1);
+      const wn = [];
+      for (let i = 0; i < n; i++) {
+        const [xa, za] = ring[i], [xb, zb] = ring[(i + 1) % n], L = Math.hypot(xb - xa, zb - za) || 1;
+        wn.push([(-(zb - za) / L) * sg, ((xb - xa) / L) * sg]);
+      }
+      // the coping's back edge: each corner set back along the mean of its two edges' normals
+      const back = ring.map(([x, z], i) => {
+        const [ax, az] = wn[(i + n - 1) % n], [bx, bz] = wn[i];
+        let mx = ax + bx, mz = az + bz; const l = Math.hypot(mx, mz) || 1; mx /= l; mz /= l;
+        const k = Math.min(2.5, 1 / Math.max(0.4, mx * bx + mz * bz));
+        return [x - mx * LIP * k, z - mz * LIP * k];
+      });
+      let run = 0, nextLamp = 13;
+      for (let i = 0; i < n; i++) {
+        const [xa, za] = ring[i], [xb, zb] = ring[(i + 1) % n];
+        const L = Math.hypot(xb - xa, zb - za);
+        if (L < 0.05) continue;
+        const [wx, wz] = wn[i], want = [wx, 0, wz];
+        const mx = (xa + xb) / 2, mz = (za + zb) / 2, d = Math.hypot(mx, mz);
+        const A = (y) => [xa, y, za], B = (y) => [xb, y, zb];
+        const [oax, oaz] = back[i], [obx, obz] = back[(i + 1) % n];
+        if (bridgeAt(mx, mz, 1.5)) {
+          // under a bridge: the wall face only, up to the street, under the deck
+          quad(A(water - 0.3), B(water - 0.3), B(0), A(0), wet, want);
+          run += L; nextLamp = run + 13;
+          continue;
+        }
+        // weathered stone: the tone drifts every 20 m or so
+        const tone = 0.9 + 0.16 * (Math.sin(Math.floor(run / 20) * 12.9898 + pi * 7.1 + ri) * 0.5 + 0.5);
+        if (d < NEAR) {
+          quad(A(TIDE), B(TIDE), B(TOP), A(TOP), g.copy(granite).multiplyScalar(tone), want);
+          quad(A(water - 0.3), B(water - 0.3), B(TIDE), A(TIDE), g.copy(wet).multiplyScalar(0.9 + (tone - 0.9) * 0.6), want);
+          quad([oax, 0, oaz], [obx, 0, obz], [obx, TOP, obz], [oax, TOP, oaz], g.copy(granite).multiplyScalar(tone * 0.92), [-wx, 0, -wz]);
+        } else quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
+        if (d < 7000) quad(A(TOP), B(TOP), [obx, TOP, obz], [oax, TOP, oaz], g.copy(coping).multiplyScalar(tone), UP);
+        // lamp standards on the parapet every 26 m along the Thames, near the campus
+        if (pi === thames && d < NEAR) {
+          while (nextLamp <= run + L) {
+            const t = (nextLamp - run) / L, x = xa + (xb - xa) * t - wx * LIP * 0.5, z = za + (zb - za) * t - wz * LIP * 0.5;
+            if (!bridgeAt(x, z, 4)) lamps.push([x, z, pi * 1000 + ri, nextLamp]);
+            else lamps.push(null);
+            nextLamp += 26;
+          }
+        }
+        run += L;
+      }
+    }));
+    // the standards (dark iron, a lantern on each), and the festoons of bulbs strung between neighbours
+    const hp = 3.6, fb = mobile ? 3.4 : 1.7;
+    lamps.forEach((l, i) => {
+      if (!l) return;
+      const [x, z] = l;
+      quad([x - 0.09, TOP, z], [x + 0.09, TOP, z], [x + 0.09, TOP + hp, z], [x - 0.09, TOP + hp, z], lampPost, [0, 0, 1]);
+      quad([x, TOP, z - 0.09], [x, TOP, z + 0.09], [x, TOP + hp, z + 0.09], [x, TOP + hp, z - 0.09], lampPost, [1, 0, 0]);
+      lampQuad(x, TOP + hp + 0.3, z, 0.3);
+      const m = lamps[i + 1];
+      if (!m || m[2] !== l[2] || m[3] - l[3] > 27) return;
+      const D = Math.hypot(m[0] - x, m[1] - z);
+      if (D > 34) return;
+      for (let s = fb / 2; s < D; s += fb) {
+        const t = s / D;
+        lampQuad(x + (m[0] - x) * t, TOP + hp - 0.25 - 1.0 * 4 * t * (1 - t), z + (m[1] - z) * t, mobile ? 0.16 : 0.12, FEST);
+      }
+    });
+
+    // boats: a hull (pointed bow) as a prism from just under the water, and a cabin on deck
+    const prism = (c, u, ring, y0, y1, col, top = true) => {
+      const P2 = ring.map(([s, v]) => [c[0] + u[0] * s - u[1] * v, c[1] + u[1] * s + u[0] * v]);
+      let ox = 0, oz = 0; P2.forEach(([x, z]) => { ox += x / P2.length; oz += z / P2.length; });
+      for (let i = 0; i < P2.length; i++) {
+        const [x0, z0] = P2[i], [x1, z1] = P2[(i + 1) % P2.length];
+        quad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], col, [(x0 + x1) / 2 - ox, 0, (z0 + z1) / 2 - oz]);
+      }
+      if (top) for (let i = 1; i < P2.length - 1; i++) quad([P2[0][0], y1, P2[0][1]], [P2[i][0], y1, P2[i][1]], [P2[i + 1][0], y1, P2[i + 1][1]], [P2[i + 1][0], y1, P2[i + 1][1]], col, UP);
+      return P2;
+    };
+    const WARM = new THREE.Color(1.15, 0.82, 0.5), DIM = new THREE.Color(0.55, 0.45, 0.32);
+    const boat = (c, u, kind) => {
+      const k = KINDS[kind];
+      const Lb = k.L[0] + rnd() * (k.L[1] - k.L[0]), Bb = k.B, hl = Lb / 2, hb = Bb / 2;
+      const hull = [[-hl, -hb], [hl - Bb * 0.9, -hb], [hl, 0], [hl - Bb * 0.9, hb], [-hl, hb]];
+      const hc = k.hull[Math.floor(rnd() * k.hull.length)];
+      const yd = water + k.free;
+      prism(c, u, hull, water - 0.5, yd, g.set(hc));
+      if (k.band) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
+      if (k.cab) {
+        const c0 = -hl + k.cab[0] * Lb, c1 = -hl + k.cab[1] * Lb, cb = hb - k.cab[2];
+        const ch = k.cab[3];
+        const cc = k.cabCol[Math.floor(rnd() * k.cabCol.length)];
+        const P2 = prism(c, u, [[c0, -cb], [c1, -cb], [c1, cb], [c0, cb]], yd, yd + ch, g.set(cc));
+        // windows along both sides, lit warm (or dimmer, some dark)
+        const lit = rnd() < k.lit ? WARM : rnd() < 0.5 ? DIM : null;
+        if (lit) for (const [a, b] of [[0, 1], [2, 3]]) {
+          const [xa, za] = P2[a], [xb, zb] = P2[b];
+          const mx = (xa + xb) / 2 - c[0], mz = (za + zb) / 2 - c[1], ml = Math.hypot(mx, mz) || 1, ox = (mx / ml) * 0.04, oz = (mz / ml) * 0.04;
+          const p0 = [xa + (xb - xa) * 0.08 + ox, yd + ch * 0.35, za + (zb - za) * 0.08 + oz], p1 = [xa + (xb - xa) * 0.92 + ox, yd + ch * 0.35, za + (zb - za) * 0.92 + oz];
+          lampStrip(p0, p1, ch * 0.38, lit);
+        }
+        if (k.cab[4]) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
+      }
+      return Bb;
+    };
+    // L range, beam, freeboard, hull colours, band, cabin [start, end (as fractions of length), inset, height, wheelhouse]
+    const KINDS = {
+      barge: { L: [24, 32], B: 6.4, free: 1.1, hull: ['#262321', '#3b2a22', '#2c2f31'] },
+      cruiser: { L: [28, 38], B: 7.0, free: 1.3, hull: ['#e8e6e0', '#dedcd5'], band: '#21375d', cab: [0.08, 0.78, 0.5, 2.3, 1], cabCol: ['#efede7', '#e3e1da'], lit: 0.7 },
+      house: { L: [17, 24], B: 4.6, free: 0.9, hull: ['#1f3328', '#22304a', '#2a2826', '#5b2524'], cab: [0.12, 0.85, 0.35, 2.0, 0], cabCol: ['#6b4f3a', '#3d5a49', '#c9c1ad', '#2f3e57'], lit: 0.45 },
+      clipper: { L: [34, 40], B: 9.0, free: 1.4, hull: ['#e4e6e8'], band: '#1d2226', cab: [0.12, 0.8, 0.6, 2.4, 0], cabCol: ['#2b3138'], lit: 0.6 },
+    };
+    // moored along the Thames' walls: houseboats, lighters and pleasure cruisers, sometimes two abreast
+    const ring = thames >= 0 ? banks[thames][0] : [];
+    if (ring.length > 2) {
+      const sg = area(ring) > 0 ? 1 : -1;
+      let acc = rnd() * 90;
+      for (let i = 0; i < ring.length; i++) {
+        const [xa, za] = ring[i], [xb, zb] = ring[(i + 1) % ring.length];
+        const L = Math.hypot(xb - xa, zb - za);
+        if (L < 0.05) continue;
+        const u = [(xb - xa) / L, (zb - za) / L], wv = [-u[1] * sg, u[0] * sg];
+        while (acc < L) {
+          const t = acc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
+          acc += 80 + rnd() * 70;
+          if (Math.hypot(x, z) > BOATS || rnd() > (mobile ? 0.22 : 0.34) || L < 12 || bridgeAt(x, z, 30)) continue;
+          const kind = ['house', 'barge', 'cruiser', 'house'][Math.floor(rnd() * 4)];
+          let off = 1.2;
+          const n = kind === 'cruiser' ? 1 : 1 + Math.floor(rnd() * (kind === 'barge' ? 3 : 2));
+          for (let j = 0; j < n; j++) {
+            const B = KINDS[kind].B;
+            boat([x + wv[0] * (off + B / 2), z + wv[1] * (off + B / 2)], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
+            off += B + 0.4;
+          }
+        }
+        acc -= L;
+      }
+    }
+    // river buses and pleasure boats under way, out on the stream along the Thames' centreline
+    const cl = river.filter((l) => l.length > 1);
+    const tot = cl.reduce((m, l) => m + l.reduce((q, p, i) => q + (i ? Math.hypot(p[0] - l[i - 1][0], p[1] - l[i - 1][1]) : 0), 0), 0);
+    if (tot > 0) {
+      for (let b = 0; b < (mobile ? 6 : 12); b++) {
+        let want = rnd() * tot;
+        for (const l of cl) {
+          for (let i = 1; i < l.length; i++) {
+            const L = Math.hypot(l[i][0] - l[i - 1][0], l[i][1] - l[i - 1][1]);
+            if (want > L) { want -= L; continue; }
+            if (L > 0.5) {
+              const t = want / L, x = l[i - 1][0] + (l[i][0] - l[i - 1][0]) * t, z = l[i - 1][1] + (l[i][1] - l[i - 1][1]) * t;
+              const u = [(l[i][0] - l[i - 1][0]) / L, (l[i][1] - l[i - 1][1]) / L], sd = rnd() < 0.5 ? -1 : 1;
+              const side = sd * (12 + rnd() * 25);
+              const px = x - u[1] * side, pz = z + u[0] * side;
+              if (Math.hypot(px, pz) < BOATS && !bridgeAt(px, pz, 25)) boat([px, pz], sd > 0 ? u : [-u[0], -u[1]], rnd() < 0.6 ? 'clipper' : 'cruiser');
+            }
+            want = -1; break;
+          }
+          if (want < 0) break;
+        }
+      }
+    }
+  }
+
   const group = new THREE.Group();
   if (!I.length) return { group, tris: 0 };
   const g = new THREE.BufferGeometry();
@@ -268,9 +473,10 @@ export function buildBridges(list, { mobile = false } = {}) {
   if (LI.length) {
     const lg = new THREE.BufferGeometry();
     lg.setAttribute('position', new THREE.Float32BufferAttribute(LP, 3));
+    lg.setAttribute('color', new THREE.Float32BufferAttribute(LC, 3));
     lg.setIndex(LI);
     lg.computeBoundingSphere();
-    const lamps = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ color: new THREE.Color(3.2, 2.3, 1.35), side: THREE.DoubleSide }));
+    const lamps = new THREE.Mesh(lg, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
     lamps.userData.key = 'city-bridge-lamps';
     group.add(lamps);
   }
