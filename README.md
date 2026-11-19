@@ -126,3 +126,14 @@ No AI credit used by any of this.
 - King's had no marking criteria; `kcl-college` row in marking_rubrics (supabase/sql/marking_coverage.sql).
 - Examiner notes for languages/literature, built environment, education, archaeology and clinical medicine, plus wider department patterns: notes now match ~150 of 173 departments.
 - Marker deployed from commit 400547712d (stub pins the SHA).
+
+## Medicine and dentistry: instant SBA / VSA questions (19 Nov 2026)
+Medical and dental exams are single best answer (SBA) and very short answer (VSA) questions, not essays.
+- `ucl_modules.exam_format = 'sba'` marks MBBS / BDS modules (UCL Medical School, Imperial School of Medicine, Queen Mary
+  School of Medicine and Dentistry / Institute of Dentistry; King's medicine/dentistry when listed). See `supabase/sql/medicine_sba.sql`.
+- `module_questions.kind` `vsa` (tier foundation: `answer`, `accept`, `explain`) and `sba` (tier exam / first: `options` x5,
+  `answer` = letter, `explain`). Marked in the browser (mark.js `vsaOk`), no marker call; results go to `recall_log`.
+- The marker writes them: new medicine maps (`writeMedMap`), or `{action: "instant"}` for maps that already exist
+  (`instant_jobs`), always with a second-examiner check (`checkInstant`) before publishing.
+- Hand-written bank: `tools/med/med41b3.py` (QMUL MED41B3, 64 questions).
+- Marking speed: `runMark` uses effort medium (low under 250 words): about 20 s instead of 35-60 s.
