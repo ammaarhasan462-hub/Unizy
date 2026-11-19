@@ -90,7 +90,7 @@ export const TRY_HTML = `
     <div class="th-intro">
       <span class="uz-kick">UCL · Imperial · LSE · Queen Mary</span>
       <h1 class="th-h">The mark scheme your uni never&nbsp;gave&nbsp;you.</h1>
-      <p class="th-sub">Answer a real exam-style question. In about 30 seconds you’ll see <b>your class</b>, <b>the exact sentences that lost marks</b>, and <b>3 changes to go up a class</b>, marked against your uni’s grade bands.</p>
+      <p class="th-sub">Answer a real exam-style question. In about 20 seconds you’ll see <b>your class</b>, <b>the exact sentences that lost marks</b>, and <b>3 changes to go up a class</b>, marked against your uni’s grade bands.</p>
     </div>
     <div class="th-card" data-card aria-live="polite">${QUESTION_CARD}</div>
     <div class="th-extra">

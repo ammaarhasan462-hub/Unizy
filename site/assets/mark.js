@@ -520,13 +520,13 @@
   }
 
   // ---------- marking ----------
-  // What the marker is doing, shown step by step while it works (about 30 seconds; a minute with attachments).
+  // What the marker is doing, shown step by step while it works (about 20 seconds; under a minute with attachments).
   function busySteps() {
     var u = U().poss, att = state.busyAtt;
     return (att ? ['Reading your photos and files…'] : []).concat(['Reading your answer…', 'Checking it against ' + u + ' grade bands…', 'Comparing it with the 2:1 and First-class descriptors…', 'Finding the exact sentences that cost you marks…', 'Working out the 3 changes that would move you up a class…', 'Writing a First-class paragraph to compare against…', 'Nearly there…']);
   }
-  function busyText() { var st = busySteps(), t = (Date.now() - (state.busyAt || Date.now())) / 1000, per = state.busyAtt ? 9 : 5; return st[Math.min(st.length - 1, Math.floor(t / per))]; }
-  function busyPct() { var t = (Date.now() - (state.busyAt || Date.now())) / 1000, tot = state.busyAtt ? 60 : 32; return Math.min(95, Math.round(100 * (1 - Math.exp(-t / (tot / 1.6))))); }
+  function busyText() { var st = busySteps(), t = (Date.now() - (state.busyAt || Date.now())) / 1000, per = state.busyAtt ? 8 : 3; return st[Math.min(st.length - 1, Math.floor(t / per))]; }
+  function busyPct() { var t = (Date.now() - (state.busyAt || Date.now())) / 1000, tot = state.busyAtt ? 50 : 22; return Math.min(95, Math.round(100 * (1 - Math.exp(-t / (tot / 1.6))))); }
   setInterval(function () {
     if (!state.busy) return;
     var el = document.getElementById('mk-busytxt'), bar = document.getElementById('mk-busybar');
