@@ -18,6 +18,23 @@
      - Fades by 15% if the topic hasn't been touched for 4 weeks. */
   function topicMastery(pos, d) {
     var qs = d.questions || [], qById = d.qById || index(qs);
+    // medicine / dentistry topics: single best answer and very short answer questions, marked instantly. Mastery is the
+    // share of the topic's questions whose latest answer was right (fading the same way when left for 4 weeks).
+    var iq = qs.filter(function (q) { return q.topic_pos === pos && (q.kind === 'sba' || q.kind === 'vsa'); });
+    if (iq.length) {
+      var lt = {}, lst = 0;
+      (d.recalls || []).forEach(function (r) {
+        if (!r.question_id || !qById[r.question_id] || qById[r.question_id].topic_pos !== pos) return;
+        var tt = Date.parse(r.created_at) || 0;
+        if (!lt[r.question_id] || lt[r.question_id].t < tt) lt[r.question_id] = { t: tt, got: r.got };
+        lst = Math.max(lst, tt);
+      });
+      var done = iq.filter(function (q) { return lt[q.id]; }).length;
+      if (!done) return { pct: 0, started: false, marked: 0, recallDone: 0, recallTotal: iq.length, best: null };
+      var share = iq.filter(function (q) { return lt[q.id] && lt[q.id].got; }).length / iq.length;
+      if (lst && Date.now() - lst > 28 * 864e5) share *= 0.85;
+      return { pct: Math.round(share * 100), started: true, marked: 0, recallDone: done, recallTotal: iq.length, best: null, last: lst };
+    }
     var fq = qs.filter(function (q) { return q.tier === 'foundation' && q.topic_pos === pos; });
     var latest = {}, last = 0;
     (d.recalls || []).forEach(function (r) {

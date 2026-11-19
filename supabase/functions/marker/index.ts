@@ -8,6 +8,8 @@
 //                                                           exam-style / First-class question, then a second examiner pass that checks it all
 // POST { action: "guest_mark", code, question_id, answer } -> signed out: mark ONE answer to a question from the bank (no account; per network
 //                                                           per day and site-wide caps, inside the daily £ budget; nothing is saved)
+// POST { action: "instant", code }                       -> medicine / dentistry: writes the SBA + VSA questions for a module that
+//                                                           already has a Module Map (signed in; { pending: true } while writing)
 // POST { action: "mark", code, question, answer, ... }   -> marks one practice answer (signed in, counts as an Assess marking)
 //      question_id?, topic_pos?, tier?, prev_id? (the attempt this one rewrites)
 //      attachments?: photos / video frames / PDFs / document text holding (part of) the answer — see attach.ts
@@ -164,11 +166,150 @@ const systemFor = (U: { name: string; long: string }) => `You are the examiner i
 
 const s = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 const KINDS = ["essay", "problem", "short"];
+const INSTANT = ["sba", "vsa"];
+// Medicine and dentistry (ucl_modules.exam_format = 'sba'): exams are single best answer and very short answer questions,
+// so these modules get instant questions instead of essays. They are marked in the browser, with no marker call and no wait.
+const isSba = (mod: any) => mod && mod.exam_format === "sba";
+const LETTERS = ["A", "B", "C", "D", "E"];
+
+const INSTANT_RULES = (U: { name: string; long: string }) => `- "vsa" = very short answer questions, as in medical school knowledge exams: a clear question whose answer is 1 to 5 words (a structure, nerve, drug, enzyme, organism, value with units, condition or investigation). "a" = the expected answer (1-5 words); "accept" = 0-4 other answers an examiner would also accept (synonyms, abbreviations, alternative spellings); "why" = one or two sentences (under 40 words) explaining the answer.
+- "sba" = single best answer questions in the style of UK medical school exams and the UKMLA Applied Knowledge Test: a short clinical vignette or scientific scenario (age, sex, presentation, key findings or data where useful), then a lead-in question ending in "?". Exactly 5 options, all of the same type (all diagnoses, or all drugs, or all nerves…), each under 14 words, all plausible, with ONE clearly best answer. Never "all of the above", "none of the above" or "both A and B". "correct" = the letter of the best answer. "why" = under 80 words: why the answer is right and why the most tempting wrong option is wrong.
+- "hard" = harder SBAs in the same format that test application: data interpretation (bloods, ABG, ECG or spirometry described in words), mechanism-based reasoning, or linking two topics.
+- Base everything on standard, current UK teaching (e.g. NICE guidance where relevant). Every fact, value and answer must be correct and uncontroversial; never invent studies or statistics. Never claim a question comes from a real ${U.name} paper.`;
+
+// Validate one instant item from the model; SBA options are shuffled so the answer letter is evenly spread.
+function cleanInstant(raw: any, kind: "vsa" | "sba"): any | null {
+  if (!raw || typeof raw !== "object") return null;
+  const q = s(raw.q ?? raw.question, 1500);
+  if (q.length < 8) return null;
+  const why = s(raw.why ?? raw.explain, 900) || null;
+  if (kind === "vsa") {
+    const a = s(raw.a ?? raw.answer, 120);
+    if (!a || a.split(/\s+/).length > 7) return null;
+    const accept = Array.isArray(raw.accept) ? raw.accept.map((x: any) => s(x, 120)).filter((x: string) => x && x.toLowerCase() !== a.toLowerCase()).slice(0, 6) : [];
+    return { kind, question: q, answer: a, accept: accept.length ? accept : null, explain: why };
+  }
+  const opts = Array.isArray(raw.options) ? raw.options.map((x: any) => s(x, 200).replace(/^[A-E][).:]\s+/, "")).filter(Boolean) : [];
+  if (opts.length !== 5 || new Set(opts.map((o: string) => o.toLowerCase())).size !== 5) return null;
+  if (opts.some((o: string) => /\b(all|none) of the above\b/i.test(o))) return null;
+  let ci = LETTERS.indexOf(String(raw.correct ?? raw.answer ?? "").trim().toUpperCase().slice(0, 1));
+  if (ci < 0) return null;
+  const order = [0, 1, 2, 3, 4];
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  const options = order.map((i) => opts[i]);
+  ci = order.indexOf(ci);
+  return { kind, question: q, options, answer: LETTERS[ci], explain: why };
+}
+
+// A second examiner checks every instant item before students see it (wrong medical facts are worse than none).
+async function checkInstant(apiKey: string, U: any, ctx: string, items: any[]): Promise<{ ok: boolean; usage?: any; fixes: Record<string, any>; drop: Set<string> }> {
+  const pkg = items.map((it) => ({ ref: it.ref, type: it.kind, question: it.question, options: it.options, correct: it.kind === "sba" ? it.answer : undefined, answer: it.kind === "vsa" ? it.answer : undefined, accept: it.accept || undefined, why: it.explain }));
+  const check = `You are the second examiner checking medical school exam questions before students use them. Be strict about accuracy.
+
+${ctx}
+
+QUESTIONS (JSON):
+${JSON.stringify(pkg)}
+
+Check every item:
+1. The answer marked correct is genuinely the single best answer by standard UK teaching; every other SBA option is clearly worse but plausible. Every fact, value and unit is right.
+2. The question is unambiguous and answerable without notes; VSA answers really are 1-5 words, and "accept" lists only answers an examiner would accept.
+3. The "why" is correct and explains the answer.
+Fix anything wrong by rewriting that field (for an SBA you may change "options" and "correct"). If an item cannot be fixed, list its ref in "drop".
+
+Return one JSON object with ONLY the items you changed (each with its ref and the corrected fields) and the refs to drop:
+{"fixes": [{"ref": "V3", "question": "...", "answer": "...", "accept": ["..."], "options": ["...", "...", "...", "...", "..."], "correct": "B", "why": "..."}], "drop": ["S2"]}`;
+  const c = await callClaude(apiKey, systemFor(U), check, 16000, { effort: "low" });
+  if (!c.ok) return { ok: false, fixes: {}, drop: new Set() };
+  const cj = parseJson(c.text), fixes: Record<string, any> = {}, drop = new Set<string>();
+  if (cj && Array.isArray(cj.fixes)) cj.fixes.forEach((f: any) => { if (f && typeof f.ref === "string") fixes[f.ref] = f; });
+  if (cj && Array.isArray(cj.drop)) cj.drop.forEach((r: any) => drop.add(String(r)));
+  return { ok: true, usage: c.usage, fixes, drop };
+}
+
+// Write instant questions (VSA + SBA + harder SBA) for the given topics, check them, and return rows ready to insert.
+async function writeInstantItems(service: any, apiKey: string, mod: any, topics: { position: number; title: string; summary?: string | null }[], spend: (u: any) => Promise<unknown>, startPos: number) {
+  const U = uniOf(mod), details = await moduleDetails(service, mod);
+  const ctx = `MODULE: ${mod.code} ${mod.title}
+${bare(U)} · ${mod.department || "medicine"} · ${levelWord(mod.level)}
+Description: """${details.slice(0, 2500)}"""`;
+  const prompt = `Write instant-marked practice questions for each topic of this ${bare(U)} medicine / dentistry module, in the format its exams use.
+
+${ctx}
+
+TOPICS:
+${topics.map((t) => `${t.position}: ${t.title}${t.summary ? " — " + t.summary : ""}`).join("\n")}
+
+For EACH topic write 3 "vsa", 2 "sba" and 1 "hard".
+${INSTANT_RULES(U)}
+
+Return one JSON object:
+{"topics": [{"pos": 0, "vsa": [{"q": "...", "a": "...", "accept": ["..."], "why": "..."}], "sba": [{"q": "...", "options": ["...", "...", "...", "...", "..."], "correct": "C", "why": "..."}], "hard": [{"q": "...", "options": [...], "correct": "A", "why": "..."}]}]}`;
+  const w = await callClaude(apiKey, systemFor(U), prompt, 20000, { think: false });
+  if (!w.ok) return { error: "write upstream " + w.status + ": " + w.text, status: w.status, text: w.text };
+  await spend(w.usage);
+  const wj = parseJson(w.text);
+  const list = wj && Array.isArray(wj.topics) ? wj.topics : Array.isArray(wj) ? wj : [];
+  const items: any[] = [];
+  let nv = 0, ns = 0;
+  list.forEach((tp: any) => {
+    const topic = topics.find((t) => t.position === +tp?.pos) || null;
+    if (!topic) return;
+    (Array.isArray(tp.vsa) ? tp.vsa : []).slice(0, 5).forEach((r: any) => { const c = cleanInstant(r, "vsa"); if (c) items.push({ ...c, ref: "V" + (++nv), tier: "foundation", topic }); });
+    (Array.isArray(tp.sba) ? tp.sba : []).slice(0, 4).forEach((r: any) => { const c = cleanInstant(r, "sba"); if (c) items.push({ ...c, ref: "S" + (++ns), tier: "exam", topic }); });
+    (Array.isArray(tp.hard) ? tp.hard : []).slice(0, 2).forEach((r: any) => { const c = cleanInstant(r, "sba"); if (c) items.push({ ...c, ref: "S" + (++ns), tier: "first", topic }); });
+  });
+  if (items.length < 6) return { error: "parse (" + items.length + " items)" };
+  const ck = await checkInstant(apiKey, U, ctx, items);
+  if (!ck.ok) return { error: "check upstream" }; // never publish unchecked
+  await spend(ck.usage);
+  const rows: any[] = [];
+  let pos = startPos;
+  items.forEach((it) => {
+    if (ck.drop.has(it.ref)) return;
+    const f = ck.fixes[it.ref];
+    let fin = it;
+    if (f) {
+      const merged = it.kind === "vsa"
+        ? { q: f.question || it.question, a: f.answer || it.answer, accept: f.accept || it.accept || [], why: f.why || it.explain }
+        : { q: f.question || it.question, options: f.options || it.options, correct: f.correct || (f.options ? null : it.answer), why: f.why || it.explain };
+      const c = cleanInstant(merged, it.kind);
+      if (!c) return; // a fix that doesn't validate: drop rather than publish something half-corrected
+      fin = { ...it, ...c };
+    }
+    rows.push({ code: mod.code, position: pos++, topic_pos: it.topic.position, topic: it.topic.title, tier: it.tier, kind: it.kind, question: fin.question, answer: fin.answer, options: fin.options || null, accept: fin.accept || null, explain: fin.explain || null });
+  });
+  return { rows };
+}
+
+// For a medicine module that already has a Module Map: add the instant questions to its topics (one job per module).
+async function writeInstant(service: any, apiKey: string, mod: any) {
+  const code = mod.code;
+  const fin = (error?: string) => service.from("instant_jobs").update({ status: error ? "failed" : "done", finished_at: new Date().toISOString(), error: error ? error.slice(0, 500) : null }).eq("code", code);
+  try {
+    const { data: topics } = await service.from("module_topics").select("position, title, summary").eq("code", code).order("position");
+    if (!topics || !topics.length) { await fin("no topics"); return; }
+    const { data: have } = await service.from("module_questions").select("id").eq("code", code).in("kind", INSTANT).limit(1);
+    if (have && have.length) { await fin(); return; }
+    const { data: last } = await service.from("module_questions").select("position").eq("code", code).order("position", { ascending: false }).limit(1);
+    const start = last && last.length ? (last[0].position ?? 0) + 1 : 0;
+    const res: any = await writeInstantItems(service, apiKey, mod, topics, (u) => recordSpend(service, SONNET, u), start);
+    if (res.error) {
+      if (res.status && isAccountProblem(res.status, res.text || "")) await handleAccountProblem(service, res.status, res.text || "");
+      await fin(res.error); return;
+    }
+    const { error } = await service.from("module_questions").insert(res.rows);
+    await fin(error ? "insert: " + error.message : undefined);
+  } catch (e) {
+    console.error("instant error", code, String(e));
+    await fin(String(e));
+  }
+}
 
 async function loadMap(service: any, code: string) {
   const [{ data: topics }, { data: questions }] = await Promise.all([
     service.from("module_topics").select("position, title, summary").eq("code", code).order("position"),
-    service.from("module_questions").select("id, topic, kind, tier, topic_pos, question, answer, guide, steps, position").eq("code", code).order("position"),
+    service.from("module_questions").select("id, topic, kind, tier, topic_pos, question, answer, guide, steps, position, options, accept, explain").eq("code", code).order("position"),
   ]);
   return { topics: topics || [], questions: questions || [] };
 }
@@ -180,6 +321,7 @@ async function writeMap(service: any, apiKey: string, mod: any, source: "open" |
   try {
     const details = await moduleDetails(service, mod);
     const U = uniOf(mod);
+    if (isSba(mod)) { await writeMedMap(service, apiKey, mod, source, details, fail); return; }
     const prompt = `Build a revision Module Map for this ${bare(U)} module: split it into its main topics, in teaching order, and write practice questions for each topic at three levels.
 
 MODULE: ${mod.code} ${mod.title}
@@ -249,6 +391,42 @@ Return one JSON object:
     console.error("map error", code, String(e));
     await fail(String(e));
   }
+}
+
+// Medicine / dentistry: the Module Map's topics, then instant questions for every topic (written, then checked).
+async function writeMedMap(service: any, apiKey: string, mod: any, source: "open" | "batch", details: string, fail: (e: string) => Promise<unknown>) {
+  const code = mod.code, U = uniOf(mod);
+  const spend = (u: any) => source === "batch" ? service.rpc("ai_add_batch_spend", { p_usd: costUsd(SONNET, u) }) : recordSpend(service, SONNET, u);
+  const prompt = `Split this ${bare(U)} medicine / dentistry module into its main topics, in teaching order.
+
+MODULE: ${mod.code} ${mod.title}
+Department: ${mod.department || "unknown"} · ${levelWord(mod.level)} · ${sizeOf(mod) || ""}
+Description (from ${U.source}):
+"""
+${details.slice(0, 5000)}
+"""
+
+Rules: 8 topics (6 if the description is thin, up to 10 for a broad module). "title" under 8 words; "summary" one sentence under 25 words. Stay within what the description says the module covers; where it is thin, use the standard core of this stage of a UK medical / dental degree.
+
+Return one JSON object: {"topics": [{"title": "...", "summary": "..."}]}`;
+  const res = await callClaude(apiKey, systemFor(U), prompt, 4000, { think: false });
+  if (!res.ok) {
+    if (isAccountProblem(res.status, res.text)) await handleAccountProblem(service, res.status, res.text);
+    await fail("upstream " + res.status + ": " + res.text); return;
+  }
+  await spend(res.usage);
+  const tj = parseJson(res.text), raw = (tj && Array.isArray(tj.topics) ? tj.topics : Array.isArray(tj) ? tj : []).filter((t: any) => t && t.title).slice(0, 10);
+  if (raw.length < 3) { await fail("parse topics"); return; }
+  const topics = raw.map((t: any, i: number) => ({ position: i, title: s(t.title, 120), summary: s(t.summary, 300) || null }));
+  const out: any = await writeInstantItems(service, apiKey, mod, topics, spend, 0);
+  if (out.error) { await fail(out.error); return; }
+  const { data: again } = await service.from("module_topics").select("position").eq("code", code).limit(1);
+  if (again && again.length) { await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString() }).eq("code", code); return; }
+  const { error: e1 } = await service.from("module_topics").insert(topics.map((t: any) => ({ code, ...t })));
+  if (e1) { await fail("topics insert: " + e1.message); return; }
+  const { error: e2 } = await service.from("module_questions").insert(out.rows);
+  if (e2) { await service.from("module_topics").delete().eq("code", code); await fail("questions insert: " + e2.message); return; }
+  await service.from("question_jobs").update({ status: "done", finished_at: new Date().toISOString(), error: null }).eq("code", code);
 }
 
 // ---------- full packs ----------
@@ -574,7 +752,10 @@ ${askTopic ? `- "topic_pos" = the number of the module topic this question mostl
 Return one JSON object:
 {"refused": false, "refuse_reason": "",${hasAtt ? ' "transcript": "...",' : ""} "class": "First" | "2:1" | "2:2" | "Third" | "Fail", "mark_low": int, "mark_high": int, "headline": one sentence verdict, "criteria": [{"name": criterion name, "band": "First" | "2:1" | "2:2" | "Third" | "Fail", "comment": 1-3 sentences}], "strengths": [2-3 short points], "changes": [{"change": "...", "why": "..."}, x3], "lost": [{"quote": "...", "issue": "...", "fix": "..."}], "model_plan": ["..."], "model_paragraph": "...", "rewrite": {"quote": "...", "task": "..."}, "cards": [{"front": "...", "back": "..."}], "allocation": [{"item": "...", "available": int, "awarded": int}], "warnings": ["..."]${askTopic ? ', "topic_pos": int' : ""}}`;
 
-  const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 20000 : 16000);
+  // Speed: full-effort thinking made marking take 35-60 seconds. Medium effort keeps the calibration and is about twice as
+  // fast; short answers (under 250 words, e.g. 5-minute questions and short structured answers) need even less.
+  const effort = !hasAtt && answer.split(/\s+/).length < 250 ? "low" : "medium";
+  const res = await callClaude(apiKey, systemFor(U), hasAtt ? [...att.blocks, { type: "text", text: prompt }] : prompt, hasAtt ? 20000 : 16000, { effort });
   if (!res.ok) {
     console.error("mark upstream", code, res.status, res.text.slice(0, 300));
     await refund();
@@ -694,9 +875,9 @@ Deno.serve(async (req) => {
     if (answer.length > GUEST_MAX_ANSWER) return json(413, { code: "prompt_too_large", message: "That’s longer than the free try allows (about 1,500 words). Sign up free to mark longer answers." });
     const [{ data: mod }, { data: q }] = await Promise.all([
       service.from("ucl_modules").select("*").eq("code", code).maybeSingle(),
-      service.from("module_questions").select("id, question, tier").eq("id", questionId).eq("code", code).maybeSingle(),
+      service.from("module_questions").select("id, question, tier, kind").eq("id", questionId).eq("code", code).maybeSingle(),
     ]);
-    if (!mod || !q || q.tier === "foundation") return json(404, { code: "not_found", message: "We couldn’t find that question." });
+    if (!mod || !q || q.tier === "foundation" || INSTANT.includes(q.kind)) return json(404, { code: "not_found", message: "We couldn’t find that question." });
     const ip = (req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "unknown";
     const net = await sha256("unizy-guestmark:" + new Date().toISOString().slice(0, 10) + ":" + ip + ":" + (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "").slice(-16));
     const take = await guestTake(service, net);
@@ -763,6 +944,25 @@ Deno.serve(async (req) => {
     return json(202, { ...map, pending: true });
   }
 
+  // ---------- medicine: instant questions (SBA + VSA) for a module that already has a Module Map ----------
+  if (body.action === "instant") {
+    if (!isSba(mod)) return json(400, { code: "invalid_request", message: "This module uses written answers." });
+    const map = await loadMap(service, code);
+    if (map.questions.some((q: any) => INSTANT.includes(q.kind))) return json(200, { ...map, cached: true });
+    if (!map.topics.length) return json(409, { ...map, code: "no_map", message: "Open the module first." });
+    const day = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" });
+    const [{ data: st }, { data: sp }] = await Promise.all([
+      service.from("ai_settings").select("daily_budget_gbp, usd_per_gbp").eq("id", true).maybeSingle(),
+      service.from("ai_spend").select("usd").eq("day", day).maybeSingle(),
+    ]);
+    if (st && sp && +sp.usd >= +st.daily_budget_gbp * +st.usd_per_gbp) return json(503, { ...map, code: "ai_paused", message: "The SBA questions for this module will be written tomorrow." });
+    const { data: job } = await service.from("instant_jobs").select("status, tries").eq("code", code).maybeSingle();
+    if (job && job.status === "failed" && job.tries >= 4) return json(502, { ...map, code: "upstream_error", message: "We couldn’t write SBA questions for this module yet." });
+    const { data: claimed } = await service.rpc("claim_instant_job", { p_code: code, p_user: user.id });
+    if (claimed) { EdgeRuntime.waitUntil(writeInstant(service, apiKey, mod)); EdgeRuntime.waitUntil(countEvent(service, "instant_gen")); }
+    return json(202, { ...map, pending: true });
+  }
+
   // ---------- mark a practice answer ----------
   if (body.action === "mark") {
     const question = String(body.question || "").trim();
@@ -776,6 +976,10 @@ Deno.serve(async (req) => {
     const att = parseAttachments(body.attachments);
     if ("error" in att) return json(400, { code: "attachment_rejected", message: att.error });
     const hasAtt = att.blocks.length > 0;
+    if (questionId) {
+      const { data: qk } = await service.from("module_questions").select("kind").eq("id", questionId).maybeSingle();
+      if (qk && INSTANT.includes(qk.kind)) return json(400, { code: "invalid_request", message: "This question is marked instantly on the page." });
+    }
     if (!hasAtt && answer.split(/\s+/).length < 40) return json(400, { code: "invalid_request", message: "Write at least a paragraph or two so there’s something to mark." });
     if (answer.length > MAX_ANSWER) return json(413, { code: "prompt_too_large", message: "That answer is too long to mark in one go (about 2,300 words max)." });
 

@@ -36,7 +36,8 @@
   var state = { noSample: {},
     q: '', ug: true, results: [], mod: null, topics: null, questions: null, mapBusy: false, mapMsg: '', cur: null, result: null,
     attempts: null, recalls: [], ratings: {}, open: {}, shown: {}, steps: {}, itab: 'alloc', rewrite: null, busy: false, err: '',
-    tierF: '', wmode: 'study', exam: 0, mono: false, pbusy: false, perr: '', ptext: {}
+    tierF: '', wmode: 'study', exam: 0, mono: false, pbusy: false, perr: '', ptext: {},
+    ians: {}, quiz: null, instBusy: false, instMsg: ''
   };
 
   // ---------- helpers ----------
@@ -201,6 +202,8 @@
     var after = function () {
       if (r.q === 'start') {
         if (!state.questions) { render(); return; } // loadMap() routes again
+        if (isMed() && instQs().length) { track('start_q_open'); history.replaceState(null, '', MBASE + r.m); startQuiz(null); return; }
+        if (isMed() && state.topics && state.topics.length) { go({ m: r.m }, true); return; }
         var sq = starterQ();
         if (sq) { state.starterId = sq.id; loadSamples(); track('start_q_open'); go({ m: r.m, q: sq.id, v: 'answer' }, true); }
         else go({ m: r.m }, true);
@@ -217,6 +220,7 @@
         state.itab = 'scheme';
       } else if (r.v !== 'result') { state.cur = null; state.result = null; if (state.exam) { state.exam = 0; stopTimer(); timer.on = false; timer.limit = 45; } }
       if (r.v === 'result' && !state.result) { go({ m: r.m }, true); return; }
+      if (r.v === 'quiz' && !state.quiz) { if (!state.questions) { render(); return; } if (instQs().length) { startQuiz(null); return; } go({ m: r.m }, true); return; }
       if (!r.v && r.t != null && r.t !== '') { state.open[+r.t] = true; state.wmode = 'study'; }
       if (!r.v && r.w === 'parse') state.wmode = 'parse';
       render(); setTitle();
@@ -225,7 +229,7 @@
     };
     if (state.mod && state.mod.code === r.m) { after(); return; }
     state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
-    rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,ects,faculty,department,term,summary,url,uni,programmes,year_of_study,mtype,status').then(function (rows) {
+    rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,ects,faculty,department,term,summary,url,uni,programmes,year_of_study,mtype,status,exam_format').then(function (rows) {
       if (!rows || !rows.length) { state.mod = { code: r.m, missing: true }; render(); return; }
       state.mod = rows[0]; loadMap(); loadMine(); after();
     }).catch(function (e) { state.err = e.message; render(); });
@@ -255,7 +259,7 @@
   function fetchMap(code) {
     return Promise.all([
       rest('module_topics?code=eq.' + code + '&select=position,title,summary&order=position.asc'),
-      rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position&order=position.asc')
+      rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position,options,accept,explain&order=position.asc')
     ]);
   }
   function loadMap() {
@@ -264,9 +268,10 @@
       if (!state.mod || state.mod.code !== code) return;
       state.topics = res[0] || []; state.questions = res[1] || [];
       var r = routeParams();
-      if ((r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) || r.q === 'start') route(); else render();
+      if ((r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) || r.q === 'start' || (r.v === 'quiz' && !state.quiz)) route(); else render();
       if (state.questions.length) loadModelAnswers();
       if (!state.topics.length && getSession()) startMap();
+      else if (needInstant() && getSession()) startInstant();
     }).catch(function () { state.topics = []; state.questions = []; render(); });
   }
   function startMap() {
@@ -290,7 +295,7 @@
       if (!state.mod || state.mod.code !== code) return;
       fetchMap(code).then(function (res) {
         if (!state.mod || state.mod.code !== code) return;
-        if (res[0] && res[0].length) { state.mapBusy = false; state.topics = res[0]; state.questions = res[1] || []; track('map_ready'); render(); loadModelAnswers(); return; }
+        if (res[0] && res[0].length) { state.mapBusy = false; state.topics = res[0]; state.questions = res[1] || []; track('map_ready'); render(); loadModelAnswers(); if (needInstant()) startInstant(); return; }
         if (Date.now() - t0 > 210e3) { state.mapBusy = false; state.mapMsg = 'This is taking longer than usual.'; state.mapRetry = true; render(); return; }
         poll(code, t0);
       }).catch(function () { poll(code, t0); });
@@ -336,6 +341,154 @@
     track(got ? 'recall_got' : 'recall_miss'); changed();
     // a missed recall question becomes a flashcard in "Due today"
     if (!got && q.answer) rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, front: q.question.slice(0, 600), back: q.answer.slice(0, 1200) } }).catch(function () {});
+  }
+
+  // ---------- medicine: instant single best answer (SBA) and very short answer (VSA) questions ----------
+  // Medical and dental exams are SBAs and 1-5 word answers, so these modules get questions marked right here in the
+  // browser: no marker call and no wait. Results go into the same recall log as quick recall, so mastery and
+  // "Due today" flashcards work as they do everywhere else.
+  function isMed() { return !!(state.mod && state.mod.exam_format === 'sba'); }
+  function isInst(q) { return !!q && (q.kind === 'sba' || q.kind === 'vsa'); }
+  function instQs(pos) { return (state.questions || []).filter(function (q) { return isInst(q) && (pos == null || q.topic_pos === pos); }); }
+  function needInstant() { return isMed() && state.topics && state.topics.length && !instQs().length; }
+  var instPoll = null;
+  function startInstant() {
+    var code = state.mod.code;
+    if (state.instBusy) return;
+    state.instBusy = true; state.instMsg = ''; render();
+    marker({ action: 'instant', code: code }).then(function (b) {
+      if (!state.mod || state.mod.code !== code) return;
+      if (b.questions && b.questions.some(isInst)) { state.instBusy = false; state.questions = b.questions; render(); return; }
+      var t0 = Date.now();
+      (function again() {
+        clearTimeout(instPoll);
+        instPoll = setTimeout(function () {
+          if (!state.mod || state.mod.code !== code) return;
+          fetchMap(code).then(function (res) {
+            if (!state.mod || state.mod.code !== code) return;
+            if ((res[1] || []).some(isInst)) { state.instBusy = false; state.questions = res[1]; render(); return; }
+            if (Date.now() - t0 > 240e3) { state.instBusy = false; state.instMsg = 'This is taking longer than usual. Refresh in a minute.'; render(); return; }
+            again();
+          }).catch(again);
+        }, 6000);
+      })();
+    }).catch(function (e) { if (!state.mod || state.mod.code !== code) return; state.instBusy = false; state.instMsg = e.signin ? '' : e.message; render(); });
+  }
+  // Answers in different words, spellings or forms: lower case, no accents or punctuation, British and US spellings
+  // (haem/hem, oesophagus/esophagus), no "the"/"a"/"of", no plural s; then a small typo allowance on longer answers.
+  function normAns(s) {
+    return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/æ|ae/g, 'e').replace(/œ|oe/g, 'e')
+      .replace(/[^a-z0-9%.+\-\/]+/g, ' ').replace(/\b(the|a|an|of)\b/g, ' ').replace(/\s+/g, ' ').trim().replace(/(\w{3,})s\b/g, '$1');
+  }
+  function lev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) d[i] = [i];
+    for (j = 0; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+  function vsaOk(q, text) {
+    var t = normAns(text); if (!t) return false;
+    return [q.answer].concat(q.accept || []).map(normAns).filter(Boolean).some(function (k) {
+      if (k === t) return true;
+      if (/\d/.test(k)) return false; // numbers and values must be exact
+      var n = Math.max(k.length, t.length), tol = n >= 10 ? 2 : n >= 5 ? 1 : 0;
+      return tol > 0 && lev(k, t) <= tol;
+    });
+  }
+  function optText(q, l) { var i = 'ABCDE'.indexOf(l); return q.options && i >= 0 ? q.options[i] : ''; }
+  function rightText(q) { return q.kind === 'sba' ? q.answer + '. ' + optText(q, q.answer) : q.answer; }
+  function answerInst(q, val, override) {
+    if (!q) return;
+    var prev = state.ians[q.id];
+    if (prev && prev.done && !override) return;
+    var got = override ? true : q.kind === 'sba' ? val === q.answer : vsaOk(q, val);
+    state.ians[q.id] = { val: override ? prev.val : val, got: got, done: true, over: !!override };
+    if (!override) track(q.kind === 'sba' ? 'sba_answer' : 'vsa_answer');
+    var code = state.mod.code, row = { question_id: q.id, topic_pos: q.topic_pos, got: got, created_at: new Date().toISOString() };
+    if (override && state.recalls[0] && state.recalls[0].question_id === q.id) state.recalls[0].got = true; else state.recalls.unshift(row);
+    if (!getSession()) return;
+    rest('recall_log', { method: 'POST', auth: true, prefer: 'return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, question_id: q.id, got: got } }).catch(function () {});
+    changed();
+    if (!got) rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: q.topic_pos, front: q.question.slice(0, 600), back: (rightText(q) + (q.explain ? '\n' + q.explain : '')).slice(0, 1200) } }).catch(function () {});
+  }
+  function lastInst(q) { return (state.recalls || []).filter(function (r) { return r.question_id === q.id; })[0]; }
+  // one question, as a card: SBA options or a short answer box, then the verdict and explanation straight away
+  function instCard(q, inQuiz) {
+    var a = state.ians[q.id], last = !a && lastInst(q), h = '<div class="mk-inst' + (a ? (a.got ? ' ok' : ' no') : '') + '" data-iq="' + q.id + '">';
+    h += '<p class="mk-iq">' + paras(q.question).replace(/^<p>|<\/p>$/g, '') + (last ? ' <span class="mk-rlast ' + (last.got ? 'ok' : 'no') + '">' + (last.got ? '✓ Got it last time' : '✗ Missed last time') + '</span>' : '') + '</p>';
+    if (q.kind === 'sba') {
+      h += '<ol class="mk-opts" role="list">' + (q.options || []).map(function (o, i) {
+        var l = 'ABCDE'[i], cls = a ? (l === q.answer ? ' right' : a.val === l ? ' wrong' : ' dim') : '';
+        return '<li><button type="button" class="mk-opt' + cls + '" data-pick="' + l + '" data-qid="' + q.id + '"' + (a ? ' disabled' : '') + '><b>' + l + '</b><span>' + esc(o) + '</span>' + (a && l === q.answer ? '<i aria-label="correct answer">✓</i>' : a && a.val === l ? '<i aria-label="your answer">✗</i>' : '') + '</button></li>';
+      }).join('') + '</ol>';
+    } else if (!a) {
+      h += '<form class="mk-vsa" data-vsa="' + q.id + '"><input type="text" name="v" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="1 to 5 words" aria-label="Your answer"' + (inQuiz ? ' id="mk-vsain"' : '') + '><button type="submit" class="btn dark small">Check</button></form>';
+    } else {
+      h += '<p class="mk-vyou">You wrote: <b>' + esc(a.val || '—') + '</b></p>';
+    }
+    if (a) {
+      h += '<div class="mk-iverd"><b>' + (a.got ? (a.over ? '✓ Counted as right' : '✓ Correct') : '✗ Not quite') + '</b>' + (a.got && !a.over && q.kind === 'sba' ? '' : '<span>Answer: <b>' + esc(rightText(q)) + '</b>' + (q.kind === 'vsa' && q.accept && q.accept.length ? ' <small>(also accepted: ' + esc(q.accept.join(', ')) + ')</small>' : '') + '</span>') + '</div>' +
+        (q.explain ? '<p class="mk-iexp">' + esc(q.explain) + '</p>' : '') +
+        (q.kind === 'vsa' && !a.got ? '<button type="button" class="mk-clear" data-over="' + q.id + '">My answer means the same: count it as right</button>' : '');
+    }
+    return h + '</div>';
+  }
+  function instList(list) { return '<ul class="mk-insts">' + list.map(function (q) { return '<li>' + instCard(q, false) + '</li>'; }).join('') + '</ul>'; }
+
+  // Quick-fire quiz: one question at a time, unseen and missed first, keyboard friendly (A-E or 1-5 to pick, Enter for next)
+  function startQuiz(pos, ids) {
+    var pool = instQs(pos == null ? null : pos);
+    if (!pool.length) return;
+    var pick = ids && ids.length ? pool.filter(function (q) { return ids.indexOf(q.id) >= 0; }) : null;
+    if (!pick) {
+      var score = function (q) { var l = lastInst(q); return l ? (l.got ? 2 : 0) : 1; };
+      pick = pool.slice().sort(function () { return Math.random() - 0.5; }).sort(function (a, b) { return score(a) - score(b); }).slice(0, pos == null ? 10 : pool.length);
+    }
+    pick.forEach(function (q) { delete state.ians[q.id]; });
+    state.quiz = { ids: pick.map(function (q) { return q.id; }), i: 0, pos: pos, t0: Date.now() };
+    track('quiz_start');
+    go({ m: state.mod.code, v: 'quiz' });
+  }
+  function quizQ() { var z = state.quiz; return z ? (state.questions || []).filter(function (q) { return q.id === z.ids[z.i]; })[0] : null; }
+  function quizNext() {
+    var z = state.quiz; if (!z) return;
+    z.i++; if (z.i >= z.ids.length) { z.done = true; track('quiz_done'); }
+    render(); window.scrollTo(0, 0);
+    var inp = document.getElementById('mk-vsain'); if (inp) inp.focus();
+  }
+  function viewQuiz() {
+    var z = state.quiz, m = state.mod;
+    if (!z) return viewModule();
+    var qs = z.ids.map(function (id) { return (state.questions || []).filter(function (q) { return q.id === id; })[0]; }).filter(Boolean);
+    var right = qs.filter(function (q) { return state.ians[q.id] && state.ians[q.id].got; }).length, answered = qs.filter(function (q) { return state.ians[q.id]; }).length;
+    var topic = z.pos != null && state.topics ? state.topics.filter(function (t) { return t.position === z.pos; })[0] : null;
+    var html = head() + '<section class="mk-card mk-quiz"><div class="mk-qzbar"><span class="mk-topic">' + esc(m.code) + (topic ? ' · ' + esc(topic.title) : ' · Quick-fire') + '</span><span class="mk-qzscore"><b>' + right + '</b>/' + answered + ' correct</span></div>' +
+      '<div class="mk-qzprog" aria-hidden="true"><i style="width:' + Math.round(100 * (z.done ? qs.length : z.i) / qs.length) + '%"></i></div>';
+    if (z.done) {
+      var miss = qs.filter(function (q) { return !(state.ians[q.id] && state.ians[q.id].got); });
+      var secs = Math.round((Date.now() - z.t0) / 1000);
+      html += '<div class="mk-qzend"><b class="mk-qzbig">' + right + ' / ' + qs.length + '</b><p>' + (right === qs.length ? 'Full marks.' : right / qs.length >= 0.7 ? 'Strong. Go over the ones you missed below.' : 'Go over the ones you missed below, then try them again.') + ' ' + Math.floor(secs / 60) + ' min ' + (secs % 60) + ' s.</p>' +
+        (getSession() ? (miss.length ? '<p class="mk-fine">Missed questions are now flashcards in your ' + esc(m.code) + ' deck.</p>' : '') : '<p class="mk-fine"><a href="' + esc(signinUrl()) + '">Sign up free</a> to keep your score, track each topic and turn misses into flashcards.</p>') +
+        '<div class="mk-row start">' + (miss.length ? '<button type="button" class="btn primary" data-act="qzmiss">Retry the ' + miss.length + ' I missed</button>' : '') + '<button type="button" class="btn dark" data-act="qzagain">Another ' + (z.pos == null ? '10' : 'round') + '</button><a class="btn line" href="' + MBASE + m.code + '" data-go="mod">Module Map</a></div></div>';
+      if (miss.length) html += '<h3>Review</h3>' + instList(miss);
+      return html + '</section>';
+    }
+    var q = quizQ(); if (!q) { z.done = true; return viewQuiz(); }
+    var a = state.ians[q.id];
+    html += '<p class="mk-qzn">Question ' + (z.i + 1) + ' of ' + qs.length + ' · ' + (q.kind === 'sba' ? (q.tier === 'first' ? 'Harder single best answer' : 'Single best answer') : 'Very short answer') + '</p>' + instCard(q, true) +
+      '<div class="mk-row end">' + (a ? '<button type="button" class="btn primary td-go" data-act="qznext" id="mk-qznext">' + (z.i + 1 < qs.length ? 'Next question' : 'See my score') + '<span class="arr" aria-hidden="true">→</span></button>' : '<button type="button" class="mk-clear" data-act="qzskip">Skip</button>') + '</div>' +
+      '<p class="mk-fine">' + (q.kind === 'sba' ? 'Press A–E (or 1–5) to answer, Enter for the next question.' : 'Type your answer and press Enter. Spelling slips and British or US spellings are fine.') + '</p></section>';
+    return html;
+  }
+  function medBar() {
+    var n = instQs().length;
+    if (!n) {
+      if (state.instBusy) return '<div class="mk-writing"><span class="spin"></span><div><b>Writing single best answer and very short answer questions for ' + esc(state.mod.code) + '</b><p>In the format your exams use, each one checked by a second examiner. This takes about two minutes and is saved for everyone on the course.</p></div></div>';
+      if (!getSession()) return '<div class="mk-qzcta"><div><b>SBA and very short answer practice</b><span>Sign up free and we’ll write ' + esc(state.mod.code) + ' questions in the format your exams use, marked instantly.</span></div><a class="btn primary small" href="' + esc(signinUrl()) + '">Sign up free</a></div>';
+      return state.instMsg ? '<p class="mk-err">' + esc(state.instMsg) + '</p>' : '';
+    }
+    return '<div class="mk-qzcta"><div><b>Quick-fire: 10 questions, marked instantly</b><span>' + n + ' single best answer and very short answer questions in the format your exams use. Unseen and missed questions come first.</span></div><button type="button" class="btn primary small" data-act="quiz">Start 10 questions</button></div>';
   }
 
   // ---------- timer ----------
@@ -513,7 +666,8 @@
     if (HOOKS && listUni() && m.uni && m.uni !== listUni() && UNIS[m.uni] && UNIS[listUni()]) return head() + '<section class="mk-card"><h1>' + esc(m.code) + ' is a ' + esc(UNIS[m.uni].short) + ' ' + (m.uni === 'lse' ? 'course' : 'module') + '</h1><p>Your dashboard is set up for ' + esc(UNIS[listUni()].short) + ', so you can only practise ' + esc(UNIS[listUni()].short) + ' modules here. <a href="' + BASE + '" data-go="home">Find a ' + esc(UNIS[listUni()].short) + ' module</a>, or change your university under Account → Change course.</p></section>';
     var html = head();
     var mm = state.topics && state.topics.length ? ST.moduleMastery(state.topics, studyData()) : null, signed = !!getSession();
-    if (canGuest() && state.topics && state.topics.length) html += '<div class="mk-trybar"><b>Try it free, no sign-up.</b> Pick any exam-style or First-class question below, write your answer, and get it marked against ' + U().poss + ' grade bands. One free marked answer.</div>';
+    if (isMed() && state.topics && state.topics.length && instQs().length) html += !getSession() ? '<div class="mk-trybar"><b>Free, no sign-up.</b> Single best answer and very short answer questions in the format your exams use, marked the moment you answer.</div>' : '';
+    else if (canGuest() && state.topics && state.topics.length) html += '<div class="mk-trybar"><b>Try it free, no sign-up.</b> Pick any exam-style or First-class question below, write your answer, and get it marked against ' + U().poss + ' grade bands. One free marked answer.</div>';
     html += '<section class="mk-modhead"><span class="mk-code big">' + esc(m.code) + '</span>' + (isPack(m.code) ? '<span class="mk-packb">Full pack · checked twice</span>' : '') + '<h1>' + esc(m.title) + '</h1>' +
       '<p class="mk-meta">' + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.uni === 'lse' ? (m.credits == 0.5 ? ' · Half unit' : m.credits == 1 ? ' · Full unit' : '') : m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.term ? ' · ' + esc(m.term) : '') + '</p>' +
       (HOOKS ? '<p class="mk-star"><button type="button" class="btn ' + (HOOKS.has(m.code) ? 'line' : 'dark') + ' small" data-act="star">' + (HOOKS.has(m.code) ? '✓ In my modules' : '+ Add to my modules') + '</button>' + (HOOKS.has(m.code) ? ' <a class="mk-tutorlink" href="/dashboard/tutor?m=' + m.code + '">Ask the tutor about ' + esc(m.code) + ' →</a>' : '') + '</p>' : '') +
@@ -521,7 +675,7 @@
       (m.summary || (m.uni && m.uni !== 'ucl') ? '<p class="mk-sum">' + esc((m.summary || (m.programmes && m.programmes.length ? 'Taught on ' + m.programmes.slice(0, 3).join(', ') + (m.programmes.length > 3 ? ' and ' + (m.programmes.length - 3) + ' more' : '') + '.' : '')).replace(/\.\.\.$/, '…')) + (m.url ? ' <a href="' + esc(m.url) + '" target="_blank" rel="noopener">' + U().src + '</a>' : '') + '</p>' : '') + '</section>';
     if (SHOW_PARSE && HOOKS && signed) html += '<div class="mk-wmode" role="tablist" aria-label="Workspace mode">' + [['study', 'Study mode', 'Structured topics and practice'], ['parse', 'Parse mode', 'Drop slides, transcripts or notes']].map(function (w) { return '<button type="button" role="tab" data-wmode="' + w[0] + '" aria-selected="' + (state.wmode === w[0]) + '"><b>' + w[1] + '</b><span>' + w[2] + '</span></button>'; }).join('') + '</div>';
     if (SHOW_PARSE && HOOKS && signed && state.wmode === 'parse') return html + parseHtml();
-    if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.</p></section>';
+    if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. ' + (isMed() && instQs().length ? 'Mastery is the share of each topic’s questions you got right on your latest try.' : 'Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.') + '</p></section>';
     if (SHOW_PARSE && HOOKS && signed) html += unitsHtml(true);
     html += mapHtml();
     html += attemptsHtml();
@@ -541,19 +695,30 @@
       if (loose0.length) html += '<h3>Practice questions</h3>' + qList(loose0);
       return html + own + '</section>';
     }
-    var d = studyData(), tf = state.tierF; d.qById = ST.index(qs);
-    html += '<div class="mk-tiers" role="tablist" aria-label="Filter questions by level">' + TIERS.map(function (x) {
-      var n = qs.filter(function (q) { return q.topic_pos != null && (!x[0] || q.tier === x[0]); }).length;
+    var d = studyData(), tf = state.tierF, med = isMed() && instQs().length > 0; d.qById = ST.index(qs);
+    if (isMed()) html += medBar();
+    html += '<div class="mk-tiers" role="tablist" aria-label="Filter questions by level">' + (med ? MTIERS : TIERS).map(function (x) {
+      var n = qs.filter(function (q) { return q.topic_pos != null && (!med || isInst(q)) && (!x[0] || q.tier === x[0]); }).length;
       return '<button type="button" role="tab" data-tierf="' + x[0] + '" aria-selected="' + (tf === x[0]) + '" class="t-' + (x[0] || 'all') + '"><b>' + x[1] + '</b><span>' + x[2] + ' · ' + n + '</span></button>';
     }).join('') + '</div>';
     html += '<ol class="mk-topics' + (tf ? ' tf' : '') + '">' + topics.map(function (t) {
       var pos = t.position, open = !!state.open[pos], ms = ST.topicMastery(pos, d), rg = state.ratings[pos];
-      var tq = qs.filter(function (q) { return q.topic_pos === pos; }), rs = signed ? ST.ragStatus(ms, rg) : '';
+      var tq = qs.filter(function (q) { return q.topic_pos === pos && (!med || isInst(q)); }), rs = signed ? ST.ragStatus(ms, rg) : '';
       var warn = signed && rg === 'g' && ms.started && ms.pct < 50 ? '<p class="mk-warn">You rated this green, but you’re at ' + ms.pct + '%. Try the exam-style question to check.</p>' : signed && rg === 'r' && ms.pct >= 70 ? '<p class="mk-good">You rated this red, but you’re at ' + ms.pct + '%. You know more than you think.</p>' : '';
       var top = '<div class="mk-thead"><button type="button" class="mk-ttog" data-topic="' + pos + '" aria-expanded="' + open + '"><span class="mk-tnum">' + (pos + 1) + '</span><span class="mk-ttl"><b>' + esc(t.title) + '</b>' + (t.summary ? '<span>' + esc(t.summary) + '</span>' : '') + '</span><span class="mk-tpct">' + (signed ? (ms.started ? ms.pct + '%' : 'Not started') : tq.length + ' questions') + (signed ? bar(ms.pct) : '') + '</span><span class="mk-chev" aria-hidden="true"></span></button>' +
         (signed ? '<div class="mk-rag" role="group" aria-label="How confident are you on ' + esc(t.title) + '?">' + ['r', 'a', 'g'].map(function (k) { return '<button type="button" class="' + k + (rg === k ? ' on' : '') + '" data-rag="' + k + '" data-pos="' + pos + '" aria-pressed="' + (rg === k) + '" title="' + ST.RAG[k] + '"><span class="sr">' + ST.RAG[k] + '</span></button>'; }).join('') + '</div>' : '') + '</div>';
       var body = '';
-      if (open) {
+      if (open && med) {
+        var tv = tq.filter(function (q) { return q.kind === 'vsa' && (!tf || tf === 'foundation'); }), ts = tq.filter(function (q) { return q.kind === 'sba' && q.tier === 'exam' && (!tf || tf === 'exam'); }), th = tq.filter(function (q) { return q.kind === 'sba' && q.tier === 'first' && (!tf || tf === 'first'); });
+        var wr = qs.filter(function (q) { return q.topic_pos === pos && !isInst(q) && q.tier !== 'foundation'; });
+        body = '<div class="mk-tbody">' + warn + '<div class="mk-row start mk-tquiz"><button type="button" class="btn dark small" data-act="tquiz" data-pos="' + pos + '">Quiz this topic (' + tq.length + ')</button></div>' +
+          (tv.length ? '<div class="mk-tier"><h4><span class="mk-tag f">VSA</span> Very short answer <small>Type 1 to 5 words. Marked instantly.</small></h4>' + instList(tv) + '</div>' : '') +
+          (ts.length ? '<div class="mk-tier"><h4><span class="mk-tag e">SBA</span> Single best answer <small>Pick the one best option. Marked instantly.</small></h4>' + instList(ts) + '</div>' : '') +
+          (th.length ? '<div class="mk-tier"><h4><span class="mk-tag x">Harder SBA</span> Data and application <small>Interpret the findings, then pick the best answer.</small></h4>' + instList(th) + '</div>' : '') +
+          (!tv.length && !ts.length && !th.length ? '<p class="mk-hint">No questions at this level in this topic.</p>' : '') +
+          (wr.length && !tf ? '<details class="mk-more"><summary>Written practice (' + wr.length + ') <small>optional, marked in about 20 seconds</small></summary>' + qList(wr) + '</details>' : '') +
+          '</div>';
+      } else if (open) {
         var rec = tq.filter(function (q) { return q.tier === 'foundation' && (!tf || tf === 'foundation'); }), ex = tq.filter(function (q) { return q.tier === 'exam' && (!tf || tf === 'exam'); }), fc = tq.filter(function (q) { return q.tier === 'first' && (!tf || tf === 'first'); });
         body = '<div class="mk-tbody">' + warn +
           (rec.length ? '<div class="mk-tier"><h4><span class="mk-tag f">Foundation</span> Quick recall <small>Check yourself, then say how you did. Misses become flashcards.</small></h4><ul class="mk-recall">' + rec.map(recallItem).join('') + '</ul></div>' : '') +
@@ -571,6 +736,7 @@
   }
   // Tiered practice: the three levels as grade targets
   var TIERS = [['', 'All levels', 'Every question'], ['foundation', 'Pass (50%)', 'Quick recall'], ['exam', 'Merit (60%)', 'Exam-style'], ['first', '1st Class (70%+)', 'Stretch']];
+  var MTIERS = [['', 'All questions', 'VSA and SBA'], ['foundation', 'Very short answer', '1 to 5 words'], ['exam', 'Single best answer', 'SBA'], ['first', 'Harder SBA', 'Data and application']];
 
   // ---------- Parse mode: lecture slides, transcripts or notes → micro-units with flashcards ----------
   var UKEY = 'unizy:units:';
@@ -885,6 +1051,7 @@
     if (!state.mod) html = viewSearch();
     else if (r.v === 'answer' && state.cur && !state.mod.loading) html = viewAnswer();
     else if (r.v === 'result' && state.result) html = viewResult();
+    else if (r.v === 'quiz' && state.quiz && !state.mod.loading) html = viewQuiz();
     else html = viewModule();
     if (state.err && !(r.v === 'answer')) html += '<p class="mk-err">' + esc(state.err) + '</p>';
     var focusId = document.activeElement && document.activeElement.id, selS, selE;
@@ -911,6 +1078,16 @@
     if (e.target.id === 'mk-exd' && HOOKS && HOOKS.setExamDate) { HOOKS.setExamDate(state.mod.code, e.target.value || null).then(render).catch(function () {}); track('exam_date'); }
   });
   root.addEventListener('mousedown', function (e) { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
+  document.addEventListener('keydown', function (e) {
+    if (routeParams().v !== 'quiz' || !state.quiz || state.quiz.done || e.metaKey || e.ctrlKey || e.altKey) return;
+    var q = quizQ(); if (!q) return;
+    var typing = e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName);
+    if (state.ians[q.id] && e.key === 'Enter' && !typing) { e.preventDefault(); quizNext(); return; }
+    if (q.kind === 'sba' && !state.ians[q.id] && !typing) {
+      var k = e.key.toUpperCase(), l = 'ABCDE'.indexOf(k) >= 0 ? k : '12345'.indexOf(k) >= 0 ? 'ABCDE'['12345'.indexOf(k)] : '';
+      if (l) { e.preventDefault(); answerInst(q, l); render(); }
+    }
+  });
   root.addEventListener('keydown', function (e) { if (e.target.id === 'mk-real' && e.key === 'Enter') { var b = root.querySelector('[data-real]'); if (b) saveReal(b.getAttribute('data-real')); } });
   root.addEventListener('click', function (e) {
     if (e.target.closest('[data-unichange]')) { uniOpen = true; render(); return; }
@@ -943,7 +1120,14 @@
     if (a.hasAttribute('data-del')) { deleteAttempt(a.getAttribute('data-del')); return; }
     if (a.hasAttribute('data-real')) { saveReal(a.getAttribute('data-real')); return; }
     if (a.hasAttribute('data-guestsignup')) { track('guest_mark_signup'); return; }
+    if (a.hasAttribute('data-pick')) { var pq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-qid'); })[0]; answerInst(pq, a.getAttribute('data-pick')); render(); var nb = document.getElementById('mk-qznext'); if (nb) nb.focus(); return; }
+    if (a.hasAttribute('data-over')) { var oq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-over'); })[0]; answerInst(oq, null, true); render(); return; }
     var act = a.getAttribute('data-act');
+    if (act === 'quiz') { startQuiz(null); return; }
+    if (act === 'tquiz') { startQuiz(+a.getAttribute('data-pos')); return; }
+    if (act === 'qznext' || act === 'qzskip') { quizNext(); return; }
+    if (act === 'qzagain') { startQuiz(state.quiz ? state.quiz.pos : null); return; }
+    if (act === 'qzmiss') { var z0 = state.quiz; startQuiz(z0.pos, z0.ids.filter(function (id) { return !(state.ians[id] && state.ians[id].got); })); return; }
     if (act === 'own') { state.cur = { id: null, own: true, question: '' }; state.err = ''; go({ m: state.mod.code, q: 'own', v: 'answer' }); }
     else if (act === 'genq') { if (!getSession()) { location.href = signinUrl(); return; } state.mapRetry = false; startMap(); }
     else if (act === 'timer') { startTimer(); render(); }
@@ -960,6 +1144,13 @@
     else if (act === 'uclear') { if (confirm('Remove these study units? Flashcards already in your deck stay there.')) { unitsSet(state.mod.code, null); render(); } }
   });
   root.addEventListener('submit', function (e) {
+    var vf = e.target.closest && e.target.closest('form[data-vsa]');
+    if (vf) {
+      e.preventDefault();
+      var vq = (state.questions || []).filter(function (x) { return x.id === vf.getAttribute('data-vsa'); })[0], vv = (vf.querySelector('input').value || '').trim();
+      if (!vq || !vv) return;
+      answerInst(vq, vv); render(); var nb2 = document.getElementById('mk-qznext'); if (nb2) nb2.focus(); return;
+    }
     var f = e.target.closest && e.target.closest('form[data-guestsave]'); if (!f) return;
     e.preventDefault();
     var em = (f.querySelector('input[name=email]').value || '').trim(), er = f.querySelector('.mk-saveerr');
