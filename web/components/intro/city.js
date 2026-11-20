@@ -1526,7 +1526,20 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     });
   });
   emTex.colorSpace = THREE.SRGBColorSpace;
-  if (low) {
+  // the map's ground is cut (an alpha test on its texture) only where the river reaches into it
+  // (does any bank segment enter the square? Liang-Barsky)
+  const segIn = ([x0, z0], [x1, z1]) => {
+    let t0 = 0, t1 = 1;
+    const dx = x1 - x0, dz = z1 - z0;
+    for (const [p, q] of [[-dx, x0 + H], [dx, H - x0], [-dz, z0 + H], [dz, H - z0]]) {
+      if (p === 0) { if (q < 0) return false; continue; }
+      const t = q / p;
+      if (p < 0) { if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return true;
+  };
+  const cutMap = low && rv.some((rings) => rings.some((r2) => r2.some((p, i) => segIn(p, r2[(i + 1) % r2.length]))));
+  if (cutMap) {
     // cut the river out of the map: the lowered water shows through
     const cv = mapTex.image, ctx = cv.getContext('2d');
     ctx.globalCompositeOperation = 'destination-out';
@@ -1535,7 +1548,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     ctx.globalCompositeOperation = 'source-over';
     mapTex.needsUpdate = true;
   }
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(low ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(cutMap ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
@@ -1567,15 +1580,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     }
     if (keepI.length) g.setIndex(keepI); else { waterGeos.pop(); g.dispose(); }
   });
-  if (low) {
-    // the lowered river: one plane under everything, seen only through the cut
-    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
-    rvBox.forEach((b) => { x0 = Math.min(x0, b[0]); x1 = Math.max(x1, b[1]); z0 = Math.min(z0, b[2]); z1 = Math.max(z1, b[3]); });
-    const g = new THREE.PlaneGeometry(x1 - x0 + 20, z1 - z0 + 20);
-    g.deleteAttribute('uv');
-    g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, WL, (z0 + z1) / 2);
-    waterGeos.push(g);
-  } else rv.forEach((rings) => shapeGeo(rings, 0.22));
+  // the river as mapped: at the lowered level, or flush with the streets if the ground could not be cut
+  rv.forEach((rings) => shapeGeo(rings, low ? WL : 0.22));
   if (waterGeos.length) {
     const wg = mergeGeometries(waterGeos);
     waterGeos.forEach((g) => g.dispose());
