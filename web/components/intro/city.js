@@ -1386,16 +1386,19 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   // instanced pieces (trees, chimneys) are tiled the same way
   // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile);
   // 'none': nothing drawn from there
-  const inst = (geo, mat, list, cast = true, farGeo = null, farAt = 650) => {
+  // farGeo: a cheaper geometry from farAt metres; thin: from thin.at metres, only every thin.keep-th instance, grown by
+  // thin.grow (tree canopies: a far tree's lobes merge into a couple of pixels, so half of them, larger, read the same)
+  const inst = (geo, mat, list, cast = true, farGeo = null, farAt = 650, thin = null) => {
     if (!list.length) return null;
     const by = new Map();
     const pos = new THREE.Vector3();
     list.forEach((it) => { pos.setFromMatrixPosition(it[0]); const k = tileOf(pos.x, pos.z); if (!by.has(k)) by.set(k, []); by.get(k).push(it); });
     by.forEach((items, k) => {
       const [tx, tz] = tileC(k);
-      const mk = (g, off) => {
-        const im = new THREE.InstancedMesh(g, mat, items.length);
-        items.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); if (c) im.setColorAt(i, c); });
+      const mk = (g, off, sub = null) => {
+        const its = sub ? items.filter((_, i) => i % sub.keep === 0).map(([mm, c]) => [mm.clone().scale(new THREE.Vector3(sub.grow, sub.grow, sub.grow)), c]) : items;
+        const im = new THREE.InstancedMesh(g, mat, its.length);
+        its.forEach(([mm, c], i) => { im.setMatrixAt(i, mm); if (c) im.setColorAt(i, c); });
         im.instanceMatrix.needsUpdate = true;
         if (im.instanceColor) im.instanceColor.needsUpdate = true;
         if (off) im.position.set(-tx, 0, -tz);
@@ -1408,6 +1411,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       lod.position.set(tx, 0, tz);
       lod.addLevel(mk(geo, true), 0);
       lod.addLevel(farGeo === 'none' ? new THREE.Object3D() : mk(farGeo, true), farAt);
+      if (thin && farGeo !== 'none' && items.length >= thin.keep) { const t = mk(farGeo, true, thin); t.userData.lodCopy = true; lod.addLevel(t, thin.at); }
       group.add(lod);
     });
     return true;
@@ -1697,8 +1701,9 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   });
   const bx2 = groundBox();
   // canopies: 80-triangle lobes near the camera, 20-triangle lobes beyond 650 m (a few pixels across from there)
-  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0));
-  inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false);
+  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0), 650, { at: 1250, keep: 2, grow: 1.2 });
+  // trunks: half a metre wide and under the canopy, so not drawn beyond 900 m of their tile
+  inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false, 'none', 900);
 
   // ---------------------------------------------------------------- the real skyline beyond the map
   const sky = data.sky || [];
