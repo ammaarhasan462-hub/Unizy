@@ -38,6 +38,13 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     LI.push(o, o + 1, o + 2, o, o + 2, o + 3, o + 4, o + 5, o + 6, o + 4, o + 6, o + 7);
     for (let i = 0; i < 8; i++) LC.push(col.r, col.g, col.b);
   };
+  // a festoon bulb: one small upright triangle in the plane of its string (d: the string's direction), seen from either side
+  const bulb = (x, y, z, s, col, d) => {
+    const o = LP.length / 3;
+    LP.push(x - d[0] * s, y - s * 0.6, z - d[1] * s, x + d[0] * s, y - s * 0.6, z + d[1] * s, x, y + s, z);
+    LI.push(o, o + 1, o + 2);
+    for (let i = 0; i < 3; i++) LC.push(col.r, col.g, col.b);
+  };
   // a lit strip (boat windows): a quad from a to b, h tall, facing out
   const lampStrip = (a, b, h, col) => {
     const o = LP.length / 3;
@@ -253,7 +260,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         }
         // the strings of bulbs along the chains (Albert Bridge's thousands, Chelsea's along its cables), lit at dawn
         const bs = mobile || far ? 3.2 : 1.6;
-        for (let s = bs / 2; s < L; s += bs) { const p = at(s, v + sd * 0.12, chainY(s) + 0.12); lampQuad(p[0], p[1], p[2], far ? 0.2 : 0.13, CHAIN); }
+        for (let s = bs / 2; s < L; s += bs) { const p = at(s, v + sd * 0.12, chainY(s) + 0.12); bulb(p[0], p[1], p[2], far ? 0.24 : 0.16, CHAIN, [ca, sa]); }
         if (!far) for (let s = 5; s < L - 4; s += 5) {
           const yc = chainY(s) - 0.5, y0 = yd(s) + par;
           if (yc - y0 > 0.5) quad(at(s - 0.07, v, y0), at(s + 0.07, v, y0), at(s + 0.07, v, yc), at(s - 0.07, v, yc), tmp.copy(paint).multiplyScalar(0.85), sd > 0 ? across : back);
@@ -346,7 +353,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       }
     }));
     // the standards (dark iron, a lantern on each), and the festoons of bulbs strung between neighbours
-    const hp = 3.6, fb = mobile ? 3.4 : 1.7;
+    const hp = 3.6, fb = mobile ? 3.6 : 2.0;
     lamps.forEach((l, i) => {
       if (!l) return;
       const [x, z] = l;
@@ -357,9 +364,10 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       if (!m || m[2] !== l[2] || m[3] - l[3] > 27) return;
       const D = Math.hypot(m[0] - x, m[1] - z);
       if (D > 34) return;
+      const dir = [(m[0] - x) / D, (m[1] - z) / D];
       for (let s = fb / 2; s < D; s += fb) {
         const t = s / D;
-        lampQuad(x + (m[0] - x) * t, TOP + hp - 0.25 - 1.0 * 4 * t * (1 - t), z + (m[1] - z) * t, mobile ? 0.16 : 0.12, FEST);
+        bulb(x + (m[0] - x) * t, TOP + hp - 0.25 - 1.0 * 4 * t * (1 - t), z + (m[1] - z) * t, mobile ? 0.2 : 0.15, FEST, dir);
       }
     });
 
