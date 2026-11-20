@@ -10,14 +10,14 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { makeNoise3D } from './noise';
-import { CLOUD_BOTTOM, CLOUD_FS, QUAD_VS } from './shaders';
+import { CLOUD_BOTTOM, CLOUD_FS, CLOUD_TOP, QUAD_VS } from './shaders';
 import { ATMO, makeSky, SUN_DIR, sunTransmittance } from './atmo';
-import { mergeInterior } from './materials';
-import { buildLondon } from './london';
+import { canvasTex, mergeInterior, runGen } from './materials';
+import { buildLondonGen } from './london';
 import { buildUCL, tickLibrary } from './ucl';
-import { buildSouthKen, RIVER_GLSL } from './southken';
+import { buildSouthKenGen, RIVER_GLSL } from './southken';
 import { buildImperial, IMPERIAL_KEYS } from './imperial';
-import { buildCityWorld } from './cityworld';
+import { buildCityWorldGen } from './cityworld';
 import { RIVER_R } from './city';
 import { buildQMUL, QMUL_KEYS, QMUL_STRIKE, QMUL_SHADOW, QMUL_KEEP } from './qmul';
 import { buildLSE, LSE_KEYS, LSE_STRIKE, LSE_SHADOW, LSE_KEEP } from './lse';
@@ -162,27 +162,49 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const cloudRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, depthBuffer: false });
   cloudRT.texture.minFilter = cloudRT.texture.magFilter = THREE.LinearFilter;
 
-  const london = imp ? buildSouthKen(renderer, { mobile, city }) : generic ? buildCityWorld(renderer, { mobile, city, site: uni, keepRects: W.keep, landmarks: W.landmarks || {} }) : buildLondon(renderer, { mobile, city });
-  scene.add(london.group);
-  const ucl = imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : uni === 'kcl' ? buildKCL({ mobile }) : buildUCL({ mobile });
-  scene.add(ucl.group);
+  // the world (the city and the campus). With the real map loaded it is built a slice at a time while the visitor is
+  // above the clouds, which need none of it: the intro starts at once and scrolling waits at the cloud layer only if the
+  // city is not ready yet. The hand-built fallback is built at once (the cloud shader needs its river functions).
+  // city: the loaded map, or a promise of it (then the intro starts before it has even downloaded)
+  const pending = !!(city && typeof city.then === 'function');
+  const streamed = pending || !!(city && city.data && city.data.rv && city.data.rv.length);
+  let cityData = pending ? null : city;
+  const worldGen = () => (imp ? buildSouthKenGen(renderer, { mobile, city: cityData }) : generic ? buildCityWorldGen(renderer, { mobile, city: cityData, site: uni, keepRects: W.keep, landmarks: W.landmarks || {} }) : buildLondonGen(renderer, { mobile, city: cityData }));
+  const campus = () => (imp ? buildImperial({ mobile }) : uni === 'qmul' ? buildQMUL({ mobile }) : uni === 'lse' ? buildLSE({ mobile }) : uni === 'kcl' ? buildKCL({ mobile }) : buildUCL({ mobile }));
+  let london, ucl;
+  let worldReady = false, disposed = false;
+  if (streamed) {
+    // stand-ins until the world is built: the ground seen through the cloud gaps is a plain map, no river yet
+    const plain = (c) => canvasTex(4, 4, (ctx) => { ctx.fillStyle = c; ctx.fillRect(0, 0, 4, 4); });
+    const noRiver = canvasTex(4, 4, (ctx) => { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 4, 4); }, { linear: true, aniso: 1 });
+    london = { group: new THREE.Group(), mapTex: plain('#6d6858'), emTex: plain('#000'), riverTex: noRiver, trafficU: { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } }, stub: true };
+    ucl = { group: new THREE.Group(), lib: null, ext: [], int: [], furn: {}, dust: { uTime: { value: 0 }, uOpacity: { value: 0 } }, shaftMat: { opacity: 0 }, stub: true };
+  } else {
+    london = runGen(worldGen());
+    ucl = campus();
+  }
   // the interior's static parts as one mesh per material: tens of draw calls in the close-ups, not hundreds. The parts
   // that move (the watch's and clocks' hands) or get swapped for photo-scanned furniture (everything in furn) stay apart,
   // and so do the reading room's wood parts, which the upgrade picks out by their box sizes.
-  try {
-    const keepApart = [];
-    const walk = (v, d) => {
-      if (!v || typeof v !== 'object' || d > 4) return;
-      if (v.isObject3D) { keepApart.push(v); return; }
-      if (v.isMaterial || v.isTexture || v.isBufferGeometry || v.isMatrix4 || v.isVector3 || v.isColor) return;
-      (Array.isArray(v) ? v : Object.values(v)).forEach((x) => walk(x, d + 1));
-    };
-    walk(ucl.furn, 0); walk(ucl.clockHands, 0);
-    mergeInterior(ucl.lib, keepApart, ['wood', 'wood2']);
-  } catch (e) { console.error(e); }
-  // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded
-  let intEnv = null, disposed = false;
-  {
+  const mergeCampus = () => {
+    try {
+      const keepApart = [];
+      const walk = (v, d) => {
+        if (!v || typeof v !== 'object' || d > 4) return;
+        if (v.isObject3D) { keepApart.push(v); return; }
+        if (v.isMaterial || v.isTexture || v.isBufferGeometry || v.isMatrix4 || v.isVector3 || v.isColor) return;
+        (Array.isArray(v) ? v : Object.values(v)).forEach((x) => walk(x, d + 1));
+      };
+      walk(ucl.furn, 0); walk(ucl.clockHands, 0);
+      mergeInterior(ucl.lib, keepApart, ['wood', 'wood2']);
+    } catch (e) { console.error(e); }
+  };
+  // photo-scanned furniture and surfaces for the reading room, swapped in once they have loaded. Fetched only once the
+  // visitor has chosen this university and the world is built, so it never competes with the city's own download
+  let intEnv = null, realismStarted = false;
+  const startRealism = () => {
+    if (realismStarted || disposed || !worldReady || state.beginAt == null) return;
+    realismStarted = true;
     import('./realism').then(({ loadInterior, upgradeLibrary, upgradeHall, stoneExterior }) => loadInterior(W === WORLDS.ucl ? 'ucl' : uni).then((A) => {
       if (disposed || !A) return;
       try {
@@ -210,7 +232,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
         precompile(false);
       } catch (e) { console.error(e); }
     })).catch(() => {});
-  }
+  };
 
   const cloudU = {
     uNoise: { value: noise },
@@ -304,7 +326,13 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const tmp = new THREE.Vector3();
   const sc = new THREE.Vector3();
 
-  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0 };
+  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0, worldReady: false, held: false, timing: {} };
+  // inside the cloud deck, where nothing below shows yet: scrolling waits here until the world is built
+  let pHold = 0.2;
+  {
+    const v = new THREE.Vector3();
+    for (let q = 0; q < 0.6; q += 0.002) { posAt(q, v); if (v.y < (CLOUD_TOP + CLOUD_BOTTOM) / 2 + 100) { pHold = Math.max(0.02, q); break; } }
+  }
   let w = 1, h = 1;
   function resize() {
     w = window.innerWidth;
@@ -330,7 +358,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
   // three.js builds a shader per light count: a light inside a group that is switched off changes the count and makes
   // every material recompile mid-scroll. Lights therefore live directly on the scene and are dimmed, never hidden.
-  [ucl.group, london.group].forEach((grp) => {
+  const liftLights = () => [ucl.group, london.group].forEach((grp) => {
     const ls = [];
     grp.traverse((o) => { if (o.isLight) ls.push(o); });
     ls.forEach((l) => { scene.attach(l); if (l.target && l.target.parent !== scene) scene.attach(l.target); });
@@ -377,7 +405,114 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     renderer.setRenderTarget(prevRT);
     hidden.forEach((o) => { o.visible = false; });
   }
-  try { precompile(); renderer.compile(cloudScene, quadCam); } catch (e) {}
+  // the world goes into the scene: its lights lifted onto the scene, merged, every shader compiled and every buffer
+  // uploaded (in slices when streamed), then shown
+  const showWorld = () => {
+    worldReady = true;
+    state.worldReady = true;
+    renderer.shadowMap.needsUpdate = true;
+    startRealism();
+  };
+  try { renderer.compile(cloudScene, quadCam); } catch (e) {}
+  if (!streamed) {
+    mergeCampus();
+    scene.add(london.group, ucl.group);
+    liftLights();
+    try { precompile(); } catch (e) {}
+    showWorld();
+  } else {
+    // run a generator in slices, leaving the frames in between to the clouds. A slice is at least `budget` ms and
+    // otherwise three times what a frame costs the main thread, so the build keeps about three quarters of the time
+    // even where frames are slow (a phone, or software rendering)
+    const mc = new MessageChannel();
+    const queue = [];
+    mc.port1.onmessage = () => { const f = queue.shift(); if (f) f(); };
+    const later = (f) => { queue.push(f); mc.port2.postMessage(0); };
+    const slices = (gen, budget) => new Promise((res, rej) => {
+      const step = () => {
+        if (disposed) { res(null); return; }
+        const t = performance.now(), lim = Math.min(mobile ? 160 : 260, Math.max(budget, frameMs * 3));
+        try {
+          for (;;) {
+            const r = gen.next();
+            if (r.done) { res(r.value); return; }
+            if (performance.now() - t > lim) break;
+          }
+        } catch (e) { rej(e); return; }
+        later(step);
+      };
+      step();
+    });
+    const B = mobile ? 10 : 14;
+    const build = function* () {
+      const L = yield* worldGen();
+      yield;
+      const U = campus();
+      yield;
+      return [L, U];
+    };
+    // compile the world's shaders a few objects at a time (against the composer's buffer, as precompile does), then
+    // upload its buffers and textures a batch of objects at a time into a tiny target
+    const prepare = function* () {
+      const objs = [];
+      [london.group, ucl.group].forEach((g) => g.traverse((o) => { if (o.material) objs.push(o); }));
+      const all = new Set();
+      for (const o of objs) {
+        const prevRT = renderer.getRenderTarget();
+        renderer.setRenderTarget(composer.readBuffer);
+        try { renderer.compile(o, camera, scene).forEach((m) => all.add(m)); } catch (e) { /* ignore */ }
+        renderer.setRenderTarget(prevRT);
+        yield;
+      }
+      // with parallel compiling, wait (without blocking) until every program has linked
+      const ext = renderer.extensions.get('KHR_parallel_shader_compile');
+      if (ext) {
+        for (;;) {
+          all.forEach((m) => { const pr = renderer.properties.get(m).currentProgram; if (!pr || pr.isReady()) all.delete(m); });
+          if (!all.size) break;
+          yield;
+        }
+      }
+      // upload: show one batch of the world's top-level parts at a time and draw it into the tiny target
+      const parts = [...london.group.children, ...ucl.group.children];
+      const was = parts.map((o) => o.visible);
+      const prevRT = renderer.getRenderTarget();
+      for (let i = 0; i < parts.length; i += 6) {
+        const vis = [london.group.visible, ucl.group.visible];
+        london.group.visible = ucl.group.visible = true;
+        parts.forEach((o, j) => { o.visible = j >= i && j < i + 6; });
+        const culled = [];
+        parts.slice(i, i + 6).forEach((o) => o.traverse((c) => { culled.push([c, c.frustumCulled, c.visible]); c.frustumCulled = false; c.visible = true; }));
+        try { renderer.setRenderTarget(warmRT); renderer.render(scene, camera); } catch (e) { /* ignore */ }
+        renderer.setRenderTarget(prevRT);
+        culled.forEach(([c, f, v]) => { c.frustumCulled = f; c.visible = v; });
+        parts.forEach((o, j) => { o.visible = was[j]; });
+        [london.group.visible, ucl.group.visible] = vis;
+        yield;
+      }
+    };
+    let tb = performance.now();
+    Promise.resolve(pending ? city : cityData).then((c) => { cityData = c || null; state.timing.data = Math.round(performance.now() - tb); tb = performance.now(); return disposed ? null : slices(build(), B); }).then((built) => {
+      if (!built || disposed) return null;
+      [london, ucl] = built;
+      cloudU.uMap.value = london.mapTex;
+      cloudU.uEmis.value = london.emTex;
+      if (london.riverTex && cloudU.uRiver) cloudU.uRiver.value = london.riverTex;
+      state.timing.built = Math.round(performance.now() - tb);
+      mergeCampus();
+      london.group.visible = ucl.group.visible = false;
+      scene.add(london.group, ucl.group);
+      liftLights();
+      return slices(prepare(), B);
+    }).then(() => {
+      if (disposed || !london.group.parent) return;
+      state.timing.prepared = Math.round(performance.now() - tb);
+      // the shadow pass's depth shaders, and anything the slices missed, in one last small step
+      warmup();
+      state.timing.shown = Math.round(performance.now() - tb);
+      showWorld();
+    }).catch((e) => { console.error(e); if (!disposed && london.group.parent) showWorld(); });
+  }
 
   let raf = 0;
   let last = performance.now();
@@ -387,12 +522,28 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   let wasBelow = false;
   const libPos = new THREE.Vector3();
 
+  // what a frame costs the main thread (smoothed): the streamed build's slices scale with it
+  // drawMs: what a drawn frame really costs (from its start to the next frame the browser can give us, so a busy GPU
+  // counts too)
+  let frameMs = 8, drawMs = 16, lastDrawn = -1e9, drawnAt = 0, measure = false;
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    if (measure) { drawMs += (performance.now() - drawnAt - drawMs) * 0.3; measure = false; }
+    // while the world is still being built and frames are slow (a weak GPU, software rendering), draw the clouds at
+    // half rate, and only a few times a second while scrolling waits for the city: the build gets the time instead
+    if (!worldReady) {
+      const slow = drawMs > 30 ? drawMs : 0;
+      const gap = state.held ? Math.max(250, slow * 2) : slow;
+      if (now - lastDrawn < gap) return;
+    }
+    lastDrawn = now;
+    const f0 = performance.now();
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     const time = (now - t0) / 1000;
     state.time = time;
+    state.held = !worldReady && state.target > pHold;
+    if (state.held) state.target = pHold;
     if (state.running) state.p += (state.target - state.p) * (1 - Math.exp(-dt * 2.3));
     const p = state.p;
 
@@ -512,8 +663,8 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     if (zone === 2 && inside > 0.5) setAO(0.5, 0.5);
 
     const below = camera.position.y < CLOUD_BOTTOM - 5;
-    london.group.visible = below && (W.glass ? p < 0.97 : inside < 1);
-    ucl.group.visible = below;
+    london.group.visible = worldReady && below && (W.glass ? p < 0.97 : inside < 1);
+    ucl.group.visible = worldReady && below;
     // the furnished interior (hundreds of small draw calls) only once the camera is within 300 m of it
     if (ucl.lib) {
       ucl.lib.getWorldPosition(libPos);
@@ -535,6 +686,8 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
     composer.render(dt);
     if (onFrame) onFrame(p, state.target, time);
+    frameMs += (performance.now() - f0 - frameMs) * 0.2;
+    drawnAt = f0; measure = true;
   }
   raf = requestAnimationFrame(frame);
 
@@ -542,7 +695,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     state,
     debug: { scene, composer, renderer, grade, get gtao() { return gtao; } },
     jump(p) { state.p = state.target = p; },
-    begin() { if (state.beginAt == null) state.beginAt = state.time; },
+    begin() { if (state.beginAt == null) state.beginAt = state.time; startRealism(); },
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);

@@ -1,7 +1,7 @@
 """Render intro frames from the built site/ with headless Chrome (swiftshader).
 Usage: [UNI=imperial] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png
 Also prints the lag numbers for each frame (compare before and after; software rendering is slow, so only the change counts):
-  engine up (s), shader programs, city vertices (a far LOD copy that shares its near mesh's vertices counts once), and per frame: ms between frames, draw calls and triangles per frame."""
+  intro starts (s: the clouds, right after the pick), engine up (s: the city built and shown), shader programs, city vertices (a far LOD copy that shares its near mesh's vertices counts once), and per frame: ms between frames, draw calls and triangles per frame."""
 import http.server, socketserver, threading, sys, time, os
 from playwright.sync_api import sync_playwright
 SITE=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "site")
@@ -33,6 +33,9 @@ with sync_playwright() as p:
     pg.wait_for_timeout(2500); pg.screenshot(path=S+name+"-picker.png")
     pg.evaluate(f"window.__smgIntroPick && window.__smgIntroPick('{UNI}')"); pg.wait_for_timeout(1200)
     pg.wait_for_function("window.__smgIntro && window.__smgIntro.state && window.__smgIntro.state.beginAt != null", timeout=240000)
+    print("intro starts after %.1fs"%(time.time()-t))
+    # the city streams in behind the clouds: 'engine up' is when it is built and shown (state.worldReady)
+    pg.wait_for_function("window.__smgIntro.state.worldReady !== false", timeout=240000)
     print("engine up after %.1fs"%(time.time()-t))
     # lag probe: count draw calls and triangles over every render() call in a frame, and time the frames
     pg.evaluate("""(() => { const r = window.__smgIntro.debug.renderer, o = r.render.bind(r); window.__lag = { calls: 0, tris: 0 };

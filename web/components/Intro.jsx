@@ -73,6 +73,8 @@ export default function Intro() {
   const fill = useRef(null);
   const dots = useRef([]);
   const hint = useRef(null);
+  const holdRef = useRef(null);
+  const prefetchRef = useRef(null);
   const engineRef = useRef(null);
   const doneRef = useRef(false);
   const readyRef = useRef(false);
@@ -120,20 +122,21 @@ export default function Intro() {
     };
     const startEngine = async (u) => {
       const [{ createIntro }, { loadCity }] = await Promise.all([import('./intro/engine'), import('./intro/city')]);
-      // the real city (OpenStreetMap buildings and streets); the hand-built one if it is slow or unavailable
-      const city = await Promise.race([loadCity(u), new Promise((res) => setTimeout(() => res(null), 6000))]);
+      // the real city (OpenStreetMap buildings and streets); the hand-built one if it is slow or unavailable. The engine
+      // starts in the clouds straight away and builds the city behind them as it arrives
+      const city = Promise.race([loadCity(u), new Promise((res) => setTimeout(() => res(null), 6000))]);
       if (cancelled) return;
       engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u, city });
-      setOsm(!!city);
-      // fetch Imperial's map in the background while the picker is up
-      // (only while the picker is still up: after a pick or a skip it would block the page while people scroll)
-      if (u === 'ucl') setTimeout(() => { if (!pickedRef.current && !doneRef.current) loadCity('imperial'); }, 1500);
+      city.then((c) => { if (!cancelled) setOsm(!!c); });
       engineRef.current = engine;
       window.__smgIntro = engine;
     };
 
     // choosing a university starts the intro: lightning first, then scrolling flies you in.
     // UCL's world is already running behind the picker; Imperial's is built behind a short dark title card.
+    // fetch a university's map as soon as the visitor points at (or touches, or tabs to) its card
+    const prefetch = (id) => { if (!doneRef.current && UNIS.find((x) => x.id === id && x.live)) import('./intro/city').then(({ loadCity }) => loadCity(id)).catch(() => {}); };
+    prefetchRef.current = prefetch;
     const pick = (id = 'ucl') => {
       if (pickedRef.current || doneRef.current || !engine) return;
       const preview = typeof window !== 'undefined' && /[?&]preview=1/.test(window.location.search);
@@ -149,6 +152,7 @@ export default function Intro() {
         engine.begin();
         return;
       }
+      prefetch(u);
       switchingRef.current = true;
       setSwitching(true);
       setTimeout(async () => {
@@ -231,6 +235,7 @@ export default function Intro() {
       RAIL.forEach((c, i) => { if (p >= c.a - 0.02) cur = i; });
       dots.current.forEach((el, i) => { if (el) { el.dataset.on = i <= cur ? '1' : '0'; el.dataset.cur = i === cur ? '1' : '0'; } });
       if (count.current) { const t = `${String(Math.max(0, cur + 1)).padStart(2, '0')} / ${String(RAIL.length).padStart(2, '0')}`; if (count.current.textContent !== t) count.current.textContent = t; }
+      if (holdRef.current) { const held = !!(engineRef.current && engineRef.current.state.held); holdRef.current.style.opacity = held ? '1' : '0'; }
       if (hint.current) hint.current.style.opacity = (ss(3.5, 4.4, tb) * (1 - ss(0.002, 0.03, p))).toFixed(3);
       if (rail.current) rail.current.style.opacity = (ss(0.6, 1.6, tb) * (1 - ss(0.95, 0.975, p))).toFixed(3);
       if (flash.current && !doneRef.current) flash.current.style.opacity = ss(1.0, 1.05, p).toFixed(3);
@@ -321,6 +326,9 @@ export default function Intro() {
                   <button
                     type="button"
                     onClick={() => pickRef.current && pickRef.current(u.id)}
+                    onPointerEnter={() => prefetchRef.current && prefetchRef.current(u.id)}
+                    onFocus={() => prefetchRef.current && prefetchRef.current(u.id)}
+                    onTouchStart={() => prefetchRef.current && prefetchRef.current(u.id)}
                     className="group relative flex h-[118px] w-full flex-col justify-end overflow-hidden rounded-2xl border border-[#d9b46c]/55 bg-[#0b0f14]/55 p-4 text-left shadow-[0_0_0_1px_rgba(217,180,108,.08),0_18px_60px_-20px_rgba(217,180,108,.45)] backdrop-blur-xl transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[#d9b46c] hover:bg-[#0b0f14]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9b46c] sm:h-[164px] sm:p-5"
                     data-testid={`pick-${u.id}`}
                   >
@@ -351,6 +359,11 @@ export default function Intro() {
       {/* progress rail */}
       <ProgressRail railRef={rail} fillRef={fill} dotsRef={dots} countRef={count} chapters={railItems} positions={RAIL.map((c) => c.a)} />
 
+      {/* while scrolling waits at the cloud layer for the city to finish building */}
+      <div ref={holdRef} className="intro-kicker pointer-events-none absolute inset-x-0 bottom-20 z-30 flex flex-col items-center gap-3 text-[10.5px] text-white/75 opacity-0 transition-opacity duration-500 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]" aria-live="polite">
+        <span>Building the city</span>
+        <span className="block h-px w-24 overflow-hidden bg-white/15"><span className="block h-full w-1/2 animate-[introload_1.1s_ease-in-out_infinite] bg-[#d9b46c]/80" /></span>
+      </div>
       {/* start hint */}
       <div ref={hint} className="intro-kicker pointer-events-none absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 text-[10.5px] text-white/80 transition-opacity duration-700 [text-shadow:0_1px_10px_rgba(0,0,0,.5)]">
         <span className="hidden sm:inline">Scroll to begin</span>

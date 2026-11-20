@@ -113,6 +113,35 @@ Keep to these limits:
 
 ## Log
 
+- 2026-11-20 (day, branch `intro-fast-load`, at Ammaar's request: "the loading takes ages"): the intro starts in the clouds at once and the city is built behind them.
+  - Before, every university's world (city, campus, shaders, buffers) was built in one go before the first frame. The picker took 8.5–13.5 s to appear under swiftshader, behind a 7–10 s freeze. Picking anything but UCL threw that world away and froze the page again for 5–14 s before the intro started.
+  - Now:
+    - the engine starts with the sky and clouds only, without waiting for the map to download;
+    - `buildCityGen` and the world builders (`buildLondonGen`, `buildSouthKenGen`, `buildCityWorldGen`) yield between slices. The engine runs them in slices of 10–14 ms (three times a frame's cost where frames are slow, capped at 160–260 ms), then compiles the shaders and uploads the buffers a few objects at a time, then shows the world (`state.worldReady`);
+    - while the world is being built, slow frames draw the clouds at half rate;
+    - scrolling waits halfway down the cloud deck (with a small "Building the city" line) only if the city is not ready yet. While it waits, the clouds are drawn a few times a second;
+    - a university's map is fetched as soon as its card is hovered, focused or touched, and at once on a pick. The blind Imperial prefetch behind the picker is gone;
+    - the photo-scanned interior is fetched only after a pick, once the world is built;
+    - the hand-built fallback still works (and is streamed too). The cloud shader then has no river under the clouds.
+  - Loading under swiftshader, before → after (`load.py`: page load to the first frame, which is when the picker appears; pick to the intro starting; pick to the city shown; the longest main-thread freeze after the pick):
+
+    | | picker appears | pick → intro starts | pick → city shown | longest freeze after pick |
+    |---|---|---|---|---|
+    | UCL desktop | 13.5 → 2.5 s | 1.6 → 1.7 s | 1.6 → 26.0 s (it was built behind the picker before) | 0.6 → 1.5 s |
+    | UCL mobile | 8.9 → 1.2 s | 0.6 → 0.8 s | 0.6 → 7.1 s | 0.1 → 1.5 s |
+    | Imperial desktop | 12.6 → 2.4 s | 25.0 → 2.6 s | 25.7 → 30.7 s | 14.5 → 2.1 s |
+    | Imperial mobile | 8.8 → 1.1 s | 13.4 → 1.6 s | 13.5 → 12.1 s | 11.5 → 1.9 s |
+    | LSE desktop | 13.0 → 2.4 s | 12.7 → 3.2 s | 13.7 → 18.3 s | 7.6 → 1.1 s |
+    | LSE mobile | 8.5 → 1.1 s | 7.7 → 1.5 s | 7.8 → 7.8 s | 5.8 → 0.8 s |
+    | Queen Mary desktop | 12.1 → 2.6 s | 16.4 → 3.0 s | 17.4 → 22.5 s | 9.1 → 1.7 s |
+    | Queen Mary mobile | 8.5 → 1.2 s | 8.0 → 1.6 s | 8.2 → 7.8 s | 5.8 → 1.6 s |
+    | King's desktop | 12.3 → 2.4 s | 10.7 → 3.2 s | 11.8 → 24.1 s | 7.3 → 1.5 s |
+    | King's mobile | 8.6 → 1.1 s | 7.3 → 1.5 s | 7.5 → 6.9 s | 5.4 → 1.3 s |
+
+  - On desktop under swiftshader the whole city takes longer to appear. There the clouds are software-rendered at 1280×800 and take the container's two cores from the build. On a real GPU the clouds cost the main thread little, so the build gets nearly all of it. The mobile runs (cheap clouds) are the better guide to that: the full city is level or a little sooner.
+  - The intro frames once the city is shown are unchanged at every university and device: the same draw calls (±2) and triangles. No console errors anywhere; the UCL fallback works (only its expected 404).
+  - For later runs: `render_intro.py` now prints `intro starts` (right after the pick) and waits for `state.worldReady` before `engine up`, so `engine up` is when the city is shown. Under swiftshader it is longer than before on desktop (UCL about 29 s), for the reason above. Compare like with like from here on.
+
 - 2026-11-19 (night, branch `city-refine-2026-11-19`): the Thames 4.5 m below the streets between granite walls, with the Embankment's lamps and festoons and boats on the river; interiors merged per material; far trees and trunks lighter.
   - Realism: the Thames, part 2.
     - `city.js`: the far ground (the 60 km plane in `london.js`, `southken.js` and `cityworld.js`) is now `farGeo`, the plane with the mapped river cut out of it (islands put back). The triangulation is checked by area; if it fails, everything stays as before, flush. Where the river enters the 3 km map (LSE and King's), the map's ground has it cut out of its texture's alpha (an alpha test, only on those two sites). The water is the river's own outline at -4.5 m.
