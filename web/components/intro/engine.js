@@ -326,7 +326,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const tmp = new THREE.Vector3();
   const sc = new THREE.Vector3();
 
-  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0, worldReady: false, held: false };
+  const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0, worldReady: false, held: false, timing: {} };
   // the last moment above the cloud deck: scrolling waits here until the world is built
   let pHold = 0.2;
   {
@@ -421,19 +421,25 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     try { precompile(); } catch (e) {}
     showWorld();
   } else {
-    // run a generator in slices of `budget` ms, leaving the frames in between to the clouds
+    // run a generator in slices, leaving the frames in between to the clouds. A slice is at least `budget` ms and
+    // otherwise three times what a frame costs the main thread, so the build keeps about three quarters of the time
+    // even where frames are slow (a phone, or software rendering)
+    const mc = new MessageChannel();
+    const queue = [];
+    mc.port1.onmessage = () => { const f = queue.shift(); if (f) f(); };
+    const later = (f) => { queue.push(f); mc.port2.postMessage(0); };
     const slices = (gen, budget) => new Promise((res, rej) => {
       const step = () => {
         if (disposed) { res(null); return; }
-        const t = performance.now();
+        const t = performance.now(), lim = Math.min(mobile ? 160 : 260, Math.max(budget, frameMs * 3));
         try {
           for (;;) {
             const r = gen.next();
             if (r.done) { res(r.value); return; }
-            if (performance.now() - t > budget) break;
+            if (performance.now() - t > lim) break;
           }
         } catch (e) { rej(e); return; }
-        setTimeout(step, 0);
+        later(step);
       };
       step();
     });
@@ -485,12 +491,14 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
         yield;
       }
     };
-    Promise.resolve(pending ? city : cityData).then((c) => { cityData = c || null; return disposed ? null : slices(build(), B); }).then((built) => {
+    let tb = performance.now();
+    Promise.resolve(pending ? city : cityData).then((c) => { cityData = c || null; state.timing.data = Math.round(performance.now() - tb); tb = performance.now(); return disposed ? null : slices(build(), B); }).then((built) => {
       if (!built || disposed) return null;
       [london, ucl] = built;
       cloudU.uMap.value = london.mapTex;
       cloudU.uEmis.value = london.emTex;
       if (london.riverTex && cloudU.uRiver) cloudU.uRiver.value = london.riverTex;
+      state.timing.built = Math.round(performance.now() - tb);
       mergeCampus();
       london.group.visible = ucl.group.visible = false;
       scene.add(london.group, ucl.group);
@@ -498,8 +506,10 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
       return slices(prepare(), B);
     }).then(() => {
       if (disposed || !london.group.parent) return;
+      state.timing.prepared = Math.round(performance.now() - tb);
       // the shadow pass's depth shaders, and anything the slices missed, in one last small step
       warmup();
+      state.timing.shown = Math.round(performance.now() - tb);
       showWorld();
     }).catch((e) => { console.error(e); if (!disposed && london.group.parent) showWorld(); });
   }
@@ -512,8 +522,11 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   let wasBelow = false;
   const libPos = new THREE.Vector3();
 
+  // what a frame costs the main thread (smoothed): the streamed build's slices scale with it
+  let frameMs = 8;
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    const f0 = performance.now();
     const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     const time = (now - t0) / 1000;
@@ -662,6 +675,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
 
     composer.render(dt);
     if (onFrame) onFrame(p, state.target, time);
+    frameMs += (performance.now() - f0 - frameMs) * 0.2;
   }
   raf = requestAnimationFrame(frame);
 
