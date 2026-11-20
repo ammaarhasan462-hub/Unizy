@@ -10,7 +10,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { GTAOPass } from 'three/examples/jsm/postprocessing/GTAOPass.js';
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js';
 import { makeNoise3D } from './noise';
-import { CLOUD_BOTTOM, CLOUD_FS, QUAD_VS } from './shaders';
+import { CLOUD_BOTTOM, CLOUD_FS, CLOUD_TOP, QUAD_VS } from './shaders';
 import { ATMO, makeSky, SUN_DIR, sunTransmittance } from './atmo';
 import { canvasTex, mergeInterior, runGen } from './materials';
 import { buildLondonGen } from './london';
@@ -327,11 +327,11 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const sc = new THREE.Vector3();
 
   const state = { p: 0, target: 0, mx: 0, my: 0, sx: 0, sy: 0, running: true, time: 0, beginAt: hold ? null : 0, worldReady: false, held: false, timing: {} };
-  // the last moment above the cloud deck: scrolling waits here until the world is built
+  // inside the cloud deck, where nothing below shows yet: scrolling waits here until the world is built
   let pHold = 0.2;
   {
     const v = new THREE.Vector3();
-    for (let q = 0; q < 0.6; q += 0.002) { posAt(q, v); if (v.y < CLOUD_BOTTOM + 120) { pHold = Math.max(0.02, q - 0.006); break; } }
+    for (let q = 0; q < 0.6; q += 0.002) { posAt(q, v); if (v.y < (CLOUD_TOP + CLOUD_BOTTOM) / 2 + 100) { pHold = Math.max(0.02, q); break; } }
   }
   let w = 1, h = 1;
   function resize() {
