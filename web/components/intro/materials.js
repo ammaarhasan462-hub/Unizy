@@ -133,6 +133,59 @@ export function mergeStatic(src) {
   return out;
 }
 
+// a furnished interior's static parts (panels, mouldings, shelves, desks, frames, lamp shades, gilt...) merged in place
+// into one mesh per material: hundreds of small draw calls become tens. Left alone: instanced meshes, anything with
+// children, hidden or transparent parts, shader materials, and every object in `skip` with all below it (the parts
+// that move, or that are swapped out once the photo-scanned furniture loads), and materials in `skipKeys` (parts the
+// upgrade later tells apart by their own geometry). Materials keep their keys, so the
+// surfaces swapped in by key later still find them; uvs are kept, as merged groups share one attribute layout.
+export function mergeInterior(root, skip = [], skipKeys = []) {
+  if (!root) return 0;
+  const no = new Set();
+  skip.forEach((o) => { if (o && o.isObject3D) o.traverse((c) => no.add(c)); });
+  root.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const by = new Map();
+  const base = THREE.Object3D.prototype.onBeforeRender;
+  root.traverse((o) => {
+    if (!o.isMesh || o.isInstancedMesh || o.isSkinnedMesh || no.has(o) || o.children.length || Array.isArray(o.material)) return;
+    const m = o.material;
+    if (!m || m.transparent || m.isShaderMaterial || o.renderOrder || o.onBeforeRender !== base || o.morphTargetInfluences) return;
+    if (m.userData && skipKeys.includes(m.userData.key)) return;
+    for (let p = o; p && p !== root; p = p.parent) if (!p.visible) return;
+    const g = o.geometry;
+    if (!g || !g.attributes.position || g.groups.length > 1 || Object.keys(g.morphAttributes).length) return;
+    if (Object.values(g.attributes).some((a) => a.isInterleavedBufferAttribute)) return;
+    const sig = Object.keys(g.attributes).sort().map((k) => { const a = g.attributes[k]; return k + a.itemSize + a.array.constructor.name + a.normalized; }).join(',');
+    const key = [m.uuid, sig, o.castShadow, o.receiveShadow, o.frustumCulled].join('|');
+    if (!by.has(key)) by.set(key, { m, list: [] });
+    by.get(key).list.push(o);
+  });
+  let saved = 0;
+  const mw = new THREE.Matrix4();
+  for (const { m, list } of by.values()) {
+    if (list.length < 2) continue;
+    const geos = list.map((o) => {
+      const g = o.geometry.index ? o.geometry.clone() : o.geometry.clone().setIndex([...Array(o.geometry.attributes.position.count).keys()]);
+      mw.multiplyMatrices(inv, o.matrixWorld);
+      g.applyMatrix4(mw);
+      // a mirrored part keeps its faces the right way round
+      if (mw.determinant() < 0) { const ix = g.index.array.slice(); for (let i = 0; i < ix.length; i += 3) { const t = ix[i + 1]; ix[i + 1] = ix[i + 2]; ix[i + 2] = t; } g.setIndex(Array.from(ix)); }
+      return g;
+    });
+    let mg = null;
+    try { mg = mergeGeometries(geos); } catch { mg = null; }
+    geos.forEach((g) => g.dispose());
+    if (!mg) continue;
+    const mesh = new THREE.Mesh(mg, m);
+    mesh.castShadow = list[0].castShadow; mesh.receiveShadow = list[0].receiveShadow; mesh.frustumCulled = list[0].frustumCulled;
+    root.add(mesh);
+    list.forEach((o) => o.parent.remove(o));
+    saved += list.length - 1;
+  }
+  return saved;
+}
+
 export function canvasTex(w, h, draw, opts = {}) {
   const c = document.createElement('canvas');
   c.width = w;
