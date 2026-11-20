@@ -7,8 +7,8 @@
 // imperial.js.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
-import { buildCity } from './city';
+import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry, runGen } from './materials';
+import { buildCityGen } from './city';
 
 const H = MAP_HALF;
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -58,7 +58,9 @@ function streets(r) {
 const LANDMARK_FIX = { nhm: [0, 121], kp: [-90, -8] };
 const LANDMARK_RECTS = [[245, 347, -82, 11], [-284, -140, -81, 202], [-284, -53, 216, 460], [689, 811, -830, -717], [438, 474, -73, -37]];
 
-export function buildSouthKen(renderer, { mobile, city: cityData }) {
+// buildSouthKen builds it all at once; buildSouthKenGen yields between slices (see buildCityGen)
+export function buildSouthKen(renderer, opts) { return runGen(buildSouthKenGen(renderer, opts)); }
+export function* buildSouthKenGen(renderer, { mobile, city: cityData }) {
   const r = rng(4321);
   const group = new THREE.Group();
   let real = null;
@@ -74,8 +76,9 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
       ctx.fillStyle = '#5f7d3d'; box(108, -48, 132, -20); box(140, 10, 165, 40);
       ctx.fillStyle = '#b9b2a2'; box(430, -82, 482, -28);
     };
-    try { real = buildCity(cityData, { mobile, H, site: 'imperial', keep, skip, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
+    try { real = yield* buildCityGen(cityData, { mobile, H, site: 'imperial', keep, skip, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
   }
+  yield;
   const shiftSince = (mark, [dx, dz]) => { if (!real) return; for (let i = mark; i < group.children.length; i++) { group.children[i].position.x += dx; group.children[i].position.z += dz; } };
   const { xl, zl } = streets(r);
   const blocks = [];
@@ -98,6 +101,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
   tag(-160, -60, 'museums');
   tag(-160, 330, 'va');
 
+  yield;
   // ---------------------------------------------------------------- ground map
   const S = mobile ? 2048 : 4096;
   const k = S / (2 * H);
@@ -272,6 +276,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
   if (!real) xl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, l.c, 0, true, i * 3.1));
   if (!real) zl.filter((l) => l.major && l.c !== 208).forEach((l, i) => road3(KENS_GORE + H, l.w * 0.8, (KENS_GORE - H) / 2, l.c, false, i * 5.7 + 1));
 
+  yield;
   // ---------------------------------------------------------------- terraces: white stucco, red-brick mansion blocks
   const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.24, frame: '#efebe2' });
   const stuccoMat = facadeMaterial({ floor: 3.6, bay: 2.9, winW: 0.4, winH: 0.6, lit: 0.26, frame: '#f6f4ee' });
@@ -363,6 +368,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
   const bx = baseBox();
   const gbx = groundBox(); // for the instanced boxes on the ground and the roofs
 
+  yield;
   // ---------------------------------------------------------------- landmarks
   const shadowed = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
   const box = (mat, x0, x1, y0, y1, z0, z1) => { const m = shadowed(new THREE.Mesh(bx, mat)); m.position.set((x0 + x1) / 2, y0, (z0 + z1) / 2); m.scale.set(x1 - x0, y1 - y0, z1 - z0); group.add(m); return m; };
@@ -547,6 +553,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
   inst(gbx, plainMaterial({ roughness: 0.9 }, 'sk-chim'), chim);
 
   shiftSince(mKp, LANDMARK_FIX.kp);
+  yield;
   // ---------------------------------------------------------------- trees: the park's avenues and groves, street plane trees
   const trees = [];
   const maxTrees = mobile ? 1300 : 3800;
@@ -591,6 +598,7 @@ export function buildSouthKen(renderer, { mobile, city: cityData }) {
   inst(treeGeometry(5, 1), leafMaterial('sk-leaf'), canopy);
   inst(gbx, plainMaterial({ roughness: 0.9 }, 'sk-trunk'), trunk, false);
 
+  yield;
   // ---------------------------------------------------------------- outer city + skyline
   const outer = [];
   const ro = rng(98);

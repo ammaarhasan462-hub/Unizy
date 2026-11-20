@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { atmo } from './atmo';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { canvasTex, leafMaterial, plainMaterial, rng, treeGeometry, baseBox, groundBox } from './materials';
+import { canvasTex, leafMaterial, plainMaterial, rng, runGen, treeGeometry, baseBox, groundBox } from './materials';
 import { buildBridges } from './bridges';
 
 const V = 4;
@@ -1044,7 +1044,10 @@ function railMaterial() {
 // ------------------------------------------------------------------ the city
 // opts: { mobile, H, site, keep(x, z): false where trees and lamps must not go, skip(x, z): true for buildings a hand-built
 // landmark replaces, paint(ctx, toPx, k): draws hand-built ground (a campus) over the map }
-export function buildCity(city, { mobile, H, site, keep = () => true, skip = () => false, paint = null }) {
+// buildCity runs it all at once; buildCityGen yields between steps (every 150 buildings, each tile's meshes, each
+// layer of the map), so the intro can build the city a slice at a time while the clouds are on screen
+export function buildCity(city, opts) { return runGen(buildCityGen(city, opts)); }
+export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip = () => false, paint = null }) {
   const { data, tex } = city;
   const group = new THREE.Group();
   const r = rng(site === 'ucl' ? 2024 : 2025);
@@ -1137,7 +1140,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     });
     return ins || d < m;
   });
-  data.b.forEach((rec, bi) => {
+  const doBuilding = (rec, bi) => {
     const [st, h, minhIn, rsIn, rhIn, colH, rcolH, of, ...hf] = rec;
     let minh = minhIn;
     // roof shape (0 flat, 1 gabled, 2 hipped, 3 pyramidal, 4 dome, 5 mansard or gambrel) + 10 * covering (1 glass, 2 zinc, 3 copper)
@@ -1355,7 +1358,9 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
         chim.push([m4.clone(), (S.k === 'stucco' ? col.clone() : new THREE.Color(STYLES[st === 1 ? 0 : st].tint[Math.floor(r() * 4)])).multiplyScalar(0.92)]);
       });
     }
-  });
+  };
+  for (let bi = 0; bi < data.b.length; bi++) { doBuilding(data.b[bi], bi); if (bi % 150 === 149) yield; }
+  yield;
   // one wall material (all four families) and so one wall draw per tile
   const wallMat = facade(tex);
   const roofMat = roofMaterial(tex);
@@ -1364,7 +1369,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   // each tile is two THREE.LODs on the same vertices. Walls: the full facade program near the camera, the stripped one
   // (and no bay windows) beyond FAR_WALL metres from the tile's centre. Roofs: every parapet, dormer, rooflight and terrace
   // out to FAR_ROOF metres, where they are a pixel or two across; the base roofs beyond
-  tiles.forEach((T1, k) => {
+  for (const [k, T1] of tiles) {
     const cast = near(k);
     const [tx, tz] = tileC(k);
     const add = (geo, matN, matF, at) => {
@@ -1382,7 +1387,8 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     };
     if (T1.walls.i.length) add(T1.walls.geo(true), wallMat, wallFar, FAR_WALL);
     if (T1.roofs.i.length) add(T1.roofs.geo(false), roofMat, roofMat, FAR_ROOF);
-  });
+    yield;
+  }
   // instanced pieces (trees, chimneys) are tiled the same way
   // farGeo: a lighter shape drawn instead once the camera is more than farAt metres from the tile (a THREE.LOD per tile);
   // 'none': nothing drawn from there
@@ -1442,7 +1448,9 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   const roads = data.r.map(([cls, w, br, f]) => ({ cls, w, br, pts: dec(f) }));
   const areas = data.a.map(([kind, of, ...hf]) => ({ kind, rings: [dec(of), ...hf.map(dec)] }));
   const AC = ['#2c3f46', '#6f8c47', '#5f8a45', '#3f5a2c', '#3e4043', '#6d665c', '#b3ac9e'];
-  const mapTex = canvasTex(S, S, (ctx) => {
+  const mapTex = canvasTex(S, S, () => {});
+  {
+    const ctx = mapTex.image.getContext('2d');
     // blocks between the streets: London's mix of yards, back gardens and paving
     ctx.fillStyle = '#7d7868';
     ctx.fillRect(0, 0, S, S);
@@ -1450,6 +1458,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       ctx.fillStyle = r() < 0.55 ? `rgba(${70 + r() * 30},${88 + r() * 30},${50 + r() * 20},.35)` : `rgba(${120 + r() * 40},${115 + r() * 35},${100 + r() * 30},.3)`;
       ctx.fillRect(r() * S, r() * S, (2 + r() * 8) * k, (2 + r() * 8) * k);
     }
+    yield;
     // areas: green spaces with mown stripes and grain, water, car parks, plazas
     [1, 2, 3, 5, 4, 6, 0].forEach((kind) => areas.filter((a) => a.kind === kind).forEach((a) => {
       ctx.fillStyle = AC[kind];
@@ -1465,6 +1474,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
         ctx.restore();
       }
     }));
+    yield;
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     // pavements under the carriageways, then footpaths, then the roads by class (minor first)
     roads.filter((rd) => rd.cls <= 3).forEach((rd) => { ctx.strokeStyle = '#aaa395'; ctx.lineWidth = (rd.w + (rd.cls <= 2 ? 6 : 2)) * k; line(ctx, rd.pts); ctx.stroke(); });
@@ -1477,11 +1487,13 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       ctx.lineWidth = Math.max(1, 0.15 * k); ctx.setLineDash([4.5 * k, 4.5 * k]); line(ctx, rd.pts); ctx.stroke();
     });
     ctx.setLineDash([]);
+    yield;
     // railways
     (data.rl || []).forEach((f) => { const pts = dec(f); ctx.strokeStyle = '#5b5248'; ctx.lineWidth = 5 * k; line(ctx, pts); ctx.stroke(); ctx.strokeStyle = 'rgba(160,160,165,.6)'; ctx.lineWidth = Math.max(1, 0.4 * k); line(ctx, pts); ctx.stroke(); });
     // contact shadow under every building
     ctx.fillStyle = 'rgba(30,28,25,.5)';
     footprints.forEach((f) => { poly(ctx, [f]); ctx.fill(); });
+    yield;
     // the basement areas behind the railings
     ctx.fillStyle = 'rgba(22,21,19,.8)';
     areaPaint.forEach((q) => { poly(ctx, [q]); ctx.fill(); });
@@ -1491,11 +1503,15 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       ctx.fillStyle = `rgba(${v},${v * 0.97},${v * 0.9},.06)`;
       ctx.fillRect(r() * S, r() * S, 2, 2);
     }
-  });
+  }
+  mapTex.needsUpdate = true;
   mapTex.anisotropy = 16;
+  yield;
   const ES = mobile ? 1024 : 2048;
   const ek = ES / (2 * H);
-  const emTex = canvasTex(ES, ES, (ctx) => {
+  const emTex = canvasTex(ES, ES, () => {});
+  {
+    const ctx = emTex.image.getContext('2d');
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, ES, ES);
     const lamp = (x, z, rad, a, colr) => {
       const px = (x + H) * ek, pz = (z + H) * ek, rr = Math.max(1.5, rad * ek);
@@ -1506,8 +1522,11 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     const warm = '255,214,168', led = '235,240,255';
     // shop windows (about half are open at dawn)
     shopGlow.forEach(([x, z, food]) => { if (keep(x, z) && r() < (food ? 0.75 : 0.5)) lamp(x, z, 4.5, food ? 0.4 : 0.32, food ? '255,190,130' : '255,226,190'); });
-    roads.forEach((rd) => {
-      if (rd.cls > 4) return;
+    yield;
+    for (let ri = 0; ri < roads.length; ri++) {
+      const rd = roads[ri];
+      if (ri % 200 === 199) yield;
+      if (rd.cls > 4) continue;
       const major = rd.cls <= 1, step = major ? 24 : rd.cls === 4 ? 20 : 30;
       let acc = r() * step, side = 1;
       for (let i = 0; i < rd.pts.length - 1; i++) {
@@ -1523,9 +1542,11 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
         }
         acc -= L;
       }
-    });
-  });
+    }
+  }
+  emTex.needsUpdate = true;
   emTex.colorSpace = THREE.SRGBColorSpace;
+  yield;
   // the map's ground is cut (an alpha test on its texture) only where the river reaches into it
   // (does any bank segment enter the square? Liang-Barsky)
   const segIn = ([x0, z0], [x1, z1]) => {
@@ -1587,6 +1608,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     waterGeos.forEach((g) => g.dispose());
     if (wg) { const m = new THREE.Mesh(wg, waterMat); m.receiveShadow = true; group.add(m); }
   }
+  yield;
   // the river as a mask over +-RIVER_R (1 inside): the cloud shader's water, and kept clear by the outer city
   let riverTex = null, inRiver = null;
   if (rv.length) {
@@ -1621,6 +1643,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
   }
 
+  yield;
   // ---------------------------------------------------------------- traffic on the main roads
   const trafficU = { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } };
   {
@@ -1665,6 +1688,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
     }
   }
 
+  yield;
   // ---------------------------------------------------------------- trees: mapped street trees, then the parks and squares
   const trees = [];
   const maxTrees = mobile ? 1400 : 5200;
@@ -1692,6 +1716,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
       if (r() < pr) trees.push([px, pz, 13 + r() * 10, 4.6 + r() * 3.2]);
     }
   });
+  yield;
   const leafCols = ['#4f6b35', '#5d7a3c', '#46602f', '#6b7f43', '#55703a', '#7a8a48', '#8a7f3c'];
   const canopy = [], trunk = [];
   trees.forEach(([x, z, h, cr]) => {
@@ -1711,6 +1736,7 @@ export function buildCity(city, { mobile, H, site, keep = () => true, skip = () 
   // trunks: half a metre wide and under the canopy, so not drawn beyond 900 m of their tile
   inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false, 'none', 900);
 
+  yield;
   // ---------------------------------------------------------------- the real skyline beyond the map
   const sky = data.sky || [];
   if (sky.length) {

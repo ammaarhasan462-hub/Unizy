@@ -3,8 +3,8 @@
 // nearby landmarks (Senate House, UCH, BT Tower, British Museum), the Thames, and the City and the Shard on the horizon.
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry } from './materials';
-import { buildCity } from './city';
+import { baseBox, canvasTex, facadeMaterial, groundBox, leafMaterial, mergeStatic, plainMaterial, rng, roofGeometry, treeGeometry, runGen } from './materials';
+import { buildCityGen } from './city';
 
 const H = MAP_HALF;
 export const riverX = (z) => -2150 + Math.sin(z * 0.00062) * 260 + Math.sin(z * 0.0017 + 1.1) * 120;
@@ -43,7 +43,9 @@ const SQUARES = [
 ];
 const LANDMARK_SITES = { senate: [-320, 190], museum: [-560, 330], uch: [190, 160], bt: [-320, -620], euston: [470, 520] };
 
-export function buildLondon(renderer, { mobile, city: cityData }) {
+// buildLondon builds it all at once; buildLondonGen yields between slices (see buildCityGen)
+export function buildLondon(renderer, opts) { return runGen(buildLondonGen(renderer, opts)); }
+export function* buildLondonGen(renderer, { mobile, city: cityData }) {
   const r = rng(1234);
   const group = new THREE.Group();
   // the real Bloomsbury from OpenStreetMap when it has loaded; the hand-built grid below otherwise
@@ -58,8 +60,9 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
       ctx.fillStyle = '#64843f'; box(-40, 30, -6, 100); box(6, 30, 40, 100);
       ctx.fillStyle = '#c9c1ad'; box(-6, 14, 6, 108);
     };
-    try { real = buildCity(cityData, { mobile, H, site: 'ucl', keep: keepReal, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
+    try { real = yield* buildCityGen(cityData, { mobile, H, site: 'ucl', keep: keepReal, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
   }
+  yield;
   const { xl, zl } = streets(r);
   const blocks = [];
   for (let i = 0; i < xl.length - 1; i++) {
@@ -76,6 +79,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   const uclBlock = find(0, 0);
   if (uclBlock) uclBlock.campus = true;
 
+  yield;
   // ---------------------------------------------------------------- ground map
   const S = mobile ? 2048 : 4096;
   const k = S / (2 * H);
@@ -209,6 +213,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     zl.filter((l) => l.major).forEach((l, i) => road3(2 * H, l.w * 0.8, 0, l.c, false, i * 5.7 + 1));
   }
 
+  yield;
   // ---------------------------------------------------------------- terraces
   const terraceMat = facadeMaterial({ floor: 3.3, bay: 2.7, winW: 0.4, winH: 0.58, lit: 0.24, frame: '#efebe2' });
   const stuccoMat = facadeMaterial({ floor: 3.4, bay: 2.8, winW: 0.38, winH: 0.56, lit: 0.24, frame: '#f4f2ec' });
@@ -296,6 +301,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   inst(roofGeometry(), plainMaterial({ roughness: 0.7, metalness: 0.05 }, 'slate'), roofs);
   inst(gbx, plainMaterial({ roughness: 0.9 }, 'chim'), chim);
 
+  yield;
   // ---------------------------------------------------------------- landmarks
   const lm = [];
   const addBox = (mat, x, y, z, w, h, d, col) => { const m = new THREE.Mesh(bx, mat); m.position.set(x, y, z); m.scale.set(w, h, d); if (col) { m.material = mat; } m.castShadow = m.receiveShadow = true; group.add(m); lm.push(m); return m; };
@@ -343,6 +349,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
     }
   });
 
+  yield;
   // ---------------------------------------------------------------- trees
   const trees = [];
   const maxTrees = mobile ? 700 : 1800;
@@ -378,6 +385,7 @@ export function buildLondon(renderer, { mobile, city: cityData }) {
   inst(treeGeometry(5, 1), leafMaterial('leaf'), canopy);
   inst(gbx, plainMaterial({ roughness: 0.9 }, 'trunk'), trunk, false);
 
+  yield;
   // ---------------------------------------------------------------- outer city + skyline
   const outer = [];
   const ro = rng(99);

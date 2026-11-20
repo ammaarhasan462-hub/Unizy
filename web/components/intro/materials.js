@@ -99,6 +99,9 @@ export function facadeMaterial(o = {}) {
   return atmo(m);
 }
 
+// run a build generator (one that yields between slices of work) to the end in one go, and return its result
+export function runGen(g) { let r = g.next(); while (!r.done) r = g.next(); return r.value; }
+
 export function plainMaterial(params, key) {
   const m = new THREE.MeshStandardMaterial(params);
   m.userData.key = key || 'plain';

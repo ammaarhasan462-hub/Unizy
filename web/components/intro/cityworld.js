@@ -4,8 +4,8 @@
 // Gherkin, St Paul's, the BT Tower) at their mapped positions. Used for Queen Mary (Mile End) and LSE (Aldwych).
 import * as THREE from 'three';
 import { MAP_HALF } from './shaders';
-import { baseBox, canvasTex, facadeMaterial, groundBox, mergeStatic, plainMaterial, rng } from './materials';
-import { buildCity } from './city';
+import { baseBox, canvasTex, facadeMaterial, groundBox, mergeStatic, plainMaterial, rng, runGen } from './materials';
+import { buildCityGen } from './city';
 
 const H = MAP_HALF;
 const inRect = (x, z, r, m = 0) => x > r[0] - m && x < r[1] + m && z > r[2] - m && z < r[3] + m;
@@ -39,15 +39,18 @@ function riverSamples(lines) {
   return { Z0, DZ, N, xs };
 }
 
-export function buildCityWorld(renderer, { mobile, city, site, keepRects = [], paint = null, skip = null, landmarks = {} }) {
+// buildCityWorld builds it all at once; buildCityWorldGen yields between slices (see buildCityGen)
+export function buildCityWorld(renderer, opts) { return runGen(buildCityWorldGen(renderer, opts)); }
+export function* buildCityWorldGen(renderer, { mobile, city, site, keepRects = [], paint = null, skip = null, landmarks = {} }) {
   const r = rng(site === 'qmul' ? 314 : 271);
   const group = new THREE.Group();
   const keep = (x, z) => !keepRects.some((q) => inRect(x, z, q, 4));
   const skipB = skip || ((x, z) => keepRects.some((q) => inRect(x, z, q, 0)));
   let real = null;
   if (city) {
-    try { real = buildCity(city, { mobile, H, site, keep, skip: skipB, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
+    try { real = yield* buildCityGen(city, { mobile, H, site, keep, skip: skipB, paint }); group.add(real.group); } catch (e) { console.error(e); real = null; }
   }
+  yield;
   const m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion();
   const bx = baseBox();
   const inst = (geo, mat, list, cast = false) => {
@@ -62,6 +65,7 @@ export function buildCityWorld(renderer, { mobile, city, site, keepRects = [], p
     return im;
   };
 
+  yield;
   // ---------------------------------------------------------------- the Thames, from the map
   const rs = real && real.river && real.river.length ? riverSamples(real.river) : null;
   const riverAt = rs
@@ -93,6 +97,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
     group.add(m);
   }
 
+  yield;
   // ---------------------------------------------------------------- ground beyond the map, and the outer city
   const farTex = canvasTex(1024, 1024, (ctx, W) => {
     const rr = rng(77);
@@ -130,6 +135,7 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
   }
   inst(groundBox(), terraceMat, outer);
 
+  yield;
   // ---------------------------------------------------------------- the skyline's landmarks at their mapped positions
   const L = real ? real.landmarks : {};
   const glassy = plainMaterial({ color: '#7f909b', roughness: 0.1, metalness: 0.5 }, 'glassy-' + site);
