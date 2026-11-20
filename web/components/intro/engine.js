@@ -523,13 +523,17 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   const libPos = new THREE.Vector3();
 
   // what a frame costs the main thread (smoothed): the streamed build's slices scale with it
-  let frameMs = 8, lastDrawn = -1e9;
+  // drawMs: what a drawn frame really costs (from its start to the next frame the browser can give us, so a busy GPU
+  // counts too)
+  let frameMs = 8, drawMs = 16, lastDrawn = -1e9, drawnAt = 0, measure = false;
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    if (measure) { drawMs += (performance.now() - drawnAt - drawMs) * 0.3; measure = false; }
     // while the world is still being built and frames are slow (a weak GPU, software rendering), draw the clouds at
     // half rate, and only a few times a second while scrolling waits for the city: the build gets the time instead
     if (!worldReady) {
-      const gap = state.held ? 250 : frameMs > 30 ? frameMs * 2 : 0;
+      const slow = drawMs > 30 ? drawMs : 0;
+      const gap = state.held ? Math.max(250, slow * 2) : slow;
       if (now - lastDrawn < gap) return;
     }
     lastDrawn = now;
@@ -683,6 +687,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     composer.render(dt);
     if (onFrame) onFrame(p, state.target, time);
     frameMs += (performance.now() - f0 - frameMs) * 0.2;
+    drawnAt = f0; measure = true;
   }
   raf = requestAnimationFrame(frame);
 
