@@ -97,6 +97,12 @@
   function uniId() { return (S.profile && S.profile.uni) || (S.setup && S.setup.uni) || 'ucl'; }
   function UN(u) { return UNIS[u || uniId()] || UNIS.ucl; }
   function tutorName(dept, u) { return (/medic|surgery|neurolog|infection|cardio|cancer|health|ear institute|pharmacy/i.test(dept || '') ? 'Dr ' : 'Professor ') + (UN(u).tutor || UN(u).short); }
+  // each module gets its own colour (strong, tint, text on tint), like subjects on revision sites
+  var MOD_COLS = [['#0F8B7E', '#E0F3EF', '#0B5F56'], ['#4F5BD5', '#ECEEFC', '#343E9E'], ['#D9603B', '#FDEBE4', '#A33A1C'], ['#8A4FCF', '#F2EAFC', '#5F2F9A'],
+    ['#C98500', '#FFF2D3', '#7A5100'], ['#1F7AC4', '#E3EFFA', '#145387'], ['#CC467A', '#FCE7EF', '#962A52'], ['#2E8A4E', '#E4F4E9', '#1F6337']];
+  function modCol(code) { var i = -1; S.mods.forEach(function (m, k) { if (m.code === code) i = k; }); if (i < 0) { i = 0; for (var k = 0; k < code.length; k++) i += code.charCodeAt(k); } return MOD_COLS[i % MOD_COLS.length]; }
+  function modVars(code) { var c = modCol(code); return '--mc:' + c[0] + ';--mt:' + c[1] + ';--mx:' + c[2]; }
+  function modInit(code) { var l = String(code).replace(/^[0-9]+/, '').replace(/[^A-Za-z]/g, ''); return (l.slice(0, 2) || String(code).slice(0, 2)).toUpperCase(); }
   function icon(d) { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + d + '"/></svg>'; }
 
   // ---------- routing ----------
@@ -211,7 +217,7 @@
           }).join('');
           kids = '<ul class="db-tt">' + kids + '</ul>';
         }
-        return '<li class="db-tm' + (open ? ' open' : '') + (cur === m.code ? ' cur' : '') + '">' + row + kids + '</li>';
+        return '<li class="db-tm' + (open ? ' open' : '') + (cur === m.code ? ' cur' : '') + '" style="' + modVars(m.code) + '">' + row + kids + '</li>';
       }).join('');
     }).join('');
   }
@@ -730,7 +736,7 @@
   }
   function cardsBox() {
     var n = S.cards ? S.cards.length : null;
-    var html = '<section class="hm-card hm-fc" id="td-cards">' + lab('Flashcards');
+    var html = '<section class="hm-card hm-fc" id="td-cards"><i class="hm-fcic" aria-hidden="true">' + icon(IC.cards) + '</i>' + lab('Flashcards');
     if (n == null) return html + '<p class="hm-big">…</p></section>';
     if (!n) return html + '<p class="hm-big">Nothing due today</p><p class="hm-sub">Marks you lose and recall questions you miss turn into cards, and come back just before you’d forget them.</p><a class="hm-link" href="/dashboard/cards">Browse your decks</a></section>';
     return html + '<p class="hm-big"><b>' + (n >= 60 ? '60+' : n) + '</b> due today</p><p class="hm-sub">A few minutes now keeps them fresh for the exam.</p><a class="btn line" href="/dashboard/cards">Review cards</a></section>';
@@ -742,14 +748,14 @@
   }
   function modulesHtml() {
     if (!S.mods.length) return '';
-    var res = function (href, ic, t) { return '<a href="' + href + '">' + icon(IC[ic]) + '<span>' + t + '</span></a>'; };
+    var res = function (cls, href, ic, t) { return '<a class="rs ' + cls + '" href="' + href + '"><i>' + icon(IC[ic]) + '</i><span>' + t + '</span></a>'; };
     return '<section class="hm-sec"><div class="hm-sechead"><h2>My modules</h2><span class="hm-acts"><a href="/dashboard/practice">+ Add a module</a><a href="/dashboard/account#course">Change course</a></span></div><ul class="hm-mods">' + S.mods.map(function (m) {
       var tps = topicsOf(m.code) || [], ms = tps.length ? masteryOf(m.code) : null;
       var prog = !S.today ? '<span class="hm-pt">…</span>'
-        : ms ? '<span class="hm-bar' + (ms.pct >= 70 ? ' done' : '') + '"><i style="width:' + Math.max(ms.started ? 2 : 0, ms.pct) + '%"></i></span><span class="hm-pt"><b>' + ms.pct + '%</b> mastered · ' + ms.started + ' of ' + ms.total + ' topics started</span>'
+        : ms ? '<span class="hm-bar"><i style="width:' + Math.max(ms.started ? 2 : 0, ms.pct) + '%"></i></span><span class="hm-pt"><b>' + ms.pct + '%</b> mastered · ' + ms.started + ' of ' + ms.total + ' topics started</span>'
         : '<span class="hm-pt">Not opened yet</span>';
-      return '<li class="hm-mod"><div class="hm-mhead"><span class="hm-code">' + esc(m.code) + '</span>' + examLine(m) + '</div><a class="hm-title" href="/dashboard/practice/' + m.code + '">' + esc(m.title) + '</a><div class="hm-prog">' + prog + '</div>' +
-        '<nav class="hm-res" aria-label="' + esc(m.code) + ' resources">' + res('/dashboard/practice/' + m.code, 'pen', 'Questions') + res('/dashboard/cards?m=' + m.code, 'cards', 'Flashcards') + res('/dashboard/exam?m=' + m.code, 'clock', 'Exam practice') + res('/dashboard/tutor?m=' + m.code, 'chat', 'Ask tutor') + '</nav></li>';
+      return '<li class="hm-mod" style="' + modVars(m.code) + '"><div class="hm-mtop"><span class="hm-av" aria-hidden="true">' + esc(modInit(m.code)) + '</span><span class="hm-mtx"><span class="hm-code">' + esc(m.code) + '</span><a class="hm-title" href="/dashboard/practice/' + m.code + '">' + esc(m.title) + '</a></span>' + examLine(m) + '</div>' +
+        '<div class="hm-mbody"><div class="hm-prog">' + prog + '</div><nav class="hm-res" aria-label="' + esc(m.code) + ' resources">' + res('rs-q', '/dashboard/practice/' + m.code, 'pen', 'Questions') + res('rs-f', '/dashboard/cards?m=' + m.code, 'cards', 'Flashcards') + res('rs-e', '/dashboard/exam?m=' + m.code, 'clock', 'Exam practice') + res('rs-t', '/dashboard/tutor?m=' + m.code, 'chat', 'Ask tutor') + '</nav></div></li>';
     }).join('') + '</ul></section>';
   }
   // Focus this week: the weekly plan (same as the Monday email) or, until it loads, the red and amber topics
@@ -762,28 +768,30 @@
     if (!rows.length) return '';
     if (!(w && w.length)) rows.sort(function (x, y) { return (x.rs === 'r' ? 0 : 1) - (y.rs === 'r' ? 0 : 1); });
     return '<section class="hm-sec"><div class="hm-sechead"><h2>Focus this week</h2><span class="hm-note">Your weakest topics, nearest exam first' + (w && w.length ? '. Also emailed to you on Mondays.' : '') + '</span></div><ul class="hm-list">' + rows.slice(0, 6).map(function (r) {
-      return '<li><a href="/dashboard/practice/' + encodeURIComponent(r.code) + '?t=' + r.pos + '" data-plan="topic"><i class="dot ' + (r.rs || 'n') + '" aria-hidden="true"></i><span class="hm-lt"><b>' + esc(r.title) + '</b><small>' + esc(r.code) + ' · ' + esc(r.sub) + '</small></span><span class="hm-go">Practise</span></a></li>';
+      var stl = r.rs === 'r' ? 'Weak' : r.rs === 'a' ? 'Medium' : r.rs === 'g' ? 'Mastered' : 'Not started';
+      return '<li><a href="/dashboard/practice/' + encodeURIComponent(r.code) + '?t=' + r.pos + '" data-plan="topic"><span class="hm-lt"><b>' + esc(r.title) + '</b><small><span class="hm-mchip" style="' + modVars(r.code) + '">' + esc(r.code) + '</span>' + (r.sub && !/^Not practised/.test(r.sub) && r.sub !== stl ? esc(r.sub) : '') + '</small></span><span class="hm-st st-' + (r.rs || 'n') + '">' + stl + '</span><span class="hm-go">Practise</span></a></li>';
     }).join('') + '</ul></section>';
   }
   function recentHtml(a, st) {
     var head = '<section class="hm-sec"><div class="hm-sechead"><h2>Marked answers</h2>' + (a.length ? '<a class="hm-all" href="/dashboard/history">See all</a>' : '') + '</div>';
     if (!a.length) return head + '<p class="hm-empty">Nothing marked yet. Answer an exam-style question and it’s marked against ' + esc(UN().short) + '’s grade bands, with feedback on where you lost marks.</p></section>';
     var cls = function (v) { return v == null ? '' : ' (' + clsOf(v) + ')'; };
-    return head + '<p class="hm-stats">' + st.n + ' answer' + (st.n === 1 ? '' : 's') + ' marked' + (st.avg != null ? ' · average ' + Math.round(st.avg) + '%' + cls(st.avg) : '') + (st.best != null ? ' · best ' + Math.round(st.best) + '%' + cls(st.best) : '') + '</p><ul class="mk-hist hm-hist">' + a.slice(0, 3).map(histRow).join('') + '</ul></section>';
+    return head + '<p class="hm-stats"><span class="sc sc-n"><b>' + st.n + '</b> marked</span>' + (st.avg != null ? '<span class="sc sc-a">Average <b>' + Math.round(st.avg) + '%</b>' + cls(st.avg) + '</span>' : '') + (st.best != null ? '<span class="sc sc-b">Best <b>' + Math.round(st.best) + '%</b>' + cls(st.best) + '</span>' : '') + '</p><ul class="mk-hist hm-hist">' + a.slice(0, 3).map(histRow).join('') + '</ul></section>';
   }
   function renderHome() {
     var el = $('db-home');
     var draw = homeDraw = function () {
       if (tabOf(location.pathname) !== 'home') return;
       var a = S.attempts || [], st = stats(a), p = S.profile || {};
-      var html = '<header class="hm-head"><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Welcome back') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', UN(p.uni).long].filter(Boolean).join(' · ') || UN().long) + (p.course ? '<button type="button" class="db-chg" id="db-chgcourse">Change</button>' : '') + '</p>' + (S.plan ? '<p class="hm-plan">' + planChip() + '</p>' : '') + '</header>';
+      var today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      var html = '<header class="hm-head"><p class="hm-date">' + esc(today) + '</p><h1>' + (firstName() ? 'Hi ' + esc(firstName()) : 'Welcome back') + '</h1><p>' + esc([p.course, p.year ? 'Year ' + p.year : '', UN(p.uni).long].filter(Boolean).join(' · ') || UN().long) + (p.course ? '<button type="button" class="db-chg" id="db-chgcourse">Change</button>' : '') + '</p>' + (S.plan ? '<p class="hm-plan">' + planChip() + '</p>' : '') + '</header>';
       if (!p.course && !S.mods.length) html += '<div class="hm-card hm-addcourse"><div><b>Add your course</b><p>Pick your course and year and we’ll add your modules, so practice questions and your tutor match what you study.</p></div><button type="button" class="btn primary" id="db-addcourse">Add my course</button></div>';
       html += '<div class="hm-top">' + (S.today ? nextHtml(nextUp()) : '<section class="hm-card hm-next">' + lab('Next up') + '<h2>Finding your next question…</h2></section>') + cardsBox() + '</div>';
       html += installHtml();
       html += modulesHtml();
       html += focusHtml();
       html += recentHtml(a, st);
-      html += '<a class="hm-play" href="/dashboard/play"><b>Done for today?</b><span>Play Unwind or Thin Air, two short daily games.</span><span class="hm-go">Play</span></a>';
+      html += '<a class="hm-play" href="/dashboard/play"><i aria-hidden="true">' + icon('M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3') + '</i><span class="hm-ptx"><b>Done for today?</b><span>Play Unwind or Thin Air, two short daily games.</span></span><span class="hm-pgo">Play</span></a>';
       el.innerHTML = html;
     };
     draw();
@@ -850,7 +858,7 @@
       (S.all || []).forEach(function (c) { if (codes.indexOf(c.code) < 0) codes.push(c.code); });
       html += '<ul class="cd-decks">' + codes.map(function (code) {
         var m = S.mods.filter(function (x) { return x.code === code; })[0] || { code: code, title: '' }, d = deckStats(code), pct = d.n ? Math.round(d.solid / d.n * 100) : 0;
-        return '<li class="cd-deck' + (pm === code ? ' on' : '') + '" id="cd-' + code + '"><div class="cd-dh"><span class="db-mcode">' + esc(code) + '</span><b>' + esc(m.title) + '</b></div><p class="cd-dm"><span><b>' + d.n + '</b> cards</span><span' + (d.due ? ' class="due"' : '') + '><b>' + d.due + '</b> due</span></p><span class="mk-bar"><i style="width:' + pct + '%"></i></span>' +
+        return '<li class="cd-deck' + (pm === code ? ' on' : '') + '" id="cd-' + code + '" style="' + modVars(code) + '"><div class="cd-dh"><span class="db-mcode">' + esc(code) + '</span><b>' + esc(m.title) + '</b></div><p class="cd-dm"><span><b>' + d.n + '</b> cards</span><span' + (d.due ? ' class="due"' : '') + '><b>' + d.due + '</b> due</span></p><span class="mk-bar"><i style="width:' + pct + '%"></i></span>' +
           '<div class="cd-da">' + (d.due ? '<button type="button" class="btn dark small" data-rev="' + code + '">Review ' + d.due + '</button>' : '') + (d.n ? '<button type="button" class="btn line small" data-browse="' + code + '">' + (S.browse === code ? 'Hide cards' : 'Browse') + '</button>' : '') + '<a class="btn line small" href="/dashboard/practice/' + code + '?w=parse">+ From my notes</a></div>' +
           (S.browse === code ? '<ul class="cd-list">' + (S.all || []).filter(function (c) { return c.code === code; }).map(function (c) { return '<li><div><b>' + esc(c.front) + '</b><p>' + esc(c.back) + '</p></div><span class="cd-due">' + (c.due && c.due > ST.today() ? 'Next: ' + esc(day(c.due)) : 'Due') + '</span><button type="button" class="mk-x" data-cdel="' + c.id + '" aria-label="Delete this card">×</button></li>'; }).join('') + '</ul>' : '') + '</li>';
       }).join('') + '</ul>';
