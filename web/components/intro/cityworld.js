@@ -110,8 +110,9 @@ float riverX(float z){ float f = clamp((z - RV_Z0) / RV_DZ, 0.0, ${(rs.N - 1.001
   const far = new THREE.Mesh((real && real.farGeo) || new THREE.PlaneGeometry(60000, 60000), plainMaterial({ map: farTex, roughness: 0.95 }, 'far-' + site));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.4;
-  // drawn last: under the map it is hidden by the map's ground, so there it costs only a depth test
-  far.renderOrder = 2;
+  // drawn first and writing no depth: everything else draws over it, so the lowered river and docks need no holes in it
+  far.renderOrder = -1;
+  far.material.depthWrite = false;
   group.add(far);
   // a plain map texture for the cloud shader if the real map didn't load
   const mapTex = real ? real.mapTex : canvasTex(512, 512, (ctx, W) => { ctx.fillStyle = '#7d7868'; ctx.fillRect(0, 0, W, W); });
