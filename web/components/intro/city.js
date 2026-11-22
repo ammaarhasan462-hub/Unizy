@@ -1116,34 +1116,64 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // canals and locks (lv 1) and docks and basins (lv 2), as flagged by the bake (dk: area index, level): set below their
   // towpath or quay between walls, cut out of the map's ground and the far ground like the river (as holes in the
   // geometry, no alpha test). Clipped to the map, and clear of the river; pieces may meet edge to edge (a canal and its
-  // locks). Each cut is checked by area; if it fails, the docks that overlap others are left out, then all of them.
+  // locks). Each cut is checked by area; if it fails, the docks that touch others are left out, then all of them.
   const DROP = [0, 0.95, 1.7];
-  const cutSq = (half, holes) => {
+  // the map's ground (the square +-H) with the docks cut out as holes. Plain ear-clipping of a 3 km square round a few
+  // narrow holes leaves long slivers reaching across the map, which cost the rasteriser at every frame; a grid of
+  // points every 150 m (Steiner points, single-point holes to the triangulator) keeps the triangles compact.
+  const groundCut = (holes) => {
     try {
-      const v2 = (ring) => ring.map(([x, z]) => new THREE.Vector2(x, -z));
-      const shp = new THREE.Shape(v2([[-half, half], [half, half], [half, -half], [-half, -half]]));
-      const isl = [];
+      const V = (x, z) => new THREE.Vector2(x, -z);
+      const contour = [V(-H, H), V(H, H), V(H, -H), V(-H, -H)];
+      if (!THREE.ShapeUtils.isClockWise(contour)) contour.reverse();
+      const hs = [], isl = [];
       let cut = 0;
+      const boxes = [];
       holes.forEach((rings) => {
-        shp.holes.push(new THREE.Path(v2(rings[0])));
+        const h = rings[0].map(([x, z]) => V(x, z));
+        if (THREE.ShapeUtils.isClockWise(h)) h.reverse();
+        hs.push(h);
         cut += Math.abs(ringArea(rings[0]));
-        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
+        rings.slice(1).forEach((r2) => { isl.push(r2.map(([x, z]) => V(x, z))); cut -= Math.abs(ringArea(r2)); });
+        let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+        rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
+        boxes.push([x0 - 4, x1 + 4, z0 - 4, z1 + 4]);
       });
-      const g = new THREE.ShapeGeometry([shp, ...isl]);
-      const pa = g.attributes.position, ix = g.index, uv = g.attributes.uv;
+      // Steiner points, kept 4 m clear of every dock (their islands included)
+      const STEP = 150;
+      for (let x = -H + STEP; x < H - 1; x += STEP) for (let z = -H + STEP; z < H - 1; z += STEP) {
+        if (boxes.some(([x0, x1, z0, z1]) => x > x0 && x < x1 && z > z0 && z < z1)) continue;
+        hs.push([V(x, z)]);
+      }
+      const P = [], I = [];
+      const add = (outer, inner) => {
+        const faces = THREE.ShapeUtils.triangulateShape(outer, inner);
+        const o = P.length / 3;
+        [outer, ...inner].forEach((r2) => r2.forEach((v) => P.push(v.x, v.y, 0)));
+        faces.forEach(([a, b, c]) => {
+          const ax = P[(o + a) * 3], ay = P[(o + a) * 3 + 1], bx = P[(o + b) * 3], by = P[(o + b) * 3 + 1], cx = P[(o + c) * 3], cy = P[(o + c) * 3 + 1];
+          // every face up (+z in the shape's plane, +y once laid flat)
+          if ((bx - ax) * (cy - ay) - (cx - ax) * (by - ay) >= 0) I.push(o + a, o + b, o + c); else I.push(o + a, o + c, o + b);
+        });
+      };
+      add(contour, hs);
+      isl.forEach((r2) => { if (THREE.ShapeUtils.isClockWise(r2)) r2.reverse(); add(r2, []); });
       let got = 0;
-      for (let i = 0; i < ix.count; i += 3) {
-        const a = ix.getX(i), b = ix.getX(i + 1), c = ix.getX(i + 2);
-        got += Math.abs((pa.getX(b) - pa.getX(a)) * (pa.getY(c) - pa.getY(a)) - (pa.getX(c) - pa.getX(a)) * (pa.getY(b) - pa.getY(a))) / 2;
+      for (let i = 0; i < I.length; i += 3) {
+        const a = I[i] * 3, b = I[i + 1] * 3, c = I[i + 2] * 3;
+        got += Math.abs((P[b] - P[a]) * (P[c + 1] - P[a + 1]) - (P[c] - P[a]) * (P[b + 1] - P[a + 1])) / 2;
       }
       // the triangulation must leave exactly the holes' area uncovered
-      if (Math.abs(4 * half * half - cut - got) < Math.max(40, cut * 0.02)) {
-        for (let i = 0; i < pa.count; i++) uv.setXY(i, pa.getX(i) / (2 * half) + 0.5, pa.getY(i) / (2 * half) + 0.5);
-        return g;
-      }
-      g.dispose();
-    } catch { /* fall through */ }
-    return null;
+      if (Math.abs(4 * H * H - cut - got) >= Math.max(40, cut * 0.02)) return null;
+      const n = P.length / 3, N = new Float32Array(n * 3), UV = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) { N[i * 3 + 2] = 1; UV[i * 2] = P[i * 3] / (2 * H) + 0.5; UV[i * 2 + 1] = P[i * 3 + 1] / (2 * H) + 0.5; }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+      g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+      g.setAttribute('uv', new THREE.BufferAttribute(UV, 2));
+      g.setIndex(I);
+      return g;
+    } catch { return null; }
   };
   // a ring clipped to the square |x|, |z| <= B (Sutherland-Hodgman)
   const clipSq = (ring, B) => {
@@ -1190,7 +1220,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     });
     for (const set of [all, apart]) {
       if (!set.length) break;
-      groundGeo = cutSq(H, set.map((d) => d.rings));
+      groundGeo = groundCut(set.map((d) => d.rings));
       if (groundGeo) { docks = set; break; }
     }
   }
