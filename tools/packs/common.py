@@ -44,3 +44,47 @@ def emit(code, T, expect_total):
     print(f"insert into module_packs (code, status, questions, started_at, finished_at) values ('{code}', 'done', {expect_total}, now(), now()) "
           f"on conflict (code) do update set status = 'done', questions = {expect_total}, finished_at = now(), error = null;")
     print("end $$;")
+
+
+# ---- Medicine (exam_format = 'sba'): instant bank + recall cards ----
+import random
+
+
+def V(q, a, accept=(), why=""):
+    return {"tier": "foundation", "kind": "vsa", "q": q, "a": a, "accept": list(accept), "why": why}
+
+
+def S(q, right, wrong, why, hard=False):
+    assert len(wrong) == 4
+    return {"tier": "first" if hard else "exam", "kind": "sba", "q": q, "right": right, "wrong": list(wrong), "why": why}
+
+
+def emit_med(code, T, seed=1):
+    """T[topic] = list of R() recall cards, V() and S() items. Appends after max(position),
+    marks instant_jobs and module_packs done with the final count."""
+    rnd = random.Random(seed)
+    rows, i = [], 0
+    for tp in sorted(T):
+        for x in T[tp]:
+            if x["kind"] == "recall":
+                vals = (x["q"], x["a"], None, None, None)
+            elif x["kind"] == "vsa":
+                vals = (x["q"], x["a"], None, x["accept"] or None, x["why"])
+            else:
+                opts = [x["right"]] + x["wrong"]
+                rnd.shuffle(opts)
+                vals = (x["q"], "ABCDE"[opts.index(x["right"])], opts, None, x["why"])
+            q, a, o, acc, why = vals
+            rows.append(f"({i}, {tp}, '{x['tier']}', '{x['kind']}', {lit(q)}, {lit(a)}, {lit(o)}, {lit(acc)}, {lit(why)})")
+            i += 1
+    print(f"-- {code}: {i} new items")
+    print("do $$ declare p int; n int; begin")
+    print(f"select coalesce(max(position), -1) + 1 into p from module_questions where code = '{code}';")
+    print("insert into module_questions (code, position, topic_pos, topic, tier, kind, question, answer, options, accept, explain)")
+    print(f"select '{code}', p + v.i, v.tp, t.title, v.tier, v.kind, v.q, v.a, v.o::jsonb, v.acc::jsonb, v.why from (values")
+    print(",\n".join(rows))
+    print(f") v(i, tp, tier, kind, q, a, o, acc, why) join module_topics t on t.code = '{code}' and t.position = v.tp;")
+    print(f"select count(*) into n from module_questions where code = '{code}';")
+    print(f"insert into instant_jobs (code, status, finished_at) values ('{code}', 'done', now()) on conflict (code) do update set status = 'done', finished_at = now();")
+    print(f"insert into module_packs (code, status, questions, started_at, finished_at) values ('{code}', 'done', n, now(), now()) on conflict (code) do update set status = 'done', questions = n, finished_at = now(), error = null;")
+    print("end $$;")
