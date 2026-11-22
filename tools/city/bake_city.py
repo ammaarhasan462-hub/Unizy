@@ -1046,7 +1046,12 @@ def bake(site):
     def dock_level(t):
         if t.get('water') in ('canal', 'lock') or t.get('waterway') in ('canal', 'lock'):
             return 1
-        if t.get('water') in ('basin', 'dock', 'harbour', 'marina') or t.get('waterway') == 'dock' or t.get('leisure') == 'marina':
+        if t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock' or t.get('leisure') == 'marina':
+            return 2
+        # water=basin is also every fountain and park pond: only the named canal and dock basins (Battlebridge Basin,
+        # Tobacco Dock) are set down
+        nm = t.get('name', '')
+        if t.get('water') == 'basin' and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm:
             return 2
         return 0
     for el in els:
