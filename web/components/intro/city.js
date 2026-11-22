@@ -1829,7 +1829,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   });
   const bx2 = groundBox();
   // canopies: 80-triangle lobes near the camera, 20-triangle lobes beyond 650 m (a few pixels across from there)
-  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0), 650, { at: 1250, keep: 2, grow: 1.2 });
+  inst(treeGeometry(5, 1), leafMaterial('city-leaf'), canopy, true, treeGeometry(5, 0), 650, { at: 1100, keep: 2, grow: 1.2 });
   // trunks: half a metre wide and under the canopy, so not drawn beyond 900 m of their tile
   inst(bx2, plainMaterial({ roughness: 0.9 }, 'city-trunk'), trunk, false, 'none', 900);
 

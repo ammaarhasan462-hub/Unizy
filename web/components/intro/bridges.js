@@ -46,6 +46,17 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     if (flip) I.push(i0, i2, i1, i0, i3, i2);
     else I.push(i0, i1, i2, i0, i2, i3);
   };
+  // one triangle a-b-c facing roughly along `want`
+  const tri = (a, b, c, col, want) => {
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const l = Math.hypot(nx, ny, nz);
+    if (l < 1e-9) return;
+    nx /= l; ny /= l; nz /= l;
+    if (want && nx * want[0] + ny * want[1] + nz * want[2] < 0) { [b, c] = [c, b]; nx = -nx; ny = -ny; nz = -nz; }
+    const n = [nx, ny, nz];
+    I.push(push(a, n, col), push(b, n, col), push(c, n, col));
+  };
   const lampQuad = (x, y, z, s, col = BULB) => {
     const o = LP.length / 3;
     LP.push(x - s, y - s, z, x + s, y - s, z, x + s, y + s, z, x - s, y + s, z, x, y - s, z - s, x, y - s, z + s, x, y + s, z + s, x, y + s, z - s);
@@ -225,7 +236,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         for (let i = 0; i < 4; i++) {
           const [s0, v0] = base[i], [s1, v1] = base[(i + 1) % 4];
           const a0 = at(s0, v0, y0), a1 = at(s1, v1, y0), mid = at((s0 + s1) / 2, (v0 + v1) / 2, 0), cen = at(sc, vc, 0);
-          quad(a0, a1, apex, apex, col, [mid[0] - cen[0], 0.5, mid[2] - cen[2]]);
+          tri(a0, a1, apex, col, [mid[0] - cen[0], 0.5, mid[2] - cen[2]]);
         }
       };
       const tw = 8.5, tv = hv + 2.5, top = 52, walk0 = 38, walk1 = 43.5;
@@ -304,7 +315,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       const [x0, z0] = P2[i], [x1, z1] = P2[(i + 1) % P2.length];
       quad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], col, [(x0 + x1) / 2 - ox, 0, (z0 + z1) / 2 - oz]);
     }
-    if (top) for (let i = 1; i < P2.length - 1; i++) quad([P2[0][0], y1, P2[0][1]], [P2[i][0], y1, P2[i][1]], [P2[i + 1][0], y1, P2[i + 1][1]], [P2[i + 1][0], y1, P2[i + 1][1]], col, UP);
+    // the deck or roof: a fan of triangles (not quads with a degenerate half)
+    if (top) for (let i = 1; i < P2.length - 1; i++) tri([P2[0][0], y1, P2[0][1]], [P2[i][0], y1, P2[i][1]], [P2[i + 1][0], y1, P2[i + 1][1]], col, UP);
     return P2;
   };
   const WARM = new THREE.Color(1.15, 0.82, 0.5), DIM = new THREE.Color(0.55, 0.45, 0.32);
