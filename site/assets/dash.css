@@ -298,3 +298,24 @@ body.dbx .mk-exam b{background:var(--soft);color:var(--brand);font-weight:600;bo
 body.dbx .cd-deck{border-top:4px solid var(--mc,var(--ln));border-radius:14px}
 body.dbx .cd-deck .db-mcode{color:var(--mx,var(--mu))}
 body.dbx .cd-deck .mk-bar i,body.dbx .cd-deck [class*=bar] i{background:var(--mc)}
+
+/* society code welcome (after redeem_code): what it unlocked, the university and course, and that course's modules */
+.db-cw{position:fixed;inset:0;z-index:9998;background:rgba(14,33,28,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.db-cw-in{position:relative;background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:26px 24px 20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.db-cw-x{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:var(--mu,#56655F);cursor:pointer;padding:4px 8px}
+.db-cw-k{margin:0 0 4px;font-weight:600;color:var(--link,#1B6A50);font-size:14px}
+.db-cw-in h2{margin:0 0 8px;font-size:24px}
+.db-cw-in p{margin:0 0 10px}
+.db-cw-where{display:inline-block;background:var(--soft,#E3EFE6);color:var(--brand,#17302A);font-weight:700;border-radius:8px;padding:6px 10px}
+.db-cw-lead{color:var(--mu,#56655F);font-size:15px}
+.db-cw-mods{list-style:none;margin:0 0 16px;padding:0;border:1px solid var(--ln,#E1E8E1);border-radius:10px}
+.db-cw-mods li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 12px;border-top:1px solid var(--ln,#E1E8E1)}
+.db-cw-mods li:first-child{border-top:0}
+.db-cw-mods a{display:flex;gap:8px;align-items:baseline;color:var(--tx,#18231F);text-decoration:none;min-width:0}
+.db-cw-mods a:hover span{text-decoration:underline}
+.db-cw-mods b{font-weight:700;white-space:nowrap}
+.db-cw-mods span{overflow:hidden;text-overflow:ellipsis}
+.db-cw-mods em{font-style:normal;font-size:13px;color:var(--cq,#237A45);white-space:nowrap}
+.db-cw-acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+.db-cw-msg{margin-top:8px;font-size:14px;color:#b4412f}
+@media (max-width:520px){.db-cw-mods em{display:none}.db-cw-acts .btn{flex:1 1 100%;justify-content:center}}

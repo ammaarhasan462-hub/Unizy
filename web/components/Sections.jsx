@@ -191,12 +191,35 @@ export function CodeBox() {
             </div>
             <div aria-live="polite">
               {st === 'ok' && info && (
-                <div className="mt-5 flex flex-col gap-3 rounded-2xl bg-cyan/10 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-[15px]"><span className="font-semibold">{info.label}</span> code works: free Pro until {info.until_text}.{authed ? '' : ' Create your free account to switch it on.'}</p>
-                  <div className="flex shrink-0 flex-wrap items-center gap-3">
-                    <a href={go} onClick={() => track('code_apply')} className="btn btn-glow px-5 py-2.5">{authed ? 'Add Pro to my account' : 'Create my account'}</a>
-                    {!authed && <a href="/login?next=/dashboard" onClick={() => track('code_apply')} className="text-[14px] text-mute underline hover:text-ink">I have an account</a>}
+                <div className="mt-5 rounded-2xl bg-cyan/10 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-[15px]"><span className="font-semibold">{info.label}</span> code works: free Pro until {info.until_text}.{authed ? '' : ' Create your free account to switch it on.'}</p>
+                      {(info.uni_name || info.course) && (
+                        <p className="mt-2 inline-block rounded-lg bg-white/80 px-3 py-1.5 text-[14.5px] font-semibold">{[info.uni_name, info.course].filter(Boolean).join(' · ')}</p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-3">
+                      <a href={go} onClick={() => track('code_apply')} className="btn btn-glow px-5 py-2.5">{authed ? 'Add Pro to my account' : 'Create my account'}</a>
+                      {!authed && <a href="/login?next=/dashboard" onClick={() => track('code_apply')} className="text-[14px] text-mute underline hover:text-ink">I have an account</a>}
+                    </div>
                   </div>
+                  {info.modules && info.modules.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-[14px] text-mute">Your first-year modules, each with a full practice pack:</p>
+                      <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+                        {info.modules.map((m) => (
+                          <li key={m.code}>
+                            <a href={'/modules/' + m.code} className="flex items-baseline gap-2 rounded-xl bg-white/80 px-3 py-2 text-[14px] hover:bg-white">
+                              <span className="font-mono font-semibold">{m.code}</span>
+                              <span className="min-w-0 flex-1 truncate">{m.title}</span>
+                              {m.questions > 0 && <span className="shrink-0 text-[12.5px] text-mute">{m.questions} Qs</span>}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
               {st === 'bad' && info && <p className="mt-4 text-[14.5px] text-[#b4412f]">{info.message}</p>}

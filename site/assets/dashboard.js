@@ -592,6 +592,7 @@
         S.profile = body; var was = st.editing; S.setup = null; S.today = null; lsSet('unizy:uni', body.uni);
         track(was ? 'dash_course_changed' : 'dash_setup_done');
         $('db').classList.remove('setup');
+        if (S.codeWelcome) { var cw = S.codeWelcome; S.codeWelcome = null; setTimeout(function () { codeWelcome(cw); }, 700); }
         if (was) { nav('/dashboard/account'); refreshStudy(true); return; }
         // new students go straight into a 5-minute question on their first module with a full pack, not an empty Home
         var codes = picks.map(function (m) { return m && m.code; }).filter(Boolean);
@@ -1159,7 +1160,15 @@
     if (msgEl) msgEl.textContent = 'Checking…';
     rest('rpc/redeem_code', { method: 'POST', body: { p_code: code } }).then(function (d) {
       try { localStorage.removeItem('unizy:promo'); } catch (e) {}
-      if (d && d.ok) { track('promo_redeemed'); loadPlan().then(function () { renderTop(); if (tabOf(location.pathname) === 'account') renderAccount(); toastPromo(d.message); }); }
+      if (d && d.ok) {
+        if (!d.already) track('promo_redeemed');
+        loadPlan().then(function () {
+          renderTop(); if (tabOf(location.pathname) === 'account') renderAccount();
+          if (d.already && !msgEl) { toastPromo(d.message); return; }
+          // show which university, course and modules the code is for; wait until set-up is finished if it's showing
+          if ($('db').classList.contains('setup')) S.codeWelcome = d; else codeWelcome(d);
+        });
+      }
       if (msgEl) msgEl.textContent = (d && d.message) || 'Something went wrong. Try again.';
       else if (d && !d.ok) toastPromo(d.message);
     }).catch(function () { if (msgEl) msgEl.textContent = 'Couldn’t check that code. Try again.'; });
@@ -1197,6 +1206,47 @@
       if (d && d.ok) { track('invite_claimed'); loadPlan().then(function () { renderTop(); toastPromo(d.message); }); }
       else if (d && d.message) toastPromo(d.message);
     }).catch(function () {});
+  }
+  // After a society code: what it unlocked, the university and course it's for, and that course's modules (rpc/redeem_code)
+  function codeWelcome(d) {
+    if (!d) return;
+    var old = $('db-cw'); if (old) old.remove();
+    var mods = d.modules || [], missing = mods.filter(function (m) { return !hasMod(m.code); });
+    var where = [d.uni_name, d.course].filter(Boolean).join(' · ');
+    var first = mods.filter(function (m) { return m.full; })[0] || mods[0];
+    var el = document.createElement('div'); el.id = 'db-cw'; el.className = 'db-cw';
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'db-cw-h');
+    el.innerHTML = '<div class="db-cw-in"><button type="button" class="db-cw-x" data-cw="close" aria-label="Close">×</button>' +
+      '<p class="db-cw-k">' + esc(d.label || 'Society code') + '</p>' +
+      '<h2 id="db-cw-h">' + (d.already ? 'Your free Pro is on' : 'You’re in: free Pro is on') + '</h2>' +
+      '<p>Free Pro until <b>' + esc(d.until_text || '') + '</b>: unlimited marking, every practice question and the full packs.</p>' +
+      (where ? '<p class="db-cw-where">' + esc(where) + '</p>' : '') +
+      (mods.length ? '<p class="db-cw-lead">Your first-year modules are ready, each with a full practice pack:</p><ul class="db-cw-mods">' + mods.map(function (m) {
+        return '<li><a href="/modules/' + encodeURIComponent(m.code) + '?q=start" data-cw="mod"><b>' + esc(m.code) + '</b><span>' + esc(m.title) + '</span></a><em>' + (m.full ? 'Full pack · ' : '') + (m.questions || 0) + ' questions</em></li>';
+      }).join('') + '</ul>' : '') +
+      '<div class="db-cw-acts">' +
+      (missing.length ? '<button type="button" class="btn line" data-cw="add">Add ' + (missing.length === mods.length ? 'all ' + missing.length : 'the other ' + missing.length) + ' to my dashboard</button>' : '') +
+      (first ? '<a class="btn primary" href="/modules/' + encodeURIComponent(first.code) + '?q=start" data-cw="go">Start with ' + esc(first.code) + '</a>' : '<button type="button" class="btn primary" data-cw="close">Start practising</button>') +
+      '</div><p class="db-cw-msg" data-cw="msg" role="status"></p></div>';
+    document.body.appendChild(el);
+    track('code_welcome');
+    var close = function () { el.remove(); document.removeEventListener('keydown', onKey); };
+    var onKey = function (e) { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    el.addEventListener('click', function (e) {
+      if (e.target === el) { close(); return; }
+      var b = e.target.closest('[data-cw]'); if (!b) return;
+      var a = b.getAttribute('data-cw');
+      if (a === 'close') close();
+      else if (a === 'go' || a === 'mod') track('code_welcome_start');
+      else if (a === 'add') {
+        b.disabled = true; b.textContent = 'Adding…';
+        addMods(missing.map(function (m) { return { code: m.code, title: m.title }; })).then(function () {
+          track('code_welcome_add'); b.textContent = 'Added to your dashboard'; S.today = null; refreshStudy(true);
+        }).catch(function () { b.disabled = false; b.textContent = 'Try again'; el.querySelector('[data-cw="msg"]').textContent = 'Couldn’t add them. Check your connection.'; });
+      }
+    });
+    var f = el.querySelector('.btn.primary'); if (f) f.focus();
   }
   function toastPromo(t) {
     if (!t) return; var el = document.createElement('div'); el.className = 'db-toast'; el.setAttribute('role', 'status'); el.textContent = t;
