@@ -1118,33 +1118,22 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // geometry, no alpha test). Clipped to the map, and clear of the river; pieces may meet edge to edge (a canal and its
   // locks). Each cut is checked by area; if it fails, the docks that touch others are left out, then all of them.
   const DROP = [0, 0.95, 1.7];
-  // the map's ground (the square +-H) with the docks cut out as holes. Plain ear-clipping of a 3 km square round a few
-  // narrow holes leaves long slivers reaching across the map, which cost the rasteriser at every frame; a grid of
-  // points every 150 m (Steiner points, single-point holes to the triangulator) keeps the triangles compact.
-  const groundCut = (holes) => {
+  // a flat square (+-half, in the shape plane: x, -z) with holes cut in it (each [outer, ...islands]; the islands are
+  // put back as land), triangulated round Steiner points (single-point holes to the triangulator): plain ear-clipping
+  // of a big square round a few narrow holes leaves long slivers reaching across it, which cost the rasteriser at
+  // every frame. Checked by area; null if the triangulation fails.
+  const planeCut = (half, holes, steiner) => {
     try {
       const V = (x, z) => new THREE.Vector2(x, -z);
-      const contour = [V(-H, H), V(H, H), V(H, -H), V(-H, -H)];
-      if (!THREE.ShapeUtils.isClockWise(contour)) contour.reverse();
+      const contour = [V(-half, half), V(half, half), V(half, -half), V(-half, -half)];
       const hs = [], isl = [];
       let cut = 0;
-      const boxes = [];
       holes.forEach((rings) => {
-        const h = rings[0].map(([x, z]) => V(x, z));
-        if (THREE.ShapeUtils.isClockWise(h)) h.reverse();
-        hs.push(h);
+        hs.push(rings[0].map(([x, z]) => V(x, z)));
         cut += Math.abs(ringArea(rings[0]));
         rings.slice(1).forEach((r2) => { isl.push(r2.map(([x, z]) => V(x, z))); cut -= Math.abs(ringArea(r2)); });
-        let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
-        rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
-        boxes.push([x0 - 4, x1 + 4, z0 - 4, z1 + 4]);
       });
-      // Steiner points, kept 4 m clear of every dock (their islands included)
-      const STEP = 150;
-      for (let x = -H + STEP; x < H - 1; x += STEP) for (let z = -H + STEP; z < H - 1; z += STEP) {
-        if (boxes.some(([x0, x1, z0, z1]) => x > x0 && x < x1 && z > z0 && z < z1)) continue;
-        hs.push([V(x, z)]);
-      }
+      steiner.forEach(([x, z]) => hs.push([V(x, z)]));
       const P = [], I = [];
       const add = (outer, inner) => {
         const faces = THREE.ShapeUtils.triangulateShape(outer, inner);
@@ -1157,16 +1146,16 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
         });
       };
       add(contour, hs);
-      isl.forEach((r2) => { if (THREE.ShapeUtils.isClockWise(r2)) r2.reverse(); add(r2, []); });
+      isl.forEach((r2) => add(r2, []));
       let got = 0;
       for (let i = 0; i < I.length; i += 3) {
         const a = I[i] * 3, b = I[i + 1] * 3, c = I[i + 2] * 3;
         got += Math.abs((P[b] - P[a]) * (P[c + 1] - P[a + 1]) - (P[c] - P[a]) * (P[b + 1] - P[a + 1])) / 2;
       }
       // the triangulation must leave exactly the holes' area uncovered
-      if (Math.abs(4 * H * H - cut - got) >= Math.max(40, cut * 0.02)) return null;
+      if (Math.abs(4 * half * half - cut - got) >= Math.max(40, cut * 0.02)) return null;
       const n = P.length / 3, N = new Float32Array(n * 3), UV = new Float32Array(n * 2);
-      for (let i = 0; i < n; i++) { N[i * 3 + 2] = 1; UV[i * 2] = P[i * 3] / (2 * H) + 0.5; UV[i * 2 + 1] = P[i * 3 + 1] / (2 * H) + 0.5; }
+      for (let i = 0; i < n; i++) { N[i * 3 + 2] = 1; UV[i * 2] = P[i * 3] / (2 * half) + 0.5; UV[i * 2 + 1] = P[i * 3 + 1] / (2 * half) + 0.5; }
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
       g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
@@ -1175,6 +1164,33 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       return g;
     } catch { return null; }
   };
+  // a test for "clear of these holes by m metres" (outside every outer ring, and m from its edges)
+  const clearOf = (holes, m) => {
+    const boxes = holes.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0 - m, x1 + m, z0 - m, z1 + m]; });
+    return ([x, z]) => !holes.some((rings, i) => {
+      const [x0, x1, z0, z1] = boxes[i];
+      if (x < x0 || x > x1 || z < z0 || z > z1) return false;
+      let ins = false, d = Infinity;
+      const ring = rings[0];
+      for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+        const [xa, za] = ring[a], [xb, zb] = ring[b];
+        if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins;
+        const dx = xb - xa, dz = zb - za, t = Math.max(0, Math.min(1, ((x - xa) * dx + (z - za) * dz) / (dx * dx + dz * dz || 1)));
+        d = Math.min(d, Math.hypot(x - xa - dx * t, z - za - dz * t));
+      }
+      return ins || d < m;
+    });
+  };
+  // Steiner points on a grid every `step` metres over +-half (outside +-skipIn)
+  const grid = (half, step, skipIn = 0) => {
+    const pts = [];
+    for (let x = -half + step; x < half - 1; x += step) for (let z = -half + step; z < half - 1; z += step) {
+      if (!(skipIn && Math.abs(x) < skipIn && Math.abs(z) < skipIn)) pts.push([x, z]);
+    }
+    return pts;
+  };
+  // the map's ground (the square +-H) with the docks cut out
+  const groundCut = (holes) => planeCut(H, holes, grid(H, 150).filter(clearOf(holes, 4)));
   // a ring clipped to the square |x|, |z| <= B (Sutherland-Hodgman)
   const clipSq = (ring, B) => {
     let out = ring;
@@ -1224,39 +1240,21 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       if (groundGeo) { docks = set; break; }
     }
   }
+  // the ground beyond the map: a 60 km square with the river (and the docks) cut out, round Steiner points every 250 m
+  // over the map and its ring and every 2 km beyond, kept clear of the river
   let farGeo = null;
-  for (const withDocks of docks.length ? [true, false] : [false]) {
-    if (!rv.length || farGeo) break;
-    try {
-      const FS = 30000, v2 = (ring) => ring.map(([x, z]) => new THREE.Vector2(x, -z));
-      const shp = new THREE.Shape(v2([[-FS, FS], [FS, FS], [FS, -FS], [-FS, -FS]]));
-      const isl = [];
-      let cut = 0;
-      rv.forEach((rings) => {
-        shp.holes.push(new THREE.Path(v2(rings[0])));
-        cut += Math.abs(ringArea(rings[0]));
-        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
-      });
-      if (withDocks) docks.forEach(({ rings }) => {
-        shp.holes.push(new THREE.Path(v2(rings[0])));
-        cut += Math.abs(ringArea(rings[0]));
-        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
-      });
-      const g = new THREE.ShapeGeometry([shp, ...isl]);
-      const pa = g.attributes.position, ix = g.index, uv = g.attributes.uv;
-      let got = 0;
-      for (let i = 0; i < ix.count; i += 3) {
-        const a = ix.getX(i), b = ix.getX(i + 1), c = ix.getX(i + 2);
-        got += Math.abs((pa.getX(b) - pa.getX(a)) * (pa.getY(c) - pa.getY(a)) - (pa.getX(c) - pa.getX(a)) * (pa.getY(b) - pa.getY(a))) / 2;
-      }
-      // the triangulation must leave exactly the river's area uncovered
-      if (Math.abs(4 * FS * FS - cut - got) < cut * 0.02) {
-        for (let i = 0; i < pa.count; i++) uv.setXY(i, pa.getX(i) / (2 * FS) + 0.5, pa.getY(i) / (2 * FS) + 0.5);
-        farGeo = g;
-      } else g.dispose();
-    } catch { farGeo = null; }
-    // if the docks break the cut, try again with the river alone (and the map's ground stays whole)
-    if (!farGeo && withDocks) docks = [];
+  if (rv.length) {
+    const FS = 30000;
+    const st = [...grid(3000, 250), ...grid(FS, 2000, 3000)].filter(clearOf(rv, 6));
+    for (const withDocks of docks.length ? [true, false] : [false]) {
+      const dh = withDocks ? docks.map((d) => d.rings) : [];
+      farGeo = planeCut(FS, [...rv, ...dh], dh.length ? st.filter(clearOf(dh, 5)) : st);
+      if (farGeo) break;
+      // if the docks break the cut, try again with the river alone (and the map's ground stays whole)
+      if (withDocks) docks = [];
+    }
+    // and if the Steiner points broke it, without them
+    if (!farGeo) farGeo = planeCut(FS, rv, []);
   }
   if (!farGeo) docks = [];
   if (!docks.length && groundGeo) { groundGeo.dispose(); groundGeo = null; }
