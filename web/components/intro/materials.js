@@ -25,6 +25,8 @@ export function facadeMaterial(o = {}) {
     uFrame: { value: new THREE.Color(cfg.frame) }, uRoof: { value: new THREE.Color(cfg.roof) }, uGlassRough: { value: cfg.glassRough }, uLitI: { value: cfg.litI },
   };
   m.userData.key = 'facade' + facadeId++;
+  // one program for every facade: what differs between them (bays, floors, frames) is all uniforms
+  m.userData.prog = 'facade';
   m.userData.patch = (shader) => {
     Object.assign(shader.uniforms, U);
     shader.vertexShader = shader.vertexShader
@@ -245,6 +247,7 @@ export function roofGeometry() {
 export function leafMaterial(key, color) {
   const m = new THREE.MeshStandardMaterial({ roughness: 0.95, color: color || '#ffffff' });
   m.userData.key = key;
+  m.userData.prog = 'leaf';
   m.userData.patch = (shader) => {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>

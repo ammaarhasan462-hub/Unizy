@@ -1,5 +1,5 @@
 """Render intro frames from the built site/ with headless Chrome (swiftshader).
-Usage: [UNI=imperial] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png
+Usage: [UNI=imperial] [SHOTS=dir] [PROGS=1] python3 tools/city/render_intro.py desktop|mobile 0.25,0.36,0.56  -> /tmp/shots/in-*.png
 Also prints the lag numbers for each frame (compare before and after; software rendering is slow, so only the change counts):
   intro starts (s: the clouds, right after the pick), engine up (s: the city built and shown), shader programs, city vertices (a far LOD copy that shares its near mesh's vertices counts once), and per frame: ms between frames, draw calls and triangles per frame."""
 import http.server, socketserver, threading, sys, time, os
@@ -18,8 +18,9 @@ def route(r):
     return r.fulfill(status=204, body="")
 import os
 UNI=os.environ.get("UNI","ucl")
-os.makedirs("/tmp/shots", exist_ok=True)
-S="/tmp/shots/in-"+("" if UNI=="ucl" else UNI[:3]+"-")
+SHOTS=os.environ.get("SHOTS","/tmp/shots")
+os.makedirs(SHOTS, exist_ok=True)
+S=SHOTS+"/in-"+("" if UNI=="ucl" else UNI[:3]+"-")
 vp = {"width":1280,"height":800} if (len(sys.argv)<2 or sys.argv[1]!="mobile") else {"width":390,"height":844}
 name = "m" if vp["width"]<500 else "d"
 ps=[x for x in (sys.argv[2].split(",") if len(sys.argv)>2 else "0,0.14,0.25,0.36,0.47,0.56,0.64,0.73,0.82,0.95".split(","))]
@@ -44,6 +45,7 @@ with sync_playwright() as p:
       window.__smgIntro.debug.scene.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position && !o.userData.lodCopy) { const n = o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); v += n;
         const k = o.material && o.material.userData && o.material.userData.key; if (k && String(k).startsWith('city')) cv += n; } });
       return [r.info.programs.length, v, cv]; })()""")))
+    print("docks %s" % pg.evaluate("(() => { let n = null; window.__smgIntro.debug.scene.traverse((o) => { if (o.userData && o.userData.docks != null) n = o.userData.docks + ' (' + o.userData.dockLog + ')'; }); return n; })()"))
     LAG = """() => new Promise((res) => { const ts = []; let calls = 0, tris = 0, n = 0;
       const f = (t) => { ts.push(t); if (n > 0) { calls += window.__lag.calls; tris += window.__lag.tris; } window.__lag.calls = 0; window.__lag.tris = 0; n++;
         if (n < 6) requestAnimationFrame(f); else { const d = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
@@ -73,6 +75,12 @@ with sync_playwright() as p:
         pg.screenshot(path=S + name + f"-cam{i}.png")
     # programs again at the end: textures and furniture load in the background, so the start-up count varies run to run
     print("lag programs at end %d" % pg.evaluate("window.__smgIntro.debug.renderer.info.programs.length"))
+    # PROGS=1: the programs by shader type, and the haze-patched ones by their cache key's custom part
+    if os.environ.get("PROGS"):
+        for n, c in pg.evaluate("""(() => { const m = new Map(); window.__smgIntro.debug.renderer.info.programs.forEach((p) => {
+          const k = p.cacheKey || '', a = k.match(/atmo[^,]*/); const n = p.name + (a ? ' ' + a[0] : '');
+          m.set(n, (m.get(n) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]); })()"""):
+            print("  program %3d  %s" % (c, n))
     print("classes", pg.evaluate("document.documentElement.className"))
     if len(sys.argv)>3:
         pg.click("[data-testid=intro-skip]"); pg.wait_for_timeout(1500)

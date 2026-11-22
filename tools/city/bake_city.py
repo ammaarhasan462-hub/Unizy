@@ -1039,6 +1039,21 @@ def bake(site):
             ('rail', lambda t: t.get('landuse') == 'railway'),
             ('plaza', lambda t: t.get('area') == 'yes' and t.get('highway') in ('pedestrian', 'footway', 'service') or 'area:highway' in t)]
     ACODE = {k: i for i, (k, _) in enumerate(AREA)}
+    # impounded water, set below its quay or towpath between walls (city.js): 1 canals and locks, 2 docks and basins.
+    # Ponds, lakes, fountains and reservoirs stay at street level; the tidal river comes from the skyline extract (rv).
+    docks = []
+
+    def dock_level(t):
+        if t.get('water') in ('canal', 'lock') or t.get('waterway') in ('canal', 'lock'):
+            return 1
+        if t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock' or t.get('leisure') == 'marina':
+            return 2
+        # water=basin is also every fountain and park pond: only the named canal and dock basins (Battlebridge Basin,
+        # Tobacco Dock) are set down
+        nm = t.get('name', '')
+        if t.get('water') == 'basin' and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm:
+            return 2
+        return 0
     for el in els:
         t = el.get('tags', {})
         if 'building' in t or 'building:part' in t:
@@ -1069,6 +1084,10 @@ def bake(site):
                 cx, cz = centroid(o)
                 if max(abs(cx), abs(cz)) > DETAIL + 400:
                     continue
+                if kind == 'water':
+                    lv = dock_level(t)
+                    if lv:
+                        docks += [len(areas), lv]
                 areas.append([ACODE[kind], flat(o)] + [flat(c) for c in (clean_ring(h, 0.4) for h in inners) if c])
             continue
         if el['type'] != 'way' or not el.get('geometry'):
@@ -1194,13 +1213,13 @@ def bake(site):
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
         'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
-        'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges,
+        'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges, 'dk': docks,
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 

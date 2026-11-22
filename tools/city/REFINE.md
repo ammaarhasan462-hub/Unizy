@@ -58,7 +58,8 @@ Keep to these limits:
 - [x] **Cheaper far facades.** Beyond about 600 m, use a stripped facade program: no interior mapping, dressings or shopfront code, only the averaged window colour. Use it as a second material per tile, through the same `THREE.LOD`.
 - [x] **Merge the landmarks and the water.** St Paul's, the BT Tower, the London Eye, the Albert Memorial, the Royal Albert Hall, the Natural History Museum and the V&A are merged per material (`mergeStatic` in `materials.js`; facade boxes stay as they are, because their windows come from each box's scale). The map's water areas and the river are one mesh. Boxes on the ground or on a roof have no bottom face (`groundBox`).
 - [x] **Merge the interiors' furniture.** Merge the furniture (chairs, frames, lamp shades, gilt and so on) into a few instanced or merged meshes per material. Then the close-up shots draw tens of calls, not hundreds. (`mergeInterior` in `materials.js`, called from `engine.js`: every static part of each university's interior, one mesh per material. The scanned furniture was already instanced; the parts that move or get swapped, and UCL's `wood` parts that the upgrade picks out by size, stay apart.)
-- [ ] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones.
+- [x] **Look at the 116 shader programs.** List them (renderer.info.programs) and fold materials that differ only in colour or roughness into shared programs. Also check the 22 plain `onBeforeCompile` ones. (Done 2026-11-21: `atmo()` keys a program by its shader code, not the material's name. Every unpatched material shares the haze program for its feature set, and the facades, foliage and triplanar surfaces share one program per patch family (`userData.prog`). Start-up programs fell from 86–151 to 43–49. `PROGS=1 render_intro.py` lists them.)
+- [ ] **The remaining programs.** About 32 of the 43–49 at start-up carry no haze key: the post-processing passes, the sky and cloud shaders, the shadow-depth variants and the unlit lamp materials. List them by cache key and see which variants (instancing, vertex colours, alpha test) can be shared or dropped. The `-ash` keys in `realism.js` and the city's `cityf` variants are separate patches and stay.
 - [ ] **Railings by distance.** The railings are still one city-wide mesh. Split them by tile into the wall `THREE.LOD`'s near level (no extra draw: merge them into a mesh that is already drawn, or accept the draw only on near tiles), so far tiles do not draw them at all. Bay windows are done: they are detail triangles that far tiles skip.
 - [ ] **Measure on a real GPU.** Swiftshader is CPU-bound. If a free GitHub Actions runner or a browser trace can give GPU frame times, add that to `render_intro.py`.
 
@@ -87,11 +88,15 @@ Keep to these limits:
   - boats: the moored barges and the river buses, and the lit pleasure boats along the Embankment;
   - Westminster's lamps and Albert Bridge's lights strung along its chains;
   - (done 2026-11-19: the water 4.5 m down between granite walls, the Embankment's lamps and festoons, moored and moving boats, the suspension bridges' bulbs. The rest is split into part 3.)
-- [ ] **The Thames, part 3:**
+- [x] **The Thames, part 3:**
   - the docks (`water=dock`) and the Lea's outlines round Queen Mary: bake them with the river so they are lowered and walled too (needs `bake_city.py` and a refetch);
-  - moor the boats at the real piers (OSM `man_made=pier`: Westminster, Embankment, Festival, Bankside, Tower) and the mapped houseboat moorings at Chelsea, in place of the procedural spacing;
+  - (done 2026-11-21: the canals, locks, docks and basins inside each map are set below their towpaths and quays between walls, with narrowboats and decks where streets cross. No refetch was needed: the site extracts already carry them. The Lea's tidal outlines were already lowered with the river. The rest is split into part 4.)
+- [ ] **The Thames, part 4:**
+  - the docks and basins beyond the 3 km map (Limehouse Basin, Shadwell Basin and the West India Docks at Queen Mary, City Road Basin at LSE, the Regent's Canal at King's Cross for UCL): draw them in the outer ring, lowered and walled like the river;
+  - moor the boats at the real piers (OSM `man_made=pier`: Westminster, Embankment, Festival, Bankside, Tower) and the mapped houseboat moorings at Chelsea, in place of the procedural spacing. Only Blackfriars and Cadogan piers are in the extracts now, so `pbf_filter.py` must keep `man_made=pier` and `mooring=*` (a refetch);
   - the foreshore at low tide: the shingle beaches below the walls at Bankside and Queenhithe;
-  - Westminster Bridge's triple-lantern lamp standards, and the dolphin lamps' shape on the Victoria Embankment.
+  - Westminster Bridge's triple-lantern lamp standards, and the dolphin lamps' shape on the Victoria Embankment;
+  - narrowboats with chimneys, roof clutter (bikes, plants, solar panels) and the towpath's moorings rings, close up.
 - [ ] **Trees:**
   - London plane silhouettes, taller and more open, with species from OSM `genus` / `species`;
   - more trees in Kensington Gardens and in the Bloomsbury squares;
@@ -112,6 +117,59 @@ Keep to these limits:
 - [ ] **Mobile:** use a smaller radius, merge small buildings into blocks, and use a lower-resolution map texture. Test frame times.
 
 ## Log
+
+- 2026-11-21 (night, branch `city-refine-2026-11-21`): the canals and docks set below their towpaths between walls, with narrowboats; shader programs shared; the far ground no longer drawn under the map.
+  - Realism: the Thames, part 3 (its first item; the rest is split into part 4).
+    - `bake_city.py` flags the impounded water as `dk` (map area index, level): 1 for canals and locks (`water=canal|lock`), 2 for docks and basins (`waterway=dock`, `water=dock|harbour|marina`, and named `water=basin` such as Battlebridge Basin; unnamed basins are fountains and park ponds and stay flush). No refetch: the site extracts already carry them. The rest of the JSON is unchanged.
+    - `city.js`: each one inside the map (clipped to it, clear of the river) is set down, canals 0.95 m and docks 1.7 m. It is cut from the map's ground alpha like the river at LSE and King's, its outline set 0.5 m out over the water so the ground always laps the wall. The far ground is cut round the map's square where the river stays clear of it (so it is never drawn under the map), else round the docks.
+    - `bridges.js`: the walls, one face each, dark and wet at the water and clearing upward to stock brick (canals) or granite (docks), with a pale coping within 1 km (600 m on mobile); no wall where two pieces at the same level meet. Narrowboats (15–21 m, a black hull, a long painted cabin, some lit) moored along both banks within 1.3 km (800 m on mobile). Where a road or railway crosses, a deck at street level with its fascia and brick parapets. All in the bridges' mesh: no new draw call.
+    - Queen Mary has 13 pieces in its map (the Regent's Canal past Mile End, the Hertford Union, the Lee Navigation's cuts and their locks), UCL 2 (the canal and basin by King's Cross, at the map's edge). Imperial, LSE and King's have none inside their maps; Limehouse, Shadwell and City Road basins are beyond the 3 km maps (part 4).
+  - Results by university (`renders/2026-11-21.jpg`, `-pairs.jpg`):
+    - Queen Mary: the clearest change. The Regent's Canal is a channel below its towpaths, brick walls catching the dawn along the bank, narrowboats moored nose to tail, and Mile End's road crossing on a deck. From the intro's own frames it shows as a darker, sharper channel past the campus.
+    - UCL: the canal by King's Cross sits below its towpath; it is at the map's edge, so small in the intro.
+    - Imperial, LSE and King's: unchanged to the eye (their lag changes below).
+  - Lag: the shader-programs item (backlog), plus the far ground and some triangles.
+    - `atmo()` now keys each program by its shader code rather than the material's name: unpatched materials share the haze program for their feature set, and the facades, foliage and triplanar surfaces share one program per patch family (`userData.prog`). Programs at start-up: UCL 118 → 44, Imperial 151 → 49, LSE 93 → 48, Queen Mary 91 → 46, King's 86 → 43; at the end of a run 203 → 73, 163 → 60, 102 → 56, 133 → 69, 125 → 63. That is where engine up falls, most on mobile.
+    - The far ground (`farGeo`) has the map's square cut out where the river stays clear of the map (UCL, Imperial, Queen Mary), so it is not shaded under the map at all. A first version triangulated the map's ground round the docks; under MSAA its many triangles cost Queen Mary desktop about 15% a frame, so the docks are cut from the ground's alpha instead. A second version drew the far ground first without depth and with no holes; that cost every mobile run 15–25%, and was dropped.
+    - Boat decks and Tower Bridge's roofs are real triangles, not quads with a degenerate half; the Thames' copings stop at 3.5 km and its walls at 6.5 km (under a pixel beyond); far tree canopies thin out from 1.1 km instead of 1.25 km. These pay for the canals' walls and boats.
+    - `render_intro.py`: `SHOTS=dir` for the frames, `PROGS=1` lists the programs, and it prints how the docks were cut.
+  - Before → after, batch runs (before at the start of the night from a copy of main's site, after at the end; Imperial's after row is from the final build, the others from the batch just before a bake change that only dropped Imperial's park ponds and some unnamed basins outside Queen Mary's map). Ms are swiftshader ms between frames, so only the change counts.
+
+    | Desktop | engine up | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 38 → 37 s | 2200 → 1933 / 237 → 237 / 0.73 → 0.71M | 2250 → 1933 / 202 → 202 / 0.84 → 0.83M | 3783 → 3550 / 646 → 646 / 3.00 → 2.99M |
+    | Imperial | 54 → 40 s | 2417 → 2117 / 381 → 381 / 0.88 → 0.86M | 2617 → 2483 / 359 → 359 / 1.11 → 1.10M | 2533 → 2383 / 479 → 479 / 1.42 → 1.39M |
+    | LSE | 38 → 39 s | 2117 → 2116 / 259 → 259 / 0.79 → 0.77M | 2083 → 2083 / 216 → 216 / 0.64 → 0.63M | 2500 → 2500 / 268 → 268 / 0.96 → 0.96M |
+    | Queen Mary | 37 → 29 s | 1933 → 1666 / 365 → 365 / 0.64 → 0.64M | 2067 → 1850 / 315 → 315 / 0.83 → 0.82M | 2700 → 2400 / 361 → 361 / 1.64 → 1.63M |
+    | King's | 38 → 33 s | 1983 → 1967 / 253 → 253 / 0.77 → 0.75M | 1900 → 1966 / 224 → 224 / 0.57 → 0.56M | 2317 → 2333 / 299 → 299 / 0.80 → 0.79M |
+
+    | Mobile | engine up | 0.36: ms / draws / tris | 0.47: ms / draws / tris | 0.56: ms / draws / tris |
+    |---|---|---|---|---|
+    | UCL | 12.6 → 7.8 s | 233 → 217 / 178 → 178 / 0.47 → 0.47M | 217 → 250 / 165 → 165 / 0.51 → 0.51M | 516 → 483 / 451 → 451 / 2.25 → 2.24M |
+    | Imperial | 19.0 → 11.8 s | 200 → 217 / 308 → 308 / 0.42 → 0.41M | 217 → 250 / 288 → 288 / 0.55 → 0.54M | 283 → 267 / 422 → 422 / 0.98 → 0.98M |
+    | LSE | 12.7 → 10.5 s | 200 → 217 / 188 → 186 / 0.36 → 0.35M | 200 → 183 / 170 → 170 / 0.40 → 0.39M | 233 → 267 / 229 → 229 / 0.73 → 0.73M |
+    | Queen Mary | 13.6 → 10.9 s | 200 → 217 / 264 → 264 / 0.34 → 0.34M | 200 → 167 / 248 → 248 / 0.40 → 0.39M | 284 → 250 / 316 → 315 / 0.87 → 0.85M |
+    | King's | 12.8 → 11.0 s | 217 → 217 / 191 → 191 / 0.38 → 0.37M | 200 → 300 / 177 → 177 / 0.35 → 0.34M | 233 → 350 / 262 → 262 / 0.58 → 0.58M |
+
+  - Interleaved runs (before, after, before, after) where the batch showed ms up, all on the final far-ground and alpha-cut build:
+    - King's mobile: 0.36 at 233 / 217 → 217 / 233 ms; 0.47 at 300 / 250 → 267 / 217 ms; 0.56 at 316 / 267 → 233 / 283 ms (the batch's 300 / 350 was a hiccup); engine up 14.2 / 12.5 → 11.0 / 11.4 s.
+    - UCL mobile: 0.36 at 250 → 233 ms; 0.47 at 267 → 267 ms; 0.56 at 567 → 550 ms; engine up 12.4 → 8.0 s.
+    - Imperial mobile: 0.36 at 233 → 233 ms; 0.47 at 267 → 250 ms; 0.56 at 317 → 283 ms; engine up 19.7 → 12.4 s.
+    - LSE mobile: 0.36 at 233 → 217 ms; 0.47 at 250 → 217 ms; 0.56 at 217 → 217 ms.
+    - Queen Mary desktop: 0.36 at 1817 → 1667 ms; 0.47 at 2700 → 1983 ms; 0.56 at 2700 → 2433 ms; engine up 38.9 → 32.4 s.
+    - Imperial desktop: 0.36 at 2500 → 2250 ms; 0.47 at 2850 → 2600 ms; 0.56 at 2583 → 2450 ms; engine up 57.0 → 50.4 s.
+    - UCL desktop: 0.36 at 2233 → 1983 ms; 0.47 at 2300 → 1950 ms; 0.56 at 3883 → 3683 ms.
+    - So ms per frame is lower or level within noise everywhere (mobile frames are rAF-quantised at about 17 ms); engine up is lower everywhere but LSE desktop (level, 38 → 39 s, within the ±10 s noise). Draw calls level (UCL mobile at 0.36 reads 180 in some after runs, +2); triangles lower or level everywhere, by up to 0.03M.
+  - Size: city JSON gzipped +17 to +108 bytes (`dk`). City vertices -0.3% (UCL, Imperial, LSE, King's) and +0.3% (Queen Mary, the canals) on desktop; -1% / +0.4% on mobile (desktop 2.54M to 2.74M, mobile 0.83M to 0.89M).
+  - Checks:
+    - no console errors at any of the five universities, on desktop or mobile;
+    - the engine starts everywhere;
+    - the hand-built UCL fallback still works with `ucl.json` missing (only its expected 404; the frames match main's fallback. The skip check reads before the fade ends under swiftshader, on main's build too).
+  - The bake commits were pushed with `[skip ci]`, so the branch kept main's extracts. Merging this into main changes `bake_city.py` there, which re-runs the fetch and brings the refreshed extracts (and the usual park-tree reshuffle), as the monthly refresh would.
+  - Sheets: `renders/2026-11-21.jpg` (one after frame per university: the canals at Queen Mary and UCL close up, Imperial, LSE and King's at 0.47), `-pairs.jpg` (Queen Mary's canal, Mile End and UCL's canal, before and after).
+  - Next:
+    - "The Thames, part 4": the docks beyond the map (Limehouse and Shadwell basins at Queen Mary, City Road Basin at LSE) in the outer ring, boats at the real piers (needs `man_made=pier` in the extract), the foreshore, Westminster's lamps;
+    - "The remaining programs" is now the top lag item.
 
 - 2026-11-20 (day, branch `intro-fast-load`, at Ammaar's request: "the loading takes ages"): the intro starts in the clouds at once and the city is built behind them.
   - Before, every university's world (city, campus, shaders, buffers) was built in one go before the first frame. The picker took 8.5–13.5 s to appear under swiftshader, behind a 7–10 s freeze. Picking anything but UCL threw that world away and froze the page again for 5–14 s before the intro started.
