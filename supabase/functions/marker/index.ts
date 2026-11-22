@@ -240,11 +240,11 @@ ${ctx}
 TOPICS:
 ${topics.map((t) => `${t.position}: ${t.title}${t.summary ? " — " + t.summary : ""}`).join("\n")}
 
-For EACH topic write 3 "vsa", 2 "sba" and 1 "hard".
+For EACH topic write 4 "sba" and 2 "hard". Medicine on this site is multiple choice only: write no "vsa".
 ${INSTANT_RULES(U)}
 
 Return one JSON object:
-{"topics": [{"pos": 0, "vsa": [{"q": "...", "a": "...", "accept": ["..."], "why": "..."}], "sba": [{"q": "...", "options": ["...", "...", "...", "...", "..."], "correct": "C", "why": "..."}], "hard": [{"q": "...", "options": [...], "correct": "A", "why": "..."}]}]}`;
+{"topics": [{"pos": 0, "sba": [{"q": "...", "options": ["...", "...", "...", "...", "..."], "correct": "C", "why": "..."}], "hard": [{"q": "...", "options": [...], "correct": "A", "why": "..."}]}]}`;
   const w = await callClaude(apiKey, systemFor(U), prompt, 20000, { think: false });
   if (!w.ok) return { error: "write upstream " + w.status + ": " + w.text, status: w.status, text: w.text };
   await spend(w.usage);
@@ -255,7 +255,8 @@ Return one JSON object:
   list.forEach((tp: any) => {
     const topic = topics.find((t) => t.position === +tp?.pos) || null;
     if (!topic) return;
-    (Array.isArray(tp.vsa) ? tp.vsa : []).slice(0, 5).forEach((r: any) => { const c = cleanInstant(r, "vsa"); if (c) items.push({ ...c, ref: "V" + (++nv), tier: "foundation", topic }); });
+    // medicine is multiple choice only: any "vsa" the model returns is ignored
+    ([] as any[]).forEach((r: any) => { const c = cleanInstant(r, "vsa"); if (c) items.push({ ...c, ref: "V" + (++nv), tier: "foundation", topic }); });
     (Array.isArray(tp.sba) ? tp.sba : []).slice(0, 4).forEach((r: any) => { const c = cleanInstant(r, "sba"); if (c) items.push({ ...c, ref: "S" + (++ns), tier: "exam", topic }); });
     (Array.isArray(tp.hard) ? tp.hard : []).slice(0, 2).forEach((r: any) => { const c = cleanInstant(r, "sba"); if (c) items.push({ ...c, ref: "S" + (++ns), tier: "first", topic }); });
   });

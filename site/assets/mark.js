@@ -751,7 +751,7 @@
   }
   // Tiered practice: the three levels as grade targets
   var TIERS = [['', 'All levels', 'Every question'], ['foundation', 'Pass (50%)', 'Quick recall'], ['exam', 'Merit (60%)', 'Exam-style'], ['first', '1st Class (70%+)', 'Stretch']];
-  var MTIERS = [['', 'All questions', 'VSA and SBA'], ['foundation', 'Very short answer', '1 to 5 words'], ['exam', 'Single best answer', 'SBA'], ['first', 'Harder SBA', 'Data and application']];
+  var MTIERS = [['', 'All questions', 'Single best answer'], ['exam', 'Single best answer', 'SBA'], ['first', 'Harder SBA', 'Data and application']];
 
   // ---------- Parse mode: lecture slides, transcripts or notes → micro-units with flashcards ----------
   var UKEY = 'unizy:units:';

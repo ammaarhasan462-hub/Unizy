@@ -1,0 +1,5 @@
+-- 22 Nov 2026: medicine (ucl_modules.exam_format = 'sba') is multiple choice ONLY.
+-- Every non-SBA question in medicine modules (recall, essay, short, problem, vsa: 1,576 rows) was copied to
+-- module_questions_med_archive and deleted. Trigger module_questions_med_guard silently drops any new non-SBA
+-- row for a medicine module, whoever inserts it (pack writers, marker function).
+-- Medicine packs left with no questions went back to 'queued'; pack_locks were released so the writers refill them with SBAs.

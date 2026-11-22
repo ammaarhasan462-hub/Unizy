@@ -85,7 +85,7 @@ def load():
     mods, topics, qs = {}, {}, {}
     for i in range(0, len(codes), 40):
         part = codes[i:i + 40]
-        for m in get('ucl_modules', {'select': 'code,title,uni,department,level,credits,ects,summary', 'code': in_list(part)}):
+        for m in get('ucl_modules', {'select': 'code,title,uni,department,level,credits,ects,summary,exam_format', 'code': in_list(part)}):
             mods[m['code']] = m
         for t in get('module_topics', {'select': 'code,position,title', 'code': in_list(part), 'order': 'code.asc,position.asc'}):
             topics.setdefault(t['code'], []).append(t['title'])
@@ -97,6 +97,11 @@ def load():
         if not m or not m.get('title'):
             continue
         q = qs.get(p['code'], [])
+        med = m.get('exam_format') == 'sba'
+        if med:
+            q = [x for x in q if x.get('kind') == 'sba']  # medicine is multiple choice only
+            if not q:
+                continue
         tiers = {'foundation': 0, 'exam': 0, 'first': 0}
         for x in q:
             if x.get('tier') in tiers:
@@ -106,10 +111,32 @@ def load():
         out.append({'code': p['code'], 'title': m['title'].strip(), 'uni': m.get('uni') or 'ucl',
                     'dept': (m.get('department') or '').strip(), 'level': m.get('level'),
                     'summary': m.get('summary') or '', 'topics': topics.get(p['code'], []),
-                    'n': len(q) or p.get('questions') or 0, 'tiers': tiers,
+                    'n': len(q) or p.get('questions') or 0, 'tiers': tiers, 'med': med,
                     'sample': plain(sample['question']) if sample else '',
                     'day': (p.get('finished_at') or '')[:10]})
     return out
+
+
+def med_body(m, short, full, code, title, try_url):
+    t = m['tiers']
+    mix = '%d single best answer questions' % (t['exam'] + t['first'])
+    if t['first']:
+        mix = '%d single best answer questions, including %d harder data and application questions' % (t['exam'] + t['first'], t['first'])
+    h = ['<article class="mk-seo">',
+         '<p class="mk-seo-k">%s · %s%s</p>' % (e(short), e(code), (' · ' + e(m['dept'])) if m['dept'] else ''),
+         '<h1>%s %s: single best answer practice questions</h1>' % (e(code), e(title)),
+         '<p>Practise for %s %s at %s with %s, written from the module’s published description in the style of UK medical school exams. '
+         'Pick an answer and see straight away whether you were right, with an explanation of why.</p>' % (e(code), e(title), e(full), e(mix)),
+         '<p><a class="btn primary" href="%s">Try one free, no sign-up</a> <a href="/signup">Create a free account</a></p>' % e(try_url)]
+    if m['sample']:
+        h += ['<h2>Example %s question</h2>' % e(code), '<blockquote>%s</blockquote>' % e(clip(m['sample'], 420))]
+    if m['topics']:
+        h.append('<h2>Topics covered</h2><ol>' + ''.join('<li>%s</li>' % e(x) for x in m['topics'][:20]) + '</ol>')
+    if m['summary']:
+        h += ['<h2>About the module</h2>', '<p>%s</p>' % e(clip(m['summary'], 600))]
+    h.append('<p class="mk-fine">Unizy is an independent revision tool and is not affiliated with or endorsed by %s. '
+             'Practice questions are not taken from any university’s exam papers.</p></article>' % e(full))
+    return '\n'.join(h)
 
 
 def module_body(m):
@@ -117,6 +144,8 @@ def module_body(m):
     code, title = m['code'], m['title']
     try_url = '/modules/%s?q=start' % code
     t = m['tiers']
+    if m.get('med'):
+        return med_body(m, short, full, code, title, try_url)
     parts = []
     if t['foundation']:
         parts.append('%d quick-recall questions' % t['foundation'])
@@ -205,6 +234,10 @@ def main():
         title = '%s %s practice questions, marked (%s) · Unizy' % (m['code'], m['title'], short)
         desc = clip('%d exam-style practice questions for %s %s at %s%s. Get your answer marked against %s’s grade bands in 30 seconds. First one free, no sign-up.'
                     % (m['n'], m['code'], m['title'], full, (', across %d topics' % len(m['topics'])) if m['topics'] else '', short), 300)
+        if m.get('med'):
+            title = '%s %s single best answer questions (%s) · Unizy' % (m['code'], m['title'], short)
+            desc = clip('%d single best answer practice questions for %s %s at %s%s, with instant feedback and explanations. First one free, no sign-up.'
+                        % (m['n'], m['code'], m['title'], full, (', across %d topics' % len(m['topics'])) if m['topics'] else ''), 300)
         url = ORIGIN + '/modules/' + m['code']
         page = meta_swap(tpl, title, desc, url)
         page = re.sub(r'<div id="mk">.*?</div></main>', lambda _: '<div id="mk">' + module_body(m) + '</div></main>', page, count=1, flags=re.S)

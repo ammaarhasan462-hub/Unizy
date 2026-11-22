@@ -46,7 +46,7 @@ def emit(code, T, expect_total):
     print("end $$;")
 
 
-# ---- Medicine (exam_format = 'sba'): instant bank + recall cards ----
+# ---- Medicine (exam_format = 'sba'): single best answer ONLY (no recall, VSA or written; a DB trigger drops them) ----
 import random
 
 
@@ -66,6 +66,8 @@ def emit_med(code, T, seed=1):
     rows, i = [], 0
     for tp in sorted(T):
         for x in T[tp]:
+            if x["kind"] != "sba":
+                continue  # medicine is multiple choice only
             if x["kind"] == "recall":
                 vals = (x["q"], x["a"], None, None, None)
             elif x["kind"] == "vsa":
