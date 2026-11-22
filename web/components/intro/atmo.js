@@ -172,7 +172,13 @@ export function atmo(material) {
       );
     if (material.userData.patch) material.userData.patch(shader);
   };
-  const key = material.userData.key || '';
-  material.customProgramCacheKey = () => 'atmo' + key;
+  // The program is keyed by its shader code, not by the material's name: every unpatched material shares the haze
+  // program for its feature set (map, vertex colours, instancing...), so colour, roughness and textures are only
+  // uniforms. A patched one is keyed by its patch family (userData.prog, where many materials run the same patch with
+  // their own uniforms: facades, foliage, triplanar surfaces), else by its own key.
+  material.customProgramCacheKey = () => {
+    const u = material.userData;
+    return 'atmo' + (u.prog != null ? u.prog : u.patch ? u.key || '' : '');
+  };
   return material;
 }

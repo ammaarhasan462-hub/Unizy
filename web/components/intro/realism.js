@@ -94,6 +94,7 @@ function fixMat(glow) {
 
 // world-space (triplanar) mapping for the long boxes of the shelves and tables, which have no useful UVs
 function triplanar(mat, scale) {
+  mat.userData.prog = 'tri';
   mat.userData.patch = (shader) => {
     shader.uniforms.uTri = { value: scale };
     shader.vertexShader = shader.vertexShader

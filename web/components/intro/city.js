@@ -1095,15 +1095,119 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // the river (the Thames and the Lea as mapped, out to RIVER_R) runs WL metres below the streets, between granite
   // walls. The ground beyond the map is cut round it here (callers use farGeo for their far ground); the map's own
   // ground has it cut out of its texture's alpha. If the cut fails, the river stays flush with the streets as before.
+  // The canals and docks are cut out of both grounds as holes in their geometry (no alpha test).
   const rv = (data.rv || []).map((p) => p.map(dec));
+  // is (x, z) on the river as mapped, or within m metres of its bank? (exact, for the map's own water areas)
+  const rvBox = rv.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
+  const onRiver = (x, z, m) => rv.some((rings, i) => {
+    const [x0, x1, z0, z1] = rvBox[i];
+    if (x < x0 - m || x > x1 + m || z < z0 - m || z > z1 + m) return false;
+    let ins = false, d = Infinity;
+    rings.forEach((ring) => {
+      for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+        const [xa, za] = ring[a], [xb, zb] = ring[b];
+        if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins;
+        const dx = xb - xa, dz = zb - za, t = Math.max(0, Math.min(1, ((x - xa) * dx + (z - za) * dz) / (dx * dx + dz * dz || 1)));
+        d = Math.min(d, Math.hypot(x - xa - dx * t, z - za - dz * t));
+      }
+    });
+    return ins || d < m;
+  });
+  // canals and locks (lv 1) and docks and basins (lv 2), as flagged by the bake (dk: area index, level): set below their
+  // towpath or quay between walls, cut out of the map's ground and the far ground like the river (as holes in the
+  // geometry, no alpha test). Clipped to the map, and clear of the river; pieces may meet edge to edge (a canal and its
+  // locks). Each cut is checked by area; if it fails, the docks that overlap others are left out, then all of them.
+  const DROP = [0, 0.95, 1.7];
+  const cutSq = (half, holes) => {
+    try {
+      const v2 = (ring) => ring.map(([x, z]) => new THREE.Vector2(x, -z));
+      const shp = new THREE.Shape(v2([[-half, half], [half, half], [half, -half], [-half, -half]]));
+      const isl = [];
+      let cut = 0;
+      holes.forEach((rings) => {
+        shp.holes.push(new THREE.Path(v2(rings[0])));
+        cut += Math.abs(ringArea(rings[0]));
+        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
+      });
+      const g = new THREE.ShapeGeometry([shp, ...isl]);
+      const pa = g.attributes.position, ix = g.index, uv = g.attributes.uv;
+      let got = 0;
+      for (let i = 0; i < ix.count; i += 3) {
+        const a = ix.getX(i), b = ix.getX(i + 1), c = ix.getX(i + 2);
+        got += Math.abs((pa.getX(b) - pa.getX(a)) * (pa.getY(c) - pa.getY(a)) - (pa.getX(c) - pa.getX(a)) * (pa.getY(b) - pa.getY(a))) / 2;
+      }
+      // the triangulation must leave exactly the holes' area uncovered
+      if (Math.abs(4 * half * half - cut - got) < Math.max(40, cut * 0.02)) {
+        for (let i = 0; i < pa.count; i++) uv.setXY(i, pa.getX(i) / (2 * half) + 0.5, pa.getY(i) / (2 * half) + 0.5);
+        return g;
+      }
+      g.dispose();
+    } catch { /* fall through */ }
+    return null;
+  };
+  // a ring clipped to the square |x|, |z| <= B (Sutherland-Hodgman)
+  const clipSq = (ring, B) => {
+    let out = ring;
+    for (const [ax, sg] of [[0, 1], [0, -1], [1, 1], [1, -1]]) {
+      const inp = out; out = [];
+      for (let i = 0; i < inp.length; i++) {
+        const P = inp[i], Q = inp[(i + 1) % inp.length];
+        const pin = sg * P[ax] <= B, qin = sg * Q[ax] <= B;
+        if (pin) out.push(P);
+        if (pin !== qin) { const t = (sg * B - P[ax]) / (Q[ax] - P[ax]); out.push([P[0] + (Q[0] - P[0]) * t, P[1] + (Q[1] - P[1]) * t]); }
+      }
+      if (out.length < 3) return [];
+    }
+    return out;
+  };
+  let docks = [], groundGeo = null;
+  {
+    const DK = data.dk || [], cand = [];
+    for (let i = 0; i + 1 < DK.length; i += 2) {
+      const a = data.a[DK[i]];
+      if (!a || !DROP[DK[i + 1]]) continue;
+      const rings = [dec(a[1]), ...a.slice(2).map(dec)].map((r2) => clipSq(r2, H - 4)).filter((r2) => r2.length >= 3);
+      if (!rings.length) continue;
+      const ar = Math.abs(ringArea(rings[0]));
+      if (ar < 80) continue;
+      if (rings[0].some(([x, z], i) => i % 3 === 0 && onRiver(x, z, 3))) continue;
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
+      cand.push({ ai: DK[i], lv: DK[i + 1], y: -DROP[DK[i + 1]], rings, ar, bb: [x0, x1, z0, z1] });
+    }
+    cand.sort((p, q) => q.ar - p.ar);
+    // the docks whose outlines cross into an accepted one's (not just meeting it) are left out
+    const inRing = (ring, x, z) => { let ins = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) { const [xa, za] = ring[a], [xb, zb] = ring[b]; if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins; } return ins; };
+    const mid = (ring) => { let cx = 0, cz = 0; ring.forEach(([x, z]) => { cx += x; cz += z; }); return [cx / ring.length, cz / ring.length]; };
+    const all = [], apart = [];
+    cand.forEach((d) => {
+      const hit = (o) => d.bb[0] < o.bb[1] + 2 && d.bb[1] > o.bb[0] - 2 && d.bb[2] < o.bb[3] + 2 && d.bb[3] > o.bb[2] - 2;
+      // overlapping, not meeting: a vertex (nudged towards its own middle) inside the other
+      const [cx, cz] = mid(d.rings[0]);
+      const cross = (o) => hit(o) && d.rings[0].some(([x, z]) => { const l = Math.hypot(cx - x, cz - z) || 1; return inRing(o.rings[0], x + ((cx - x) / l) * 0.6, z + ((cz - z) / l) * 0.6); });
+      if (!all.some(cross)) all.push(d);
+      if (!apart.some(hit)) apart.push(d);
+    });
+    for (const set of [all, apart]) {
+      if (!set.length) break;
+      groundGeo = cutSq(H, set.map((d) => d.rings));
+      if (groundGeo) { docks = set; break; }
+    }
+  }
   let farGeo = null;
-  if (rv.length) {
+  for (const withDocks of docks.length ? [true, false] : [false]) {
+    if (!rv.length || farGeo) break;
     try {
       const FS = 30000, v2 = (ring) => ring.map(([x, z]) => new THREE.Vector2(x, -z));
       const shp = new THREE.Shape(v2([[-FS, FS], [FS, FS], [FS, -FS], [-FS, -FS]]));
       const isl = [];
       let cut = 0;
       rv.forEach((rings) => {
+        shp.holes.push(new THREE.Path(v2(rings[0])));
+        cut += Math.abs(ringArea(rings[0]));
+        rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
+      });
+      if (withDocks) docks.forEach(({ rings }) => {
         shp.holes.push(new THREE.Path(v2(rings[0])));
         cut += Math.abs(ringArea(rings[0]));
         rings.slice(1).forEach((h) => { isl.push(new THREE.Shape(v2(h))); cut -= Math.abs(ringArea(h)); });
@@ -1121,25 +1225,13 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
         farGeo = g;
       } else g.dispose();
     } catch { farGeo = null; }
+    // if the docks break the cut, try again with the river alone (and the map's ground stays whole)
+    if (!farGeo && withDocks) docks = [];
   }
+  if (!farGeo) docks = [];
+  if (!docks.length && groundGeo) { groundGeo.dispose(); groundGeo = null; }
   const low = !!farGeo;
   const WL = -4.5;
-  // is (x, z) on the river as mapped, or within m metres of its bank? (exact, for the map's own water areas)
-  const rvBox = rv.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
-  const onRiver = (x, z, m) => rv.some((rings, i) => {
-    const [x0, x1, z0, z1] = rvBox[i];
-    if (x < x0 - m || x > x1 + m || z < z0 - m || z > z1 + m) return false;
-    let ins = false, d = Infinity;
-    rings.forEach((ring) => {
-      for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
-        const [xa, za] = ring[a], [xb, zb] = ring[b];
-        if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins;
-        const dx = xb - xa, dz = zb - za, t = Math.max(0, Math.min(1, ((x - xa) * dx + (z - za) * dz) / (dx * dx + dz * dz || 1)));
-        d = Math.min(d, Math.hypot(x - xa - dx * t, z - za - dz * t));
-      }
-    });
-    return ins || d < m;
-  });
   const doBuilding = (rec, bi) => {
     const [st, h, minhIn, rsIn, rhIn, colH, rcolH, of, ...hf] = rec;
     let minh = minhIn;
@@ -1569,7 +1661,9 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     ctx.globalCompositeOperation = 'source-over';
     mapTex.needsUpdate = true;
   }
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(cutMap ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
+  // the map's ground: a plane, or with the canals and docks cut out of it (above)
+  const dockY = new Map(docks.map((d) => [d.ai, d.y]));
+  const ground = new THREE.Mesh(groundGeo || new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(cutMap ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   group.add(ground);
@@ -1588,7 +1682,10 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       waterGeos.push(g);
     } catch { /* skip */ }
   };
-  areas.filter((a) => a.kind === 0).forEach((a) => {
+  areas.forEach((a, ai) => {
+    if (a.kind !== 0) return;
+    // a canal or dock: at its own level, below the towpath or quay
+    if (dockY.has(ai)) { shapeGeo(a.rings, dockY.get(ai)); return; }
     if (Math.abs(ringArea(a.rings[0])) < 60) return;
     const n0 = waterGeos.length;
     shapeGeo(a.rings, 0.3);
@@ -1639,8 +1736,8 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   }
   // the bridges over it
   // and, with the river lowered, its granite walls, the Embankment's lamps and festoons, and the boats on it
-  if ((data.bg && data.bg.length) || low) {
-    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
+  if ((data.bg && data.bg.length) || low || docks.length) {
+    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), docks, crossings: docks.length ? [...roads.map((rd) => ({ pts: rd.pts, w: rd.w, rail: false })), ...(data.rl || []).map((f) => ({ pts: dec(f), w: 7, rail: true }))] : [], seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
   }
 
   yield;
@@ -1755,5 +1852,6 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   }
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });
 
+  group.userData.docks = docks.length;
   return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec), riverTex, inRiver, farGeo };
 }

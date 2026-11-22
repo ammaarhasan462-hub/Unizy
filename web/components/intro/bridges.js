@@ -14,7 +14,7 @@ import { plainMaterial, rng } from './materials';
 
 const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function buildBridges(list, { mobile = false, water = 0, banks = null, river = [], seed = 1 } = {}) {
+export function buildBridges(list, { mobile = false, water = 0, banks = null, river = [], docks = null, crossings = [], seed = 1 } = {}) {
   const P = [], N = [], C = [], I = [];
   const LP = [], LI = [], LC = [];
   const BULB = new THREE.Color(3.2, 2.3, 1.35), CHAIN = new THREE.Color(3.4, 2.9, 2.1), FEST = new THREE.Color(3.0, 2.4, 1.5);
@@ -280,16 +280,63 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     }
   });
 
+  const rnd = rng(seed * 977 + 5);
+  const g = new THREE.Color();
+  // boats: a hull (pointed bow) as a prism from just under the water, and a cabin on deck
+  const prism = (c, u, ring, y0, y1, col, top = true) => {
+    const P2 = ring.map(([s, v]) => [c[0] + u[0] * s - u[1] * v, c[1] + u[1] * s + u[0] * v]);
+    let ox = 0, oz = 0; P2.forEach(([x, z]) => { ox += x / P2.length; oz += z / P2.length; });
+    for (let i = 0; i < P2.length; i++) {
+      const [x0, z0] = P2[i], [x1, z1] = P2[(i + 1) % P2.length];
+      quad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], col, [(x0 + x1) / 2 - ox, 0, (z0 + z1) / 2 - oz]);
+    }
+    if (top) for (let i = 1; i < P2.length - 1; i++) quad([P2[0][0], y1, P2[0][1]], [P2[i][0], y1, P2[i][1]], [P2[i + 1][0], y1, P2[i + 1][1]], [P2[i + 1][0], y1, P2[i + 1][1]], col, UP);
+    return P2;
+  };
+  const WARM = new THREE.Color(1.15, 0.82, 0.5), DIM = new THREE.Color(0.55, 0.45, 0.32);
+  const boat = (c, u, kind, wl = water) => {
+    const k = KINDS[kind];
+    const Lb = k.L[0] + rnd() * (k.L[1] - k.L[0]), Bb = k.B, hl = Lb / 2, hb = Bb / 2;
+    const hull = [[-hl, -hb], [hl - Bb * 0.9, -hb], [hl, 0], [hl - Bb * 0.9, hb], [-hl, hb]];
+    const hc = k.hull[Math.floor(rnd() * k.hull.length)];
+    const yd = wl + k.free;
+    prism(c, u, hull, wl - 0.5, yd, g.set(hc));
+    if (k.band) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
+    if (k.cab) {
+      const c0 = -hl + k.cab[0] * Lb, c1 = -hl + k.cab[1] * Lb, cb = hb - k.cab[2];
+      const ch = k.cab[3];
+      const cc = k.cabCol[Math.floor(rnd() * k.cabCol.length)];
+      const P2 = prism(c, u, [[c0, -cb], [c1, -cb], [c1, cb], [c0, cb]], yd, yd + ch, g.set(cc));
+      // windows along both sides, lit warm (or dimmer, some dark)
+      const lit = rnd() < k.lit ? WARM : rnd() < 0.5 ? DIM : null;
+      if (lit) for (const [a, b] of [[0, 1], [2, 3]]) {
+        const [xa, za] = P2[a], [xb, zb] = P2[b];
+        const mx = (xa + xb) / 2 - c[0], mz = (za + zb) / 2 - c[1], ml = Math.hypot(mx, mz) || 1, ox = (mx / ml) * 0.04, oz = (mz / ml) * 0.04;
+        const p0 = [xa + (xb - xa) * 0.08 + ox, yd + ch * 0.35, za + (zb - za) * 0.08 + oz], p1 = [xa + (xb - xa) * 0.92 + ox, yd + ch * 0.35, za + (zb - za) * 0.92 + oz];
+        lampStrip(p0, p1, ch * 0.38, lit);
+      }
+      if (k.cab[4]) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
+    }
+    return Bb;
+  };
+  // L range, beam, freeboard, hull colours, band, cabin [start, end (as fractions of length), inset, height, wheelhouse]
+  const KINDS = {
+    barge: { L: [24, 32], B: 6.4, free: 1.1, hull: ['#262321', '#3b2a22', '#2c2f31'] },
+    cruiser: { L: [28, 38], B: 7.0, free: 1.3, hull: ['#e8e6e0', '#dedcd5'], band: '#21375d', cab: [0.08, 0.78, 0.5, 2.3, 1], cabCol: ['#efede7', '#e3e1da'], lit: 0.7 },
+    house: { L: [17, 24], B: 4.6, free: 0.9, hull: ['#1f3328', '#22304a', '#2a2826', '#5b2524'], cab: [0.12, 0.85, 0.35, 2.0, 0], cabCol: ['#6b4f3a', '#3d5a49', '#c9c1ad', '#2f3e57'], lit: 0.45 },
+    clipper: { L: [34, 40], B: 9.0, free: 1.4, hull: ['#e4e6e8'], band: '#1d2226', cab: [0.12, 0.8, 0.6, 2.4, 0], cabCol: ['#2b3138'], lit: 0.6 },
+    // canal narrowboats: 7 ft beam, a black hull low in the water, a long painted cabin nearly the hull's width
+    narrow: { L: [15, 21], B: 2.1, free: 0.4, hull: ['#151515', '#1c1a18', '#20262a'], cab: [0.1, 0.88, 0.13, 1.05, 0], cabCol: ['#1f4a33', '#6a1f24', '#1f2f55', '#2a2a2a', '#8a2a1e', '#2d5a4a', '#3b2a4a'], lit: 0.3 },
+  };
   if (banks) riverside();
+  if (docks && docks.length) docksides();
 
   // ---------------------------------------------------------------- the river walls, the Embankment, the boats
   function riverside() {
-    const rnd = rng(seed * 977 + 5);
     const TOP = 0.95, TIDE = water + 2.3, LIP = 0.6;
     const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 3000 : 4500;
     const granite = new THREE.Color('#8f8b82'), wet = new THREE.Color('#47463d'), coping = new THREE.Color('#aaa69c'), farWall = new THREE.Color('#77736a');
     const lampPost = new THREE.Color('#1e2724');
-    const g = new THREE.Color();
     // is (x, z) under or beside a bridge (the walls drop their parapet there, lamps and boats keep clear)?
     const bridgeAt = (x, z, m) => rects.some(([cx, cz, ca, sa, L, W]) => {
       const dx = x - cx, dz = z - cz;
@@ -371,50 +418,6 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       }
     });
 
-    // boats: a hull (pointed bow) as a prism from just under the water, and a cabin on deck
-    const prism = (c, u, ring, y0, y1, col, top = true) => {
-      const P2 = ring.map(([s, v]) => [c[0] + u[0] * s - u[1] * v, c[1] + u[1] * s + u[0] * v]);
-      let ox = 0, oz = 0; P2.forEach(([x, z]) => { ox += x / P2.length; oz += z / P2.length; });
-      for (let i = 0; i < P2.length; i++) {
-        const [x0, z0] = P2[i], [x1, z1] = P2[(i + 1) % P2.length];
-        quad([x0, y0, z0], [x1, y0, z1], [x1, y1, z1], [x0, y1, z0], col, [(x0 + x1) / 2 - ox, 0, (z0 + z1) / 2 - oz]);
-      }
-      if (top) for (let i = 1; i < P2.length - 1; i++) quad([P2[0][0], y1, P2[0][1]], [P2[i][0], y1, P2[i][1]], [P2[i + 1][0], y1, P2[i + 1][1]], [P2[i + 1][0], y1, P2[i + 1][1]], col, UP);
-      return P2;
-    };
-    const WARM = new THREE.Color(1.15, 0.82, 0.5), DIM = new THREE.Color(0.55, 0.45, 0.32);
-    const boat = (c, u, kind) => {
-      const k = KINDS[kind];
-      const Lb = k.L[0] + rnd() * (k.L[1] - k.L[0]), Bb = k.B, hl = Lb / 2, hb = Bb / 2;
-      const hull = [[-hl, -hb], [hl - Bb * 0.9, -hb], [hl, 0], [hl - Bb * 0.9, hb], [-hl, hb]];
-      const hc = k.hull[Math.floor(rnd() * k.hull.length)];
-      const yd = water + k.free;
-      prism(c, u, hull, water - 0.5, yd, g.set(hc));
-      if (k.band) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
-      if (k.cab) {
-        const c0 = -hl + k.cab[0] * Lb, c1 = -hl + k.cab[1] * Lb, cb = hb - k.cab[2];
-        const ch = k.cab[3];
-        const cc = k.cabCol[Math.floor(rnd() * k.cabCol.length)];
-        const P2 = prism(c, u, [[c0, -cb], [c1, -cb], [c1, cb], [c0, cb]], yd, yd + ch, g.set(cc));
-        // windows along both sides, lit warm (or dimmer, some dark)
-        const lit = rnd() < k.lit ? WARM : rnd() < 0.5 ? DIM : null;
-        if (lit) for (const [a, b] of [[0, 1], [2, 3]]) {
-          const [xa, za] = P2[a], [xb, zb] = P2[b];
-          const mx = (xa + xb) / 2 - c[0], mz = (za + zb) / 2 - c[1], ml = Math.hypot(mx, mz) || 1, ox = (mx / ml) * 0.04, oz = (mz / ml) * 0.04;
-          const p0 = [xa + (xb - xa) * 0.08 + ox, yd + ch * 0.35, za + (zb - za) * 0.08 + oz], p1 = [xa + (xb - xa) * 0.92 + ox, yd + ch * 0.35, za + (zb - za) * 0.92 + oz];
-          lampStrip(p0, p1, ch * 0.38, lit);
-        }
-        if (k.cab[4]) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
-      }
-      return Bb;
-    };
-    // L range, beam, freeboard, hull colours, band, cabin [start, end (as fractions of length), inset, height, wheelhouse]
-    const KINDS = {
-      barge: { L: [24, 32], B: 6.4, free: 1.1, hull: ['#262321', '#3b2a22', '#2c2f31'] },
-      cruiser: { L: [28, 38], B: 7.0, free: 1.3, hull: ['#e8e6e0', '#dedcd5'], band: '#21375d', cab: [0.08, 0.78, 0.5, 2.3, 1], cabCol: ['#efede7', '#e3e1da'], lit: 0.7 },
-      house: { L: [17, 24], B: 4.6, free: 0.9, hull: ['#1f3328', '#22304a', '#2a2826', '#5b2524'], cab: [0.12, 0.85, 0.35, 2.0, 0], cabCol: ['#6b4f3a', '#3d5a49', '#c9c1ad', '#2f3e57'], lit: 0.45 },
-      clipper: { L: [34, 40], B: 9.0, free: 1.4, hull: ['#e4e6e8'], band: '#1d2226', cab: [0.12, 0.8, 0.6, 2.4, 0], cabCol: ['#2b3138'], lit: 0.6 },
-    };
     // moored along the Thames' walls: houseboats, lighters and pleasure cruisers, sometimes two abreast
     const ring = thames >= 0 ? banks[thames][0] : [];
     if (ring.length > 2) {
@@ -466,15 +469,131 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     }
   }
 
+  // ---------------------------------------------------------------- canals, locks, docks and basins
+  // city.js sets each one below its towpath or quay (docks: [{ rings, y, lv }], lv 1 a canal or lock, 2 a dock or
+  // basin). Their walls: stock brick on the canals, granite on the docks, dark and wet near the water, under a pale
+  // stone coping laid along the edge. Narrowboats are moored along the canals near the campus. All in the same mesh.
+  function docksides() {
+    const NEAR = mobile ? 1100 : 2200, BOATS = mobile ? 1100 : 2400;
+    const brick = new THREE.Color('#735a48'), stone = new THREE.Color('#8b867c'), wetC = new THREE.Color('#3a3930'), cope = new THREE.Color('#b3ada0');
+    const area = (r) => { let s2 = 0; for (let i = 0; i < r.length; i++) { const [x0, z0] = r[i], [x1, z1] = r[(i + 1) % r.length]; s2 += x0 * z1 - x1 * z0; } return s2 / 2; };
+    const CW = 0.6;
+    const box = docks.map(({ rings }) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
+    // how far (x, z) is from the nearest wall of the docks other than `not` (all of them if not < 0) at level lv (any if 0)
+    const edgeD = (x, z, not = -1, lv = 0) => {
+      let d = Infinity;
+      docks.forEach(({ rings, lv: l2 }, i) => {
+        if (i === not || (lv && l2 !== lv)) return;
+        const [x0, x1, z0, z1] = box[i];
+        if (x < x0 - 5 || x > x1 + 5 || z < z0 - 5 || z > z1 + 5) return;
+        rings.forEach((ring) => {
+          for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+            const [xa, za] = ring[a], [xb, zb] = ring[b], dx = xb - xa, dz = zb - za;
+            const t = Math.max(0, Math.min(1, ((x - xa) * dx + (z - za) * dz) / (dx * dx + dz * dz || 1)));
+            d = Math.min(d, Math.hypot(x - xa - dx * t, z - za - dz * t));
+          }
+        });
+      });
+      return d;
+    };
+    docks.forEach(({ rings, y, lv }, di) => {
+      const big = Math.abs(area(rings[0])) > 1500;
+      rings.forEach((ring, ri) => {
+        const n = ring.length;
+        if (n < 3) return;
+        // which side the water is on: inside the outer ring, outside an island
+        const sg = (area(ring) > 0 ? 1 : -1) * (ri === 0 ? 1 : -1);
+        const face = lv === 1 ? brick : stone;
+        let run = 0, acc = 4 + rnd() * 25;
+        for (let i = 0; i < n; i++) {
+          const [xa, za] = ring[i], [xb, zb] = ring[(i + 1) % n];
+          const L = Math.hypot(xb - xa, zb - za);
+          if (L < 0.05) continue;
+          const ux = (xb - xa) / L, uz = (zb - za) / L, wx = -uz * sg, wz = ux * sg, want = [wx, 0, wz];
+          const d = Math.hypot((xa + xb) / 2, (za + zb) / 2);
+          const A = (yy) => [xa, yy, za], B = (yy) => [xb, yy, zb];
+          const tone = 0.86 + 0.22 * (Math.sin(Math.floor(run / 14) * 12.9898 + di * 3.1 + ri) * 0.5 + 0.5);
+          // where two pieces at the same level meet (a canal and its next stretch), the water runs on: no wall
+          if (edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
+          if (d < NEAR) {
+            quad(A(y - 0.3), B(y - 0.3), B(y + 0.35), A(y + 0.35), g.copy(wetC).multiplyScalar(tone), want);
+            quad(A(y + 0.35), B(y + 0.35), B(0.07), A(0.07), g.copy(face).multiplyScalar(tone), want);
+            quad(A(0.07), B(0.07), [xb - wx * CW, 0.07, zb - wz * CW], [xa - wx * CW, 0.07, za - wz * CW], g.copy(cope).multiplyScalar(0.9 + (tone - 0.86) * 0.5), UP);
+          } else quad(A(y - 0.3), B(y - 0.3), B(0.04), A(0.04), g.copy(face).multiplyScalar(tone * 0.8), want);
+          // narrowboats moored along the canal's sides, nose to tail in places
+          if (lv === 1 && big) {
+            while (acc < L) {
+              const t = acc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
+              acc += 20 + rnd() * 10;
+              if (L < 10 || Math.hypot(x, z) > BOATS || rnd() > (mobile ? 0.4 : 0.55)) continue;
+              const u = rnd() < 0.5 ? [ux, uz] : [-ux, -uz];
+              boat([x + wx * 1.25, z + wz * 1.25], u, 'narrow', y);
+            }
+            acc -= L;
+          }
+          run += L;
+        }
+      });
+    });
+    // the roads and railways that cross them: a deck at street level over the water, its fascia, and a brick
+    // parapet on each side (the ground is cut away under them). Runs over the water from 3 to 70 m; longer ones are a
+    // towpath drawn along the edge, not a crossing.
+    const wet = (x, z) => docks.some(({ rings }, i) => {
+      const [x0, x1, z0, z1] = box[i];
+      if (x < x0 || x > x1 || z < z0 || z > z1) return false;
+      let ins = false;
+      rings.forEach((ring) => {
+        for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) {
+          const [xa, za] = ring[a], [xb, zb] = ring[b];
+          if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins;
+        }
+      });
+      return ins;
+    });
+    const deckC = new THREE.Color('#3f4043'), railC = new THREE.Color('#4b4640'), fasc = new THREE.Color('#2e2f31'), para = new THREE.Color('#6d5646'), parTop = new THREE.Color('#a29c90');
+    const deck = (pa, pb, w, rail) => {
+      const L = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
+      if (L < 0.5) return;
+      const ux = (pb[0] - pa[0]) / L, uz = (pb[1] - pa[1]) / L, nx = -uz, nz = ux, hw = w / 2;
+      const a0 = [pa[0] - ux * 2.5, pa[1] - uz * 2.5], b0 = [pb[0] + ux * 2.5, pb[1] + uz * 2.5];
+      const P2 = (p, o, y) => [p[0] + nx * o, y, p[1] + nz * o];
+      quad(P2(a0, -hw, 0.05), P2(b0, -hw, 0.05), P2(b0, hw, 0.05), P2(a0, hw, 0.05), rail ? railC : deckC, UP);
+      for (const sd of [-1, 1]) {
+        const o = sd * hw, out = [nx * sd, 0, nz * sd];
+        quad(P2(a0, o, -0.55), P2(b0, o, -0.55), P2(b0, o, 0.05), P2(a0, o, 0.05), fasc, out);
+        quad(P2(a0, o, 0.05), P2(b0, o, 0.05), P2(b0, o, 1.05), P2(a0, o, 1.05), para, out);
+        quad(P2(a0, o - sd * 0.35, 0.05), P2(b0, o - sd * 0.35, 0.05), P2(b0, o - sd * 0.35, 1.05), P2(a0, o - sd * 0.35, 1.05), para, [-out[0], 0, -out[2]]);
+        quad(P2(a0, o, 1.05), P2(b0, o, 1.05), P2(b0, o - sd * 0.35, 1.05), P2(a0, o - sd * 0.35, 1.05), parTop, UP);
+      }
+    };
+    crossings.forEach(({ pts, w, rail }) => {
+      let st = null, last = null;
+      const end = () => {
+        // a crossing, not a path along the edge: its middle well out over the water
+        if (st) { const L = Math.hypot(last[0] - st[0], last[1] - st[1]); if (L >= 3 && L <= 70 && edgeD((st[0] + last[0]) / 2, (st[1] + last[1]) / 2) > Math.min(2.5, L * 0.3)) deck(st, last, Math.max(3, w), rail); }
+        st = null;
+      };
+      for (let i = 1; i < pts.length; i++) {
+        const [xa, za] = pts[i - 1], [xb, zb] = pts[i], L = Math.hypot(xb - xa, zb - za);
+        const n = Math.max(1, Math.ceil(L / 1.5));
+        for (let j = i === 1 ? 0 : 1; j <= n; j++) {
+          const x = xa + ((xb - xa) * j) / n, z = za + ((zb - za) * j) / n;
+          if (wet(x, z)) { if (!st) st = [x, z]; last = [x, z]; } else end();
+        }
+      }
+      end();
+    });
+  }
+
   const group = new THREE.Group();
   if (!I.length) return { group, tris: 0 };
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
-  g.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
-  g.setIndex(I);
-  g.computeBoundingSphere();
-  const mesh = new THREE.Mesh(g, plainMaterial({ vertexColors: true, roughness: 0.74, metalness: 0.02, side: THREE.DoubleSide }, 'city-bridge'));
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(N, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(C, 3));
+  geo.setIndex(I);
+  geo.computeBoundingSphere();
+  const mesh = new THREE.Mesh(geo, plainMaterial({ vertexColors: true, roughness: 0.74, metalness: 0.02, side: THREE.DoubleSide }, 'city-bridge'));
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   group.add(mesh);
