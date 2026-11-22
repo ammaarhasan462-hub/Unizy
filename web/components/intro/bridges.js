@@ -32,6 +32,20 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     const i0 = push(a, n, col), i1 = push(b, n, col), i2 = push(c, n, col), i3 = push(d, n, col);
     I.push(i0, i1, i2, i0, i2, i3);
   };
+  // the same with its bottom edge (a-b) in one colour and its top (c-d) in another: a stain that fades upward
+  const quad2 = (a, b, c, d, cb, ct, want) => {
+    const ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+    let nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+    const l = Math.hypot(nx, ny, nz);
+    if (l < 1e-9) return;
+    nx /= l; ny /= l; nz /= l;
+    // facing away from `want`: flip the normal and the winding (the corners keep their colours)
+    const flip = want && nx * want[0] + ny * want[1] + nz * want[2] < 0;
+    const n = flip ? [-nx, -ny, -nz] : [nx, ny, nz];
+    const i0 = push(a, n, cb), i1 = push(b, n, cb), i2 = push(c, n, ct), i3 = push(d, n, ct);
+    if (flip) I.push(i0, i2, i1, i0, i3, i2);
+    else I.push(i0, i1, i2, i0, i2, i3);
+  };
   const lampQuad = (x, y, z, s, col = BULB) => {
     const o = LP.length / 3;
     LP.push(x - s, y - s, z, x + s, y - s, z, x + s, y + s, z, x - s, y + s, z, x, y - s, z - s, x, y - s, z + s, x, y + s, z + s, x, y + s, z - s);
@@ -385,8 +399,9 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           quad(A(TIDE), B(TIDE), B(TOP), A(TOP), g.copy(granite).multiplyScalar(tone), want);
           quad(A(water - 0.3), B(water - 0.3), B(TIDE), A(TIDE), g.copy(wet).multiplyScalar(0.9 + (tone - 0.9) * 0.6), want);
           quad([oax, 0, oaz], [obx, 0, obz], [obx, TOP, obz], [oax, TOP, oaz], g.copy(granite).multiplyScalar(tone * 0.92), [-wx, 0, -wz]);
-        } else quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
-        if (d < 7000) quad(A(TOP), B(TOP), [obx, TOP, obz], [oax, TOP, oaz], g.copy(coping).multiplyScalar(tone), UP);
+        } else if (d < 6500) quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
+        // beyond 6.5 km the wall is under a pixel tall in the haze, and the coping beyond 3.5 km under a pixel wide
+        if (d < 3500) quad(A(TOP), B(TOP), [obx, TOP, obz], [oax, TOP, oaz], g.copy(coping).multiplyScalar(tone), UP);
         // lamp standards on the parapet every 26 m along the Thames, near the campus
         if (pi === thames && d < NEAR) {
           while (nextLamp <= run + L) {
@@ -474,10 +489,10 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
   // basin). Their walls: stock brick on the canals, granite on the docks, dark and wet near the water, under a pale
   // stone coping laid along the edge. Narrowboats are moored along the canals near the campus. All in the same mesh.
   function docksides() {
-    const NEAR = mobile ? 1100 : 2200, BOATS = mobile ? 1100 : 2400;
+    const NEAR = mobile ? 600 : 1000, BOATS = mobile ? 800 : 1300;
     const brick = new THREE.Color('#735a48'), stone = new THREE.Color('#8b867c'), wetC = new THREE.Color('#3a3930'), cope = new THREE.Color('#b3ada0');
     const area = (r) => { let s2 = 0; for (let i = 0; i < r.length; i++) { const [x0, z0] = r[i], [x1, z1] = r[(i + 1) % r.length]; s2 += x0 * z1 - x1 * z0; } return s2 / 2; };
-    const CW = 0.6;
+    const CW = 0.6, g2 = new THREE.Color();
     const box = docks.map(({ rings }) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
     // how far (x, z) is from the nearest wall of the docks other than `not` (all of them if not < 0) at level lv (any if 0)
     const edgeD = (x, z, not = -1, lv = 0) => {
@@ -515,11 +530,9 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           const tone = 0.86 + 0.22 * (Math.sin(Math.floor(run / 14) * 12.9898 + di * 3.1 + ri) * 0.5 + 0.5);
           // where two pieces at the same level meet (a canal and its next stretch), the water runs on: no wall
           if (edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
-          if (d < NEAR) {
-            quad(A(y - 0.3), B(y - 0.3), B(y + 0.35), A(y + 0.35), g.copy(wetC).multiplyScalar(tone), want);
-            quad(A(y + 0.35), B(y + 0.35), B(0.07), A(0.07), g.copy(face).multiplyScalar(tone), want);
-            quad(A(0.07), B(0.07), [xb - wx * CW, 0.07, zb - wz * CW], [xa - wx * CW, 0.07, za - wz * CW], g.copy(cope).multiplyScalar(0.9 + (tone - 0.86) * 0.5), UP);
-          } else quad(A(y - 0.3), B(y - 0.3), B(0.04), A(0.04), g.copy(face).multiplyScalar(tone * 0.8), want);
+          // the face, dark and wet at the water, its brick or granite clearing upward; near the campus a coping on top
+          quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
+          if (d < NEAR) quad(A(0.07), B(0.07), [xb - wx * CW, 0.07, zb - wz * CW], [xa - wx * CW, 0.07, za - wz * CW], g.copy(cope).multiplyScalar(0.9 + (tone - 0.86) * 0.5), UP);
           // narrowboats moored along the canal's sides, nose to tail in places
           if (lv === 1 && big) {
             while (acc < L) {

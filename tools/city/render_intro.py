@@ -45,6 +45,7 @@ with sync_playwright() as p:
       window.__smgIntro.debug.scene.traverse((o) => { if (o.isMesh && o.geometry && o.geometry.attributes.position && !o.userData.lodCopy) { const n = o.geometry.attributes.position.count * (o.isInstancedMesh ? o.count : 1); v += n;
         const k = o.material && o.material.userData && o.material.userData.key; if (k && String(k).startsWith('city')) cv += n; } });
       return [r.info.programs.length, v, cv]; })()""")))
+    print("docks %s" % pg.evaluate("(() => { let n = null; window.__smgIntro.debug.scene.traverse((o) => { if (o.userData && o.userData.docks != null) n = o.userData.docks; }); return n; })()"))
     LAG = """() => new Promise((res) => { const ts = []; let calls = 0, tris = 0, n = 0;
       const f = (t) => { ts.push(t); if (n > 0) { calls += window.__lag.calls; tris += window.__lag.tris; } window.__lag.calls = 0; window.__lag.tris = 0; n++;
         if (n < 6) requestAnimationFrame(f); else { const d = ts.slice(1).map((x, i) => x - ts[i]).sort((a, b) => a - b);
