@@ -200,7 +200,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 # (search + plan), and the topic highlight filter moved under My modules. Styles: site/assets/dash.css.
 DASH_HEAD_EXTRA = ('<link rel="stylesheet" href="/assets/play.css?v=3">'
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400..700;1,400..600&display=swap">'
-    '<link rel="stylesheet" href="/assets/dash.css?v=3">'
+    '<link rel="stylesheet" href="/assets/dash.css?v=4">'
     '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/assets/icons/icon-180.png">'
     '<meta name="apple-mobile-web-app-title" content="Unizy"><meta name="mobile-web-app-capable" content="yes">')
 DASH_NAV = [
@@ -245,7 +245,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=3"></script><script src="/assets/dashboard.js?v=26"></script><script src="/assets/mark.js?v=24"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=3"></script><script src="/assets/dashboard.js?v=27"></script><script src="/assets/mark.js?v=24"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
 
 if __name__ == "__main__":
     import sys

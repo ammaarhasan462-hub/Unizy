@@ -25,19 +25,86 @@
   // ---------- helpers ----------
   function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function paras(s) { return esc(s).split(/\n{2,}/).map(function (p) { return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join(''); }
-  function md(s) {
-    // small, safe markdown: paragraphs, - / 1. lists, **bold**, *italic*
-    var lines = esc(s).split('\n'), out = '', list = null;
+  // Small, safe Markdown for tutor replies: paragraphs, - / 1. lists, **bold**, *italic*, `code`, tables, code blocks,
+  // maths (\( \), \[ \], $$ $$; drawn by KaTeX, loaded on first use) and ```svg diagrams. Diagrams are shown as
+  // <img> data URIs, so nothing inside them can run. An unfinished ```svg block (while a reply streams in) shows a placeholder.
+  function inlineMd(t) {
+    return t.replace(/`([^`\n]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+  }
+  function mathSpan(tex, display) {
+    return '<span class="db-tex' + (display ? ' d' : '') + '" data-tex="' + esc(tex) + '">' + esc(display ? '\\[' + tex + '\\]' : '\\(' + tex + '\\)') + '</span>';
+  }
+  function svgFig(code) {
+    var s = String(code || '').trim(), i = s.search(/<svg[\s>]/i), j = s.lastIndexOf('</svg>');
+    if (i < 0 || j < i || s.length > 120000) return '<pre class="db-code"><code>' + esc(s) + '</code></pre>';
+    s = s.slice(i, j + 6);
+    if (!/^<svg[^>]*\sxmlns=/i.test(s)) s = s.replace(/^<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+    var src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+    return '<figure class="db-fig"><img alt="Diagram" src="' + src + '"><figcaption><a href="' + src + '" download="diagram.svg">Save diagram</a></figcaption></figure>';
+  }
+  function tableMd(rows) {
+    var cells = function (l) { return l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return inlineMd(c.trim()); }); };
+    return '<div class="db-tablewrap"><table class="db-table"><thead><tr>' + cells(rows[0]).map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      rows.slice(2).map(function (r) { return '<tr>' + cells(r).map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+  }
+  function blockMd(s) {
+    var lines = esc(s).split('\n'), out = '', list = null, row = /^\s*\|.*\|\s*$/;
     function close() { if (list) { out += '</' + list + '>'; list = null; } }
-    lines.forEach(function (l) {
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i];
+      if (row.test(l) && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1])) {
+        close(); var rows = [l, lines[i + 1]]; i += 2;
+        while (i < lines.length && row.test(lines[i])) rows.push(lines[i++]);
+        i--; out += tableMd(rows); continue;
+      }
       var b = /^\s*[-*•]\s+(.*)/.exec(l), n = /^\s*\d+[.)]\s+(.*)/.exec(l);
-      if (b || n) { var t = b ? 'ul' : 'ol'; if (list !== t) { close(); out += '<' + t + '>'; list = t; } out += '<li>' + (b || n)[1] + '</li>'; return; }
+      if (b || n) { var t = b ? 'ul' : 'ol'; if (list !== t) { close(); out += '<' + t + '>'; list = t; } out += '<li>' + inlineMd((b || n)[1]) + '</li>'; continue; }
       close();
-      if (/^\s*#{1,4}\s+/.test(l)) { out += '<p><b>' + l.replace(/^\s*#{1,4}\s+/, '') + '</b></p>'; return; }
-      if (l.trim()) out += '<p>' + l + '</p>';
-    });
+      if (/^\s*#{1,4}\s+/.test(l)) { out += '<p><b>' + inlineMd(l.replace(/^\s*#{1,4}\s+/, '')) + '</b></p>'; continue; }
+      if (l.trim()) out += '<p>' + inlineMd(l) + '</p>';
+    }
     close();
-    return out.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+    return out;
+  }
+  function textMd(t) {
+    var toks = [];
+    t = t.replace(/\\\[([\s\S]+?)\\\]|\$\$([\s\S]+?)\$\$|\\\(([\s\S]+?)\\\)/g, function (_, a, b, c) { toks.push(mathSpan((a || b || c).trim(), !c)); return '\u0001' + (toks.length - 1) + '\u0002'; });
+    return blockMd(t).replace(/\u0001(\d+)\u0002/g, function (_, k) { return toks[+k]; });
+  }
+  function md(s) {
+    var src = String(s == null ? '' : s), re = /```([A-Za-z0-9_+-]*)[^\n]*\n([\s\S]*?)(```|$)/g, out = '', last = 0, m;
+    while ((m = re.exec(src))) {
+      out += textMd(src.slice(last, m.index));
+      var lang = m[1].toLowerCase(), code = m[2], open = m[3] !== '```';
+      if (lang === 'svg' || (!lang && /^\s*<svg[\s>]/i.test(code))) out += open ? '<p class="db-drawing"><span class="spin"></span>Drawing the diagram…</p>' : svgFig(code);
+      else if (/^(math|latex|tex)$/.test(lang) && !open) out += mathSpan(code.trim(), true);
+      else out += '<pre class="db-code"><code>' + esc(code.replace(/\n$/, '')) + '</code></pre>';
+      last = re.lastIndex;
+      if (open) break;
+    }
+    return out + (last < src.length ? textMd(src.slice(last)) : '');
+  }
+  var katexP = null;
+  function loadKatex() {
+    if (window.katex) return Promise.resolve(window.katex);
+    if (katexP) return katexP;
+    katexP = new Promise(function (res, rej) {
+      var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/assets/katex/katex.min.css?v=1'; document.head.appendChild(l);
+      var s = document.createElement('script'); s.src = '/assets/katex/katex.min.js?v=1';
+      s.onload = function () { var c = document.createElement('script'); c.src = '/assets/katex/mhchem.min.js?v=1'; c.onload = c.onerror = function () { res(window.katex); }; document.head.appendChild(c); };
+      s.onerror = function () { katexP = null; rej(new Error('katex')); };
+      document.head.appendChild(s);
+    });
+    return katexP;
+  }
+  function renderMath(root) {
+    var els = (root || document).querySelectorAll('.db-tex:not([data-done])');
+    if (!els.length) return;
+    loadKatex().then(function (k) {
+      Array.prototype.forEach.call(els, function (el) {
+        try { k.render(el.getAttribute('data-tex'), el, { displayMode: el.classList.contains('d'), throwOnError: false }); el.setAttribute('data-done', '1'); } catch (e) {}
+      });
+    }).catch(function () {});
   }
   function getSession() { try { return JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { return null; } }
   function toLogin() { location.replace('/login?next=' + encodeURIComponent(location.pathname + location.search)); }
@@ -1048,26 +1115,36 @@
     var mod = S.mods.filter(function (x) { return x.code === m; })[0];
     return mod || S.mods[0] || null;
   }
+  // Students can send questions one after another: each waits its turn (marked "Queued") and every reply streams in
+  // as it is written. TQ = questions waiting per module; TLIVE = the reply being written per module.
+  var TQ = {}, TLIVE = {}, paintT = null;
+  function onTutor(mod) { var t = tutorModule(); return tabOf(location.pathname) === 'tutor' && !!t && t.code === mod.code; }
+  function idxOf(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return i; return -1; }
   function renderTutor() {
     var el = $('db-tutor'), mod = tutorModule();
     if (!S.mods.length) { el.innerHTML = '<header class="db-hello"><h1>Tutor</h1><p>Add a module first so your tutor knows what you’re studying.</p></header><a class="btn primary" href="/dashboard/practice">Find a module</a>'; return; }
-    var name = tutorName(mod.department, mod.uni), chat = chatGet(mod.code);
-    var html = '<header class="db-hello"><h1>' + esc(name) + '</h1><p>Your tutor for ' + esc(mod.code) + ' ' + esc(mod.title) + '. Ask about anything in the module, or how to approach an exam question.</p></header>';
+    var name = tutorName(mod.department, mod.uni), chat = chatGet(mod.code), live = TLIVE[mod.code];
+    var queued = (TQ[mod.code] || []).map(function (j) { return j.id; });
+    var html = '<header class="db-hello"><h1>' + esc(name) + '</h1><p>Your tutor for ' + esc(mod.code) + ' ' + esc(mod.title) + '. Ask about anything in the module, or how to approach an exam question. Diagrams, tables and worked maths come up when they help.</p></header>';
     html += '<div class="db-tmods">' + S.mods.map(function (m) { return '<a href="/dashboard/tutor?m=' + m.code + '" class="db-tmod' + (m.code === mod.code ? ' on' : '') + '">' + esc(m.code) + '</a>'; }).join('') + '</div>';
-    html += '<div class="db-chat" id="db-chat">' + (chat.length ? chat.map(msgHtml).join('') : '<div class="db-msg tutor"><div class="db-bubble"><p>Hi! I’m ' + esc(name) + '. Ask me to explain a topic from ' + esc(mod.title) + ', check your understanding, or plan an answer to an exam question.</p></div></div>') + (S.tutorBusy ? '<div class="db-msg tutor"><div class="db-bubble"><p class="mk-busy"><span class="spin"></span>Thinking…</p></div></div>' : '') + '</div>';
+    var body = chat.map(function (m) { return msgHtml(m, m.id && queued.indexOf(m.id) >= 0) + (live && m.id && m.id === live.id ? liveHtml(live) : ''); }).join('');
+    html += '<div class="db-chat" id="db-chat">' + (chat.length ? body : '<div class="db-msg tutor"><div class="db-bubble"><p>Hi! I’m ' + esc(name) + '. Ask me to explain a topic from ' + esc(mod.title) + ', draw a diagram, work through a problem, check your understanding, or plan an answer to an exam question.</p></div></div>') + '</div>';
     var tr = ttray(mod);
-    html += '<form class="db-ask" id="db-ask"><textarea id="db-q" rows="2" placeholder="Ask ' + esc(name) + ' about ' + esc(mod.code) + ' or paste a screenshot… (Enter to send, Shift+Enter for a new line)"' + (S.tutorBusy ? ' disabled' : '') + '></textarea><button class="btn primary" type="submit"' + (S.tutorBusy ? ' disabled' : '') + '>Send</button></form>' + (tr ? tr.html() : '');
-    html += '<div class="mk-row"><p class="db-err" id="db-terr" hidden></p>' + (chat.length ? '<button type="button" class="mk-clear" id="db-tclear">× Clear this chat</button>' : '') + '</div>';
-    var draft = $('db-q') ? $('db-q').value : '';
+    html += '<form class="db-ask" id="db-ask"><textarea id="db-q" rows="2" placeholder="Ask ' + esc(name) + ' about ' + esc(mod.code) + ' or paste a screenshot… (Enter to send, Shift+Enter for a new line)"></textarea><button class="btn primary" type="submit">Send</button></form>' + (tr ? tr.html() : '');
+    html += '<div class="mk-row"><p class="db-err" id="db-terr" hidden></p>' + (chat.length && !live ? '<button type="button" class="mk-clear" id="db-tclear">× Clear this chat</button>' : '') + '</div>';
+    var draft = $('db-q') ? $('db-q').value : '', focused = document.activeElement && document.activeElement.id === 'db-q';
     el.innerHTML = html;
     if (draft) $('db-q').value = draft;
+    if (focused) $('db-q').focus();
+    renderMath(el);
     var c = $('db-chat'); c.scrollTop = c.scrollHeight;
     $('db-ask').onsubmit = function (e) { e.preventDefault(); askTutor(mod); };
     $('db-q').onkeydown = function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); askTutor(mod); } };
     if (tr) tr.mount();
     if ($('db-tclear')) $('db-tclear').onclick = function () { if (confirm('Clear this chat?')) { chatSet(mod.code, []); renderTutor(); } };
   }
-  function msgHtml(m) { return '<div class="db-msg ' + (m.role === 'user' ? 'me' : 'tutor') + '"><div class="db-bubble">' + (m.role === 'user' ? paras(m.content) : md(m.content)) + (m.att ? '<div class="ua-chips">' + m.att.split(', ').map(function (a) { return '<span class="ua-chip">📎 ' + esc(a) + '</span>'; }).join('') + '</div>' : '') + '</div></div>'; }
+  function liveHtml(live) { return '<div class="db-msg tutor"><div class="db-bubble" id="db-live">' + (live.text ? md(live.text) : '<p class="mk-busy"><span class="spin"></span>Thinking…</p>') + '</div></div>'; }
+  function msgHtml(m, queued) { return '<div class="db-msg ' + (m.role === 'user' ? 'me' : 'tutor') + '"><div class="db-bubble">' + (m.role === 'user' ? paras(m.content) : md(m.content)) + (m.att ? '<div class="ua-chips">' + m.att.split(', ').map(function (a) { return '<span class="ua-chip">📎 ' + esc(a) + '</span>'; }).join('') + '</div>' : '') + (queued ? '<span class="db-queued">Queued: sends when the answer above is done</span>' : '') + '</div></div>'; }
   // files, photos and videos sent with a tutor question (attach.js); one tray per module, kept while the dashboard is open
   function ttray(mod) { return window.UnizyAttach ? window.UnizyAttach.tray('tutor:' + mod.code) : null; }
   var detailCache = {};
@@ -1080,38 +1157,93 @@
       detailCache[mod.code] = ([d.details || d.summary || '', extra].filter(Boolean).join('\n\n')).slice(0, 3500); return detailCache[mod.code]; }).catch(function () { return mod.summary || ''; });
   }
   function askTutor(mod) {
-    var q = ($('db-q').value || '').trim(), tr = ttray(mod), hasAtt = !!(tr && tr.count());
-    if ((!q && !hasAtt) || S.tutorBusy) return;
+    var box = $('db-q'), q = (box.value || '').trim(), tr = ttray(mod), hasAtt = !!(tr && tr.count());
+    if (!q && !hasAtt) return;
     if (hasAtt && tr.busy()) { var eb = $('db-terr'); if (eb) { eb.hidden = false; eb.textContent = 'Your attachments are still being prepared. Send again in a moment.'; } return; }
     var attachments = hasAtt ? tr.payload() : null, attSum = hasAtt ? tr.summary() : '';
     if (!q) q = 'Can you take a look at what I’ve attached?';
-    var msg = { role: 'user', content: q }; if (hasAtt) msg.att = attSum;
+    var msg = { role: 'user', content: q, id: 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }; if (hasAtt) msg.att = attSum;
     var chat = chatGet(mod.code); chat.push(msg); chatSet(mod.code, chat);
-    $('db-q').value = ''; S.tutorBusy = true; renderTutor();
+    if (hasAtt) tr.clear();
+    box.value = '';
+    (TQ[mod.code] = TQ[mod.code] || []).push({ id: msg.id, attachments: attachments });
     track('tutor_ask');
-    var name = tutorName(mod.department, mod.uni), p = S.profile || {}, Un = UN(mod.uni);
+    if (!TLIVE[mod.code]) nextTutor(mod); else renderTutor();
+  }
+  function tutorIntro(mod, name, desc) {
+    var p = S.profile || {}, Un = UN(mod.uni);
+    return 'You are ' + name + ', a friendly, expert tutor on ' + BRAND + ' for ' + Un.long + ' students. The student is studying ' + mod.code + ' ' + mod.title + ' at ' + Un.name + ' (' + (mod.department || Un.short) + (levelName(mod.level) ? ', ' + levelName(mod.level) : '') + ')' + (p.course ? ' on the ' + p.course + ' course' : '') + '.\n\n' + Un.src + ':\n"""' + desc + '"""\n\n' +
+      'How to tutor: explain clearly at the right level for this module, use short examples, check understanding with a quick question when useful, and show how ideas would earn marks in ' + Un.exam + '. Keep replies under about 250 words unless the student asks for more or the question needs a worked solution. The student may send several questions in a row: answer the latest one directly and don’t repeat earlier answers. Never write coursework or assessed essays for the student to submit; for coursework, give guidance and feedback only. Refer to yourself as ' + name + ' and don’t mention the technology behind you unless the student sincerely asks what you are, in which case be honest. Never invent sources, cases, statistics or quotations.\n\n' +
+      'Formatting: short paragraphs and "- " bullet lists. Use a small Markdown table (| A | B | with a |---|---| line) when comparing or tabulating. Write maths and formulas in LaTeX, inline as \\( ... \\) and on their own line as \\[ ... \\] (chemistry with \\ce{...}); show worked calculations step by step with units. ' +
+      'Diagrams: when a picture would genuinely help (an economics or finance graph such as supply and demand, cost curves, AD/AS, IS-LM, indifference curves or an Edgeworth box; a maths or statistics plot; a circuit or block diagram; a force or free-body diagram; a flowchart, process, cycle or timeline; a framework or comparison grid; a simple labelled scientific or anatomical schematic), or the student asks for one, draw it as ONE SVG inside a fenced ```svg block. Rules: a complete <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 360"> (any sensible size up to 800 wide), a white background rect, dark lines (#17302A) with at most 3 accent colours, text at font-size 14 or more in font-family Arial, every axis, curve, point, component and arrow clearly labelled, shifts shown with arrows and new curves labelled (e.g. S1, S2), equilibrium points marked, nothing outside the viewBox, no scripts, links, images, foreignObject or external fonts, and under about 6,000 characters. The diagram must be correct for the subject; explain it in a sentence or two after the block. Don’t draw when words or a table are clearer, and draw at most two diagrams per reply.\n\n' +
+      'Attachments: the student may send screenshots, photos, handwritten working, lecture slides, readings, charts, data, code or spreadsheets (an Excel screenshot, or a workbook sent as text where each line is a row of "cell: value" and [=…] is that cell’s formula). Look at everything carefully and help with it in the context of this module and their course: say briefly what you see when that helps, explain it, check it for mistakes (wrong formulas or cell references, calculation slips, units, misread data, weak arguments) and say exactly how to fix them, walk through how to do it themselves, and link it to the ideas in this module and to how it would earn marks. For a spreadsheet, refer to cells by their references and give corrected formulas they can type in. If part of an image can’t be read, say which part and ask for a closer screenshot. If an attachment isn’t about this module, still help, and connect it to their studies where it naturally fits.';
+  }
+  // Reads the streamed reply (server-sent events from the ai function) and reports the text so far.
+  function readTutorStream(r, onText) {
+    var ct = r.headers.get('Content-Type') || '';
+    if (ct.indexOf('event-stream') < 0 || !r.body || !r.body.getReader) return r.json().then(function (b) { return { text: b.text || '', truncated: !!b.truncated }; });
+    var reader = r.body.getReader(), dec = new TextDecoder(), buf = '', text = '', truncated = false;
+    function handle(ev) {
+      var data = ev.split('\n').filter(function (l) { return l.indexOf('data:') === 0; }).map(function (l) { return l.slice(5).trim(); }).join('');
+      if (!data) return;
+      var d; try { d = JSON.parse(data); } catch (e) { return; }
+      if (d.type === 'content_block_delta' && d.delta && d.delta.type === 'text_delta') { text += d.delta.text; onText(text); }
+      else if (d.type === 'message_delta' && d.delta && d.delta.stop_reason === 'max_tokens') truncated = true;
+      else if (d.type === 'error') throw new Error(d.error && d.error.type === 'overloaded_error' ? 'Your tutor is busy right now. Try again in a minute.' : 'Your tutor had a problem. Try again.');
+    }
+    function pump() {
+      return reader.read().then(function (res) {
+        if (res.done) { if (buf.trim()) handle(buf); return { text: text, truncated: truncated }; }
+        buf += dec.decode(res.value, { stream: true });
+        var parts = buf.split('\n\n'); buf = parts.pop(); parts.forEach(handle);
+        return pump();
+      });
+    }
+    return pump();
+  }
+  function paintLive(mod, live) {
+    if (paintT) return;
+    paintT = setTimeout(function () {
+      paintT = null;
+      if (!onTutor(mod) || TLIVE[mod.code] !== live) return;
+      var el = $('db-live'), c = $('db-chat'); if (!el) return;
+      var atEnd = c && c.scrollHeight - c.scrollTop - c.clientHeight < 120;
+      el.innerHTML = md(live.text); renderMath(el);
+      if (c && atEnd) c.scrollTop = c.scrollHeight;
+    }, 70);
+  }
+  function nextTutor(mod) {
+    var job = (TQ[mod.code] || []).shift();
+    if (!job) { delete TLIVE[mod.code]; if (onTutor(mod)) renderTutor(); return; }
+    var live = TLIVE[mod.code] = { id: job.id, text: '' }, name = tutorName(mod.department, mod.uni);
+    if (onTutor(mod)) renderTutor();
     moduleContext(mod).then(function (desc) {
-      var intro = 'You are ' + name + ', a friendly, expert tutor on ' + BRAND + ' for ' + Un.long + ' students. The student is studying ' + mod.code + ' ' + mod.title + ' at ' + Un.name + ' (' + (mod.department || Un.short) + (levelName(mod.level) ? ', ' + levelName(mod.level) : '') + ')' + (p.course ? ' on the ' + p.course + ' course' : '') + '.\n\n' + Un.src + ':\n"""' + desc + '"""\n\nHow to tutor: explain clearly at the right level for this module, use short examples, check understanding with a quick question when useful, and show how ideas would earn marks in ' + Un.exam + '. Keep replies under about 250 words unless the student asks for more. Use short paragraphs and "- " bullet lists; no headings or tables. Never write coursework or assessed essays for the student to submit; for coursework, give guidance and feedback only. Refer to yourself as ' + name + ' and don’t mention the technology behind you unless the student sincerely asks what you are, in which case be honest. Never invent sources, cases, statistics or quotations.\n\nAttachments: the student may send screenshots, photos, handwritten working, lecture slides, readings, charts, data, code or spreadsheets (an Excel screenshot, or a workbook sent as text where each line is a row of "cell: value" and [=…] is that cell’s formula). Look at everything carefully and help with it in the context of this module and their course: say briefly what you see when that helps, explain it, check it for mistakes (wrong formulas or cell references, calculation slips, units, misread data, weak arguments) and say exactly how to fix them, walk through how to do it themselves, and link it to the ideas in this module and to how it would earn marks. For a spreadsheet, refer to cells by their references and give corrected formulas they can type in. If part of an image can’t be read, say which part and ask for a closer screenshot. If an attachment isn’t about this module, still help, and connect it to their studies where it naturally fits.';
-      var turns = [{ role: 'user', content: intro }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(chat.slice(-16).map(function (m) { return { role: m.role, content: m.att ? m.content + '\n\n[Attached: ' + m.att + ']' : m.content }; }));
+      var chat = chatGet(mod.code), k = idxOf(chat, job.id), upto = k >= 0 ? chat.slice(0, k + 1) : chat;
+      var turns = [{ role: 'user', content: tutorIntro(mod, name, desc) }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(upto.slice(-16).map(function (m) { return { role: m.role, content: m.att ? m.content + '\n\n[Attached: ' + m.att + ']' : m.content }; }));
       return token().then(function (t) {
         if (!t) { toLogin(); throw new Error('signin'); }
-        return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: turns, kind: 'tutor', cache: false, stream: false, attachments: attachments || undefined }) });
+        return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: turns, kind: 'tutor', cache: false, stream: true, attachments: job.attachments || undefined }) });
       });
     }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (b) {
-        if (!r.ok) { var e = new Error(b.message || 'Your tutor had a problem. Try again.'); e.upgrade = !!b.upgrade; throw e; }
-        return b;
-      });
-    }).then(function (b) {
-      var c2 = chatGet(mod.code); c2.push({ role: 'assistant', content: b.text || '…' }); chatSet(mod.code, c2);
-      if (hasAtt) tr.clear();
-      S.tutorBusy = false; if (tabOf(location.pathname) === 'tutor') renderTutor();
+      if (!r.ok) return r.json().catch(function () { return {}; }).then(function (b) { var e = new Error(b.message || 'Your tutor had a problem. Try again.'); e.upgrade = !!b.upgrade; throw e; });
+      return readTutorStream(r, function (text) { live.text = text; paintLive(mod, live); });
+    }).then(function (res) {
+      var c2 = chatGet(mod.code), k = idxOf(c2, job.id), reply = { role: 'assistant', content: (res.text || '…') + (res.truncated ? '\n\n*That reply hit its length limit. Ask me to carry on.*' : '') };
+      if (k >= 0) c2.splice(k + 1, 0, reply); else c2.push(reply);
+      chatSet(mod.code, c2);
+      delete TLIVE[mod.code];
+      nextTutor(mod);
     }).catch(function (e) {
-      S.tutorBusy = false;
-      if (tabOf(location.pathname) !== 'tutor') return;
+      // put this question and any queued after it back in the box, so nothing typed is lost
+      delete TLIVE[mod.code];
+      var pending = [job].concat(TQ[mod.code] || []), c3 = chatGet(mod.code), texts = [], hadAtt = false;
+      TQ[mod.code] = [];
+      pending.forEach(function (j) { var k = idxOf(c3, j.id); if (j.attachments) hadAtt = true; if (k >= 0) { texts.push(c3[k].content); c3.splice(k, 1); } });
+      chatSet(mod.code, c3);
+      if (!onTutor(mod) || e.message === 'signin') return;
       renderTutor();
-      var er = $('db-terr'); if (er) { er.hidden = false; er.innerHTML = esc(e.message) + (e.upgrade ? ' <a href="/pricing">See Pro</a>' : ''); }
-      var c3 = chatGet(mod.code); if (c3.length && c3[c3.length - 1].role === 'user') { $('db-q').value = c3.pop().content; chatSet(mod.code, c3); renderTutor(); var er2 = $('db-terr'); if (er2) { er2.hidden = false; er2.innerHTML = esc(e.message) + (e.upgrade ? ' <a href="/pricing">See Pro</a>' : ''); } }
+      var box = $('db-q'); if (box && !box.value) box.value = texts.join('\n\n');
+      var er = $('db-terr'); if (er) { er.hidden = false; er.innerHTML = esc(e.message) + (hadAtt ? ' Add your attachments again before you resend.' : '') + (e.upgrade ? ' <a href="/pricing">See Pro</a>' : ''); }
     });
   }
 

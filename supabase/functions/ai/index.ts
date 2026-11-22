@@ -13,7 +13,7 @@ const CORS = {
   "Access-Control-Expose-Headers": "X-Unizy-Units-Left, X-Unizy-Tier",
 };
 const SONNET = "claude-sonnet-5-5", HAIKU = "claude-haiku-5-5";
-const MAX_TOKENS: Record<string, number> = { tutor: 2000, mark: 3000, cards: 8000, questions: 8000, notes: 6000, assess: 8000, other: 4000 };
+const MAX_TOKENS: Record<string, number> = { tutor: 4000, mark: 3000, cards: 8000, questions: 8000, notes: 6000, assess: 8000, other: 4000 };
 const MAX_INPUT_BYTES = 110_000;
 const MAX_IMAGES = 5;
 const MAX_IMAGE_B64 = 6_000_000;
@@ -107,14 +107,25 @@ Deno.serve(async (req) => {
     (body.json ? " Your reply will be machine-parsed: reply with only the JSON value requested — no prose before or after, no code fences." : "");
 
   const stream = !!body.stream;
-  let upstream: Response;
-  try {
-    upstream = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: MAX_TOKENS[kind], system, messages: msgs, stream }),
-    });
-  } catch {
+  const apiReq: any = { model, max_tokens: MAX_TOKENS[kind], system, messages: msgs, stream };
+  // Tutor chat: low thinking effort so replies (often several in a row) start quickly; tutor has room for an SVG diagram.
+  if (kind === "tutor" && model === SONNET) apiReq.output_config = { effort: "low" };
+  let upstream: Response | null = null;
+  // One quiet retry when the API is momentarily overloaded, so quick follow-up questions don't fail.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      upstream = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify(apiReq),
+      });
+    } catch {
+      upstream = null;
+    }
+    if (upstream && upstream.status !== 429 && upstream.status !== 529) break;
+    if (attempt === 0) { if (upstream) await upstream.body?.cancel(); await new Promise((r) => setTimeout(r, 1200)); }
+  }
+  if (!upstream) {
     await refund();
     return json(502, { code: "upstream_error", message: "Couldn’t reach your tutor. Try again in a moment." });
   }

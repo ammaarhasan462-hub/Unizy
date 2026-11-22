@@ -319,3 +319,20 @@ body.dbx .cd-deck .mk-bar i,body.dbx .cd-deck [class*=bar] i{background:var(--mc
 .db-cw-acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
 .db-cw-msg{margin-top:8px;font-size:14px;color:#b4412f}
 @media (max-width:520px){.db-cw-mods em{display:none}.db-cw-acts .btn{flex:1 1 100%;justify-content:center}}
+
+/* Tutor replies: diagrams, tables, code, maths, queued questions */
+.db-msg.tutor .db-bubble{max-width:min(92%,680px);overflow-wrap:anywhere}
+.db-fig{margin:6px 0 10px}
+.db-fig img{display:block;width:600px;max-width:100%;height:auto;background:#fff;border:1px solid rgba(23,48,42,.15);border-radius:10px}
+.db-fig figcaption{margin-top:4px;font-size:12.5px}
+.db-fig figcaption a{color:inherit;opacity:.7}
+.db-tablewrap{overflow-x:auto;margin:4px 0 10px}
+.db-table{border-collapse:collapse;font-size:14px;min-width:60%}
+.db-table th,.db-table td{border:1px solid rgba(23,48,42,.18);padding:6px 9px;text-align:left;vertical-align:top}
+.db-table th{background:rgba(23,48,42,.06);font-weight:600}
+.db-code{margin:4px 0 10px;padding:10px 12px;border-radius:8px;background:#17302A;color:#EAF2EE;font:13px/1.5 'DM Mono',ui-monospace,monospace;overflow-x:auto;white-space:pre}
+.db-bubble code{font-family:'DM Mono',ui-monospace,monospace;font-size:.92em}
+.db-bubble :not(pre)>code{background:rgba(23,48,42,.08);padding:1px 4px;border-radius:4px}
+.db-tex.d{display:block;margin:6px 0 10px;overflow-x:auto;overflow-y:hidden}
+.db-drawing{opacity:.75;font-size:14px}
+.db-queued{display:block;margin-top:6px;font-size:12px;opacity:.75}
