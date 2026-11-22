@@ -167,6 +167,8 @@ export function* buildLondonGen(renderer, { mobile, city: cityData }) {
   const far = new THREE.Mesh((real && real.farGeo) || new THREE.PlaneGeometry(60000, 60000), plainMaterial({ map: farTex, roughness: 0.95 }, 'far'));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.4;
+  // drawn last: under the map it is hidden by the map's ground, so there it costs only a depth test
+  far.renderOrder = 2;
   group.add(far);
 
   // the Thames: the mapped river comes with the city (city.js); the hand-built city keeps a ribbon

@@ -1240,21 +1240,17 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       if (groundGeo) { docks = set; break; }
     }
   }
-  // the ground beyond the map: a 60 km square with the river (and the docks) cut out, round Steiner points every 250 m
-  // over the map and its ring and every 2 km beyond, kept clear of the river
+  // the ground beyond the map: a 60 km square with the river (and the docks) cut out. It is drawn after everything else
+  // (renderOrder 2, set by the callers), so its triangles under the map cost only a depth test
   let farGeo = null;
   if (rv.length) {
     const FS = 30000;
-    const st = [...grid(3000, 250), ...grid(FS, 2000, 3000)].filter(clearOf(rv, 6));
     for (const withDocks of docks.length ? [true, false] : [false]) {
-      const dh = withDocks ? docks.map((d) => d.rings) : [];
-      farGeo = planeCut(FS, [...rv, ...dh], dh.length ? st.filter(clearOf(dh, 5)) : st);
+      farGeo = planeCut(FS, [...rv, ...(withDocks ? docks.map((d) => d.rings) : [])], []);
       if (farGeo) break;
       // if the docks break the cut, try again with the river alone (and the map's ground stays whole)
       if (withDocks) docks = [];
     }
-    // and if the Steiner points broke it, without them
-    if (!farGeo) farGeo = planeCut(FS, rv, []);
   }
   if (!farGeo) docks = [];
   if (!docks.length && groundGeo) { groundGeo.dispose(); groundGeo = null; }
@@ -1694,6 +1690,8 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   const ground = new THREE.Mesh(groundGeo || new THREE.PlaneGeometry(2 * H, 2 * H), plainMaterial({ map: mapTex, roughness: 0.95, emissiveMap: emTex, emissive: '#ffffff', emissiveIntensity: 1.1, ...(cutMap ? { alphaTest: 0.5 } : {}) }, 'city-ground-' + site));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
+  // drawn after the buildings, trees and everything else that stands on it, so only the ground that shows is shaded
+  ground.renderOrder = 1;
   group.add(ground);
   // water surfaces as real reflective geometry just above the map, and the river (lowered: one plane under the
   // ground, seen through the cut): all one mesh, one draw call

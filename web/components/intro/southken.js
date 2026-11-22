@@ -203,6 +203,8 @@ export function* buildSouthKenGen(renderer, { mobile, city: cityData }) {
   const far = new THREE.Mesh((real && real.farGeo) || new THREE.PlaneGeometry(60000, 60000), plainMaterial({ map: farTex, roughness: 0.95 }, 'sk-far'));
   far.rotation.x = -Math.PI / 2;
   far.position.y = -0.4;
+  // drawn last: under the map it is hidden by the map's ground, so there it costs only a depth test
+  far.renderOrder = 2;
   group.add(far);
   // the rest of Hyde Park beyond the detailed map (the park runs on north and east)
   const parkFar = new THREE.Mesh(new THREE.PlaneGeometry(1200, 4200), plainMaterial({ color: '#486630', roughness: 1 }, 'sk-parkfar'));
