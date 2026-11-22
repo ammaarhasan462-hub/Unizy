@@ -1182,15 +1182,17 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     });
   };
   // Steiner points on a grid every `step` metres over +-half (outside +-skipIn)
+  // (offset by odd fractions of a metre, so no point lines up with the map's decimetre coordinates)
   const grid = (half, step, skipIn = 0) => {
     const pts = [];
-    for (let x = -half + step; x < half - 1; x += step) for (let z = -half + step; z < half - 1; z += step) {
+    for (let x = -half + step * 0.63 + 0.0137; x < half - 1; x += step) for (let z = -half + step * 0.71 + 0.0291; z < half - 1; z += step) {
       if (!(skipIn && Math.abs(x) < skipIn && Math.abs(z) < skipIn)) pts.push([x, z]);
     }
     return pts;
   };
   // the map's ground (the square +-H) with the docks cut out
-  const groundCut = (holes) => planeCut(H, holes, grid(H, 150).filter(clearOf(holes, 4)));
+  // (if the Steiner points upset the triangulator, without them)
+  const groundCut = (holes) => planeCut(H, holes, grid(H, 150).filter(clearOf(holes, 4))) || planeCut(H, holes, []);
   // a ring clipped to the square |x|, |z| <= B (Sutherland-Hodgman)
   const clipSq = (ring, B) => {
     let out = ring;
@@ -1207,6 +1209,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     return out;
   };
   let docks = [], groundGeo = null;
+  const dockLog = [];
   {
     const DK = data.dk || [], cand = [];
     for (let i = 0; i + 1 < DK.length; i += 2) {
@@ -1237,6 +1240,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     for (const set of [all, apart]) {
       if (!set.length) break;
       groundGeo = groundCut(set.map((d) => d.rings));
+      dockLog.push(`ground ${set.length}/${cand.length}: ${groundGeo ? 'cut' : 'failed'}`);
       if (groundGeo) { docks = set; break; }
     }
   }
@@ -1247,6 +1251,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     const FS = 30000;
     for (const withDocks of docks.length ? [true, false] : [false]) {
       farGeo = planeCut(FS, [...rv, ...(withDocks ? docks.map((d) => d.rings) : [])], []);
+      dockLog.push(`far ${withDocks ? 'with' : 'without'} docks: ${farGeo ? 'cut' : 'failed'}`);
       if (farGeo) break;
       // if the docks break the cut, try again with the river alone (and the map's ground stays whole)
       if (withDocks) docks = [];
@@ -1879,5 +1884,6 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   const top = sky.filter((s) => s[0] > 100).map(([h, , , f]) => { const ring = dec(f); let x = 0, z = 0; ring.forEach((p) => { x += p[0]; z += p[1]; }); return [x / ring.length, h, z / ring.length]; });
 
   group.userData.docks = docks.length;
+  group.userData.dockLog = dockLog.join('; ');
   return { group, mapTex, emTex, trafficU, landmarks: data.landmarks || {}, tallTops: top, river: (data.river || []).map(dec), riverTex, inRiver, farGeo };
 }
