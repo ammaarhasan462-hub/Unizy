@@ -1093,8 +1093,8 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   const PLANTER = ['#3e5a2b', '#4a6631', '#38512a', '#56703a'];
   let nBays = 0;
   // the river (the Thames and the Lea as mapped, out to RIVER_R) runs WL metres below the streets, between granite
-  // walls. Where it crosses the map, the map's ground has it cut out of its texture's alpha; beyond the map, the far
-  // ground (drawn first, writing no depth: london.js, southken.js, cityworld.js) is simply drawn over.
+  // walls. Where it crosses the map, the map's ground has it cut out of its texture's alpha; beyond the map, it is cut
+  // out of the far ground (farGeo, which the callers draw). If that cut fails, the river stays flush as before.
   const rv = (data.rv || []).map((p) => p.map(dec));
   // is (x, z) on the river as mapped, or within m metres of its bank? (exact, for the map's own water areas)
   const rvBox = rv.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
@@ -1116,6 +1116,49 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // towpath or quay between walls, cut out of the map's ground's alpha like the river. Clipped to the map, and clear of
   // the river; pieces may meet edge to edge (a canal and its locks), and those that overlap another are left out.
   const DROP = [0, 0.95, 1.7];
+  // a flat square (+-half, in the shape plane: x, -z) with holes cut in it (each [outer, ...islands]; the islands are
+  // put back as land). Checked by area; null if the triangulation fails.
+  const planeCut = (half, holes) => {
+    try {
+      const V = (x, z) => new THREE.Vector2(x, -z);
+      const contour = [V(-half, half), V(half, half), V(half, -half), V(-half, -half)];
+      const hs = [], isl = [];
+      let cut = 0;
+      holes.forEach((rings) => {
+        hs.push(rings[0].map(([x, z]) => V(x, z)));
+        cut += Math.abs(ringArea(rings[0]));
+        rings.slice(1).forEach((r2) => { isl.push(r2.map(([x, z]) => V(x, z))); cut -= Math.abs(ringArea(r2)); });
+      });
+      const P = [], I = [];
+      const add = (outer, inner) => {
+        const faces = THREE.ShapeUtils.triangulateShape(outer, inner);
+        const o = P.length / 3;
+        [outer, ...inner].forEach((r2) => r2.forEach((v) => P.push(v.x, v.y, 0)));
+        faces.forEach(([a, b, c]) => {
+          const ax = P[(o + a) * 3], ay = P[(o + a) * 3 + 1], bx = P[(o + b) * 3], by = P[(o + b) * 3 + 1], cx = P[(o + c) * 3], cy = P[(o + c) * 3 + 1];
+          // every face up (+z in the shape's plane, +y once laid flat)
+          if ((bx - ax) * (cy - ay) - (cx - ax) * (by - ay) >= 0) I.push(o + a, o + b, o + c); else I.push(o + a, o + c, o + b);
+        });
+      };
+      add(contour, hs);
+      isl.forEach((r2) => add(r2, []));
+      let got = 0;
+      for (let i = 0; i < I.length; i += 3) {
+        const a = I[i] * 3, b = I[i + 1] * 3, c = I[i + 2] * 3;
+        got += Math.abs((P[b] - P[a]) * (P[c + 1] - P[a + 1]) - (P[c] - P[a]) * (P[b + 1] - P[a + 1])) / 2;
+      }
+      // the triangulation must leave exactly the holes' area uncovered
+      if (Math.abs(4 * half * half - cut - got) >= Math.max(40, cut * 0.02)) return null;
+      const n = P.length / 3, N = new Float32Array(n * 3), UV = new Float32Array(n * 2);
+      for (let i = 0; i < n; i++) { N[i * 3 + 2] = 1; UV[i * 2] = P[i * 3] / (2 * half) + 0.5; UV[i * 2 + 1] = P[i * 3 + 1] / (2 * half) + 0.5; }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+      g.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+      g.setAttribute('uv', new THREE.BufferAttribute(UV, 2));
+      g.setIndex(I);
+      return g;
+    } catch { return null; }
+  };
   // a ring clipped to the square |x|, |z| <= B (Sutherland-Hodgman)
   const clipSq = (ring, B) => {
     let out = ring;
@@ -1162,9 +1205,23 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     docks = all;
     if (cand.length) dockLog.push(`${all.length} of ${cand.length} (${cand.length - all.length} overlapping)`);
   }
-  // the far ground is drawn first and writes no depth (callers), so the lowered river shows without cutting it
-  const low = rv.length > 0;
-  const farGeo = null;
+  // the ground beyond the map: a 60 km square with the river cut out, and, where the river stays clear of the map, the
+  // map's own square too (less 6 m, so the two overlap): under the map it is never seen, and costs nothing there. Where
+  // the river crosses the map (LSE, King's), the docks are cut out of it one by one instead.
+  const crosses = rv.some((rings) => rings.some((r2) => r2.some(([x, z]) => Math.abs(x) < H + 10 && Math.abs(z) < H + 10)));
+  const B = H - 6;
+  let farGeo = null;
+  if (rv.length) {
+    const tries = crosses ? [[...rv, ...docks.map((d) => d.rings)], rv] : [[...rv, [[[-B, -B], [B, -B], [B, B], [-B, B]]]], [...rv, ...docks.map((d) => d.rings)], rv];
+    for (let i = 0; i < tries.length && !farGeo; i++) {
+      farGeo = planeCut(30000, tries[i]);
+      // if only the river alone would cut, the docks stay at street level
+      if (farGeo && i === tries.length - 1) docks = [];
+      if (farGeo) dockLog.push(`far: ${i === tries.length - 1 ? 'river' : !crosses && i === 0 ? 'river and map square' : 'river and docks'}`);
+    }
+  }
+  if (!farGeo) docks = [];
+  const low = !!farGeo;
   const WL = -4.5;
   const doBuilding = (rec, bi) => {
     const [st, h, minhIn, rsIn, rhIn, colH, rcolH, of, ...hf] = rec;
