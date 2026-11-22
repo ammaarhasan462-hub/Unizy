@@ -29,7 +29,7 @@ def header(current):
     nav = "".join(f'<a href="{h}"{" aria-current=\"page\"" if h == current else ""}>{t}</a>' for h, t in links)
     return f"""<header class="sx-top"><div class="sx-bar">
 <a class="sx-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a>
-<nav class="sx-nav" id="sx-nav" aria-label="Main">{nav}</nav>
+<nav class="sx-nav" id="sx-nav" aria-label="Main">{nav}<a href="/#code">Code</a></nav>
 <div class="sx-act"><a class="sx-login" href="/login?next=/dashboard" data-auth="login">Log in</a><a class="sx-cta" href="/signup" data-auth="app" data-ev="nav_signup">Sign up free</a><button class="sx-menu" type="button" aria-expanded="false" aria-controls="sx-nav"><span></span><span></span><span class="sr">Menu</span></button></div>
 </div></header>"""
 
@@ -62,7 +62,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 
 <header class="nav"><div class="wrap nav-in">
 <a class="brand" href="/" aria-label="{BRAND} home"><span class="brand-mark">{MARK}</span>{BRAND}</a>
-<nav class="nav-links" id="nav-links" aria-label="Main"><a href="#how">How it works</a><a href="#features">Features</a><a href="/mark">Find your module</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></nav>
+<nav class="nav-links" id="nav-links" aria-label="Main"><a href="#how">How it works</a><a href="#features">Features</a><a href="/mark">Find your module</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#code">Code</a></nav>
 <div class="nav-act"><a class="nav-login" href="/login?next=/dashboard" data-auth="login">Log in</a><a class="btn btn-glow sm" href="/signup" data-auth="app" data-ev="lp_nav_signup">Sign up free</a><button class="nav-menu" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav-links"><span></span><span></span></button></div>
 </div></header>
 

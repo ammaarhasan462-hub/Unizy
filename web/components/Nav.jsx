@@ -11,6 +11,7 @@ const LINKS = [
   ['Find your module', '/mark'],
   ['Pricing', '#pricing'],
   ['FAQ', '#faq'],
+  ['Code', '#code'],
 ];
 
 export default function Nav() {
