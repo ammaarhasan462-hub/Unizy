@@ -195,33 +195,44 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 </body></html>
 """
 
-DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard", '<link rel="stylesheet" href="/assets/play.css?v=3">') + f"""
-<div id="root"><div class="db setup" id="db">
-<aside class="db-side">
-<div class="db-bar"><a class="sx-brand db-brand" href="/" aria-label="{BRAND} home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><button class="db-menu" id="db-menu" type="button" aria-label="Menu"><span></span><span></span></button></div>
-<div class="db-sidein">
-<nav class="db-nav" aria-label="Dashboard">""" + "".join(f'<a href="{p}" data-tab="{i}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{d}"/></svg>{l}</a>' for i, l, p, d in [
+# Dashboard (Nov 2026 redesign): one sans font (Source Sans 3), a light sidebar with plain links
+# (Flashcards and Exam simulator are ordinary pages now, not a "revision mode" switch), a quiet top bar
+# (search + plan), and the topic highlight filter moved under My modules. Styles: site/assets/dash.css.
+DASH_HEAD_EXTRA = ('<link rel="stylesheet" href="/assets/play.css?v=3">'
+    '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400..700;1,400..600&display=swap">'
+    '<link rel="stylesheet" href="/assets/dash.css?v=1">'
+    '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/assets/icons/icon-180.png">'
+    '<meta name="apple-mobile-web-app-title" content="Unizy"><meta name="mobile-web-app-capable" content="yes">')
+DASH_NAV = [
     ("home", "Home", "/dashboard", "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"),
     ("practice", "Practice &amp; marking", "/dashboard/practice", "M4 20h4L19 9l-4-4L4 16zM14 6l4 4"),
+    ("cards", "Flashcards", "/dashboard/cards", "M4 7h12v12H4zM8 3h12v12"),
+    ("exam", "Exam simulator", "/dashboard/exam", "M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 9v4l3 2M9 2h6"),
     ("tutor", "Tutor", "/dashboard/tutor", "M4 5h16v11H8l-4 4z"),
-    ("play", "Play", "/dashboard/play", "M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3"),
     ("history", "Marked answers", "/dashboard/history", "M5 4h14v16H5zM8 9h8M8 13h8M8 17h5"),
-    ("account", "Account", "/dashboard/account", "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0")]) + """</nav>
-<div class="db-modes"><span class="db-lab">Revision mode</span><div class="db-seg" role="group" aria-label="Revision mode">""" + "".join(f'<a href="{p}" data-mode="{i}" title="{t}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{d}"/></svg><span>{l}</span></a>' for i, l, t, p, d in [
-    ("cards", "Flashcards", "Flashcard decks", "/dashboard/cards", "M4 7h12v12H4zM8 3h12v12"),
-    ("arena", "Topic arena", "Question-by-topic arena", "/dashboard/practice", "M4 5h7v6H4zM13 5h7v6h-7zM4 13h7v6H4zM13 13h7v6h-7z"),
-    ("exam", "Exam sim", "Exam simulator", "/dashboard/exam", "M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 9v4l3 2M9 2h6")]) + """</div></div>
+    ("play", "Play", "/dashboard/play", "M17 8h1a4 4 0 0 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v3M10 2v3M14 2v3")]
+def _navlink(i, l, p, d):
+    badge = '<span class="db-nbadge" id="db-navdue" hidden></span>' if i == "cards" else ""
+    return f'<a href="{p}" data-tab="{i}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="{d}"/></svg><span class="db-nl">{l}</span>{badge}</a>'
+
+DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard", DASH_HEAD_EXTRA).replace('<body class="sx">', '<body class="sx dbx">') + f"""
+<div id="root"><div class="db setup" id="db">
+<aside class="db-side">
+<div class="db-bar"><a class="sx-brand db-brand" href="/dashboard" aria-label="{BRAND} dashboard home"><span class="sx-mark">{MARK}</span><span class="sx-word">{BRAND}</span></a><button class="db-menu" id="db-menu" type="button" aria-label="Menu"><span></span><span></span></button></div>
+<div class="db-sidein">
+<nav class="db-nav" aria-label="Dashboard">""" + "".join(_navlink(*x) for x in DASH_NAV) + """</nav>
+<div class="db-modsbox">
 <div class="db-mods-head"><span>My modules</span><span class="db-mh-a"><a href="/dashboard/account#course">Edit</a><a href="/dashboard/practice">+ Add</a></span></div>
+<div class="db-ragf" id="db-ragf"></div>
 <ul class="db-mods" id="db-mods"></ul>
+</div>
+<nav class="db-nav db-nav2" aria-label="Account"><a href="/dashboard/account" data-tab="account"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0"/></svg><span class="db-nl">Account</span></a></nav>
 </div>
 </aside>
 <main class="db-main" id="main">
 <div class="db-top" id="db-top">
-<button type="button" class="db-cmdk" id="db-cmdk" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg><span>Jump to a module or topic<em> (e.g. ECON0002 W3)</em></span><kbd id="db-kbd">Ctrl K</kbd></button>
-<div class="db-ragf" id="db-ragf" role="group" aria-label="Highlight topics by confidence"></div>
-<a class="db-due" id="db-due" href="/dashboard/cards" hidden></a>
+<button type="button" class="db-cmdk" id="db-cmdk" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg><span>Search your modules and topics</span><kbd id="db-kbd">Ctrl K</kbd></button>
 <span id="db-plan"></span>
-<button type="button" class="db-replay" id="db-replay" title="Show the quick tour of the dashboard again">Replay tutorial?</button>
 </div>
 <div class="db-setupbox" id="db-setup"><div class="db-setup-in"><p class="mk-busy"><span class="spin"></span>Loading your dashboard…</p></div></div>
 <section class="db-tab" data-tab="home" id="db-home" hidden></section>
@@ -234,14 +245,16 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=2"></script><script src="/assets/dashboard.js?v=23"></script><script src="/assets/mark.js?v=23"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=3"></script><script src="/assets/dashboard.js?v=24"></script><script src="/assets/mark.js?v=23"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
 
 if __name__ == "__main__":
+    import sys
     (SITE / "dashboard.html").write_text(DASH_PAGE)
-    (SITE / "mark.html").write_text(MARK_PAGE)
+    if "--dashboard-only" not in sys.argv:
+        (SITE / "mark.html").write_text(MARK_PAGE)
     # site/index.html is now the Next.js landing page (web/), built by .github/workflows/build-landing.yml.
     # HOME below is the earlier plain-HTML version, kept for reference: python3 tools/build_marker_pages.py --classic-home
     import sys
     if "--classic-home" in sys.argv:
         (SITE / "index.html").write_text(HOME)
-    print("wrote site/mark.html and site/dashboard.html for", BRAND)
+    print("wrote site/dashboard.html" + ("" if "--dashboard-only" in sys.argv else " and site/mark.html"), "for", BRAND)
