@@ -155,9 +155,16 @@ export function CodeBox() {
     if (ran.current) return; ran.current = true;
     try {
       const q = new URLSearchParams(location.search).get('code');
-      if (q) {
-        const v = q.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20); setVal(v); check(v);
-        setTimeout(() => document.getElementById('code')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 900);
+      if (q) { const v = q.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20); setVal(v); check(v); }
+      // ?code= links, /code and the menu's Code link (/#code) land here. The page above is still settling when the browser
+      // jumps to #code, so scroll again once it has, and focus the box when it's empty.
+      if (q || location.hash === '#code') {
+        const to = () => {
+          const el = document.getElementById('code'); if (!el) return;
+          el.scrollIntoView({ behavior: 'auto', block: 'center' });
+          if (!q) el.querySelector('input')?.focus({ preventScroll: true });
+        };
+        [400, 1200, 2400].forEach((ms) => setTimeout(to, ms));
       }
     } catch (e) {}
   }, []);
