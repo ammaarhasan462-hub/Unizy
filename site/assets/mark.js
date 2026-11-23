@@ -260,7 +260,7 @@
     return Promise.all([
       rest('module_topics?code=eq.' + code + '&select=position,title,summary&order=position.asc'),
       rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position,options,accept,explain&order=position.asc'),
-      rest('module_flashcards?code=eq.' + code + '&select=id,topic_pos,position,front,back&order=topic_pos.asc,position.asc').catch(function () { return []; })
+      rest('module_flashcards?code=eq.' + code + '&select=id,topic_pos,position,front,back,diagram&order=topic_pos.asc,position.asc').catch(function () { return []; })
     ]);
   }
   function loadMap() {
@@ -764,7 +764,7 @@
   function cardsFor(pos) {
     if (pos === 'all') { var all = []; (state.topics || []).forEach(function (t) { all = all.concat(cardsFor(t.position)); }); return all; }
     var own = (state.cards || []).filter(function (c) { return c.topic_pos === pos; });
-    if (own.length) return own.map(function (c) { return { k: 'c' + c.id, f: c.front, b: c.back, tp: pos }; });
+    if (own.length) return own.map(function (c) { return { k: 'c' + c.id, f: c.front, b: c.back, d: c.diagram || '', tp: pos }; });
     if (isMed()) return [];
     return (state.questions || []).filter(function (q) { return q.topic_pos === pos && q.tier === 'foundation' && q.kind === 'recall' && q.answer; })
       .map(function (q) { return { k: 'q' + q.id, f: q.question, b: q.answer, tp: pos, rec: true }; });
@@ -773,6 +773,13 @@
     var cs = cardsFor(pos); if (!cs.length) return '';
     var kn = knownGet(state.mod.code), n = cs.filter(function (c) { return kn[c.k]; }).length;
     return '<div class="mk-fcs"><span class="mk-fcic" aria-hidden="true"></span><div><b>Flashcards</b><span>' + cs.length + ' card' + (cs.length === 1 ? '' : 's') + (n ? ' · ' + n + ' known' : '') + (cs[0].rec ? ' · from quick recall until this topic’s own cards are written' : '') + '</span>' + (n ? bar(Math.round(100 * n / cs.length)) : '') + '</div><button type="button" class="btn small mk-fcgo" data-act="learn" data-pos="' + pos + '">' + (n && n < cs.length ? 'Keep learning' : n === cs.length ? 'Go through again' : 'Learn the flashcards') + '</button></div>';
+  }
+  // A card's optional diagram (module_flashcards.diagram, an SVG) is shown as an <img> data URI on the answer side,
+  // so nothing inside it can run.
+  function diaImg(svg) {
+    svg = String(svg || '').trim();
+    if (!/^<svg[\s>]/i.test(svg) || svg.length > 30000) return '';
+    return '<img class="lx-dia" alt="Diagram for this card" src="data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg) + '">';
   }
   function topicTitle(pos) { var t = (state.topics || []).filter(function (x) { return x.position === pos; })[0]; return t ? t.title : ''; }
   function learnOpen(pos, only) {
@@ -819,7 +826,7 @@
       html = head + '<div class="lx-prog"><span><i style="width:' + pct + '%"></i></span><b>' + (L.i + 1) + ' / ' + L.cards.length + '</b></div>' +
         '<button type="button" class="lx-card' + (L.flip ? ' flip' : '') + '" data-lx="flip" aria-live="polite">' +
         (L.pos === 'all' ? '<span class="lx-tp">' + esc(topicTitle(c.tp)) + '</span>' : '') +
-        (L.flip ? '<span class="lx-qs">' + esc(c.f) + '</span><span class="lx-a">' + esc(c.b) + '</span>' : '<span class="lx-q">' + esc(c.f) + '</span><span class="lx-hint">Tap or press Space to see the answer</span>') + '</button>' +
+        (L.flip ? '<span class="lx-qs">' + esc(c.f) + '</span><span class="lx-a">' + esc(c.b) + '</span>' + diaImg(c.d) : '<span class="lx-q">' + esc(c.f) + '</span><span class="lx-hint">Tap or press Space to see the answer</span>') + '</button>' +
         (L.flip ? '<div class="lx-btns"><button type="button" class="lx-b lx-no" data-lx="no" title="Keyboard: 1"><b>Still learning</b><span>Goes in your deck</span></button><button type="button" class="lx-b lx-yes" data-lx="yes" title="Keyboard: 2"><b>Know it</b><span>Next card</span></button></div>'
           : '<div class="lx-btns"><button type="button" class="btn primary lx-show" data-lx="flip">Show answer</button></div>');
     }

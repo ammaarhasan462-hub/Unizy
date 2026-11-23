@@ -941,6 +941,7 @@ html.mk-lock{overflow:hidden}
 .lx-card.flip{background:#fff;border-color:#E2E8E3;align-items:stretch;text-align:left;justify-content:flex-start}
 .lx-qs{font-size:14.5px;font-weight:600;color:#6E5C33;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed #EADFC2}
 .lx-a{font-size:18px;line-height:1.55;color:#18231F;white-space:pre-line}
+.lx-dia{display:block;max-width:100%;max-height:42vh;margin:14px auto 0;background:#fff;border-radius:10px;border:1px solid #E3EAE6}
 .lx-tp{align-self:center;font-size:12.5px;font-weight:700;color:#8A5A00;background:#FFE9B0;border-radius:999px;padding:2px 10px;margin-bottom:14px}
 .lx-card.flip .lx-tp{align-self:flex-start}
 .lx-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
