@@ -626,4 +626,5 @@ html.lite .gcol { transform: none !important; opacity: 1 !important; }
 html.lite .gcol .mini { display: none; }
 html.lite .uz-pat { will-change: auto; }
 html.lite .site-bg { display: none; }
+html.lite .uz-mq > div, html.lite .uz-stk.spin, html.lite .cv-seal svg { animation: none !important; }
 @media (max-width: 760px) { html.lite .gap-cols { grid-template-columns: 1fr; } }
