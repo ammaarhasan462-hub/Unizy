@@ -14,6 +14,8 @@
   <url><loc>https://unizy.uk/privacy</loc></url>
   <url><loc>https://unizy.uk/terms</loc></url>
   <url><loc>https://unizy.uk/modules/AC102</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/AMER0038</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/AMER0039</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ANAT0001</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/BIO116</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/BIO161</loc><lastmod>2026-11-12</lastmod></url>
@@ -40,11 +42,28 @@
   <url><loc>https://unizy.uk/modules/ECN113</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECN115</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECN214</loc><lastmod>2026-11-12</lastmod></url>
-  <url><loc>https://unizy.uk/modules/ECON0002</loc><lastmod>2026-11-11</lastmod></url>
-  <url><loc>https://unizy.uk/modules/ECON0004</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0002</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0004</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0005</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECON0006</loc><lastmod>2026-11-11</lastmod></url>
-  <url><loc>https://unizy.uk/modules/ECON0007</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0007</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0008</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECON0010</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0013</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0014</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0015</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0016</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0017</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0018</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0019</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0020</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0023</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0047</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0048</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0052</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0054</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0055</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ECON0095</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECS401U</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECS407U</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC40002</loc><lastmod>2026-11-22</lastmod></url>
@@ -59,10 +78,12 @@
   <url><loc>https://unizy.uk/modules/ELEC50004</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50006</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50007</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC50009</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50010</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50011</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50012</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50013</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC50014</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC50015</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC60002</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC60003</loc><lastmod>2026-11-22</lastmod></url>
@@ -74,10 +95,127 @@
   <url><loc>https://unizy.uk/modules/ELEC60010</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC60011</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/ELEC60012</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60013</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60014</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60015</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60016</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60017</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60018</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60019</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60021</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60022</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60024</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60025</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60029</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60030</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60031</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60033</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC60034</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70001</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70003</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70004</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70006</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70009</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70012</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70013</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70015</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70017</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70022</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70028</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70037</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70039</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70045</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70047</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70048</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70051</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70056</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70065</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70066</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70067</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70069</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70070</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70071</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70073</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70074</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70075</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70076</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70077</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70078</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70080</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70082</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70083</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70087</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70090</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70091</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70098</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70101</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70104</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/ELEC70106</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/EMS460U</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0046</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0047</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0048</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0049</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0050</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0051</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0052</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0053</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0054</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0055</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0056</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0057</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0058</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0059</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0060</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/GBSH0061</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/GV100</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/GV101</loc><lastmod>2026-11-11</lastmod></url>
-  <url><loc>https://unizy.uk/modules/HIST0003</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0003</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0007</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0008</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0031</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0033</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0059</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0071</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0073</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0075</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0079</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0088</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0123</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0128</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0148</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0152</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0153</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0163</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0178</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0184</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0195</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0197</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0212</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0213</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0470</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0471</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0472</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0473</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0474</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0475</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0483</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0484</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0488</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0489</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0490</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0491</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0499</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0512</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0513</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0514</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0531</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0533</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0539</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0540</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0543</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0562</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/HIST0785</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/HY116</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/IR100</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/LAW4001</loc><lastmod>2026-11-11</lastmod></url>
@@ -85,7 +223,7 @@
   <url><loc>https://unizy.uk/modules/LAW4009</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/LAW4104</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/LAW4105</loc><lastmod>2026-11-12</lastmod></url>
-  <url><loc>https://unizy.uk/modules/LAWS0001</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/LAWS0001</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/LAWS0002</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/LAWS0007</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/LIFE40001</loc><lastmod>2026-11-11</lastmod></url>
@@ -102,8 +240,52 @@
   <url><loc>https://unizy.uk/modules/MECH40003</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/MED41B3</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0002</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0003</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0004</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0006</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0007</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0009</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0010</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0011</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0012</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0013</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0014</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0015</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0016</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0017</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0018</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0019</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0020</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0022</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0023</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0024</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0025</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0026</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0045</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0048</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0049</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0051</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0270</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0279</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0280</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0281</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0282</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0283</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0284</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0285</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0286</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0342</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0343</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0344</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0345</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0356</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0357</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0358</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0359</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0360</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0361</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0362</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MSIN0363</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/MTH5123</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/MTH5129</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/NEUR0004</loc><lastmod>2026-11-11</lastmod></url>
@@ -112,21 +294,59 @@
   <url><loc>https://unizy.uk/modules/PH103</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHAS0002</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHAS0010</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0001</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0002</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHIL0003</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0004</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0005</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHIL0006</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0007</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0008</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PHIL0200</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHOL0001</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHYS40002</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/POL105</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/POL108</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/POL110</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/POL263</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0001</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/POLS0002</loc><lastmod>2026-11-12</lastmod></url>
-  <url><loc>https://unizy.uk/modules/POLS0006</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0006</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0007</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0054</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0056</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0057</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0058</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0060</loc><lastmod>2026-11-22</lastmod></url>
   <url><loc>https://unizy.uk/modules/POLS0061</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0077</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0081</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0082</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/POLS0111</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/PSY121</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PSY211</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PSY215</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SEHI0002</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SEHI0003</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0007</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0008</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0009</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0010</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0013</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0014</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0015</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0016</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0017</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0018</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0020</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0021</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0034</loc><lastmod>2026-11-22</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0080</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0082</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0083</loc><lastmod>2026-11-23</lastmod></url>
+  <url><loc>https://unizy.uk/modules/SESS0107</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/ST102</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/STAT0002</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/STAT0003</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://unizy.uk/modules/STAT0021</loc><lastmod>2026-11-23</lastmod></url>
 </urlset>
