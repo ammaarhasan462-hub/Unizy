@@ -200,7 +200,7 @@ HOME = f"""<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta n
 # (search + plan), and the topic highlight filter moved under My modules. Styles: site/assets/dash.css.
 DASH_HEAD_EXTRA = ('<link rel="stylesheet" href="/assets/play.css?v=3">'
     '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400..700;1,400..600&display=swap">'
-    '<link rel="stylesheet" href="/assets/dash.css?v=4">'
+    '<link rel="stylesheet" href="/assets/dash.css?v=5">'
     '<link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/assets/icons/icon-180.png">'
     '<meta name="apple-mobile-web-app-title" content="Unizy"><meta name="mobile-web-app-capable" content="yes">')
 DASH_NAV = [
@@ -232,7 +232,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <main class="db-main" id="main">
 <div class="db-top" id="db-top">
 <button type="button" class="db-cmdk" id="db-cmdk" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"/></svg><span>Search your modules and topics</span><kbd id="db-kbd">Ctrl K</kbd></button>
-<span id="db-plan"></span>
+<span class="db-topr"><span id="db-plan"></span><a class="db-homelink" href="/?home=1" aria-label="Back to the Unizy homepage"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>Homepage</span></a></span>
 </div>
 <div class="db-setupbox" id="db-setup"><div class="db-setup-in"><p class="mk-busy"><span class="spin"></span>Loading your dashboard…</p></div></div>
 <section class="db-tab" data-tab="home" id="db-home" hidden></section>

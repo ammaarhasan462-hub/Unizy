@@ -17,6 +17,10 @@ export default function Boot() {
   useEffect(() => {
     recordSource();
     track('lp_view');
+    // ?home=1 (the dashboard's Homepage button) has done its job once the homepage is showing: keep the address clean
+    if (/[?&]home=/.test(location.search)) {
+      try { const u = new URL(location.href); u.searchParams.delete('home'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {}
+    }
     const d = document.documentElement;
     let raf = 0, stopped = false, lastScroll = 0, last = 0, running = false;
     const fr = [];
