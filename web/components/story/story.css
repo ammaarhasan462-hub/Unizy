@@ -603,3 +603,27 @@ html[data-uni="kcl"] .uz {
   .gcol h3 { font-size: 26px; }
   .gcol .mini { display: none; }
 }
+
+/* ---- simple version (html.lite, lib/boot.js): slower laptops get the phone layout's choices at any width. No 3D
+   booklet or zoom section, How it works as three plain steps, no floating cards, and nothing moves on its own
+   (story.js treats lite like reduced motion), so scrolling and typing stay smooth. Same content. ---- */
+html.lite .uz-hero, html.lite .uz-unlock { display: none; }
+html.lite .uz-split { height: auto; }
+html.lite .uz-split .sp-stage { position: relative; height: auto; display: block; overflow: visible; }
+html.lite .sp-right, html.lite .sp-bar { display: none; }
+html.lite .sp-left { padding: 13vh max(22px, calc((100vw - 1140px) / 2)) 12vh; overflow: visible; }
+html.lite .sp-steps { margin-top: 40px; gap: 10px; max-width: 760px; }
+html.lite .sp-step, html.lite .sp-step:not(.on) { opacity: 1; display: grid; }
+html.lite .sp-step p { max-height: none; }
+html.lite .sp-step .n { background: var(--gold-b); color: var(--ink-d); }
+html.lite .uz-gap { padding: 12vh 0; }
+html.lite .gap-top { min-height: 0; padding-top: 0; }
+html.lite .gap-float, html.lite .fn-float { display: none; }
+html.lite .gap-banner .w { opacity: 1; }
+html.lite .gap-banner .w.hi { color: #fff; text-shadow: 3px 3px 0 var(--ink-d); }
+html.lite .gap-why { margin-top: 8vh; }
+html.lite .gcol { transform: none !important; opacity: 1 !important; }
+html.lite .gcol .mini { display: none; }
+html.lite .uz-pat { will-change: auto; }
+html.lite .site-bg { display: none; }
+@media (max-width: 760px) { html.lite .gap-cols { grid-template-columns: 1fr; } }

@@ -315,7 +315,9 @@ export function applyUni(root, id) {
 export function mountStory(root, opts = {}) {
   if (!root) return () => {};
   const track = opts.track || (() => {});
-  const reduce = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // the simple version (html.lite, lib/boot.js) counts as reduced motion: nothing moves on its own
+  const isLite = () => document.documentElement.classList.contains('lite');
+  let reduce = (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches) || isLite();
   const $ = (s, el = root) => el.querySelector(s);
   const $$ = (s, el = root) => Array.from(el.querySelectorAll(s));
   const offs = [];
@@ -448,6 +450,8 @@ export function mountStory(root, opts = {}) {
   on(window, 'unizy:uni', remeasure);
   on(window, 'load', remeasure);
   on(window, 'smg:intro-end', remeasure);
+  // switched to the simple version while open (components/Boot.jsx)
+  on(window, 'unizy:lite', () => { reduce = true; remeasure(); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
   if (typeof ResizeObserver !== 'undefined') {
     const ro = new ResizeObserver(remeasure);
@@ -458,10 +462,19 @@ export function mountStory(root, opts = {}) {
   const every = setInterval(remeasure, 1000);
   offs.push(() => clearInterval(every));
 
+  let idleY = -1, idleW = -1;
+  const liteIdle = () => {
+    if (!reduce || !isLite() || dirty) { idleY = -1; return false; }
+    if (scrollY === idleY && innerWidth === idleW) return true;
+    idleY = scrollY; idleW = innerWidth;
+    return false;
+  };
   function frame(now) {
     raf = requestAnimationFrame(frame);
     // nothing to do while the 3D intro covers the page (it is not painted then, see globals.css)
     if (html.classList.contains('intro-live') && !html.classList.contains('intro-out')) return;
+    // simple version: nothing animates on its own, so a frame only has work to do after a scroll or a resize
+    if (liteIdle()) return;
     if (dirty) { dirty = false; watched.forEach((el) => geo.set(el, [pageTop(el), (box(el) || {}).offsetHeight || 0])); }
     const sy = scrollY;
     watched.forEach((el) => { const [top, h] = geo.get(el); const r = R.get(el) || {}; r.top = top - sy; r.height = h; r.bottom = r.top + h; R.set(el, r); });
