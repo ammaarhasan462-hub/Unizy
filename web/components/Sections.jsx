@@ -1,11 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Kicker, Logo, Magnetic, Reveal, SpotCard } from './ui';
 import { SB_KEY, SB_URL, fetchReviews, hasSession, track } from '@/lib/site';
-
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
+import { LITE } from '@/lib/boot';
 
 const ICONS = {
   doc: <><path d="M4 19V5h16v14z" /><path d="M8 9h8M8 13h5" /></>,
@@ -269,17 +266,10 @@ export function Faq() {
 }
 
 export function Final() {
-  const box = useRef(null);
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.fromTo(box.current, { scale: 0.88, borderRadius: 80 }, { scale: 1, borderRadius: 40, ease: 'none', scrollTrigger: { trigger: box.current, start: 'top bottom', end: 'center center', scrub: 0.8 } });
-    }, box);
-    return () => ctx.revert();
-  }, []);
   return (
     <section className="relative py-20 lg:py-28">
       <div className="wrap">
-        <div ref={box} className="relative overflow-hidden rounded-[40px] border border-ink/10 px-6 py-20 text-center sm:px-12 lg:py-28">
+        <div className="relative overflow-hidden rounded-[40px] border border-ink/10 px-6 py-20 text-center sm:px-12 lg:py-28">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_50%_0%,rgba(62,107,92,0.2),transparent_60%),radial-gradient(ellipse_at_50%_100%,rgba(23,48,42,0.14),transparent_60%)]" />
           <div className="bg-grid absolute inset-0 -z-10 opacity-60" />
           <h2 className="mx-auto max-w-[900px] font-display text-[clamp(40px,6.4vw,92px)] font-bold leading-[0.95] tracking-[-0.045em]">
@@ -297,6 +287,23 @@ export function Final() {
   );
 }
 
+// Simple version on/off (html.lite, lib/boot.js). Remembered on this device; 0 also stops the automatic switch.
+function LiteSwitch() {
+  const [lite, setLite] = useState(null);
+  useEffect(() => { setLite(document.documentElement.classList.contains('lite')); }, []);
+  if (lite === null) return null;
+  const flip = () => {
+    try { localStorage.setItem(LITE, lite ? '0' : '1'); } catch (e) {}
+    track(lite ? 'lite_off' : 'lite_on');
+    location.reload();
+  };
+  return (
+    <button type="button" onClick={flip} className="cursor-pointer py-2.5 text-left hover:text-ink md:py-0" data-testid="lite-switch">
+      {lite ? 'Full version' : 'Simple version'}
+    </button>
+  );
+}
+
 export function Footer() {
   const links = [['Find your module', '/mark'], ['Pricing', '/pricing'], ['Society code', '/#code'], ['Reviews', '/reviews'], ['FAQ', '/faq'], ['Trust & safety', '/trust'], ['Privacy', '/privacy.html'], ['Terms', '/terms.html'], ['Contact', 'mailto:hello@unizy.uk']];
   return (
@@ -307,6 +314,7 @@ export function Footer() {
           <nav className="flex flex-wrap gap-x-6 gap-y-0 text-[14px] text-mute md:gap-y-2" aria-label="Footer">
             {links.map(([t, h]) => <a key={h} href={h} className="py-2.5 hover:text-ink md:py-0">{t}</a>)}
             <button type="button" data-replay-intro className="cursor-pointer py-2.5 text-left hover:text-ink md:py-0">Replay intro</button>
+            <LiteSwitch />
           </nav>
         </div>
         <p className="mt-8 max-w-[900px] text-[12.5px] leading-relaxed text-dim">

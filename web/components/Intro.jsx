@@ -5,14 +5,11 @@
 // opens straight away; any element with data-replay-intro (the "Replay intro" buttons on the homepage) plays it
 // again in place, without reloading the page. ?intro=1 forces it, ?intro=0 skips it.
 import { useEffect, useRef, useState } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { hasSession, track } from '@/lib/site';
 import { INTRO_SEEN } from '@/lib/boot';
 import { setUni as saveUni } from './story/unis';
 import { COPY, EndCard, ProgressRail, StartTitle, Chapter, TopBar, chaptersFor, Em } from './intro/IntroChrome';
 
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
 
 
 // timings (fractions of the journey) and layout; the words are in intro/IntroChrome.jsx
@@ -125,24 +122,39 @@ function IntroPlayer({ replay }) {
       // freeze the 3D on its last frame so the hand-over doesn't wait on a slow GPU
       try { if (engineRef.current && engineRef.current.pause) engineRef.current.pause(); } catch (e) {}
       detach();
-      const tl = gsap.timeline({
-        onComplete: () => {
-          detach();
-          if (engineRef.current) engineRef.current.dispose();
-          engineRef.current = null;
-          d.classList.remove('intro', 'intro-live', 'intro-out');
-          // a reload after ?intro=1 should open the homepage, not the intro again
-          try { if (/[?&]intro=1/.test(location.search)) { const u = new URL(location.href); u.searchParams.delete('intro'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } } catch (e) {}
-          window.scrollTo(0, 0);
-          window.dispatchEvent(new Event('smg:intro-end'));
-          setOn(false);
-          setTimeout(() => ScrollTrigger.refresh(), 50);
-        },
-      });
+      let ended = false;
+      const end = () => {
+        if (ended) return;
+        ended = true;
+        detach();
+        if (engineRef.current) engineRef.current.dispose();
+        engineRef.current = null;
+        d.classList.remove('intro', 'intro-live', 'intro-out');
+        // a reload after ?intro=1 should open the homepage, not the intro again
+        try { if (/[?&]intro=1/.test(location.search)) { const u = new URL(location.href); u.searchParams.delete('intro'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } } catch (e) {}
+        window.scrollTo(0, 0);
+        window.dispatchEvent(new Event('smg:intro-end'));
+        setOn(false);
+      };
+      // plain browser animations (no animation library on the homepage). The timer is a backstop: the hand-over
+      // always completes, even if an animation never reports back
+      const fade = (el, to, ms, easing, delay = 0) => {
+        if (!el || !el.animate) { if (el) el.style.opacity = String(to); return Promise.resolve(); }
+        const from = getComputedStyle(el).opacity;
+        const a = el.animate([{ opacity: from }, { opacity: to }], { duration: ms, delay, easing, fill: 'forwards' });
+        return a.finished.catch(() => {});
+      };
       // the page under the intro is painted again (.intro-out, globals.css) just before the intro fades off it
       const reveal = () => d.classList.add('intro-out');
-      if (mode === 'skip') tl.call(reveal).to(root.current, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
-      else tl.to(flash.current, { opacity: 1, duration: 0.7, ease: 'power2.in' }).call(reveal).to(root.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, '+=0.05');
+      const out = 'cubic-bezier(.25,.46,.45,.94)', inOut = 'cubic-bezier(.45,0,.55,1)', inn = 'cubic-bezier(.55,.06,.68,.19)';
+      if (mode === 'skip') {
+        reveal();
+        fade(root.current, 0, 600, inOut).then(end);
+        setTimeout(end, 1400);
+      } else {
+        fade(flash.current, 1, 700, inn).then(() => { reveal(); return fade(root.current, 0, 900, out, 50); }).then(end);
+        setTimeout(end, 2600);
+      }
     };
     window.__smgIntroFinish = finish;
 

@@ -1,31 +1,14 @@
-'use client';
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
-
-// Fixed backdrop: fine grid, three drifting colour fields (GSAP scroll parallax) and film grain.
+// Fixed backdrop: fine grid and three soft colour fields. Static on purpose: the old version blurred the fields with a
+// 120px filter, moved them on every scroll frame and blended film grain over the whole screen, which made scrolling the
+// homepage stutter on slower laptops (about 10 fps with the CPU slowed 6x). Soft radial gradients look the same and are
+// painted once. Hidden in the simple version (html.lite, see lib/boot.js).
 export default function Background() {
-  const root = useRef(null);
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const ctx = gsap.context(() => {
-      const st = { trigger: document.documentElement, start: 'top top', end: 'bottom bottom', scrub: 1.2 };
-      gsap.to('.orb-a', { yPercent: 160, xPercent: -30, ease: 'none', scrollTrigger: st });
-      gsap.to('.orb-b', { yPercent: 120, xPercent: 40, ease: 'none', scrollTrigger: st });
-      gsap.to('.orb-c', { yPercent: -80, ease: 'none', scrollTrigger: st });
-      gsap.to('.grid-layer', { yPercent: -10, ease: 'none', scrollTrigger: st });
-    }, root);
-    return () => ctx.revert();
-  }, []);
   return (
-    <div ref={root} className="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
-      <div className="grid-layer bg-grid absolute inset-x-0 top-0 h-[130vh]" />
-      <div className="orb-a glow-orb left-[-10%] top-[-12%] size-[620px] bg-vio/60" />
-      <div className="orb-b glow-orb right-[-12%] top-[8%] size-[560px] bg-blue/50" />
-      <div className="orb-c glow-orb bottom-[-20%] left-[30%] size-[520px] bg-cyan/25" />
-      <div className="noise absolute inset-0" />
+    <div className="site-bg pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      <div className="bg-grid absolute inset-x-0 top-0 h-[130vh]" />
+      <div className="glow-soft glow-a left-[-10%] top-[-12%] size-[620px]" />
+      <div className="glow-soft glow-b right-[-12%] top-[8%] size-[560px]" />
+      <div className="glow-soft glow-c bottom-[-20%] left-[30%] size-[520px]" />
     </div>
   );
 }
