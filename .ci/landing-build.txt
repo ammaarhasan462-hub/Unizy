@@ -1,5 +1,5 @@
 status: success
-sha: 928de63634a1a650871c263b67a7c197f4df5897
+sha: 1049742e141b8174ccc4a2ed59e7cc19ef38ecb1
 --- build
 
 > unizy-landing@1.0.0 build
@@ -9,7 +9,7 @@ sha: 928de63634a1a650871c263b67a7c197f4df5897
    ▲ Next.js 15.5.29
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 8.3s
+ ✓ Compiled successfully in 5.5s
    Skipping linting
    Checking validity of types ...
    Collecting page data ...
@@ -24,7 +24,7 @@ sha: 928de63634a1a650871c263b67a7c197f4df5897
  ✓ Exporting (2/2)
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                    39.3 kB         142 kB
+┌ ○ /                                    39.4 kB         142 kB
 └ ○ /_not-found                            994 B         104 kB
 + First Load JS shared by all             103 kB
   ├ chunks/255-15b9cc804e0d9c7d.js       46.7 kB
@@ -52,4 +52,4 @@ unizy-landing@1.0.0 /home/runner/work/Unizy/Unizy/web
 
 --- install
 
-added 116 packages in 10s
+added 116 packages in 6s
