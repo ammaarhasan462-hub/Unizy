@@ -976,3 +976,11 @@ html.mk-lock{overflow:hidden}
 .btn.cd-lgo{background:#F5BE45;color:#2E2000;border:0;font-weight:700;min-height:32px;padding:5px 14px}
 .btn.cd-lgo:hover{background:#F8CA62;color:#2E2000}
 .hm-fca{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:auto}
+/* Find your module: the search box sits at the top and stays pinned while you scroll the list */
+.mk-search.mk-stick{position:sticky;top:var(--stick,68px);z-index:6;margin:0 -12px;padding:10px 12px;background:var(--paper);border-radius:0 0 16px 16px}
+.mk-search.mk-stick input[type=search]{padding-left:48px}
+.mk-search{position:relative}
+.mk-sicon{position:absolute;left:28px;top:38px;width:20px;height:20px;transform:translateY(-50%);pointer-events:none;color:var(--muted)}
+.mk-sicon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;display:block}
+.mk-packs[hidden]{display:none}
+@media (max-width:760px){.mk-search.mk-stick{top:var(--stick,58px)}}

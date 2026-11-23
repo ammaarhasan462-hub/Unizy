@@ -245,14 +245,16 @@
   function search(q) {
     state.q = q; clearTimeout(searchTimer);
     var term = q.trim();
-    if (term.length < 2) { state.results = []; renderList(); return; }
+    if (term.length < 2) { state.results = []; state.searching = false; renderList(); return; }
+    // full packs that match show at once (no network); the catalogue search follows
+    state.searching = true; renderList();
     searchTimer = setTimeout(function () {
       var seq = ++searchSeq, t = term.replace(/[%*,()]/g, ' ').trim();
       var filt = (/^[A-Za-z]{4}\d{0,5}$/.test(t) || /^[A-Za-z]{2,4}\d[0-9A-Za-z]{0,4}$/.test(t) || /^[0-7][A-Za-z]{1,4}[0-9A-Za-z]{0,5}$/.test(t)) ? 'code=ilike.' + encodeURIComponent(t.toUpperCase() + '*') : 'or=(title.ilike.*' + encodeURIComponent(t) + '*,code.ilike.*' + encodeURIComponent(t) + '*,department.ilike.*' + encodeURIComponent(t) + '*)';
       rest('ucl_modules?select=code,title,level,credits,ects,department,uni' + (listUni() ? '&uni=eq.' + listUni() : '') + '&' + filt + (state.ug ? '&level=lte.6' : '') + '&order=level.asc,code.asc&limit=40').then(function (rows) {
         if (seq !== searchSeq) return;
-        state.results = rows || []; renderList();
-      }).catch(function () { if (seq === searchSeq) { state.results = null; renderList(); } });
+        state.searching = false; state.results = rows || []; renderList();
+      }).catch(function () { if (seq === searchSeq) { state.searching = false; state.results = null; renderList(); } });
     }, 180);
   }
   // The Module Map: topics + questions (saved for everyone). If a module has none yet, ask the marker to write them and wait.
@@ -653,22 +655,47 @@
     if (HOOKS) return '<section class="mk-hero dash"><h1>Practice &amp; marking</h1><p class="lead">Pick a module, work through it topic by topic, and get your answers marked against your department’s criteria.</p>' + picks + '<p class="mk-lab">' + (mine.length ? 'Or find another module' : 'Find a module') + '</p><div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search UCL modules"><label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div><div id="mk-list" aria-live="polite"></div></section>';
     var pn = pubUni ? 'Search ' + PUB_N[pubUni].toLocaleString('en-GB') + ' ' + UNIS[pubUni].short + (pubUni === 'lse' ? ' courses' : ' modules') : 'Search modules at UCL, Imperial, Queen Mary, LSE and King’s';
     var pl = packList.filter(function (p) { return packUni[p.code] && (!pubUni || packUni[p.code] === pubUni); });
-    var pk = pl.length ? '<div class="mk-mine mk-packs"><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
+    var pk = pl.length ? '<div class="mk-mine mk-packs" id="mk-packs"' + (state.q.trim().length >= 2 ? ' hidden' : '') + '><p class="mk-lab">Full packs · ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'courses' : 'modules') + (pubUni ? ' at ' + UNIS[pubUni].short : '') + '</p><p class="mk-fine">Every topic covered in depth: quick recall, exam-style and First-class questions, with an example answer plan for each one, checked twice.' + (canGuest() ? ' <b>Try one marked answer free, no sign-up.</b>' : '') + '</p><ul class="mk-results">' + pl.map(function (p) { return '<li><a href="' + MBASE + p.code + '" data-code="' + p.code + '"><span class="mk-code">' + esc(p.code) + '</span><span class="mk-title">' + esc(packTitles[p.code] || p.code) + '</span><span class="mk-meta">' + (!pubUni && UNIS[packUni[p.code]] ? UNIS[packUni[p.code]].short + ' · ' : '') + 'Full pack · ' + p.questions + ' questions</span></a></li>'; }).join('') + '</ul></div>' : '';
     // signed-out visitors (the home page's "Mark one answer free" lands here via /try): say how the free try works
     var tryLine = canGuest() ? '<p class="mk-trybar"><b>Mark one answer free, no sign-up.</b> Pick a module, choose an exam-style question and write your answer. You’ll get your mark and exactly what would move you up.</p>' : '';
     return '<section class="mk-hero"><span class="kicker">' + pn + '</span><h1>' + (canGuest() ? 'Pick a module to try.' : 'Find your module.') + '</h1>' + tryLine + uniTabs() +
-      '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'course' : 'module') + (pl.length === 1 ? '' : 's') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' + pk +
-      '<div class="mk-search"><input id="mk-q" type="search" autocomplete="off" placeholder="e.g. ECON0013, Contract Law, History" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
+      '<p class="lead">Search by module code, title or department. ' + (pl.length ? 'Full packs cover ' + pl.length + ' big first-year ' + (pubUni === 'lse' ? 'course' : 'module') + (pl.length === 1 ? '' : 's') + '; any other module gets practice questions written the first time a student opens it.' : 'Work through each topic at three levels, write an answer, and get it marked.') + '</p>' +
+      '<div class="mk-search mk-stick" role="search"><span class="mk-sicon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></span><input id="mk-q" type="search" autocomplete="off" placeholder="Code or name, e.g. ECON0013" value="' + esc(state.q) + '" aria-label="Search ' + (pubUni ? UNIS[pubUni].short + ' ' : '') + 'modules">' +
       '<label class="mk-ug"><input type="checkbox" id="mk-ugonly"' + (state.ug ? ' checked' : '') + '> Undergraduate only</label></div>' +
-      '<div id="mk-list" aria-live="polite"></div></section>';
+      '<div id="mk-list" aria-live="polite"></div>' + pk + '</section>';
+  }
+  // full packs whose code or title has every word typed (instant, no network)
+  function packMatches(q) {
+    var w = q.trim().toLowerCase().split(/\s+/).filter(Boolean), u = listUni();
+    if (!w.length || q.trim().length < 2) return [];
+    return packList.filter(function (p) {
+      if (u && packUni[p.code] && packUni[p.code] !== u) return false;
+      var hay = (p.code + ' ' + (packTitles[p.code] || '')).toLowerCase();
+      return w.every(function (x) { return hay.indexOf(x) >= 0; });
+    });
   }
   function listHtml() {
-    if (state.q.trim().length < 2) return '<p class="mk-hint">Start typing a module code (like <b>HIST0003</b>), a title or a department.</p>';
-    if (state.results === null) return '<p class="mk-err">Couldn’t search just now. Try again.</p>';
-    if (!state.results.length) return '<p class="mk-hint">No ' + (listUni() ? UNIS[listUni()].short + ' ' : '') + 'modules match that. Try the module code from your timetable' + (listUni() === 'ucl' ? ' or Moodle' : '') + '.</p>';
-    return '<ul class="mk-results">' + state.results.map(function (m) {
-      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + (!listUni() && UNIS[m.uni] ? UNIS[m.uni].short + ' · ' : '') + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.status ? ' · ' + esc(m.status) : '') + (isPack(m.code) ? ' · <b class="mk-packb">Full pack</b>' : '') + '</span></a></li>';
-    }).join('') + '</ul>';
+    var q = state.q.trim();
+    if (q.length < 2) return HOOKS || !packList.length ? '<p class="mk-hint">Start typing a module code (like <b>HIST0003</b>), a title or a department.</p>' : '';
+    var w = q.toLowerCase().split(/\s+/).filter(Boolean), seen = {}, items = [];
+    packMatches(q).forEach(function (p) { seen[p.code] = 1; items.push({ code: p.code, title: packTitles[p.code] || p.code, uni: packUni[p.code], pack: p.questions }); });
+    // the last catalogue results, narrowed to the words now typed, stay up until the new ones arrive
+    (state.results || []).forEach(function (m) {
+      if (seen[m.code]) return;
+      var hay = (m.code + ' ' + (m.title || '') + ' ' + (m.department || '')).toLowerCase();
+      if (state.searching && !w.every(function (x) { return hay.indexOf(x) >= 0; })) return;
+      seen[m.code] = 1; items.push(m);
+    });
+    if (!items.length) {
+      if (state.searching) return '<p class="mk-hint">Searching…</p>';
+      if (state.results === null) return '<p class="mk-err">Couldn’t search just now. Try again.</p>';
+      return '<p class="mk-hint">No ' + (listUni() ? UNIS[listUni()].short + ' ' : '') + 'modules match that. Try the module code from your timetable' + (listUni() === 'ucl' ? ' or Moodle' : '') + '.</p>';
+    }
+    return '<ul class="mk-results">' + items.map(function (m) {
+      var meta = m.pack ? (!listUni() && UNIS[m.uni] ? UNIS[m.uni].short + ' · ' : '') + '<b class="mk-packb">Full pack</b> · ' + m.pack + ' questions'
+        : (!listUni() && UNIS[m.uni] ? UNIS[m.uni].short + ' · ' : '') + esc(m.department || '') + ' · ' + esc(levelName(m.level)) + (m.credits ? ' · ' + m.credits + ' credits' : m.ects ? ' · ' + m.ects + ' ECTS' : '') + (m.status ? ' · ' + esc(m.status) : '') + (isPack(m.code) ? ' · <b class="mk-packb">Full pack</b>' : '');
+      return '<li><a href="/modules/' + m.code + '" data-code="' + m.code + '"><span class="mk-code">' + esc(m.code) + '</span><span class="mk-title">' + esc(m.title) + '</span><span class="mk-meta">' + meta + '</span></a></li>';
+    }).join('') + '</ul>' + (state.searching ? '<p class="mk-hint">Searching all modules…</p>' : state.results === null ? '<p class="mk-err">Couldn’t search the full list just now.</p>' : '');
   }
   function bar(pct, cls) { return '<span class="mk-bar' + (cls ? ' ' + cls : '') + '" role="img" aria-label="' + pct + '% mastered"><i style="width:' + Math.max(0, Math.min(100, pct)) + '%"></i></span>'; }
   function examRow(m) {
@@ -1182,7 +1209,7 @@
     if (focusId) { var el = document.getElementById(focusId); if (el) { el.focus(); try { if (selS != null) el.setSelectionRange(selS, selE); } catch (e) {} } }
     if (timer.on) tick();
   }
-  function renderList() { var el = document.getElementById('mk-list'); if (el) el.innerHTML = listHtml(); }
+  function renderList() { var el = document.getElementById('mk-list'); if (el) el.innerHTML = listHtml(); var pk = document.getElementById('mk-packs'); if (pk) pk.hidden = state.q.trim().length >= 2; }
 
   // ---------- events ----------
   root.addEventListener('input', function (e) {
