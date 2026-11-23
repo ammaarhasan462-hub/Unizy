@@ -54,12 +54,12 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
     opacity: 0.035; mix-blend-mode: multiply;
   }
 
+  /* glass cards: no live backdrop blur. What is behind them is the page's already very soft background, so the blur
+     barely showed, but it had to be redrawn for every card on screen on every frame of scrolling (slow on phones) */
   .glass {
-    background: linear-gradient(160deg, rgb(255 255 255 / 0.82), rgb(255 255 255 / 0.55));
+    background: linear-gradient(160deg, rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.64));
     border: 1px solid rgb(23 48 42 / 0.1);
     box-shadow: 0 1px 2px rgb(23 48 42 / 0.04), 0 14px 40px -18px rgb(23 48 42 / 0.18);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
   /* the fixed nav once scrolled: near-opaque instead of a live backdrop blur, which had to be redrawn every frame
      over the animated booklet */
@@ -68,10 +68,8 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-
     border: 1px solid rgb(23 48 42 / 0.1);
   }
   .glass-strong {
-    background: linear-gradient(160deg, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0.78));
+    background: linear-gradient(160deg, rgb(255 255 255 / 0.96), rgb(255 255 255 / 0.84));
     border: 1px solid rgb(23 48 42 / 0.12);
-    backdrop-filter: blur(22px) saturate(150%);
-    -webkit-backdrop-filter: blur(22px) saturate(150%);
   }
 
   .text-grad {
