@@ -1,5 +1,6 @@
 # Google-friendly pages for every finished practice pack (tools/seo/build_module_pages.py).
-# Runs daily so new packs get their own page and sitemap entry, and whenever the script or this file changes.
+# Runs hourly so new packs get their own page and sitemap entry soon after they finish, and whenever the script or this
+# file changes. A run with no new packs commits nothing, so it only redeploys when something changed.
 # Commits to main without [skip ci] so Cloudflare Pages deploys it (GITHUB_TOKEN pushes never re-trigger workflows).
 name: Module pages
 
@@ -10,7 +11,7 @@ on:
       - 'tools/seo/**'
       - '.github/workflows/module-pages.yml'
   schedule:
-    - cron: '23 4 * * *'
+    - cron: '23 * * * *'
   workflow_dispatch:
 
 permissions:
