@@ -57,7 +57,7 @@
 .uz-btn-line:hover { border-color: var(--gold-l); background: rgb(var(--gold-l-rgb) / .08); }
 
 /* doodle pattern (the jar site's leaves → formulas, ticks and grades) */
-.uz-pat { position: absolute; top: 0; left: 0; right: -800px; bottom: -760px; pointer-events: none; background-repeat: repeat; will-change: transform; } /* moved with a transform (see story.js), so it is drawn once */
+.uz-pat { position: absolute; top: 0; left: 0; right: -400px; bottom: -380px; pointer-events: none; background-repeat: repeat; will-change: transform; } /* moved with a transform (see story.js), so it is drawn once; it is one tile (400 x 380) bigger to the right and below, which is as far as the transform moves it */
 
 /* ---------- 1. hero stage ---------- */
 .uz-hero { position: relative; height: 560vh; background: var(--g); }

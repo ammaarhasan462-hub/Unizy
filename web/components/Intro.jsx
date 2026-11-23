@@ -100,15 +100,17 @@ export default function Intro() {
           detach();
           if (engineRef.current) engineRef.current.dispose();
           engineRef.current = null;
-          d.classList.remove('intro', 'intro-live');
+          d.classList.remove('intro', 'intro-live', 'intro-out');
           window.scrollTo(0, 0);
           window.dispatchEvent(new Event('smg:intro-end'));
           setOn(false);
           setTimeout(() => ScrollTrigger.refresh(), 50);
         },
       });
-      if (mode === 'skip') tl.to(root.current, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
-      else tl.to(flash.current, { opacity: 1, duration: 0.7, ease: 'power2.in' }).to(root.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, '+=0.05');
+      // the page under the intro is painted again (.intro-out, globals.css) just before the intro fades off it
+      const reveal = () => d.classList.add('intro-out');
+      if (mode === 'skip') tl.call(reveal).to(root.current, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+      else tl.to(flash.current, { opacity: 1, duration: 0.7, ease: 'power2.in' }).call(reveal).to(root.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, '+=0.05');
     };
     window.__smgIntroFinish = finish;
 

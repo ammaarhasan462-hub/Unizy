@@ -1,13 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Kicker, Logo, Magnetic, Reveal, SpotCard } from './ui';
 import { SB_KEY, SB_URL, fetchReviews, hasSession, track } from '@/lib/site';
 
 if (typeof window !== 'undefined') gsap.registerPlugin(ScrollTrigger);
-const EASE = [0.16, 1, 0.3, 1];
 
 const ICONS = {
   doc: <><path d="M4 19V5h16v14z" /><path d="M8 9h8M8 13h5" /></>,
@@ -29,7 +27,7 @@ export function Trust() {
         <div className="mt-14 grid gap-5 md:grid-cols-3">
           {cards.map(([ic, t, d], i) => (
             <Reveal key={t} delay={0.08 * i}>
-              <motion.div whileHover={{ y: -6 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }} className="h-full">
+              <div className="lift h-full">
                 <SpotCard className="glass h-full rounded-[28px] p-7">
                   <span className="grid size-12 place-items-center rounded-2xl border border-vio/40 bg-vio/15 text-lilac shadow-[0_0_30px_-8px_rgba(62,107,92,0.41)]">
                     <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current stroke-[1.7]">{ICONS[ic]}</svg>
@@ -37,7 +35,7 @@ export function Trust() {
                   <h3 className="mt-6 font-display text-[23px] font-semibold tracking-tight">{t}</h3>
                   <p className="mt-3 text-[15.5px] leading-relaxed text-mute">{d}</p>
                 </SpotCard>
-              </motion.div>
+              </div>
             </Reveal>
           ))}
         </div>
@@ -254,15 +252,13 @@ export function Faq() {
               <div className={`rounded-3xl border transition-colors duration-300 ${open === i ? 'glass-strong border-ink/15' : 'border-ink/[.08] bg-white/70 hover:bg-ink/5'}`}>
                 <button type="button" aria-expanded={open === i} onClick={() => setOpen(open === i ? -1 : i)} className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left font-display text-[19px] font-semibold">
                   {q}
-                  <motion.span animate={{ rotate: open === i ? 45 : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="grid size-8 shrink-0 place-items-center rounded-full border border-ink/15 text-lg text-lilac">+</motion.span>
+                  <span className={`faq-plus grid size-8 shrink-0 place-items-center rounded-full border border-ink/15 text-lg text-lilac ${open === i ? 'is-open' : ''}`}>+</span>
                 </button>
-                <AnimatePresence initial={false}>
-                  {open === i && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, ease: EASE }} className="overflow-hidden">
-                      <p className="px-6 pb-6 text-[15.5px] leading-relaxed text-mute">{a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <div className={`faq-body ${open === i ? 'is-open' : ''}`} aria-hidden={open !== i} inert={open !== i}>
+                  <div className="overflow-hidden">
+                    <p className="px-6 pb-6 text-[15.5px] leading-relaxed text-mute">{a}</p>
+                  </div>
+                </div>
               </div>
             </Reveal>
           ))}
