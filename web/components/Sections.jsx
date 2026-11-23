@@ -306,6 +306,7 @@ export function Footer() {
           <Logo />
           <nav className="flex flex-wrap gap-x-6 gap-y-0 text-[14px] text-mute md:gap-y-2" aria-label="Footer">
             {links.map(([t, h]) => <a key={h} href={h} className="py-2.5 hover:text-ink md:py-0">{t}</a>)}
+            <button type="button" data-replay-intro className="cursor-pointer py-2.5 text-left hover:text-ink md:py-0">Replay intro</button>
           </nav>
         </div>
         <p className="mt-8 max-w-[900px] text-[12.5px] leading-relaxed text-dim">

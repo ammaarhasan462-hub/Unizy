@@ -1,13 +1,14 @@
 'use client';
 // Opening screen: a full-screen 3D journey. Scrolling, swiping or the arrow keys move the camera
-// instead of the page; at the end it opens onto the landing page. It plays every time someone opens
-// unizy.uk (typed, bookmarked, from a search or a shared link, reloaded), signed in or not, on laptops and desktops. It is skipped on phones,
-// when clicking Home from another Unizy page, with reduced motion, or without WebGL 2.
-// ?intro=1 forces it, ?intro=0 skips it.
+// instead of the page; at the end it opens onto the landing page. It plays once per device, the first time
+// someone opens unizy.uk on a laptop or desktop (when it plays is decided in lib/boot.js). After that the homepage
+// opens straight away; any element with data-replay-intro (the "Replay intro" buttons on the homepage) plays it
+// again in place, without reloading the page. ?intro=1 forces it, ?intro=0 skips it.
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { hasSession, track } from '@/lib/site';
+import { INTRO_SEEN } from '@/lib/boot';
 import { setUni as saveUni } from './story/unis';
 import { COPY, EndCard, ProgressRail, StartTitle, Chapter, TopBar, chaptersFor, Em } from './intro/IntroChrome';
 
@@ -49,7 +50,27 @@ function vis(c, p) {
   return ss(c.a, c.a + L * 0.28, p) * (1 - ss(c.b - L * 0.28, c.b, p));
 }
 
+// Holds the intro and plays it again when a Replay intro button is pressed: each replay mounts a fresh player, so
+// nothing is left over from the last run (engine, scroll position in the journey, chosen university).
 export default function Intro() {
+  const [run, setRun] = useState(0);
+  useEffect(() => {
+    const onClick = (e) => {
+      const el = e.target && e.target.closest && e.target.closest('[data-replay-intro]');
+      if (!el) return;
+      e.preventDefault();
+      const d = document.documentElement;
+      if (d.classList.contains('intro') || !d.classList.contains('can-intro')) return; // already playing, or can't
+      track('intro_replay');
+      setRun((n) => n + 1);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
+  return <IntroPlayer key={run} replay={run > 0} />;
+}
+
+function IntroPlayer({ replay }) {
   const [on, setOn] = useState(true);
   const [ready, setReady] = useState(false);
   const [authed, setAuthed] = useState(false);
@@ -83,8 +104,14 @@ export default function Intro() {
 
   useEffect(() => {
     const d = document.documentElement;
+    if (replay) d.classList.add('intro');
     if (!d.classList.contains('intro')) { setOn(false); return; }
-    d.classList.add('intro-live');
+    // once it has played on this device, the homepage opens without it (lib/boot.js)
+    try { localStorage.setItem(INTRO_SEEN, '1'); } catch (e) {}
+    // a replay fades in over the page (#intro-root.intro-replay, globals.css) and only then stops painting it
+    let liveT = 0;
+    if (replay) liveT = setTimeout(() => { if (!doneRef.current) d.classList.add('intro-live'); }, 480);
+    else d.classList.add('intro-live');
     setAuthed(hasSession());
     const mobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
     let engine = null;
@@ -101,6 +128,8 @@ export default function Intro() {
           if (engineRef.current) engineRef.current.dispose();
           engineRef.current = null;
           d.classList.remove('intro', 'intro-live', 'intro-out');
+          // a reload after ?intro=1 should open the homepage, not the intro again
+          try { if (/[?&]intro=1/.test(location.search)) { const u = new URL(location.href); u.searchParams.delete('intro'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } } catch (e) {}
           window.scrollTo(0, 0);
           window.dispatchEvent(new Event('smg:intro-end'));
           setOn(false);
@@ -268,6 +297,7 @@ export default function Intro() {
     return () => {
       cancelled = true;
       clearTimeout(t);
+      clearTimeout(liveT);
       detach();
       if (engineRef.current) engineRef.current.dispose();
       engineRef.current = null;
@@ -283,7 +313,7 @@ export default function Intro() {
   const railItems = [...words, { n: '06', k: 'Marked' }];
 
   return (
-    <div id="intro-root" ref={root} className="fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd]" role="region" aria-label="Unizy intro">
+    <div id="intro-root" ref={root} className={`fixed inset-0 z-[100] select-none overflow-hidden bg-[#05070b] text-[#efe9dd] ${replay ? 'intro-replay' : ''}`} role="region" aria-label="Unizy intro">
       <div ref={stage} className="absolute inset-0" />
       {/* the short title card while another university's world is built */}
       <div className={`pointer-events-none absolute inset-0 z-20 grid place-items-center bg-[#05070b] transition-opacity duration-700 ${switching ? 'opacity-100' : 'opacity-0'}`} aria-hidden={!switching}>
