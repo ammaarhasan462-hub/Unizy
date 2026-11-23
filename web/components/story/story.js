@@ -432,18 +432,39 @@ export function mountStory(root, opts = {}) {
   const progress = (r) => clamp(-r.top / Math.max(1, r.height - innerHeight));
   const near = (r) => r.height > 0 && r.bottom > -innerHeight * 0.2 && r.top < innerHeight * 1.2; // height 0 = hidden (phones)
 
-  // every element whose position the frame reads, read together at the start of the frame while the layout is still
-  // clean: reading them between style writes (as each section used to) forced a fresh layout on every frame
+  // every element whose position the frame reads: its place on the page (layout, ignoring transforms) is measured
+  // once, and again only when the page's size or content changes. The frame then works from scrollY alone and never
+  // reads layout: reading getBoundingClientRect between style writes forced a fresh layout on every frame
   const watched = [...new Set([H && H.sec, S && S.sec, G && G.sec, G && G.banner, G && G.why, ...(G ? G.cols : []), G && G.draw,
     U && U.sec, F && F.sec, ...floats.map((f) => f.sec), ...pats.map((pt) => pt.sec)].filter(Boolean))];
-  const R = new Map();
+  const geo = new Map(), R = new Map();
   const html = document.documentElement;
+  let dirty = true;
+  const remeasure = () => { dirty = true; };
+  // (an SVG element has no offsetTop: its nearest HTML ancestor stands in for it)
+  const box = (el) => { while (el && !(el instanceof HTMLElement)) el = el.parentElement; return el; };
+  const pageTop = (el) => { let y = 0; for (let e = box(el); e; e = e.offsetParent) y += e.offsetTop; return y; };
+  on(window, 'resize', remeasure);
+  on(window, 'unizy:uni', remeasure);
+  on(window, 'load', remeasure);
+  on(window, 'smg:intro-end', remeasure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(remeasure);
+    ro.observe(html); ro.observe(root);
+    offs.push(() => ro.disconnect());
+  }
+  // and once a second anyway, in case something moved without changing the page's size
+  const every = setInterval(remeasure, 1000);
+  offs.push(() => clearInterval(every));
 
   function frame(now) {
     raf = requestAnimationFrame(frame);
     // nothing to do while the 3D intro covers the page (it is not painted then, see globals.css)
     if (html.classList.contains('intro-live') && !html.classList.contains('intro-out')) return;
-    watched.forEach((el) => R.set(el, el.getBoundingClientRect()));
+    if (dirty) { dirty = false; watched.forEach((el) => geo.set(el, [pageTop(el), (box(el) || {}).offsetHeight || 0])); }
+    const sy = scrollY;
+    watched.forEach((el) => { const [top, h] = geo.get(el); const r = R.get(el) || {}; r.top = top - sy; r.height = h; r.bottom = r.top + h; R.set(el, r); });
     const t = now / 1000;
     const vw = innerWidth / 100, vh = innerHeight / 100, mobile = innerWidth <= 900;
     const y = scrollY;
