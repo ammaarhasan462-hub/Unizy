@@ -88,7 +88,10 @@ export const TRY_HTML = `
 <section class="th" id="try" data-try aria-label="Try Unizy now">
   <div class="th-wrap">
     <div class="th-intro">
-      <span class="uz-kick">UCL · Imperial · LSE · Queen Mary</span>
+      <div class="th-top">
+        <span class="uz-kick">UCL · Imperial · LSE · Queen Mary</span>
+        <button type="button" class="th-replay" data-replay-intro aria-label="Replay the intro"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.8v8.4L10 6z"/></svg>Replay intro</button>
+      </div>
       <h1 class="th-h">The mark scheme your uni never&nbsp;gave&nbsp;you.</h1>
       <p class="th-sub">Answer a real exam-style question. In about 20 seconds you’ll see <b>your class</b>, <b>the exact sentences that lost marks</b>, and <b>3 changes to go up a class</b>, marked against your uni’s grade bands.</p>
     </div>

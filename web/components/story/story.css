@@ -462,6 +462,15 @@ html[data-uni="kcl"] .uz {
 .th-card { grid-area: card; }
 .th-extra { grid-area: extra; }
 .th .uz-kick { color: var(--gold-b); }
+.th-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+/* Replay intro (Intro.jsx listens for [data-replay-intro]; hidden where the intro can't play, see globals.css) */
+.th-replay { display: inline-flex; align-items: center; gap: 7px; background: none; cursor: pointer;
+  border: 1px solid rgb(var(--gold-l-rgb) / .28); border-radius: 999px; padding: 5px 11px 5px 9px;
+  font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--gold-l-rgb) / .72);
+  transition: color .2s, border-color .2s, background-color .2s; }
+.th-replay svg { width: 9px; height: 9px; fill: currentColor; }
+.th-replay:hover { color: var(--gold-l); border-color: rgb(var(--gold-l-rgb) / .6); background: rgb(var(--gold-l-rgb) / .06); }
+.th-replay:focus-visible { outline: 2px solid var(--gold-b); outline-offset: 2px; }
 .th-h { font-family: var(--f-bold); font-weight: 400; text-transform: uppercase; line-height: .9; letter-spacing: -.005em; font-size: clamp(44px, 5.6vw, 84px); margin-top: 16px !important; color: var(--gold-l); }
 .th-sub { margin-top: 18px !important; font-size: 17px; line-height: 1.55; color: rgb(var(--paper-rgb) / .84); max-width: 520px; }
 .th-sub b { color: var(--gold-l); font-weight: 600; }
