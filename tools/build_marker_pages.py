@@ -245,7 +245,7 @@ DASH_PAGE = head(f"Dashboard · {BRAND}", "Your Unizy dashboard.", "/dashboard",
 <section class="db-tab" data-tab="account" id="db-account" hidden></section>
 </main>
 </div></div>
-""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=3"></script><script src="/assets/dashboard.js?v=27"></script><script src="/assets/mark.js?v=24"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
+""" + f'<script>window.UNIZY_CONFIG={CONFIG};window.SITE_BRAND={json.dumps({"name": BRAND})};</script><script src="/assets/welcome.js"></script><script src="/assets/attach.js?v=2"></script><script src="/assets/study.js?v=3"></script><script src="/assets/tour.js?v=3"></script><script src="/assets/dashboard.js?v=28"></script><script src="/assets/mark.js?v=24"></script><script src="/assets/play.js?v=10"></script></body></html>\n'
 
 if __name__ == "__main__":
     import sys

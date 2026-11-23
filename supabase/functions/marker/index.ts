@@ -707,8 +707,10 @@ async function runMark(service: any, apiKey: string, mod: any, code: string, o: 
       `\nAnswer (extract): """${a.answer}"""` + (a.feedback ? `\nExaminer's comments: ${a.feedback}` : "")).join("\n") + "\n" : "";
   let guide = "", tier: string | null = null, topicPos: number | null = null;
   if (questionId) {
-    const { data: q } = await service.from("module_questions").select("guide, tier, topic_pos").eq("id", questionId).eq("code", code).maybeSingle();
+    const { data: q } = await service.from("module_questions").select("guide, tier, topic_pos, answer").eq("id", questionId).eq("code", code).maybeSingle();
     if (q?.guide) guide = `Indicative guide for this question — First: ${q.guide.first} | 2:1: ${q.guide.two_one} | 2:2: ${q.guide.two_two}`;
+    // the pack's checked example First-class answer plan: a reference for content and structure, not a required answer
+    if (q?.answer && q.tier !== "foundation") guide += (guide ? "\n" : "") + `Example First-class answer plan from the module's practice pack (one strong route, not the only one: credit any valid, well-supported alternative argument, method or evidence, and do not penalise an answer for differing from it):\n${String(q.answer).slice(0, 2000)}`;
     if (q) { tier = q.tier || "exam"; topicPos = q.topic_pos ?? null; }
   }
   const tlist = (topics || []) as any[];

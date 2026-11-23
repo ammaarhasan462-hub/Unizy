@@ -1154,7 +1154,43 @@
       var d = (r && r[0]) || {};
       var size = d.uni === 'lse' ? (d.credits == 0.5 ? ', half unit' : d.credits == 1 ? ', full unit' : '') : d.uni === 'qmul' ? (d.credits ? ', ' + d.credits + ' credits' : '') : (d.ects ? ', ' + d.ects + ' ECTS' : '');
       var extra = d.uni && d.uni !== 'ucl' ? [UN(d.uni).name + (d.uni === 'lse' ? ' course ' : ' module ') + mod.code + ' ' + mod.title + size + (d.year_of_study ? ', usually taken in Year ' + d.year_of_study : '') + (d.mtype ? ' (' + d.mtype + ')' : '') + (d.status ? '. ' + d.status : '') + '.', d.programmes && d.programmes.length ? 'Part of: ' + d.programmes.join('; ') + '.' : '', d.url ? 'Source: ' + d.url : ''].filter(Boolean).join('\n') : '';
-      detailCache[mod.code] = ([d.details || d.summary || '', extra].filter(Boolean).join('\n\n')).slice(0, 3500); return detailCache[mod.code]; }).catch(function () { return mod.summary || ''; });
+      detailCache[mod.code] = ([d.details || d.summary || '', extra].filter(Boolean).join('\n\n')).slice(0, 6000); return detailCache[mod.code]; }).catch(function () { return mod.summary || ''; });
+  }
+  // The module's practice pack (topic map + checked questions and answers) is the tutor's knowledge base: every reply gets
+  // the topic map and the pack items most relevant to the student's latest question (keyword overlap), up to ~14k chars.
+  var packCache = {};
+  function packData(mod) {
+    if (packCache[mod.code]) return Promise.resolve(packCache[mod.code]);
+    return Promise.all([
+      rest('module_topics?code=eq.' + encodeURIComponent(mod.code) + '&select=position,title,summary&order=position.asc'),
+      rest('module_questions?code=eq.' + encodeURIComponent(mod.code) + '&select=topic_pos,tier,kind,question,answer,options,explain&order=position.asc')
+    ]).then(function (r) { return (packCache[mod.code] = { topics: r[0] || [], qs: r[1] || [] }); })
+      .catch(function () { return { topics: [], qs: [] }; });
+  }
+  var PSTOP = /^(the|and|for|that|this|with|what|when|where|which|how|why|does|are|was|were|from|have|has|can|you|your|about|into|than|then|them|they|their|there|explain|please|tell|give|just|also|more|some|any|its|not|but|should|would|could|will|between|difference|mean|means|question|answer)$/;
+  function pwords(s) { return (String(s || '').toLowerCase().match(/[a-z0-9]{3,}/g) || []).filter(function (w) { return !PSTOP.test(w); }); }
+  function packBrief(pk, query) {
+    if (!pk || (!pk.topics.length && !pk.qs.length)) return '';
+    var L = 'ABCDE', want = {}, nq = 0; pwords(query).forEach(function (w) { if (!want[w]) { want[w] = 1; nq++; } });
+    var tText = {}; pk.topics.forEach(function (t) { tText[t.position] = t.title + ' ' + (t.summary || ''); });
+    var scored = pk.qs.map(function (q, i) {
+      var seen = {}, s = 0;
+      pwords(q.question + ' ' + (q.answer || '') + ' ' + (q.explain || '') + ' ' + (tText[q.topic_pos] || '')).forEach(function (w) { if (want[w] && !seen[w]) { seen[w] = 1; s++; } });
+      return { q: q, s: s, i: i };
+    }).sort(function (a, b) { return b.s - a.s || a.i - b.i; });
+    var out = [], used = 0;
+    for (var k = 0; k < scored.length && out.length < 14; k++) {
+      if (nq && scored[k].s === 0 && out.length >= 4) break;
+      var q = scored[k].q;
+      var item = '[' + (q.kind === 'sba' ? 'Multiple choice' : q.tier === 'foundation' ? 'Recall' : q.tier === 'first' ? 'First-class stretch' : 'Exam-style') + ', topic ' + ((q.topic_pos | 0) + 1) + '] ' + q.question;
+      if (q.kind === 'sba' && Array.isArray(q.options)) item += '\nOptions: ' + q.options.map(function (o, j) { return L[j] + ') ' + o; }).join('  ') + '\nCorrect: ' + (q.answer || '') + (q.explain ? '\nWhy: ' + q.explain : '');
+      else if (q.answer) item += '\n' + (q.tier === 'foundation' ? 'Answer: ' : 'Example First-class answer plan:\n') + q.answer;
+      if (used + item.length > 14000) break;
+      out.push(item); used += item.length;
+    }
+    var map = pk.topics.map(function (t) { return (t.position + 1) + '. ' + t.title + (t.summary ? ': ' + t.summary : ''); }).join('\n');
+    return (map ? 'Module topic map (the syllabus as ' + BRAND + ' covers it):\n' + map : '') +
+      (out.length ? '\n\nChecked reference material from this module’s ' + BRAND + ' practice pack (most relevant to the student’s latest question first):\n"""\n' + out.join('\n\n') + '\n"""' : '');
   }
   function askTutor(mod) {
     var box = $('db-q'), q = (box.value || '').trim(), tr = ttray(mod), hasAtt = !!(tr && tr.count());
@@ -1170,9 +1206,10 @@
     track('tutor_ask');
     if (!TLIVE[mod.code]) nextTutor(mod); else renderTutor();
   }
-  function tutorIntro(mod, name, desc) {
+  function tutorIntro(mod, name, desc, brief) {
     var p = S.profile || {}, Un = UN(mod.uni);
     return 'You are ' + name + ', a friendly, expert tutor on ' + BRAND + ' for ' + Un.long + ' students. The student is studying ' + mod.code + ' ' + mod.title + ' at ' + Un.name + ' (' + (mod.department || Un.short) + (levelName(mod.level) ? ', ' + levelName(mod.level) : '') + ')' + (p.course ? ' on the ' + p.course + ' course' : '') + '.\n\n' + Un.src + ':\n"""' + desc + '"""\n\n' +
+      (brief ? brief + '\n\nUse this module material as your main reference: keep your facts, explanations and model answers consistent with it, name the topic it belongs to, and point the student to the matching practice question when that helps. When a question goes beyond it, answer from sound, well-established subject knowledge at the level of this module. For clinical questions follow current UK practice (NICE, BNF, Resuscitation Council) and say when local guidance may differ; medicine and dentistry exams here are single-best-answer multiple choice, so explain why the best option beats the tempting alternatives.\n\n' : '') +
       'How to tutor: explain clearly at the right level for this module, use short examples, check understanding with a quick question when useful, and show how ideas would earn marks in ' + Un.exam + '. Keep replies under about 250 words unless the student asks for more or the question needs a worked solution. The student may send several questions in a row: answer the latest one directly and don’t repeat earlier answers. Never write coursework or assessed essays for the student to submit; for coursework, give guidance and feedback only. Refer to yourself as ' + name + ' and don’t mention the technology behind you unless the student sincerely asks what you are, in which case be honest. Never invent sources, cases, statistics or quotations.\n\n' +
       'Formatting: short paragraphs and "- " bullet lists. Use a small Markdown table (| A | B | with a |---|---| line) when comparing or tabulating. Write maths and formulas in LaTeX, inline as \\( ... \\) and on their own line as \\[ ... \\] (chemistry with \\ce{...}); show worked calculations step by step with units. ' +
       'Diagrams: when a picture would genuinely help (an economics or finance graph such as supply and demand, cost curves, AD/AS, IS-LM, indifference curves or an Edgeworth box; a maths or statistics plot; a circuit or block diagram; a force or free-body diagram; a flowchart, process, cycle or timeline; a framework or comparison grid; a simple labelled scientific or anatomical schematic), or the student asks for one, draw it as ONE SVG inside a fenced ```svg block. Rules: a complete <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 360"> (any sensible size up to 800 wide), a white background rect, dark lines (#17302A) with at most 3 accent colours, text at font-size 14 or more in font-family Arial, every axis, curve, point, component and arrow clearly labelled, shifts shown with arrows and new curves labelled (e.g. S1, S2), equilibrium points marked, nothing outside the viewBox, no scripts, links, images, foreignObject or external fonts, and under about 6,000 characters. The diagram must be correct for the subject; explain it in a sentence or two after the block. Don’t draw when words or a table are clearer, and draw at most two diagrams per reply.\n\n' +
@@ -1217,9 +1254,10 @@
     if (!job) { delete TLIVE[mod.code]; if (onTutor(mod)) renderTutor(); return; }
     var live = TLIVE[mod.code] = { id: job.id, text: '' }, name = tutorName(mod.department, mod.uni);
     if (onTutor(mod)) renderTutor();
-    moduleContext(mod).then(function (desc) {
-      var chat = chatGet(mod.code), k = idxOf(chat, job.id), upto = k >= 0 ? chat.slice(0, k + 1) : chat;
-      var turns = [{ role: 'user', content: tutorIntro(mod, name, desc) }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(upto.slice(-16).map(function (m) { return { role: m.role, content: m.att ? m.content + '\n\n[Attached: ' + m.att + ']' : m.content }; }));
+    Promise.all([moduleContext(mod), packData(mod)]).then(function (ctx) {
+      var desc = ctx[0], chat = chatGet(mod.code), k = idxOf(chat, job.id), upto = k >= 0 ? chat.slice(0, k + 1) : chat;
+      var lastQ = upto.length ? upto[upto.length - 1].content : '';
+      var turns = [{ role: 'user', content: tutorIntro(mod, name, desc, packBrief(ctx[1], lastQ)) }, { role: 'assistant', content: 'Understood. I’m ' + name + ', ready to help with ' + mod.code + '.' }].concat(upto.slice(-16).map(function (m) { return { role: m.role, content: m.att ? m.content + '\n\n[Attached: ' + m.att + ']' : m.content }; }));
       return token().then(function (t) {
         if (!t) { toLogin(); throw new Error('signin'); }
         return fetch(CFG.supabaseUrl + '/functions/v1/ai', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify({ input: turns, kind: 'tutor', cache: false, stream: true, attachments: job.attachments || undefined }) });
