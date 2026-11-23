@@ -703,6 +703,9 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     debug: { scene, composer, renderer, grade, get gtao() { return gtao; } },
     jump(p) { state.p = state.target = p; },
     begin() { if (state.beginAt == null) state.beginAt = state.time; startRealism(); },
+    // stop drawing (the canvas keeps its last frame): leaving the intro fades over a still picture, so the fade is
+    // smooth however slow the machine is
+    pause() { cancelAnimationFrame(raf); raf = 0; },
     dispose() {
       disposed = true;
       cancelAnimationFrame(raf);

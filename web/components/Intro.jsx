@@ -122,6 +122,9 @@ function IntroPlayer({ replay }) {
       doneRef.current = true;
       try { sessionStorage.setItem('smg:intro', 'done'); } catch (e) {}
       track('intro_' + mode);
+      // freeze the 3D on its last frame so the hand-over doesn't wait on a slow GPU
+      try { if (engineRef.current && engineRef.current.pause) engineRef.current.pause(); } catch (e) {}
+      detach();
       const tl = gsap.timeline({
         onComplete: () => {
           detach();
@@ -156,7 +159,9 @@ function IntroPlayer({ replay }) {
       // the real city (OpenStreetMap buildings and streets); the hand-built one if it is slow or unavailable. The engine
       // starts in the clouds straight away and builds the city behind them as it arrives
       const city = Promise.race([loadCity(u), new Promise((res) => setTimeout(() => res(null), 6000))]);
-      if (cancelled) return;
+      // skipped while the 3D code was still loading: don't start a world nobody will see (it used to keep
+      // rendering on a hidden canvas behind the homepage)
+      if (cancelled || doneRef.current) return;
       engine = createIntro(newCanvas(), { mobile, onFrame, hold: true, uni: u, city });
       city.then((c) => { if (!cancelled) setOsm(!!c); });
       engineRef.current = engine;
