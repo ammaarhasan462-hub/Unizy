@@ -228,7 +228,7 @@
       if (tEl) tEl.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
     };
     if (state.mod && state.mod.code === r.m) { after(); return; }
-    state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
+    state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.cards = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
     rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,ects,faculty,department,term,summary,url,uni,programmes,year_of_study,mtype,status,exam_format').then(function (rows) {
       if (!rows || !rows.length) { state.mod = { code: r.m, missing: true }; render(); return; }
       state.mod = rows[0]; loadMap(); loadMine(); after();
@@ -259,17 +259,20 @@
   function fetchMap(code) {
     return Promise.all([
       rest('module_topics?code=eq.' + code + '&select=position,title,summary&order=position.asc'),
-      rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position,options,accept,explain&order=position.asc')
+      rest('module_questions?code=eq.' + code + '&select=id,topic,kind,tier,topic_pos,question,answer,guide,steps,position,options,accept,explain&order=position.asc'),
+      rest('module_flashcards?code=eq.' + code + '&select=id,topic_pos,position,front,back&order=topic_pos.asc,position.asc').catch(function () { return []; })
     ]);
   }
   function loadMap() {
     var code = state.mod.code;
     fetchMap(code).then(function (res) {
       if (!state.mod || state.mod.code !== code) return;
-      state.topics = res[0] || []; state.questions = res[1] || [];
+      state.topics = res[0] || []; state.questions = res[1] || []; state.cards = res[2] || [];
       var r = routeParams();
       if ((r.v === 'answer' && r.q && r.q !== 'own' && !state.cur) || r.q === 'start' || (r.v === 'quiz' && !state.quiz)) route(); else render();
       if (state.questions.length) loadModelAnswers();
+      var lp = new URLSearchParams(location.search).get('learn');
+      if (lp != null && state.topics.length && !state.learnAuto) { state.learnAuto = true; learnOpen(lp === 'all' || lp === '' ? 'all' : +lp); }
       if (!state.topics.length && getSession()) startMap();
       else if (needInstant() && getSession()) startInstant();
     }).catch(function () { state.topics = []; state.questions = []; render(); });
@@ -716,6 +719,8 @@
       var n = qs.filter(function (q) { return q.topic_pos != null && (!med || isInst(q)) && (!x[0] || q.tier === x[0]); }).length;
       return '<button type="button" role="tab" data-tierf="' + x[0] + '" aria-selected="' + (tf === x[0]) + '" class="t-' + (x[0] || 'all') + '"><b>' + x[1] + '</b><span>' + x[2] + ' · ' + n + '</span></button>';
     }).join('') + '</div>';
+    var allCards = cardsFor('all');
+    if (allCards.length) html += '<div class="mk-fcall"><span class="mk-fcic" aria-hidden="true"></span><div><b>Flashcards for every topic</b><span>' + allCards.length + ' cards written for ' + esc(m.code) + '. Flip each one and say whether you know it; the ones you\u2019re still learning go into your Flashcards deck.</span></div><button type="button" class="btn small mk-fcgo" data-act="learn" data-pos="all">Learn all ' + allCards.length + '</button></div>';
     html += '<ol class="mk-topics' + (tf ? ' tf' : '') + '">' + topics.map(function (t) {
       var pos = t.position, open = !!state.open[pos], ms = ST.topicMastery(pos, d), rg = state.ratings[pos];
       var tq = qs.filter(function (q) { return q.topic_pos === pos && (!med || isInst(q)); }), rs = signed ? ST.ragStatus(ms, rg) : '';
@@ -726,7 +731,7 @@
       if (open && med) {
         var tv = tq.filter(function (q) { return q.kind === 'vsa' && (!tf || tf === 'foundation'); }), ts = tq.filter(function (q) { return q.kind === 'sba' && q.tier === 'exam' && (!tf || tf === 'exam'); }), th = tq.filter(function (q) { return q.kind === 'sba' && q.tier === 'first' && (!tf || tf === 'first'); });
         var wr = qs.filter(function (q) { return q.topic_pos === pos && !isInst(q) && q.tier !== 'foundation'; });
-        body = '<div class="mk-tbody">' + warn + '<div class="mk-row start mk-tquiz"><button type="button" class="btn dark small" data-act="tquiz" data-pos="' + pos + '">Quiz this topic (' + tq.length + ')</button></div>' +
+        body = '<div class="mk-tbody">' + warn + fcStrip(pos) + '<div class="mk-row start mk-tquiz"><button type="button" class="btn dark small" data-act="tquiz" data-pos="' + pos + '">Quiz this topic (' + tq.length + ')</button></div>' +
           (tv.length ? '<div class="mk-tier"><h4><span class="mk-tag f">VSA</span> Very short answer <small>Type 1 to 5 words. Marked instantly.</small></h4>' + instList(tv) + '</div>' : '') +
           (ts.length ? '<div class="mk-tier"><h4><span class="mk-tag e">SBA</span> Single best answer <small>Pick the one best option. Marked instantly.</small></h4>' + instList(ts) + '</div>' : '') +
           (th.length ? '<div class="mk-tier"><h4><span class="mk-tag x">Harder SBA</span> Data and application <small>Interpret the findings, then pick the best answer.</small></h4>' + instList(th) + '</div>' : '') +
@@ -735,7 +740,7 @@
           '</div>';
       } else if (open) {
         var rec = tq.filter(function (q) { return q.tier === 'foundation' && (!tf || tf === 'foundation'); }), ex = tq.filter(function (q) { return q.tier === 'exam' && (!tf || tf === 'exam'); }), fc = tq.filter(function (q) { return q.tier === 'first' && (!tf || tf === 'first'); });
-        body = '<div class="mk-tbody">' + warn +
+        body = '<div class="mk-tbody">' + warn + fcStrip(pos) +
           (rec.length ? '<div class="mk-tier"><h4><span class="mk-tag f">Foundation</span> Quick recall <small>Check yourself, then say how you did. Misses become flashcards.</small></h4><ul class="mk-recall">' + rec.map(recallItem).join('') + '</ul></div>' : '') +
           (ex.length ? '<div class="mk-tier"><h4><span class="mk-tag e">Exam-style</span> Answer under exam conditions <small>Marked against your department’s criteria.</small></h4>' + qList(ex) + '</div>' : '') +
           (fc.length ? '<div class="mk-tier"><h4><span class="mk-tag x">First-Class</span> Stretch question <small>Links topics, weighs arguments or pushes the hard case. This is where 70+ comes from.</small></h4>' + qList(fc) + '</div>' : '') +
@@ -749,6 +754,98 @@
     html += own + '<p class="mk-fine">Questions are written for revision from the module’s public description, in the style your department examines. They are not taken from ' + U().short + ' exam papers.</p></section>';
     return html;
   }
+  // ---------- Flashcards in every topic (Nov 2026) ----------
+  // Ready-made cards from module_flashcards (written with each pack); a topic without them yet falls back to its
+  // quick-recall questions. "Still learning" puts the card in the student's spaced-repetition deck (review_cards);
+  // "Know it" is remembered on this device so the strip can show progress.
+  var KKEY = 'unizy:known:';
+  function knownGet(code) { try { return JSON.parse(localStorage.getItem(KKEY + code) || '{}') || {}; } catch (e) { return {}; } }
+  function knownSet(code, o) { try { localStorage.setItem(KKEY + code, JSON.stringify(o)); } catch (e) {} }
+  function cardsFor(pos) {
+    if (pos === 'all') { var all = []; (state.topics || []).forEach(function (t) { all = all.concat(cardsFor(t.position)); }); return all; }
+    var own = (state.cards || []).filter(function (c) { return c.topic_pos === pos; });
+    if (own.length) return own.map(function (c) { return { k: 'c' + c.id, f: c.front, b: c.back, tp: pos }; });
+    if (isMed()) return [];
+    return (state.questions || []).filter(function (q) { return q.topic_pos === pos && q.tier === 'foundation' && q.kind === 'recall' && q.answer; })
+      .map(function (q) { return { k: 'q' + q.id, f: q.question, b: q.answer, tp: pos, rec: true }; });
+  }
+  function fcStrip(pos) {
+    var cs = cardsFor(pos); if (!cs.length) return '';
+    var kn = knownGet(state.mod.code), n = cs.filter(function (c) { return kn[c.k]; }).length;
+    return '<div class="mk-fcs"><span class="mk-fcic" aria-hidden="true"></span><div><b>Flashcards</b><span>' + cs.length + ' card' + (cs.length === 1 ? '' : 's') + (n ? ' · ' + n + ' known' : '') + (cs[0].rec ? ' · from quick recall until this topic’s own cards are written' : '') + '</span>' + (n ? bar(Math.round(100 * n / cs.length)) : '') + '</div><button type="button" class="btn small mk-fcgo" data-act="learn" data-pos="' + pos + '">' + (n && n < cs.length ? 'Keep learning' : n === cs.length ? 'Go through again' : 'Learn the flashcards') + '</button></div>';
+  }
+  function topicTitle(pos) { var t = (state.topics || []).filter(function (x) { return x.position === pos; })[0]; return t ? t.title : ''; }
+  function learnOpen(pos, only) {
+    var cs = cardsFor(pos); if (only) cs = cs.filter(function (c) { return only.indexOf(c.k) >= 0; });
+    if (!cs.length) return;
+    if (!only && pos !== 'all') { var kn = knownGet(state.mod.code), todo = cs.filter(function (c) { return !kn[c.k]; }); if (todo.length && todo.length < cs.length) cs = todo.concat(cs.filter(function (c) { return kn[c.k]; })); }
+    state.learn = { pos: pos, cards: cs, i: 0, flip: false, known: [], learning: [], done: false };
+    track('fc_learn_' + (pos === 'all' ? 'all' : 'topic'));
+    learnRender();
+  }
+  function learnClose() {
+    try { var u = new URL(location.href); if (u.searchParams.has('learn')) { u.searchParams.delete('learn'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } } catch (e) {}
+    state.learn = null; var el = document.getElementById('mk-learn'); if (el) el.remove(); document.documentElement.classList.remove('mk-lock'); render(); }
+  function learnAnswer(know) {
+    var L = state.learn; if (!L || L.done) return;
+    var c = L.cards[L.i], code = state.mod.code, kn = knownGet(code);
+    if (know) { L.known.push(c.k); kn[c.k] = 1; }
+    else {
+      L.learning.push(c.k); delete kn[c.k];
+      if (getSession()) rest('review_cards?on_conflict=user_id,code,front', { method: 'POST', auth: true, prefer: 'resolution=ignore-duplicates,return=minimal', body: { user_id: uid(), code: code, topic_pos: c.tp, front: c.f.slice(0, 600), back: c.b.slice(0, 1200) } }).then(changed).catch(function () {});
+    }
+    knownSet(code, kn); track(know ? 'fc_know' : 'fc_learning');
+    if (L.i + 1 >= L.cards.length) L.done = true; else { L.i++; L.flip = false; }
+    learnRender();
+  }
+  function learnRender() {
+    var L = state.learn; if (!L) return;
+    var el = document.getElementById('mk-learn');
+    if (!el) { el = document.createElement('div'); el.id = 'mk-learn'; el.className = 'lx'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); document.body.appendChild(el); el.addEventListener('click', learnClick); }
+    document.documentElement.classList.add('mk-lock');
+    var m = state.mod, where = L.pos === 'all' ? 'All topics' : 'Topic ' + (L.pos + 1) + ': ' + topicTitle(L.pos);
+    var head = '<div class="lx-top"><div class="lx-where"><b>' + esc(m.code) + ' flashcards</b><span>' + esc(where) + '</span></div><button type="button" class="lx-x" data-lx="close" aria-label="Close flashcards">×</button></div>';
+    var html;
+    if (L.done) {
+      var nk = L.known.length, nl = L.learning.length, signed = !!getSession();
+      var nextPos = typeof L.pos === 'number' ? L.pos + 1 : null, hasNext = nextPos != null && cardsFor(nextPos).length > 0;
+      html = head + '<div class="lx-end"><div class="lx-ring" style="--p:' + Math.round(100 * nk / L.cards.length) + '"><b>' + nk + '/' + L.cards.length + '</b><span>known</span></div>' +
+        '<h3>' + (nl ? 'Nice work. ' + nl + ' still to learn.' : 'You know every card here.') + '</h3>' +
+        '<p>' + (nl ? (signed ? 'The ' + (nl === 1 ? 'card' : nl + ' cards') + ' you’re still learning ' + (nl === 1 ? 'is' : 'are') + ' in your Flashcards deck and will come back just before you’d forget ' + (nl === 1 ? 'it' : 'them') + '.' : 'Sign up free to save the cards you’re still learning, so they come back just before you’d forget them.') : 'Try the topic’s exam-style question to check you can use it under exam conditions.') + '</p>' +
+        '<div class="lx-acts">' + (nl ? '<button type="button" class="btn primary" data-lx="again">Go again with the ' + nl + '</button>' : '') + (hasNext ? '<button type="button" class="btn ' + (nl ? 'line' : 'primary') + '" data-lx="next" data-pos="' + nextPos + '">Next topic</button>' : '') +
+        (!signed && nl ? '<a class="btn line" href="' + esc(signinUrl()) + '">Sign up free</a>' : '') + '<button type="button" class="btn line" data-lx="close">Done</button></div></div>';
+    } else {
+      var c = L.cards[L.i], pct = Math.round(100 * L.i / L.cards.length);
+      html = head + '<div class="lx-prog"><span><i style="width:' + pct + '%"></i></span><b>' + (L.i + 1) + ' / ' + L.cards.length + '</b></div>' +
+        '<button type="button" class="lx-card' + (L.flip ? ' flip' : '') + '" data-lx="flip" aria-live="polite">' +
+        (L.pos === 'all' ? '<span class="lx-tp">' + esc(topicTitle(c.tp)) + '</span>' : '') +
+        (L.flip ? '<span class="lx-qs">' + esc(c.f) + '</span><span class="lx-a">' + esc(c.b) + '</span>' : '<span class="lx-q">' + esc(c.f) + '</span><span class="lx-hint">Tap or press Space to see the answer</span>') + '</button>' +
+        (L.flip ? '<div class="lx-btns"><button type="button" class="lx-b lx-no" data-lx="no" title="Keyboard: 1"><b>Still learning</b><span>Goes in your deck</span></button><button type="button" class="lx-b lx-yes" data-lx="yes" title="Keyboard: 2"><b>Know it</b><span>Next card</span></button></div>'
+          : '<div class="lx-btns"><button type="button" class="btn primary lx-show" data-lx="flip">Show answer</button></div>');
+    }
+    el.innerHTML = '<div class="lx-box">' + html + '</div>';
+    var f = el.querySelector(L.done ? '.lx-acts .btn' : (L.flip ? '.lx-yes' : '.lx-show')); if (f) try { f.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function learnClick(e) {
+    var L = state.learn; if (!L) return;
+    if (e.target.id === 'mk-learn') { learnClose(); return; }
+    var b = e.target.closest('[data-lx]'); if (!b) return;
+    var k = b.getAttribute('data-lx');
+    if (k === 'close') learnClose();
+    else if (k === 'flip') { L.flip = !L.flip; learnRender(); }
+    else if (k === 'yes' || k === 'no') learnAnswer(k === 'yes');
+    else if (k === 'again') learnOpen(L.pos, L.learning.slice());
+    else if (k === 'next') { var np = +b.getAttribute('data-pos'); state.open[np] = true; learnOpen(np); }
+  }
+  document.addEventListener('keydown', function (e) {
+    var L = state.learn; if (!L) return;
+    if (e.key === 'Escape') { e.preventDefault(); learnClose(); return; }
+    if (L.done || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === ' ' || e.key === 'Enter') { if (e.target.closest && e.target.closest('.lx-b')) return; e.preventDefault(); L.flip = !L.flip; learnRender(); }
+    else if (L.flip && (e.key === '1' || e.key === 'ArrowLeft')) { e.preventDefault(); learnAnswer(false); }
+    else if (L.flip && (e.key === '2' || e.key === 'ArrowRight')) { e.preventDefault(); learnAnswer(true); }
+  });
+
   // Tiered practice: the three levels as grade targets
   var TIERS = [['', 'All levels', 'Every question'], ['foundation', 'Pass (50%)', 'Quick recall'], ['exam', 'Merit (60%)', 'Exam-style'], ['first', '1st Class (70%+)', 'Stretch']];
   var MTIERS = [['', 'All questions', 'Single best answer'], ['exam', 'Single best answer', 'SBA'], ['first', 'Harder SBA', 'Data and application']];
@@ -1138,6 +1235,7 @@
     if (a.hasAttribute('data-pick')) { var pq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-qid'); })[0]; answerInst(pq, a.getAttribute('data-pick')); render(); var nb = document.getElementById('mk-qznext'); if (nb) nb.focus(); return; }
     if (a.hasAttribute('data-over')) { var oq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-over'); })[0]; answerInst(oq, null, true); render(); return; }
     var act = a.getAttribute('data-act');
+    if (act === 'learn') { var lp2 = a.getAttribute('data-pos'); learnOpen(lp2 === 'all' ? 'all' : +lp2); return; }
     if (act === 'quiz') { startQuiz(null); return; }
     if (act === 'tquiz') { startQuiz(+a.getAttribute('data-pos')); return; }
     if (act === 'qznext' || act === 'qzskip') { quizNext(); return; }

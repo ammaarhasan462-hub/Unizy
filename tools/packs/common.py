@@ -90,3 +90,33 @@ def emit_med(code, T, seed=1):
     print(f"insert into instant_jobs (code, status, finished_at) values ('{code}', 'done', now()) on conflict (code) do update set status = 'done', finished_at = now();")
     print(f"insert into module_packs (code, status, questions, started_at, finished_at) values ('{code}', 'done', n, now(), now()) on conflict (code) do update set status = 'done', questions = n, finished_at = now(), error = null;")
     print("end $$;")
+
+
+# ---- Flashcards (every module, medicine included): 12 per topic, in module_flashcards ----
+def F(front, back):
+    return {"front": front, "back": back}
+
+
+def emit_cards(code, C, per_topic=12):
+    """C[topic_pos] = list of F(front, back). Appends after the module's current cards; a front that
+    already exists for the module is skipped (unique (code, front))."""
+    for tp, v in C.items():
+        assert len(v) >= per_topic, (code, tp, len(v))
+        fronts = [x["front"] for x in v]
+        assert len(set(fronts)) == len(fronts), (code, tp, "duplicate front")
+        for x in v:
+            assert 3 <= len(x["front"]) <= 600 and 1 <= len(x["back"]) <= 1200, (code, tp, x["front"][:40])
+    rows, i = [], 0
+    for tp in sorted(C):
+        for x in C[tp]:
+            rows.append(f"({i}, {tp}, {lit(x['front'])}, {lit(x['back'])})")
+            i += 1
+    print(f"-- {code}: {i} flashcards")
+    print("do $$ declare p int; begin")
+    print(f"select coalesce(max(position), -1) + 1 into p from module_flashcards where code = '{code}';")
+    print("insert into module_flashcards (code, topic_pos, position, front, back)")
+    print(f"select '{code}', v.tp, p + v.i, v.f, v.b from (values")
+    print(",\n".join(rows))
+    print(") v(i, tp, f, b) join module_topics t on t.code = '" + code + "' and t.position = v.tp")
+    print("on conflict (code, front) do nothing;")
+    print("end $$;")

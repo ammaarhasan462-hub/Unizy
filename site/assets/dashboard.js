@@ -213,7 +213,7 @@
   // ---------- data ----------
   function loadMods() {
     return rest('my_modules?select=code,added_at,exam_date,ucl_modules(code,title,level,credits,department,summary,uni)&order=added_at.asc').then(function (rows) {
-      S.mods = (rows || []).map(function (r) { var m = r.ucl_modules || { code: r.code, title: r.code }; m.exam_date = r.exam_date || null; return m; })
+      S.fcn = null; S.mods = (rows || []).map(function (r) { var m = r.ucl_modules || { code: r.code, title: r.code }; m.exam_date = r.exam_date || null; return m; })
         .filter(function (m) { var u = S.profile && S.profile.uni; return !u || !m.uni || m.uni === u; }); // modules from another university stay hidden
     });
   }
@@ -806,8 +806,12 @@
     var n = S.cards ? S.cards.length : null;
     var html = '<section class="hm-card hm-fc" id="td-cards"><i class="hm-fcic" aria-hidden="true">' + icon(IC.cards) + '</i>' + lab('Flashcards');
     if (n == null) return html + '<p class="hm-big">…</p></section>';
-    if (!n) return html + '<p class="hm-big">Nothing due today</p><p class="hm-sub">Marks you lose and recall questions you miss turn into cards, and come back just before you’d forget them.</p><a class="hm-link" href="/dashboard/cards">Browse your decks</a></section>';
-    return html + '<p class="hm-big"><b>' + (n >= 60 ? '60+' : n) + '</b> due today</p><p class="hm-sub">A few minutes now keeps them fresh for the exam.</p><a class="btn line" href="/dashboard/cards">Review cards</a></section>';
+    loadFcCounts();
+    var tot = 0; if (S.fcn) Object.keys(S.fcn).forEach(function (k) { tot += S.fcn[k]; });
+    var first = S.mods.filter(function (m) { return S.fcn && S.fcn[m.code]; })[0] || S.mods[0];
+    var learn = first ? '/dashboard/practice/' + encodeURIComponent(first.code) + '?learn=all' : '/dashboard/cards';
+    if (!n) return html + '<p class="hm-big">' + (tot ? '<b>' + tot + '</b> cards to learn' : 'Nothing due today') + '</p><p class="hm-sub">' + (tot ? 'Ready-made flashcards for your modules, topic by topic. Nothing is due for review today.' : 'Marks you lose and recall questions you miss turn into cards, and come back just before you’d forget them.') + '</p><span class="hm-fca"><a class="btn line" href="' + learn + '">Learn flashcards</a><a class="hm-link" href="/dashboard/cards">All decks</a></span></section>';
+    return html + '<p class="hm-big"><b>' + (n >= 60 ? '60+' : n) + '</b> due today</p><p class="hm-sub">A few minutes now keeps them fresh for the exam.' + (tot ? ' Plus ' + tot + ' ready-made cards to learn.' : '') + '</p><span class="hm-fca"><a class="btn line" href="/dashboard/cards">Review cards</a>' + (tot ? '<a class="hm-link" href="' + learn + '">Learn new ones</a>' : '') + '</span></section>';
   }
   function examLine(m) {
     var d = ST.daysUntil(m.exam_date);
@@ -913,11 +917,27 @@
     var list = (S.all || []).filter(function (c) { return !code || c.code === code; }), t = ST.today();
     return { n: list.length, due: list.filter(function (c) { return !c.due || c.due <= t; }).length, solid: list.filter(function (c) { return (c.interval_days || 0) >= 21; }).length };
   }
+  // ready-made flashcards per module (written with each pack): counts for the decks page and Home
+  function loadFcCounts() {
+    if (S.fcnLoading || S.fcn) return;
+    var codes = S.mods.map(function (m) { return m.code; }); if (!codes.length) return;
+    S.fcnLoading = true;
+    rest('module_flashcard_counts?select=code,n&code=in.(' + codes.map(encodeURIComponent).join(',') + ')').then(function (rows) {
+      S.fcn = {}; (rows || []).forEach(function (r) { S.fcn[r.code] = r.n; }); S.fcnLoading = false;
+      if (tabOf(location.pathname) === 'cards' && cardsDraw) cardsDraw(); else if (homeDraw) homeDraw();
+    }).catch(function () { S.fcnLoading = false; });
+  }
+  function learnRow(code) {
+    var n = S.fcn ? S.fcn[code] || 0 : null;
+    return '<div class="cd-learn"><span><b>' + (n == null ? '…' : n || 'Quick-recall') + '</b> ' + (n ? 'ready-made cards to learn' : n === 0 ? 'cards to learn while this module’s own cards are written' : 'ready-made cards') + '</span><a class="btn small cd-lgo" href="/dashboard/practice/' + encodeURIComponent(code) + '?learn=all">Learn</a></div>';
+  }
+  var cardsDraw = null;
   function renderCards() {
     var el = $('db-cards'), pm = new URLSearchParams(location.search).get('m');
-    var draw = function () {
+    var draw = cardsDraw = function () {
       if (tabOf(location.pathname) !== 'cards') return;
-      var html = '<header class="db-hello"><h1>Flashcard decks</h1><p>Every mark you lose, every quick-recall miss and every set of notes you parse becomes a card. Each one comes back just before you’d forget it.</p></header>';
+      var html = '<header class="db-hello"><h1>Flashcards</h1><p>Learn the ready-made cards for each of your modules, topic by topic. Cards you’re still learning, marks you lose and quick-recall misses go into your deck and come back just before you’d forget them.</p></header>';
+      loadFcCounts();
       if (S.all === null) { el.innerHTML = html + '<p class="mk-hint">Loading your decks…</p>'; return; }
       if (S.rev) { el.innerHTML = html + reviewHtml(); return; }
       var all = deckStats('');
@@ -927,7 +947,7 @@
       html += '<ul class="cd-decks">' + codes.map(function (code) {
         var m = S.mods.filter(function (x) { return x.code === code; })[0] || { code: code, title: '' }, d = deckStats(code), pct = d.n ? Math.round(d.solid / d.n * 100) : 0;
         return '<li class="cd-deck' + (pm === code ? ' on' : '') + '" id="cd-' + code + '" style="' + modVars(code) + '"><div class="cd-dh"><span class="db-mcode">' + esc(code) + '</span><b>' + esc(m.title) + '</b></div><p class="cd-dm"><span><b>' + d.n + '</b> cards</span><span' + (d.due ? ' class="due"' : '') + '><b>' + d.due + '</b> due</span></p><span class="mk-bar"><i style="width:' + pct + '%"></i></span>' +
-          '<div class="cd-da">' + (d.due ? '<button type="button" class="btn dark small" data-rev="' + code + '">Review ' + d.due + '</button>' : '') + (d.n ? '<button type="button" class="btn line small" data-browse="' + code + '">' + (S.browse === code ? 'Hide cards' : 'Browse') + '</button>' : '') + '<a class="btn line small" href="/dashboard/practice/' + code + '?w=parse">+ From my notes</a></div>' +
+          learnRow(code) + '<div class="cd-da">' + (d.due ? '<button type="button" class="btn dark small" data-rev="' + code + '">Review ' + d.due + '</button>' : '') + (d.n ? '<button type="button" class="btn line small" data-browse="' + code + '">' + (S.browse === code ? 'Hide cards' : 'Browse') + '</button>' : '') + '<a class="btn line small" href="/dashboard/practice/' + code + '?w=parse">+ From my notes</a></div>' +
           (S.browse === code ? '<ul class="cd-list">' + (S.all || []).filter(function (c) { return c.code === code; }).map(function (c) { return '<li><div><b>' + esc(c.front) + '</b><p>' + esc(c.back) + '</p></div><span class="cd-due">' + (c.due && c.due > ST.today() ? 'Next: ' + esc(day(c.due)) : 'Due') + '</span><button type="button" class="mk-x" data-cdel="' + c.id + '" aria-label="Delete this card">×</button></li>'; }).join('') + '</ul>' : '') + '</li>';
       }).join('') + '</ul>';
       if (!codes.length) html += '<section class="mk-card"><p>No cards yet. Answer a quick-recall question or get an answer marked and your first cards appear here.</p></section>';
