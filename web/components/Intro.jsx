@@ -100,15 +100,17 @@ export default function Intro() {
           detach();
           if (engineRef.current) engineRef.current.dispose();
           engineRef.current = null;
-          d.classList.remove('intro', 'intro-live');
+          d.classList.remove('intro', 'intro-live', 'intro-out');
           window.scrollTo(0, 0);
           window.dispatchEvent(new Event('smg:intro-end'));
           setOn(false);
           setTimeout(() => ScrollTrigger.refresh(), 50);
         },
       });
-      if (mode === 'skip') tl.to(root.current, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
-      else tl.to(flash.current, { opacity: 1, duration: 0.7, ease: 'power2.in' }).to(root.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, '+=0.05');
+      // the page under the intro is painted again (.intro-out, globals.css) just before the intro fades off it
+      const reveal = () => d.classList.add('intro-out');
+      if (mode === 'skip') tl.call(reveal).to(root.current, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
+      else tl.to(flash.current, { opacity: 1, duration: 0.7, ease: 'power2.in' }).call(reveal).to(root.current, { opacity: 0, duration: 0.9, ease: 'power2.out' }, '+=0.05');
     };
     window.__smgIntroFinish = finish;
 
@@ -293,7 +295,8 @@ export default function Intro() {
       </div>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(0,0,0,.4)_100%)]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[48vh] bg-[linear-gradient(to_top,rgba(6,8,12,.62),rgba(6,8,12,0))]" />
-      <div className="noise pointer-events-none absolute inset-0 !opacity-[.06] !mix-blend-overlay" />
+      {/* (no CSS grain layer here: the engine's grade already adds film grain, and a full-screen blend-mode layer over the
+          canvas had to be composited again on every frame) */}
 
       {/* top bar */}
       {osm && <div className="pointer-events-none absolute bottom-2 left-3 z-30 text-[10px] tracking-wide text-white/35">Map data © OpenStreetMap contributors · Heights © Environment Agency LiDAR (OGL)</div>}
@@ -329,7 +332,7 @@ export default function Intro() {
                     onPointerEnter={() => prefetchRef.current && prefetchRef.current(u.id)}
                     onFocus={() => prefetchRef.current && prefetchRef.current(u.id)}
                     onTouchStart={() => prefetchRef.current && prefetchRef.current(u.id)}
-                    className="group relative flex h-[118px] w-full flex-col justify-end overflow-hidden rounded-2xl border border-[#d9b46c]/55 bg-[#0b0f14]/55 p-4 text-left shadow-[0_0_0_1px_rgba(217,180,108,.08),0_18px_60px_-20px_rgba(217,180,108,.45)] backdrop-blur-xl transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[#d9b46c] hover:bg-[#0b0f14]/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9b46c] sm:h-[164px] sm:p-5"
+                    className="group relative flex h-[118px] w-full flex-col justify-end overflow-hidden rounded-2xl border border-[#d9b46c]/55 bg-[#0b0f14]/80 p-4 text-left shadow-[0_0_0_1px_rgba(217,180,108,.08),0_18px_60px_-20px_rgba(217,180,108,.45)] transition-[transform,border-color,background-color] duration-300 hover:-translate-y-0.5 hover:border-[#d9b46c] hover:bg-[#0b0f14]/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d9b46c] sm:h-[164px] sm:p-5"
                     data-testid={`pick-${u.id}`}
                   >
                     <span className="absolute left-4 top-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.24em] text-[#d9b46c] sm:left-5 sm:top-5">
@@ -340,7 +343,7 @@ export default function Intro() {
                     <span className="mt-1.5 block text-[12.5px] text-white/65">{u.name}</span>
                   </button>
                 ) : (
-                  <div className="relative flex h-[118px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/45 p-4 text-left backdrop-blur-xl sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
+                  <div className="relative flex h-[118px] w-full cursor-not-allowed flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f14]/75 p-4 text-left sm:h-[164px] sm:p-5" aria-disabled="true" title={`${u.name}: in progress`}>
                     <span className="opacity-40 grayscale">
                       <span className="block text-[22px] font-bold leading-none tracking-tight text-white [font-family:'Archivo',sans-serif] [font-stretch:118%] sm:text-[30px]">{u.short}</span>
                       <span className="mt-1.5 hidden text-[12.5px] leading-snug text-white/65 sm:block">{u.name}</span>

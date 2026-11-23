@@ -517,7 +517,7 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
   let raf = 0;
   let last = performance.now();
   const t0 = last;
-  let frames = 0, slow = 0, level = 0;
+  let frames = 0, slow = 0, vslow = 0, level = 0;
   let shadowZone = -1;
   let wasBelow = false;
   const libPos = new THREE.Vector3();
@@ -547,18 +547,25 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     if (state.running) state.p += (state.target - state.p) * (1 - Math.exp(-dt * 2.3));
     const p = state.p;
 
-    // adaptive quality: drop AO, then resolution, then cloud steps
+    // adaptive quality: drop AO, then resolution, then cloud steps, then resolution again. Judged every 30 frames
+    // (half a second at 60 fps), and two steps at once when most frames are very slow, so a weak laptop reaches a
+    // smooth setting in a second or two rather than after several seconds of stutter
     frames++;
     // anything under ~40 fps counts as slow, so a laptop that is merely sluggish steps down too
-    if (frames > 20 && dt > 0.025) slow++;
-    if (frames % 60 === 0) {
-      if (slow > 24 && level < 3) {
+    if (frames > 20 && dt > 0.025) { slow++; if (dt > 0.05) vslow++; }
+    if (frames > 20 && frames % 30 === 0) {
+      const steps = vslow > 18 ? 2 : slow > 15 ? 1 : 0;
+      let resized = false;
+      for (let k = 0; k < steps && level < 4; k++) {
         level++;
+        resized = resized || level > 1;
         if (level === 1 && gtao) gtao.enabled = false;
-        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(0.9, pr * 0.8); resize(); }
-        if (level === 3) { cloudU.uSteps.value = Math.round(cloudU.uSteps.value * 0.7); pr = Math.max(0.85, pr * 0.85); resize(); }
+        if (level === 2) { cloudScale = Math.max(0.28, cloudScale * 0.72); pr = Math.max(0.9, pr * 0.8); }
+        if (level === 3) { cloudU.uSteps.value = Math.round(cloudU.uSteps.value * 0.7); pr = Math.max(0.85, pr * 0.85); }
+        if (level === 4) { cloudScale = Math.max(0.24, cloudScale * 0.85); pr = Math.max(0.75, pr * 0.88); }
       }
-      slow = 0;
+      if (resized) resize();
+      slow = 0; vslow = 0;
     }
 
     // camera

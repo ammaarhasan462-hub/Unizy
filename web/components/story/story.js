@@ -432,8 +432,39 @@ export function mountStory(root, opts = {}) {
   const progress = (r) => clamp(-r.top / Math.max(1, r.height - innerHeight));
   const near = (r) => r.height > 0 && r.bottom > -innerHeight * 0.2 && r.top < innerHeight * 1.2; // height 0 = hidden (phones)
 
+  // every element whose position the frame reads: its place on the page (layout, ignoring transforms) is measured
+  // once, and again only when the page's size or content changes. The frame then works from scrollY alone and never
+  // reads layout: reading getBoundingClientRect between style writes forced a fresh layout on every frame
+  const watched = [...new Set([H && H.sec, S && S.sec, G && G.sec, G && G.banner, G && G.why, ...(G ? G.cols : []), G && G.draw,
+    U && U.sec, F && F.sec, ...floats.map((f) => f.sec), ...pats.map((pt) => pt.sec)].filter(Boolean))];
+  const geo = new Map(), R = new Map();
+  const html = document.documentElement;
+  let dirty = true;
+  const remeasure = () => { dirty = true; };
+  // (an SVG element has no offsetTop: its nearest HTML ancestor stands in for it)
+  const box = (el) => { while (el && !(el instanceof HTMLElement)) el = el.parentElement; return el; };
+  const pageTop = (el) => { let y = 0; for (let e = box(el); e; e = e.offsetParent) y += e.offsetTop; return y; };
+  on(window, 'resize', remeasure);
+  on(window, 'unizy:uni', remeasure);
+  on(window, 'load', remeasure);
+  on(window, 'smg:intro-end', remeasure);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(remeasure);
+    ro.observe(html); ro.observe(root);
+    offs.push(() => ro.disconnect());
+  }
+  // and once a second anyway, in case something moved without changing the page's size
+  const every = setInterval(remeasure, 1000);
+  offs.push(() => clearInterval(every));
+
   function frame(now) {
     raf = requestAnimationFrame(frame);
+    // nothing to do while the 3D intro covers the page (it is not painted then, see globals.css)
+    if (html.classList.contains('intro-live') && !html.classList.contains('intro-out')) return;
+    if (dirty) { dirty = false; watched.forEach((el) => geo.set(el, [pageTop(el), (box(el) || {}).offsetHeight || 0])); }
+    const sy = scrollY;
+    watched.forEach((el) => { const [top, h] = geo.get(el); const r = R.get(el) || {}; r.top = top - sy; r.height = h; r.bottom = r.top + h; R.set(el, r); });
     const t = now / 1000;
     const vw = innerWidth / 100, vh = innerHeight / 100, mobile = innerWidth <= 900;
     const y = scrollY;
@@ -445,7 +476,7 @@ export function mountStory(root, opts = {}) {
 
     // ---- hero ----
     if (H) {
-      const r = H.sec.getBoundingClientRect();
+      const r = R.get(H.sec);
       if (near(r)) {
         const p = progress(r);
         const ib = introT ? clamp((now - introT) / 1000) : 0;
@@ -546,7 +577,7 @@ export function mountStory(root, opts = {}) {
 
     // ---- split: how it works ----
     if (S) {
-      const r = S.sec.getBoundingClientRect();
+      const r = R.get(S.sec);
       if (near(r)) {
         const p = progress(r);
         const enter = clamp((innerHeight - r.top) / innerHeight);
@@ -575,27 +606,27 @@ export function mountStory(root, opts = {}) {
 
     // ---- gap (gold) ----
     if (G) {
-      const r = G.sec.getBoundingClientRect();
+      const r = R.get(G.sec);
       if (near(r)) {
-        const br = G.banner.getBoundingClientRect();
+        const br = R.get(G.banner);
         const wp = clamp((innerHeight * 0.88 - br.top) / (innerHeight * 0.55 + br.height * 0.6));
         const lit = Math.round(wp * G.words.length);
         G.words.forEach((w, i) => w.classList.toggle('on', i < lit));
-        const hr = G.why.getBoundingClientRect();
+        const hr = R.get(G.why);
         G.why.style.setProperty('--draw', (1 - ss(0.05, 0.6, (innerHeight * 0.85 - hr.top) / innerHeight)).toFixed(3));
         G.cols.forEach((c, i) => {
-          const cr = c.getBoundingClientRect();
+          const cr = R.get(c);
           const e = reduce ? 1 : ss(0, 1, (innerHeight - cr.top) / (innerHeight * 0.45) - (mobile ? 0 : i * 0.12));
           c.style.transform = `translate3d(0,${((1 - e) * 90).toFixed(1)}px,0) rotate(${((1 - e) * (i - 1) * 6).toFixed(2)}deg)`;
           c.style.opacity = (0.15 + e * 0.85).toFixed(3);
         });
-        if (G.draw) { const dr = G.draw.getBoundingClientRect(); G.draw.style.strokeDashoffset = (1 - ss(0, 1, (innerHeight * 0.95 - dr.top) / (innerHeight * 0.4))).toFixed(3); }
+        if (G.draw) { const dr = R.get(G.draw); G.draw.style.strokeDashoffset = (1 - ss(0, 1, (innerHeight * 0.95 - dr.top) / (innerHeight * 0.4))).toFixed(3); }
       }
     }
 
     // ---- unlock (zoom) ----
     if (U) {
-      const r = U.sec.getBoundingClientRect();
+      const r = R.get(U.sec);
       if (near(r)) {
         const p = clamp((innerHeight - r.top) / (r.height));
         const spin = reduce ? 0 : t;
@@ -617,7 +648,7 @@ export function mountStory(root, opts = {}) {
 
     // ---- final ----
     if (F) {
-      const r = F.sec.getBoundingClientRect();
+      const r = R.get(F.sec);
       if (near(r)) {
         const e0 = clamp((innerHeight - r.top) / (innerHeight * 0.8));
         const n = F.lines.length / 3;
@@ -634,8 +665,8 @@ export function mountStory(root, opts = {}) {
 
     // ---- drifting cards and patterns ----
     if (!reduce) {
-      const fr = floats.map((f) => (f.sec ? f.sec.getBoundingClientRect() : null));
-      const pr = pats.map((pt) => (pt.sec ? pt.sec.getBoundingClientRect() : null));
+      const fr = floats.map((f) => (f.sec ? R.get(f.sec) : null));
+      const pr = pats.map((pt) => (pt.sec ? R.get(pt.sec) : null));
       floats.forEach((f, i) => {
         const r = fr[i];
         if (!r || !near(r)) return;

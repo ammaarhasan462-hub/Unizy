@@ -118,6 +118,17 @@ Keep to these limits:
 
 ## Log
 
+- 2026-11-23 (day, branch `perf-smooth`, at Ammaar's request: "decrease the lag on mobile and on laptop, in the intro and on the homepage"): a lag pass on the homepage and the intro.
+  - Homepage (phones skip the intro, so this is what they get):
+    - framer-motion is gone from the homepage: reveal-on-scroll, magnetic buttons, the nav and the FAQ are CSS transitions with one shared IntersectionObserver (`ui.jsx`, `globals.css`). Homepage JS 712 → 586 KB; blocking time while loading on a phone (4× CPU throttle) about 400 → about 230 ms.
+    - The scroll story (`story.js`) measures its sections' positions once (again on resize, content change, fonts loading, or each second) and its frame never reads layout. Main-thread time while scrolling the whole page on a laptop 1010–1070 → 745–785 ms; script 135–140 → 92–106 ms.
+    - The story's pattern layers are half the size (as big as their movement needs), and the glass cards have no live backdrop blur (it was redrawn for every card on every scroll frame; the page behind them is already very soft).
+    - The page under the intro is not painted while the intro covers it (`html.intro-live`), and the story's frame does nothing then; it is shown again as the intro starts to fade (`intro-out`).
+  - Intro (laptops):
+    - Adaptive quality judges every 30 frames, steps twice when most frames are very slow, and has a fourth, lower-resolution step. Under swiftshader (desktop, before → after, interleaved): UCL 0.47 at 1483 → 967 ms, 0.56 at 2783 → 2066 ms; Imperial 0.56 at 1750 → 1233 ms; Queen Mary 0.56 at 2033 → 1467 ms; King's 0.56 at 1850 → 1217 ms; LSE 0.56 at 2083 → 1950 ms. Draw calls and triangles unchanged; engine up level within noise.
+    - No live backdrop blur on the picker cards, skip button and end card (each was re-blurred over the moving canvas every frame), and no CSS grain layer over the canvas (the engine's grade already adds grain; a full-screen blend layer was composited every frame).
+  - Checks: no console errors (homepage on phone and laptop; intro at all five universities); the homepage looks the same at every scroll position on both; the FAQ opens and closes; every reveal fires; skipping the intro shows the page.
+
 - 2026-11-21 (night, branch `city-refine-2026-11-21`): the canals and docks set below their towpaths between walls, with narrowboats; shader programs shared; the far ground no longer drawn under the map.
   - Realism: the Thames, part 3 (its first item; the rest is split into part 4).
     - `bake_city.py` flags the impounded water as `dk` (map area index, level): 1 for canals and locks (`water=canal|lock`), 2 for docks and basins (`waterway=dock`, `water=dock|harbour|marina`, and named `water=basin` such as Battlebridge Basin; unnamed basins are fountains and park ponds and stay flush). No refetch: the site extracts already carry them. The rest of the JSON is unchanged.

@@ -1,45 +1,44 @@
 'use client';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+// Small shared pieces of the landing page. The reveal-on-scroll and magnetic buttons are plain CSS transitions
+// driven by one shared IntersectionObserver (no animation library), so the homepage ships less script and does no
+// per-frame work for them.
+import { createElement, useEffect, useRef } from 'react';
 
-const EASE = [0.16, 1, 0.3, 1];
-
-export function Reveal({ children, delay = 0, y = 28, className = '', as = 'div' }) {
-  const M = motion[as] || motion.div;
-  return (
-    <M
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.9, ease: EASE, delay }}
-    >
-      {children}
-    </M>
-  );
+let io = null;
+function observe(el) {
+  if (!el) return () => {};
+  if (typeof IntersectionObserver === 'undefined') { el.classList.add('rv-in'); return () => {}; }
+  if (!io) {
+    io = new IntersectionObserver((ents) => ents.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add('rv-in'); io.unobserve(e.target); }
+    }), { rootMargin: '-80px' });
+  }
+  io.observe(el);
+  return () => io && io.unobserve(el);
 }
 
+// fades and rises in the first time it scrolls into view (globals.css: .rv)
+export function Reveal({ children, delay = 0, y = 28, className = '', as = 'div' }) {
+  const ref = useRef(null);
+  useEffect(() => observe(ref.current), []);
+  return createElement(as, { ref, className: `rv ${className}`, style: { '--rv-y': `${y}px`, '--rv-d': `${delay}s` } }, children);
+}
+
+// follows the mouse a little, springing back when it leaves (globals.css: .magnetic)
 export function Magnetic({ children, strength = 0.22, className = '' }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 220, damping: 16, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 220, damping: 16, mass: 0.4 });
   return (
-    <motion.div
-      className={`inline-block ${className}`}
-      style={{ x: sx, y: sy }}
+    <div
+      className={`magnetic inline-block ${className}`}
       onPointerMove={(e) => {
         if (e.pointerType !== 'mouse') return;
-        const r = e.currentTarget.getBoundingClientRect();
-        x.set((e.clientX - r.left - r.width / 2) * strength);
-        y.set((e.clientY - r.top - r.height / 2) * strength * 1.4);
+        const el = e.currentTarget, r = el.getBoundingClientRect();
+        const x = (e.clientX - r.left - r.width / 2) * strength, y = (e.clientY - r.top - r.height / 2) * strength * 1.4;
+        el.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
       }}
-      onPointerLeave={() => {
-        x.set(0);
-        y.set(0);
-      }}
+      onPointerLeave={(e) => { e.currentTarget.style.transform = ''; }}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

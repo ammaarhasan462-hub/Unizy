@@ -96,7 +96,7 @@ export function TopBar({ authed, uniShort, onSkip }) {
         <button
           type="button"
           onClick={onSkip}
-          className="flex items-center gap-2.5 rounded-full border border-[#ece6da]/15 bg-[#0d0f12]/40 py-2 pl-4 pr-2.5 text-[#ece6da]/80 backdrop-blur-md transition-colors hover:border-[#ece6da]/35 hover:text-[#ece6da]"
+          className="flex items-center gap-2.5 rounded-full border border-[#ece6da]/15 bg-[#0d0f12]/65 py-2 pl-4 pr-2.5 text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/35 hover:text-[#ece6da]"
           data-testid="intro-skip"
         >
           Skip intro
@@ -188,14 +188,14 @@ export function EndCard({ setRef, authed, uni, onEnter, onCta }) {
             <a href={authed ? '/dashboard/practice' : '/try'} onClick={onCta} className="rounded-full bg-[#ece6da] px-6 py-3 text-[14px] font-medium text-[#121417] transition-colors hover:bg-white">
               {authed ? 'Back to my modules' : 'Mark my first answer free'}
             </a>
-            <button type="button" onClick={onEnter} data-testid="intro-enter" className="rounded-full border border-[#ece6da]/20 bg-[#0d0f12]/55 px-6 py-3 backdrop-blur-md text-[14px] text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/45 hover:text-[#ece6da]">
+            <button type="button" onClick={onEnter} data-testid="intro-enter" className="rounded-full border border-[#ece6da]/20 bg-[#0d0f12]/75 px-6 py-3 text-[14px] text-[#ece6da]/80 transition-colors hover:border-[#ece6da]/45 hover:text-[#ece6da]">
               Enter Unizy ↓
             </button>
           </div>
           <p className="mt-5 text-[12.5px] text-[#ece6da]/40">{authed ? '' : 'No sign-up needed for your first marked answer. '}Practice only. Your actual coursework stays your own.</p>
         </div>
         {/* a marked answer, as it comes back */}
-        <article className="w-full max-w-[380px] rounded-2xl border border-[#ece6da]/10 bg-[#101215]/70 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,.8)] backdrop-blur-xl">
+        <article className="w-full max-w-[380px] rounded-2xl border border-[#ece6da]/10 bg-[#101215]/88 p-5 shadow-[0_30px_80px_-30px_rgba(0,0,0,.8)]">
           <header className="flex items-start justify-between gap-4">
             <div>
               <p className="font-mono text-[10px] tracking-[.14em] text-[#ece6da]/45">{sample.code} · {sample.crit}</p>

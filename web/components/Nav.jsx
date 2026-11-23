@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Logo } from './ui';
 import UniTabs from './UniTabs';
 import { hasSession, track } from '@/lib/site';
@@ -27,12 +26,7 @@ export default function Nav() {
   }, []);
 
   return (
-    <motion.header
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-x-0 top-0 z-50"
-    >
+    <header className="nav-in fixed inset-x-0 top-0 z-50">
       <div className={`mx-auto mt-3 flex max-w-[1240px] items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 sm:px-5 ${scrolled || open ? 'nav-solid mx-3 shadow-[0_10px_40px_-12px_rgba(0,0,0,.8)] sm:mx-6 xl:mx-auto' : 'border border-transparent'}`}>
         <Logo className={scrolled || open ? '' : 'text-paper!'} />
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
@@ -67,37 +61,26 @@ export default function Nav() {
         </div>
       </div>
       <UniTabs compact={scrolled} />
-      <AnimatePresence>
-        {open && (
-          <motion.nav
-            initial={{ opacity: 0, y: -12, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.98 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="glass mx-3 mt-2 rounded-3xl p-3 sm:mx-6 lg:hidden"
-            aria-label="Mobile"
-          >
+      {open && (
+          <nav className="drop-in glass mx-3 mt-2 rounded-3xl p-3 sm:mx-6 lg:hidden" aria-label="Mobile">
             {LINKS.map(([t, h], i) => (
-              <motion.a
+              <a
                 key={h}
                 href={h}
                 onClick={() => setOpen(false)}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.04 * i }}
-                className="block rounded-2xl px-4 py-3 text-[17px] text-ink/90 hover:bg-ink/5"
+                style={{ animationDelay: `${0.04 * i}s` }}
+                className="link-in block rounded-2xl px-4 py-3 text-[17px] text-ink/90 hover:bg-ink/5"
               >
                 {t}
-              </motion.a>
+              </a>
             ))}
             {!authed && (
               <a href="/login?next=/dashboard" className="block rounded-2xl px-4 py-3 text-[17px] text-ink/90 hover:bg-ink/5">
                 Log in
               </a>
             )}
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </motion.header>
+          </nav>
+      )}
+    </header>
   );
 }
