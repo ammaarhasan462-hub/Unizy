@@ -523,8 +523,12 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       });
       return d;
     };
-    docks.forEach(({ rings, y, lv }, di) => {
+    // the docks beyond the map (outer): their walls only out to OUT_WALL (a 1.7 m wall is under a pixel tall beyond),
+    // and pleasure cruisers, houseboats and lighters moored along their quays out to OUT_BOATS
+    const OUT_WALL = mobile ? 2200 : 3200, OUT_BOATS = mobile ? 2600 : 4200, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
+    docks.forEach(({ rings, y, lv, outer }, di) => {
       const big = Math.abs(area(rings[0])) > 1500;
+      let dacc = outer ? 10 + rnd() * 40 : 0;
       rings.forEach((ring, ri) => {
         const n = ring.length;
         if (n < 3) return;
@@ -542,6 +546,24 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           const tone = 0.86 + 0.22 * (Math.sin(Math.floor(run / 14) * 12.9898 + di * 3.1 + ri) * 0.5 + 0.5);
           // where two pieces at the same level meet (a canal and its next stretch), the water runs on: no wall
           if (edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
+          if (outer) {
+            if (d < OUT_WALL) quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
+            // boats moored along the quays of the larger docks and basins, one to three abreast, with gaps
+            if (ri === 0 && big && d < OUT_BOATS) {
+              while (dacc < L) {
+                const t = dacc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
+                dacc += 45 + rnd() * 60;
+                if (L < 14 || rnd() > (mobile ? 0.3 : 0.45)) continue;
+                const kind = DOCK_KIND[Math.floor(rnd() * DOCK_KIND.length)], u = rnd() < 0.5 ? [ux, uz] : [-ux, -uz];
+                let off = 1.0;
+                const nb = kind === 'cruiser' ? 1 : 1 + Math.floor(rnd() * 2);
+                for (let j = 0; j < nb; j++) { const Bm = KINDS[kind].B; boat([x + wx * (off + Bm / 2), z + wz * (off + Bm / 2)], u, kind, y); off += Bm + 0.4; }
+              }
+              dacc -= L;
+            }
+            run += L;
+            continue;
+          }
           // the face, dark and wet at the water, its brick or granite clearing upward; near the campus a coping on top
           quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
           if (d < NEAR) quad(A(0.07), B(0.07), [xb - wx * CW, 0.07, zb - wz * CW], [xa - wx * CW, 0.07, za - wz * CW], g.copy(cope).multiplyScalar(0.9 + (tone - 0.86) * 0.5), UP);

@@ -348,6 +348,57 @@ def river_water(fr):
     return polys
 
 
+OUTER_DOCK_R = 7000.0  # metres: the docks and basins beyond the map are kept out to this square
+
+
+def is_dock(t):
+    """impounded tidal water: docks, harbours, marinas and the named dock and canal basins (not fountains or ponds)"""
+    if t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock':
+        return True
+    if t.get('leisure') == 'marina' and (t.get('natural') == 'water' or 'water' in t):
+        return True
+    nm = t.get('name', '')
+    return t.get('water') == 'basin' and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm
+
+
+def outer_docks(fr):
+    """the docks and basins beyond the detail map (West India and Millwall Docks, Limehouse and Shadwell basins, St
+    Katharine Docks, City Road and Paddington basins...) from the skyline extract, in the site frame: [(outer, [holes])].
+    Only those wholly outside the map (with a margin): the map's own docks come from the site's extract (dk)."""
+    try:
+        sk = load_seq('skyline')
+    except FileNotFoundError:
+        return []
+    polys, seen = [], set()
+    for el in sk:
+        t = el.get('tags', {})
+        if not is_dock(t) or 'building' in t:
+            continue
+        for outer, inners in rings_of(el, fr):
+            o = clean_ring(outer, 2.0)
+            if not o or len(o) < 3 or abs(area(o)) < 2500:
+                continue
+            xs, zs = [p[0] for p in o], [p[1] for p in o]
+            if min(xs) < DETAIL + 25 and max(xs) > -DETAIL - 25 and min(zs) < DETAIL + 25 and max(zs) > -DETAIL - 25:
+                continue
+            if min(xs) > OUTER_DOCK_R or max(xs) < -OUTER_DOCK_R or min(zs) > OUTER_DOCK_R or max(zs) < -OUTER_DOCK_R:
+                continue
+            o = clip_box(o, OUTER_DOCK_R)
+            if len(o) < 3 or abs(area(o)) < 2500:
+                continue
+            key = (round(centroid(o)[0] / 5), round(centroid(o)[1] / 5))
+            if key in seen:
+                continue
+            seen.add(key)
+            hs = []
+            for hr in inners:
+                hh = clean_ring(hr, 2.0)
+                if hh and len(hh) >= 3 and abs(area(hh)) > 200:
+                    hs.append(hh)
+            polys.append((o, hs))
+    return polys
+
+
 def river_bridges(site, fr, water):
     """the bridges over the river: man_made=bridge outlines from the site's extract and the skyline extract that
     cross a river surface. Each: [style, spans, paint, x, z, angle, length, width, wet from, wet to, deck height]
@@ -1209,17 +1260,19 @@ def bake(site):
 
     water = river_water(fr)
     bridges, bnames = river_bridges(site, fr, water)
+    odocks = outer_docks(fr)
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
         'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
         'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges, 'dk': docks,
+        'od': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in odocks],
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'outer_docks': len(odocks), 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 
