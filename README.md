@@ -122,6 +122,12 @@ No AI credit used by any of this.
 - Codes live in `promo_codes` (one per society; Pro until 31 Jan 2027). New codes: insert a row (see supabase/sql/home_codes.sql).
 - Events: code_check, code_ok, code_apply.
 
+## Society code page (Nov 2026)
+- `unizy.uk/join/CODE` (and any `?code=`) turns the sign-up and log-in pages into a "your free Pro is ready" page (`promoView` in `site/assets/auth.js`): a "<society> code applied" badge, the sign-up form straight underneath (no extra step, nothing to type), then the code's modules from `promo_codes.modules` as locked cards. Tapping a card or swiping the row points back to the email box. If the code isn't live, the normal page shows with the reason.
+- Already signed in with a code waiting: straight to the dashboard, which redeems it.
+- Inside Instagram, TikTok, Snapchat, Facebook and LinkedIn's own browsers the "Continue with Google" button is hidden (Google refuses sign-in there); Microsoft and email still show.
+- Events: code_check on view, code_ok when the code is live (shared with the homepage code box).
+
 ## Marking coverage without packs (Nov 2026)
 - Year-of-study expectations: `LEVEL_EXPECT` in supabase/functions/marker/index.ts adds Level 4/5/6/7 expectations to every marking prompt (FHEQ descriptors + King's College Marking Framework level differences).
 - King's had no marking criteria; `kcl-college` row in marking_rubrics (supabase/sql/marking_coverage.sql).

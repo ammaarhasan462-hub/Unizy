@@ -11,6 +11,22 @@
   var next = params.get('next') || '/dashboard';
   if (!/^\/(?!\/)[\w\-./?=&%#]*$/.test(next)) next = '/dashboard';
   var EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  // A society code (/join/CODE → ?code=, or one remembered earlier) turns sign-up and log-in into a "your free Pro is
+  // ready" page: the code is already applied, the sign-up form sits right under it, and the course's modules show as
+  // locked cards (tapping or swiping them points back to sign-up). The dashboard redeems the code once they're in.
+  var PROMO = null;
+  try { PROMO = localStorage.getItem('unizy:promo'); } catch (e) {}
+  if (!PROMO && params.get('code')) PROMO = params.get('code').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
+  var promoP = null;
+  function checkPromo() {
+    if (!PROMO) return Promise.resolve(null);
+    if (!promoP) promoP = fetch(CFG.supabaseUrl + '/rest/v1/rpc/check_code', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_code: PROMO }) })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (d) { if (d && d.ok === false) { try { localStorage.removeItem('unizy:promo'); } catch (e) {} } return d; });
+    return promoP;
+  }
+  // Instagram, TikTok, Snapchat etc. open links in their own browser, where Google refuses to sign anyone in
+  var IN_APP = /Instagram|FBAN|FBAV|FB_IAB|musical_ly|Bytedance|TikTok|Snapchat|LinkedInApp/i.test(navigator.userAgent || '');
   // anonymous daily totals only: no cookies, no IDs
   function track(ev) {
     try {
@@ -184,7 +200,7 @@
     var or = el('div', { class: 'or', 'aria-hidden': 'true', hidden: true }, [el('span', { text: 'or use your email' })]);
     providers().then(function (ext) {
       var any = false;
-      btns.forEach(function (b) { var on = !!ext[b.getAttribute('data-p')]; b.hidden = !on; if (on) any = true; });
+      btns.forEach(function (b) { var p = b.getAttribute('data-p'), on = !!ext[p] && !(IN_APP && p === 'google'); b.hidden = !on; if (on) any = true; });
       wrap.hidden = or.hidden = !any;
     });
     return [wrap, or];
@@ -277,8 +293,88 @@
     ]);
   }
 
+  // ---------- society code: "your free Pro is ready" ----------
+  var promoCss = false;
+  function addPromoCss() {
+    if (promoCss) return; promoCss = true;
+    var st = document.createElement('style');
+    st.textContent =
+      '.pc-wait{min-height:118px}' +
+      '.pc-badge{display:inline-flex;align-items:center;gap:8px;margin:0 0 12px;padding:7px 12px 7px 8px;border-radius:999px;background:#EEF6E4;border:1px solid #CFE5B5;color:#2D4A12;font-size:14px;font-weight:700}' +
+      '.pc-badge i{font-style:normal;width:20px;height:20px;border-radius:999px;background:#2E7D32;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px}' +
+      '.pc-mods{display:flex;flex-direction:column;gap:10px;margin-top:4px;padding-top:18px;border-top:1px solid #DDDDD6}' +
+      '.pc-lab{margin:0;font-size:13px;font-weight:700;color:#5D6D67;text-transform:none}' +
+      '.pc-row{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 2px 8px;margin:0 -2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}' +
+      '.pc-row::-webkit-scrollbar{display:none}' +
+      '.pc-card{flex:0 0 72%;max-width:250px;scroll-snap-align:start;text-align:left;font:inherit;color:#17302A;background:#fff;border:1.5px solid #DDE3DE;border-radius:14px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:4px;position:relative}' +
+      '.pc-card:hover{border-color:#17302A}' +
+      '.pc-card b{font-family:DM Mono,monospace;font-size:13px;font-weight:500;color:#5D6D67}' +
+      '.pc-card span{font-weight:700;font-size:15px;line-height:1.3;padding-right:22px}' +
+      '.pc-card em{font-style:normal;font-size:13px;color:#5D6D67;margin-top:auto}' +
+      '.pc-card svg{position:absolute;right:12px;top:12px;width:16px;height:16px;color:#B8862F}' +
+      '.pc-nudge{margin:0;font-size:14px;font-weight:700;color:#17302A;background:#FFF6E3;border:1px solid #EBCB8B;border-radius:12px;padding:10px 12px}' +
+      'form.pc-flash .field input{border-color:#B8862F;box-shadow:0 0 0 3px #F3DDB0}';
+    document.head.appendChild(st);
+  }
+  var LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  // Fills `slot` with the code heading (or the normal heading if the code isn't live) and adds the locked module cards
+  // after `form`. Tapping a card or swiping the row sends them back to the email box.
+  function promoView(mode, slot, form, emailInput, fallback) {
+    addPromoCss();
+    slot.className = 'pc-wait';
+    var shown = false;
+    var plain = function () { if (shown) return; shown = true; slot.className = ''; slot.appendChild(fallback); };
+    var timer = setTimeout(plain, 2500);
+    track('code_check');
+    checkPromo().then(function (d) {
+      clearTimeout(timer);
+      if (!d || !d.ok) {
+        plain();
+        if (d && d.message) { var m = el('div', { class: 'msg' }, [d.message + ' You can still sign up and use Unizy.']); slot.appendChild(m); }
+        return;
+      }
+      if (shown) slot.innerHTML = '';
+      shown = true; slot.className = '';
+      track('code_ok');
+      var until = d.until_text || '';
+      slot.appendChild(el('p', { class: 'pc-badge' }, [el('i', { text: '✓', 'aria-hidden': 'true' }), (d.label || 'Society') + ' code applied']));
+      slot.appendChild(mode === 'signup'
+        ? h1('Your free Pro is ready', 'Sign up with your email and Pro switches on straight away, free until ' + until + '. No card, no password.')
+        : h1('Log in to claim your free Pro', 'Your code is applied. Log in and Pro switches on straight away, free until ' + until + '.'));
+      var mods = d.modules || [];
+      if (!mods.length || !form.parentNode) return;
+      var total = mods.reduce(function (a, m) { return a + (m.questions || 0); }, 0);
+      var nudge = el('p', { class: 'pc-nudge', role: 'status', hidden: true });
+      var ask = function (code) {
+        nudge.textContent = (mode === 'signup' ? 'Sign up above' : 'Log in above') + ' to open ' + (code || 'your modules') + '. It takes under a minute.';
+        nudge.hidden = false;
+        emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(function () { try { emailInput.focus({ preventScroll: true }); } catch (e) { emailInput.focus(); } }, 350);
+        form.classList.remove('pc-flash'); void form.offsetWidth; form.classList.add('pc-flash');
+        setTimeout(function () { form.classList.remove('pc-flash'); }, 1600);
+      };
+      var row = el('div', { class: 'pc-row' }, mods.map(function (m) {
+        var c = el('button', { type: 'button', class: 'pc-card', 'aria-label': m.code + ' ' + m.title + ', locked until you ' + (mode === 'signup' ? 'sign up' : 'log in') },
+          [el('b', { text: m.code }), el('span', { text: m.title }), el('em', { text: (m.questions || 0) + ' practice questions' })]);
+        c.insertAdjacentHTML('beforeend', LOCK);
+        c.addEventListener('click', function () { ask(m.code); });
+        return c;
+      }));
+      var swiped = false;
+      row.addEventListener('scroll', function () {
+        if (swiped || row.scrollLeft < 60 || !nudge.hidden) return;
+        swiped = true; nudge.textContent = (mode === 'signup' ? 'Sign up above' : 'Log in above') + ' to open these. It takes under a minute.'; nudge.hidden = false;
+      }, { passive: true });
+      var where = [d.uni_name, d.course].filter(Boolean).join(' ');
+      var box = el('div', { class: 'pc-mods' }, [el('p', { class: 'pc-lab', text: 'What you’ll unlock' + (where ? ' · ' + where : '') + (total ? ' · ' + total.toLocaleString('en-GB') + ' questions' : '') }), row, nudge]);
+      form.parentNode.insertBefore(box, form.nextSibling);
+    });
+  }
+
   // ---------- already signed in ----------
   function signedIn(s) {
+    // already signed in with a society code waiting: the dashboard applies it, so go straight there
+    if (PROMO) { render([h1('Adding your free Pro…', 'Taking you to your dashboard.')]); go(); return; }
     var who = (s.user && (s.user.name || s.user.email)) || 'your account';
     var out = el('button', { type: 'button', class: 'btn ghost', text: 'Log out' });
     out.addEventListener('click', function () {
@@ -329,8 +425,10 @@
         });
     });
     var oa = oauthBlock();
-    render([h1('Welcome back', 'Log in to pick up where you left off.'), oa[0], oa[1], form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
+    var head = h1('Welcome back', 'Log in to pick up where you left off.'), slot = PROMO ? el('div') : head;
+    render([slot, oa[0], oa[1], form, el('div', { class: 'or', 'aria-hidden': 'true' }, [el('span', { text: 'or' })]), magic,
       el('p', { class: 'switch' }, ['New to Unizy? ', el('a', { href: link('/signup'), text: 'Create an account' })]), legal()]);
+    if (PROMO) promoView('login', slot, form, email.input, head);
   }
 
   // ---------- forgot password ----------
@@ -380,8 +478,10 @@
     }
     form.addEventListener('submit', function (e) { e.preventDefault(); send(); });
     var oa = oauthBlock();
-    render([h1('Create your free account', 'Get your answers marked against your department’s own criteria. Free, no card needed.'), oa[0], oa[1], form,
+    var head = h1('Create your free account', 'Get your answers marked against your department’s own criteria. Free, no card needed.'), slot = PROMO ? el('div') : head;
+    render([slot, oa[0], oa[1], form,
       el('p', { class: 'switch' }, ['Already have an account? ', el('a', { href: link('/login'), text: 'Log in' })]), legal()]);
+    if (PROMO) promoView('signup', slot, form, email.input, head);
     // arriving from "Save this mark? Enter your email" (?email=…&send=1): send the code straight away
     if (params.get('send') === '1' && EMAIL_RE.test(email.input.value.trim())) send();
   }
