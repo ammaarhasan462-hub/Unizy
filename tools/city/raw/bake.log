@@ -52,7 +52,7 @@
  "river_polys": 10,
  "docks": 4,
  "outer_docks": 24,
- "river_pts": 2321,
+ "river_pts": 1941,
  "bridges": [
   "Waterloo Bridge",
   "Blackfriars Bridge",
@@ -84,7 +84,7 @@
    2634.4
   ]
  },
- "bytes": 2743651,
+ "bytes": 2738593,
  "wilkins": {
   "x": [
    -71.1,
@@ -225,7 +225,7 @@
  "river_polys": 10,
  "docks": 0,
  "outer_docks": 6,
- "river_pts": 2414,
+ "river_pts": 1971,
  "bridges": [
   "Chelsea Bridge",
   "Battersea Bridge",
@@ -262,7 +262,7 @@
    6692.8
   ]
  },
- "bytes": 2312143,
+ "bytes": 2306104,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -416,7 +416,7 @@
  "river_polys": 10,
  "docks": 27,
  "outer_docks": 27,
- "river_pts": 1919,
+ "river_pts": 1539,
  "bridges": [
   "Stratford Walk",
   "Blackfriars Bridge",
@@ -451,7 +451,7 @@
    -2743.8
   ]
  },
- "bytes": 2445842,
+ "bytes": 2440667,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -525,7 +525,7 @@
  "river_polys": 10,
  "docks": 1,
  "outer_docks": 21,
- "river_pts": 2100,
+ "river_pts": 1829,
  "bridges": [
   "Blackfriars Bridge",
   "Blackfriars Railway Bridge",
@@ -558,7 +558,7 @@
    2509.8
   ]
  },
- "bytes": 3065677,
+ "bytes": 3061860,
  "anchor": [
   "Old Building",
   51.51432,
@@ -692,7 +692,7 @@
  "river_polys": 10,
  "docks": 0,
  "outer_docks": 21,
- "river_pts": 2101,
+ "river_pts": 1838,
  "bridges": [
   "Blackfriars Bridge",
   "Blackfriars Railway Bridge",
@@ -725,7 +725,7 @@
    2476.0
   ]
  },
- "bytes": 3007202,
+ "bytes": 3003518,
  "anchor": [
   "King's Building",
   51.51153,
