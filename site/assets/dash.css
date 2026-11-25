@@ -31,6 +31,9 @@ body.dbx .btn .arr{display:none}
 
 /* ---------- shell ---------- */
 body.dbx .db{grid-template-columns:252px minmax(0,1fr);background:var(--bg)}
+/* set-up and "Change your course" hide the sidebar, so the page must be one column (the rule above outranks mark.css's
+   .db.setup, which squeezed the whole set-up screen into the 252px sidebar column on laptops) */
+body.dbx .db.setup{grid-template-columns:minmax(0,1fr)}
 body.dbx .db-side{background:#E6F0E8;color:var(--tx);border-right:1px solid #D6E3D9;padding:16px 12px;gap:16px}
 body.dbx .db-bar{padding:2px 6px}
 body.dbx .db-brand{color:var(--brand)}
@@ -54,6 +57,12 @@ body.dbx .db-nl{flex:1 1 auto;min-width:0}
 body.dbx .db-nbadge{flex:0 0 auto;min-width:22px;height:20px;padding:0 7px;border-radius:10px;background:#D9603B;color:#fff;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
 body.dbx .db-nbadge[hidden]{display:none}
 body.dbx .db-modsbox{display:flex;flex-direction:column;gap:6px;border-top:1px solid #D2E0D5;padding-top:14px;min-height:0}
+/* a long module list (or an opened topic tree) makes the whole sidebar scroll, with Account after the list, instead of
+   running underneath Account (the sidebar used to shrink to the screen height and let the list spill over) */
+@media (min-width:901px){
+  body.dbx .db-sidein{flex:1 0 auto}
+  body.dbx .db-side{scrollbar-width:thin;scrollbar-color:#BFD0C4 transparent;overscroll-behavior:contain}
+}
 body.dbx .db-mods-head{padding:0 8px;font-size:13.5px;font-weight:700;color:#3C4C46}
 body.dbx .db-mods-head a{color:var(--link);font-weight:700;font-size:13.5px}
 body.dbx .db-mods-head a:hover{text-decoration:underline}
