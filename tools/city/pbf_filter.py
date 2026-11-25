@@ -26,7 +26,7 @@ with open(src) as f, gzip.open(dst, 'wt') as o:
         if ft.get('geometry', {}).get('type') in ('Polygon', 'MultiPolygon') and (
                 t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock'
                 or (t.get('leisure') == 'marina' and (t.get('natural') == 'water' or 'water' in t))
-                or (t.get('water') == 'basin' and ('Basin' in t.get('name', '') or 'Dock' in t.get('name', '')))):
+                or (t.get('water') in ('basin', 'canal') and ('Basin' in t.get('name', '') or 'Dock' in t.get('name', '')))):
             keep = True
         # the river piers (Westminster, Embankment, Festival, Bankside, Tower...) and mapped moorings, for the boats
         if t.get('man_made') == 'pier' or 'mooring' in t:

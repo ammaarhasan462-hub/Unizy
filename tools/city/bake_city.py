@@ -352,13 +352,14 @@ OUTER_DOCK_R = 7000.0  # metres: the docks and basins beyond the map are kept ou
 
 
 def is_dock(t):
-    """impounded tidal water: docks, harbours, marinas and the named dock and canal basins (not fountains or ponds)"""
+    """impounded water: docks, harbours, marinas and the named dock and canal basins (Limehouse Basin and City Road
+    Basin are mapped as canal water; not fountains, ponds or the canals' narrow runs)"""
     if t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock':
         return True
     if t.get('leisure') == 'marina' and (t.get('natural') == 'water' or 'water' in t):
         return True
     nm = t.get('name', '')
-    return t.get('water') == 'basin' and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm
+    return t.get('water') in ('basin', 'canal') and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm
 
 
 def outer_docks(fr):

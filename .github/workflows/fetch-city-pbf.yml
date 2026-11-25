@@ -50,7 +50,7 @@ jobs:
           ex lse -1.4400e-1 51.4973 -8.9100e-2 51.5314
           # tall buildings, the Thames and its bridges, the docks and basins, and the piers and moorings for the skyline
           osmium extract -s smart -b "-0.2500,51.4600,0.0300,51.5650" london.osm.pbf -o sky-box.osm.pbf --overwrite
-          osmium tags-filter sky-box.osm.pbf nwr/building nwr/building:part nwr/waterway=river,dock nwr/water=river,dock,harbour,marina,basin nwr/leisure=marina nwr/man_made=bridge,pier nwr/mooring -o sky-f.osm.pbf --overwrite
+          osmium tags-filter sky-box.osm.pbf nwr/building nwr/building:part nwr/waterway=river,dock nwr/water=river,dock,harbour,marina,basin,canal nwr/leisure=marina nwr/man_made=bridge,pier nwr/mooring -o sky-f.osm.pbf --overwrite
           osmium export sky-f.osm.pbf -f geojsonseq -a type,id -u type_id --geometry-types=point,linestring,polygon -o sky.geojsonseq --overwrite
           python3 "$GITHUB_WORKSPACE/tools/city/pbf_filter.py" sky.geojsonseq "$GITHUB_WORKSPACE/tools/city/raw/skyline.geojsonseq.gz"
           ls -la "$GITHUB_WORKSPACE/tools/city/raw/"
