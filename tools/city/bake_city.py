@@ -348,6 +348,163 @@ def river_water(fr):
     return polys
 
 
+OUTER_DOCK_R = 7000.0  # metres: the docks and basins beyond the map are kept out to this square
+
+
+RV_FAR, RV_EPS = 4000.0, 7.0  # metres: beyond RV_FAR the river's banks are thinned to RV_EPS (under a pixel there)
+
+
+def _cross(a, b, c, d):
+    o = lambda p, q, r: (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+    return o(a, b, c) * o(a, b, d) < 0 and o(c, d, a) * o(c, d, b) < 0
+
+
+def thin_far(water):
+    """the river's outlines with each run of points beyond RV_FAR simplified (Douglas-Peucker, RV_EPS). A run whose
+    thinned segments cross any other bank (thinned or not) is put back whole, until none do: [(outer, [holes])]"""
+    # on the decimetre grid the JSON keeps, so the crossing checks see what city.js will
+    water = [([(q(x) / 10, q(z) / 10) for x, z in o], [[(q(x) / 10, q(z) / 10) for x, z in h] for h in hs]) for o, hs in water]
+    rings = [r for o, hs in water for r in [o] + hs]
+    # only wide water (mean width 2A/P over 60 m: the Thames' reaches): a creek's banks are too close to thin safely
+    wide = []
+    for o, hs in water:
+        per = sum(math.hypot(o[i][0] - o[i - 1][0], o[i][1] - o[i - 1][1]) for i in range(len(o)))
+        wide += [2 * abs(area(o)) / (per or 1) > 60] * (1 + len(hs))
+    # per ring: its runs, each (original points, thinned points or None for a near run)
+    runs = []
+    for r, wd in zip(rings, wide):
+        n = len(r)
+        far = [wd and math.hypot(x, z) > RV_FAR for x, z in r]
+        if not any(far) or all(far):
+            runs.append([[list(r), None]])
+            continue
+        s0 = far.index(False)
+        rr, cur, cf = [], [], None
+        for j in range(n):
+            i = (s0 + j) % n
+            if cf is None or far[i] != cf:
+                if cur:
+                    rr.append([cur, None])
+                cur, cf = [], far[i]
+            cur.append(r[i])
+        rr.append([cur, None])
+        for run in rr:
+            if math.hypot(*run[0][0]) > RV_FAR and len(run[0]) >= 3:
+                t = dp(run[0], RV_EPS)
+                if len(t) < len(run[0]):
+                    run[1] = t
+        runs.append(rr)
+    pts_of = lambda rr: [q for run in rr for q in (run[1] if run[1] is not None else run[0])]
+    for _ in range(40):
+        split = []
+        geo = [pts_of(rr) for rr in runs]
+        segs = [(g[i], g[(i + 1) % len(g)]) for g in geo for i in range(len(g))]
+        bad = 0
+        for k, rr in enumerate(runs):
+            g = geo[k]
+            for ri, run in enumerate(rr):
+                if run[1] is None:
+                    continue
+                # the thinned chain, with the bank points either side of it
+                start = g.index(run[1][0])
+                m = len(run[1])
+                chain = [g[(start - 1) % len(g)]] + run[1] + [g[(start + m) % len(g)]]
+                # the old segments it replaces (its original points, between the same two bank points) are left out
+                old = {tuple(q) for q in run[0]}
+                hit = False
+                for a, b in zip(chain, chain[1:]):
+                    for c, d in segs:
+                        if (tuple(c) in old and tuple(d) in old) or (c == a and d == b):
+                            continue
+                        if max(a[0], b[0]) < min(c[0], d[0]) or max(c[0], d[0]) < min(a[0], b[0]) or max(a[1], b[1]) < min(c[1], d[1]) or max(c[1], d[1]) < min(a[1], b[1]):
+                            continue
+                        if _cross(a, b, c, d):
+                            hit = True
+                            break
+                    if hit:
+                        break
+                # and against itself (Douglas-Peucker can fold a squiggly channel over itself)
+                cs = list(zip(chain, chain[1:]))
+                for i in range(len(cs)):
+                    for j in range(i + 2, len(cs)):
+                        if hit or _cross(cs[i][0], cs[i][1], cs[j][0], cs[j][1]):
+                            hit = True
+                            break
+                if hit:
+                    run[1] = None
+                    bad += 1
+                    # a long run is split in two and each half thinned again; a short one stays whole
+                    if len(run[0]) >= 12:
+                        h = len(run[0]) // 2
+                        split.append((k, ri, [[run[0][:h + 1], None], [run[0][h + 1:], None]]))
+        for k, ri, halves in sorted(split, key=lambda t: -t[1]):
+            for hv in halves:
+                if len(hv[0]) >= 3:
+                    t = dp(hv[0], RV_EPS)
+                    if len(t) < len(hv[0]):
+                        hv[1] = t
+            runs[k][ri:ri + 1] = halves
+        if not bad:
+            break
+    else:
+        return water  # never settled: keep the full outlines
+    out = [pts_of(rr) for rr in runs]
+    res, k = [], 0
+    for o, hs in water:
+        res.append((out[k], out[k + 1:k + 1 + len(hs)]))
+        k += 1 + len(hs)
+    return res
+
+
+def is_dock(t):
+    """impounded water: docks, harbours, marinas and the named dock and canal basins (Limehouse Basin and City Road
+    Basin are mapped as canal water; not fountains, ponds or the canals' narrow runs)"""
+    if t.get('water') in ('dock', 'harbour', 'marina') or t.get('waterway') == 'dock':
+        return True
+    if t.get('leisure') == 'marina' and (t.get('natural') == 'water' or 'water' in t):
+        return True
+    nm = t.get('name', '')
+    return t.get('water') in ('basin', 'canal') and ('Basin' in nm or 'Dock' in nm) and 'Fountain' not in nm
+
+
+def outer_docks(fr):
+    """the docks and basins beyond the detail map (West India and Millwall Docks, Limehouse and Shadwell basins, St
+    Katharine Docks, City Road and Paddington basins...) from the skyline extract, in the site frame: [(outer, [holes])].
+    Only those wholly outside the map (with a margin): the map's own docks come from the site's extract (dk)."""
+    try:
+        sk = load_seq('skyline')
+    except FileNotFoundError:
+        return []
+    polys, seen = [], set()
+    for el in sk:
+        t = el.get('tags', {})
+        if not is_dock(t) or 'building' in t:
+            continue
+        for outer, inners in rings_of(el, fr):
+            o = clean_ring(outer, 5.0)
+            if not o or len(o) < 3 or abs(area(o)) < 2500:
+                continue
+            xs, zs = [p[0] for p in o], [p[1] for p in o]
+            if min(xs) < DETAIL + 25 and max(xs) > -DETAIL - 25 and min(zs) < DETAIL + 25 and max(zs) > -DETAIL - 25:
+                continue
+            if min(xs) > OUTER_DOCK_R or max(xs) < -OUTER_DOCK_R or min(zs) > OUTER_DOCK_R or max(zs) < -OUTER_DOCK_R:
+                continue
+            o = clip_box(o, OUTER_DOCK_R)
+            if len(o) < 3 or abs(area(o)) < 2500:
+                continue
+            key = (round(centroid(o)[0] / 5), round(centroid(o)[1] / 5))
+            if key in seen:
+                continue
+            seen.add(key)
+            hs = []
+            for hr in inners:
+                hh = clean_ring(hr, 5.0)
+                if hh and len(hh) >= 3 and abs(area(hh)) > 200:
+                    hs.append(hh)
+            polys.append((o, hs))
+    return polys
+
+
 def river_bridges(site, fr, water):
     """the bridges over the river: man_made=bridge outlines from the site's extract and the skyline extract that
     cross a river surface. Each: [style, spans, paint, x, z, angle, length, width, wet from, wet to, deck height]
@@ -1209,17 +1366,20 @@ def bake(site):
 
     water = river_water(fr)
     bridges, bnames = river_bridges(site, fr, water)
+    odocks = outer_docks(fr)
+    water = thin_far(water)
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
         'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
         'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges, 'dk': docks,
+        'od': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in odocks],
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'outer_docks': len(odocks), 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 

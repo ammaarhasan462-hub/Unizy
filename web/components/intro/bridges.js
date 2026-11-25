@@ -360,7 +360,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
   // ---------------------------------------------------------------- the river walls, the Embankment, the boats
   function riverside() {
     const TOP = 0.95, TIDE = water + 2.3, LIP = 0.6;
-    const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 3000 : 4500;
+    const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 2700 : 4000;
     const granite = new THREE.Color('#8f8b82'), wet = new THREE.Color('#47463d'), coping = new THREE.Color('#aaa69c'), farWall = new THREE.Color('#77736a');
     const lampPost = new THREE.Color('#1e2724');
     // is (x, z) under or beside a bridge (the walls drop their parapet there, lamps and boats keep clear)?
@@ -411,8 +411,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           quad(A(TIDE), B(TIDE), B(TOP), A(TOP), g.copy(granite).multiplyScalar(tone), want);
           quad(A(water - 0.3), B(water - 0.3), B(TIDE), A(TIDE), g.copy(wet).multiplyScalar(0.9 + (tone - 0.9) * 0.6), want);
           quad([oax, 0, oaz], [obx, 0, obz], [obx, TOP, obz], [oax, TOP, oaz], g.copy(granite).multiplyScalar(tone * 0.92), [-wx, 0, -wz]);
-        } else if (d < 6500) quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
-        // beyond 6.5 km the wall is under a pixel tall in the haze, and the coping beyond 3.5 km under a pixel wide
+        } else if (d < 5500) quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
+        // beyond 5.5 km the wall is about a pixel tall in the haze, and the coping beyond 3.5 km under a pixel wide
         if (d < 3500) quad(A(TOP), B(TOP), [obx, TOP, obz], [oax, TOP, oaz], g.copy(coping).multiplyScalar(tone), UP);
         // lamp standards on the parapet every 26 m along the Thames, near the campus
         if (pi === thames && d < NEAR) {
@@ -509,8 +509,9 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     // how far (x, z) is from the nearest wall of the docks other than `not` (all of them if not < 0) at level lv (any if 0)
     const edgeD = (x, z, not = -1, lv = 0) => {
       let d = Infinity;
-      docks.forEach(({ rings, lv: l2 }, i) => {
-        if (i === not || (lv && l2 !== lv)) return;
+      docks.forEach(({ rings, lv: l2, outer }, i) => {
+        // the docks beyond the map never meet the map's own, nor (drawn in by city.js) each other, nor a road
+        if (outer || i === not || (lv && l2 !== lv)) return;
         const [x0, x1, z0, z1] = box[i];
         if (x < x0 - 5 || x > x1 + 5 || z < z0 - 5 || z > z1 + 5) return;
         rings.forEach((ring) => {
@@ -523,8 +524,12 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       });
       return d;
     };
-    docks.forEach(({ rings, y, lv }, di) => {
+    // the docks beyond the map (outer): their walls only out to OUT_WALL (a 1.7 m wall is under a pixel tall beyond),
+    // and pleasure cruisers, houseboats and lighters moored along their quays out to OUT_BOATS
+    const OUT_WALL = mobile ? 1600 : 2200, OUT_BOATS = mobile ? 2000 : 3000, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
+    docks.forEach(({ rings, y, lv, outer }, di) => {
       const big = Math.abs(area(rings[0])) > 1500;
+      let dacc = outer ? 10 + rnd() * 40 : 0;
       rings.forEach((ring, ri) => {
         const n = ring.length;
         if (n < 3) return;
@@ -541,7 +546,25 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           const A = (yy) => [xa, yy, za], B = (yy) => [xb, yy, zb];
           const tone = 0.86 + 0.22 * (Math.sin(Math.floor(run / 14) * 12.9898 + di * 3.1 + ri) * 0.5 + 0.5);
           // where two pieces at the same level meet (a canal and its next stretch), the water runs on: no wall
-          if (edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
+          if (!outer && edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
+          if (outer) {
+            if (d < OUT_WALL) quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
+            // boats moored along the quays of the larger docks and basins, one to three abreast, with gaps
+            if (ri === 0 && big && d < OUT_BOATS) {
+              while (dacc < L) {
+                const t = dacc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
+                dacc += 45 + rnd() * 60;
+                if (L < 14 || rnd() > (mobile ? 0.25 : 0.36)) continue;
+                const kind = DOCK_KIND[Math.floor(rnd() * DOCK_KIND.length)], u = rnd() < 0.5 ? [ux, uz] : [-ux, -uz];
+                let off = 1.0;
+                const nb = kind === 'cruiser' ? 1 : 1 + Math.floor(rnd() * 2);
+                for (let j = 0; j < nb; j++) { const Bm = KINDS[kind].B; boat([x + wx * (off + Bm / 2), z + wz * (off + Bm / 2)], u, kind, y); off += Bm + 0.4; }
+              }
+              dacc -= L;
+            }
+            run += L;
+            continue;
+          }
           // the face, dark and wet at the water, its brick or granite clearing upward; near the campus a coping on top
           quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
           if (d < NEAR) quad(A(0.07), B(0.07), [xb - wx * CW, 0.07, zb - wz * CW], [xa - wx * CW, 0.07, za - wz * CW], g.copy(cope).multiplyScalar(0.9 + (tone - 0.86) * 0.5), UP);
@@ -563,7 +586,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     // the roads and railways that cross them: a deck at street level over the water, its fascia, and a brick
     // parapet on each side (the ground is cut away under them). Runs over the water from 3 to 70 m; longer ones are a
     // towpath drawn along the edge, not a crossing.
-    const wet = (x, z) => docks.some(({ rings }, i) => {
+    const wet = (x, z) => docks.some(({ rings, outer }, i) => {
+      if (outer) return false;
       const [x0, x1, z0, z1] = box[i];
       if (x < x0 || x > x1 || z < z0 || z > z1) return false;
       let ins = false;

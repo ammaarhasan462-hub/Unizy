@@ -1205,6 +1205,45 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     docks = all;
     if (cand.length) dockLog.push(`${all.length} of ${cand.length} (${cand.length - all.length} overlapping)`);
   }
+  // the docks and basins beyond the map (od, from the skyline extract: West India and Millwall Docks, Limehouse and
+  // Shadwell basins, St Katharine Docks, City Road and Paddington basins...): set down like the map's own docks, cut
+  // out of the far ground, painted into the river mask (so the outer city keeps off them) and walled by bridges.js.
+  // Clear of the river and of each other, else left out.
+  let outer = [];
+  {
+    // each outline drawn in by m metres over its water, so docks that meet edge to edge (Millwall's inner and outer
+    // docks, the Royal Victoria and its basin) keep a quay between them, and the far ground's holes never touch
+    const drawIn = (ring, ri, m) => {
+      const n = ring.length, sg = (ringArea(ring) > 0 ? 1 : -1) * (ri === 0 ? 1 : -1);
+      const wn = ring.map(([xa, za], i) => { const [xb, zb] = ring[(i + 1) % n], L = Math.hypot(xb - xa, zb - za) || 1; return [(-(zb - za) / L) * sg, ((xb - xa) / L) * sg]; });
+      return ring.map(([x, z], i) => {
+        const [ax, az] = wn[(i + n - 1) % n], [bx, bz] = wn[i];
+        let mx = ax + bx, mz = az + bz; const l = Math.hypot(mx, mz) || 1; mx /= l; mz /= l;
+        const k = Math.min(2, 1 / Math.max(0.5, mx * bx + mz * bz));
+        return [x + mx * m * k, z + mz * m * k];
+      });
+    };
+    const cand = [];
+    (data.od || []).forEach((p) => {
+      const rings = p.map(dec).filter((r2) => r2.length >= 3).map((r2, ri) => drawIn(r2, ri, 1.5));
+      if (!rings.length || rings[0].some(([x, z], i) => i % 2 === 0 && onRiver(x, z, 3))) return;
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
+      // wholly outside the map's square
+      if (x0 < H + 10 && x1 > -H - 10 && z0 < H + 10 && z1 > -H - 10) return;
+      cand.push({ ai: -1, lv: 2, y: -DROP[2], rings, ar: Math.abs(ringArea(rings[0])), bb: [x0, x1, z0, z1], outer: true });
+    });
+    cand.sort((p, q) => q.ar - p.ar);
+    const inR = (ring, x, z) => { let ins = false; for (let a = 0, b = ring.length - 1; a < ring.length; b = a++) { const [xa, za] = ring[a], [xb, zb] = ring[b]; if ((za > z) !== (zb > z) && x < ((xb - xa) * (z - za)) / (zb - za + 1e-12) + xa) ins = !ins; } return ins; };
+    cand.forEach((d) => {
+      // any touching or overlapping another kept one (its vertices within, or the other's within it) is left out:
+      // the far ground's holes must not meet
+      const near = (o) => d.bb[0] < o.bb[1] + 4 && d.bb[1] > o.bb[0] - 4 && d.bb[2] < o.bb[3] + 4 && d.bb[3] > o.bb[2] - 4;
+      const meets = (o) => near(o) && (d.rings[0].some(([x, z]) => inR(o.rings[0], x, z)) || o.rings[0].some(([x, z]) => inR(d.rings[0], x, z)) || d.rings[0].some(([x, z]) => o.rings[0].some(([u, v]) => Math.hypot(x - u, z - v) < 1.2)));
+      if (!outer.some(meets)) outer.push(d);
+    });
+    if (cand.length) dockLog.push(`outer ${outer.length} of ${cand.length}`);
+  }
   // the ground beyond the map: a 60 km square with the river cut out, and, where the river stays clear of the map, the
   // map's own square too (less 6 m, so the two overlap): under the map it is never seen, and costs nothing there. Where
   // the river crosses the map (LSE, King's), the docks are cut out of it one by one instead.
@@ -1212,15 +1251,19 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   const B = H - 6;
   let farGeo = null;
   if (rv.length) {
-    const tries = crosses ? [[...rv, ...docks.map((d) => d.rings)], rv] : [[...rv, [[[-B, -B], [B, -B], [B, B], [-B, B]]]], [...rv, ...docks.map((d) => d.rings)], rv];
+    const base = crosses ? [[...rv, ...docks.map((d) => d.rings)], rv] : [[...rv, [[[-B, -B], [B, -B], [B, B], [-B, B]]]], [...rv, ...docks.map((d) => d.rings)], rv];
+    // first with the outer docks cut out too; if that fails, without them (they are then left out)
+    const od = outer.map((d) => d.rings);
+    const tries = od.length ? [...base.slice(0, -1).map((t) => [...t, ...od]), ...base] : base;
     for (let i = 0; i < tries.length && !farGeo; i++) {
       farGeo = planeCut(30000, tries[i]);
+      if (farGeo && od.length && i >= base.length - 1) outer = [];
       // if only the river alone would cut, the docks stay at street level
       if (farGeo && i === tries.length - 1) docks = [];
-      if (farGeo) dockLog.push(`far: ${i === tries.length - 1 ? 'river' : !crosses && i === 0 ? 'river and map square' : 'river and docks'}`);
+      if (farGeo) dockLog.push(`far: ${i === tries.length - 1 ? 'river' : 'river, ' + (!crosses && i % (base.length - 1) === 0 ? 'map square' : 'docks')}${outer.length ? ' and outer docks' : ''}`);
     }
   }
-  if (!farGeo) docks = [];
+  if (!farGeo) { docks = []; outer = []; }
   const low = !!farGeo;
   const WL = -4.5;
   const doBuilding = (rec, bi) => {
@@ -1704,6 +1747,8 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   });
   // the river as mapped: at the lowered level, or flush with the streets if the ground could not be cut
   rv.forEach((rings) => shapeGeo(rings, low ? WL : 0.22));
+  // the docks beyond the map, below their quays
+  outer.forEach(({ rings, y }) => shapeGeo(rings, y));
   if (waterGeos.length) {
     const wg = mergeGeometries(waterGeos);
     waterGeos.forEach((g) => g.dispose());
@@ -1720,7 +1765,9 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       // softened by a pixel or so, so the shader's threshold draws a smooth bank rather than the texels' steps
       ctx.filter = 'blur(1.4px)';
       ctx.beginPath();
-      rv.forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
+      // the river and the docks beyond the map (the outer city keeps off both; the clouds' ground shows them as water)
+      // (one path and one fill: each blurred fill costs a pass over the whole canvas; they never overlap)
+      [...rv, ...outer.map((d) => d.rings)].forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
       ctx.fill('evenodd');
       ctx.filter = 'none';
       // a black border, so the clamped edge never smears water across the far ground
@@ -1741,7 +1788,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // the bridges over it
   // and, with the river lowered, its granite walls, the Embankment's lamps and festoons, and the boats on it
   if ((data.bg && data.bg.length) || low || docks.length) {
-    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), docks, crossings: docks.length ? [...roads.map((rd) => ({ pts: rd.pts, w: rd.w, rail: false })), ...(data.rl || []).map((f) => ({ pts: dec(f), w: 7, rail: true }))] : [], seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
+    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), docks: [...docks, ...outer], crossings: docks.length ? [...roads.map((rd) => ({ pts: rd.pts, w: rd.w, rail: false })), ...(data.rl || []).map((f) => ({ pts: dec(f), w: 7, rail: true }))] : [], seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
   }
 
   yield;
