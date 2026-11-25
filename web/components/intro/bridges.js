@@ -509,8 +509,9 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     // how far (x, z) is from the nearest wall of the docks other than `not` (all of them if not < 0) at level lv (any if 0)
     const edgeD = (x, z, not = -1, lv = 0) => {
       let d = Infinity;
-      docks.forEach(({ rings, lv: l2 }, i) => {
-        if (i === not || (lv && l2 !== lv)) return;
+      docks.forEach(({ rings, lv: l2, outer }, i) => {
+        // the docks beyond the map never meet the map's own, nor (drawn in by city.js) each other, nor a road
+        if (outer || i === not || (lv && l2 !== lv)) return;
         const [x0, x1, z0, z1] = box[i];
         if (x < x0 - 5 || x > x1 + 5 || z < z0 - 5 || z > z1 + 5) return;
         rings.forEach((ring) => {
@@ -545,7 +546,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           const A = (yy) => [xa, yy, za], B = (yy) => [xb, yy, zb];
           const tone = 0.86 + 0.22 * (Math.sin(Math.floor(run / 14) * 12.9898 + di * 3.1 + ri) * 0.5 + 0.5);
           // where two pieces at the same level meet (a canal and its next stretch), the water runs on: no wall
-          if (edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
+          if (!outer && edgeD((xa + xb) / 2, (za + zb) / 2, di, lv) < 0.4) { run += L; acc = Math.max(acc - L, 12); continue; }
           if (outer) {
             if (d < OUT_WALL) quad2(A(y - 0.3), B(y - 0.3), B(0.07), A(0.07), g.copy(wetC).multiplyScalar(tone), g2.copy(face).multiplyScalar(tone), want);
             // boats moored along the quays of the larger docks and basins, one to three abreast, with gaps
@@ -585,7 +586,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     // the roads and railways that cross them: a deck at street level over the water, its fascia, and a brick
     // parapet on each side (the ground is cut away under them). Runs over the water from 3 to 70 m; longer ones are a
     // towpath drawn along the edge, not a crossing.
-    const wet = (x, z) => docks.some(({ rings }, i) => {
+    const wet = (x, z) => docks.some(({ rings, outer }, i) => {
+      if (outer) return false;
       const [x0, x1, z0, z1] = box[i];
       if (x < x0 || x > x1 || z < z0 || z > z1) return false;
       let ins = false;

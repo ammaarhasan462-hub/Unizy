@@ -1766,10 +1766,8 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       ctx.filter = 'blur(1.4px)';
       ctx.beginPath();
       // the river and the docks beyond the map (the outer city keeps off both; the clouds' ground shows them as water)
-      rv.forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
-      ctx.fill('evenodd');
-      ctx.beginPath();
-      outer.forEach(({ rings }) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
+      // (one path and one fill: each blurred fill costs a pass over the whole canvas; they never overlap)
+      [...rv, ...outer.map((d) => d.rings)].forEach((rings) => rings.forEach((rr) => rr.forEach(([x, z], i) => { const a = (x + RIVER_R) * rk, b = (z + RIVER_R) * rk; i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); })));
       ctx.fill('evenodd');
       ctx.filter = 'none';
       // a black border, so the clamped edge never smears water across the far ground
