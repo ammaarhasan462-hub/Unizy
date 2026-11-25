@@ -1,15 +1,19 @@
 // Homepage "try it" hero (Nov 2026): the first thing a visitor sees is a real exam-style question with an answer box.
-//   "Try it with a sample answer" shows a real marked result instantly (saved output of the marker on the answer below).
-//   "Mark my answer free" sends the visitor's own answer to the marker's guest_mark action (one free mark, no account).
+//   The box opens with a typical first-year answer filled in (heroSamples.js), so a visitor can press Mark straight away
+//   and watch it get marked live (the marker's guest_mark action, about 20 seconds; the result says how long it took).
+//   Marking the untouched sample doesn't use up the visitor's one free mark, and its result is kept on the device so
+//   pressing Mark again on it costs nothing. "Clear it and write your own" empties the box; their own answer is the
+//   free mark (no account), saved to their account after sign-up.
 // Also: find-your-module search over the full packs, trust lines, pricing line and a real weekly count of marked answers.
 // Plain JS (no React), mounted by mountStory() in story.js.
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+import { HERO_SAMPLES } from './heroSamples.js';
 const ARROW = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 
 // The hero question: UCL ECON0002 Economics, topic 1, exam-style (from module_questions).
 const Q = {
-  key: 'econ', label: 'Economics', code: 'ECON0002', title: 'Economics', uni: 'UCL', poss: 'UCL’s', sample: true,
+  key: 'econ', label: 'Economics', code: 'ECON0002', title: 'Economics', uni: 'UCL', poss: 'UCL’s', saved: true,
   id: '3072a41a-e40e-4f0b-9e63-46dbc46f9654',
   text: 'Real GDP per capita is widely used to compare living standards across countries and over time. Discuss its strengths and limitations as a measure of economic performance, and explain what additional measures are needed to capture inequality and stability.',
 };
@@ -19,33 +23,30 @@ const Q = {
 // opens the module's free quiz instead of a written answer. Hidden above 760px: laptops keep the Economics question.
 const SUBJECTS = [
   Q,
-  { key: 'law', label: 'Law', code: 'LAWS0001', title: 'Contract Law', uni: 'UCL', poss: 'UCL’s', id: '9bdf1efa-caa7-4aef-8908-8259dc6612f5',
-    text: 'Sunil agrees to pay Dana £5,000 to redecorate his flat. Halfway through, Dana says she has underestimated costs and will stop unless paid £6,000. Sunil agrees, but after completion pays only £5,000. Separately, Sunil earlier promised Dana\'s brother £500 as thanks for recommending Dana. Advise Dana on recovering the extra £1,000 and the £500.' },
+  { key: 'law', label: 'Law', code: 'LAWS0001', title: 'Contract Law', uni: 'UCL', poss: 'UCL’s', id: '11eb95ff-9c5d-4e97-8302-b7ea230e7000',
+    text: "On Monday Priya emails Omar: 'I will sell you my vintage bicycle for £400. Offer open until Friday.' On Wednesday Omar replies, 'Would you take £350?' Priya says no. On Thursday Omar emails 'I accept at £400', but Priya had sold the bicycle to Lena on Wednesday evening, and Omar learned this from a friend on Thursday morning. Advise Omar on whether a contract exists." },
   { key: 'med', label: 'Medicine', code: 'MBBS0015', title: 'Circulation and Breathing', uni: 'UCL', med: true, n: 270 },
-  { key: 'pol', label: 'Politics', code: 'POLS0006', title: 'Introduction to Politics', uni: 'UCL', poss: 'UCL’s', id: 'ad0f6f35-361f-429a-aefd-7e662c135e20',
-    text: '\'Electoral systems do not shape party systems; party systems shape electoral systems.\' Discuss.' },
-  { key: 'bus', label: 'Business', code: 'BUS281', title: 'Management and Organisational Behaviour', uni: 'Queen Mary', poss: 'Queen Mary’s', id: '36efbd9a-71d7-4ade-8e6d-f9f7faaff84d',
-    text: 'Critically evaluate the claim that effective leaders are born, not made.' },
-  { key: 'psych', label: 'Psychology', code: 'PSY215', title: 'Social Psychology', uni: 'Queen Mary', poss: 'Queen Mary’s', id: '824d7c58-e723-47ef-892c-61f44d338f2a',
-    text: 'Critically discuss explanations of why bystanders sometimes fail to help in emergencies.' },
-  { key: 'bio', label: 'Biomed', code: 'PHOL0001', title: 'Mammalian Physiology', uni: 'UCL', poss: 'UCL’s', id: '177be249-b8ca-4260-9871-12bebaee1d62',
-    text: 'Describe the structure and function of the autonomic nervous system, and explain how it controls heart rate and pupil diameter.' },
-  { key: 'eng', label: 'Engineering', code: 'ELEC40002', title: 'Analysis and Design of Circuits', uni: 'Imperial', poss: 'Imperial’s', id: '2a412223-a72f-4160-b4fb-56f4e2a97465',
-    text: 'A 5 V step is applied at t = 0 to a series R = 10 kΩ and C = 100 nF, with C initially uncharged. (a) Derive vC(t). (b) Find the time for vC to reach 4 V. (c) Calculate the energy stored in C and the energy dissipated in R by t → ∞. [10 marks]' },
-  { key: 'hist', label: 'History', code: 'HY116', title: 'International Politics since 1914', uni: 'LSE', poss: 'LSE’s', id: '5234a165-9ac8-4d6a-b1b2-fcd4b6ac173b',
-    text: 'Was appeasement a rational policy given the circumstances Britain faced in the 1930s?' },
-  { key: 'phil', label: 'Philosophy', code: 'PHIL0006', title: 'Introduction to Moral Philosophy', uni: 'UCL', poss: 'UCL’s', id: '0ad0956f-27c0-45cf-ad03-6205c0a1670f',
-    text: 'Explain Kant\'s claim that an action has moral worth only if done from duty. Is the claim plausible?' },
+  { key: 'pol', label: 'Politics', code: 'POLS0006', title: 'Introduction to Politics', uni: 'UCL', poss: 'UCL’s', id: 'f80a4a51-9364-4b79-b11c-96f77fa20a54',
+    text: "'Political science can tell us how the political world is, but never how it ought to be.' Discuss." },
+  { key: 'bus', label: 'Business', code: 'BUS281', title: 'Management and Organisational Behaviour', uni: 'Queen Mary', poss: 'Queen Mary’s', id: '862904da-6f16-4767-93fa-30c06a372d7a',
+    text: "'Classical management theories are outdated and have little relevance to contemporary organisations.' Discuss." },
+  { key: 'psych', label: 'Psychology', code: 'PSY215', title: 'Social Psychology', uni: 'Queen Mary', poss: 'Queen Mary’s', id: '77d3e6b8-b87c-46fa-adae-ec5be206c5ba',
+    text: "Evaluate the use of deception in social psychology experiments. Is it ever justified, and what are the methodological and ethical costs of using it?" },
+  { key: 'bio', label: 'Biomed', code: 'PHOL0001', title: 'Mammalian Physiology', uni: 'UCL', poss: 'UCL’s', id: 'e69f01dd-8c7d-45f0-abdb-97d328e1a0f0',
+    text: "(a) Explain why a red blood cell placed in 0.9% NaCl neither swells nor shrinks, whereas in pure water it lyses. [4] (b) Describe how the Na+/K+-ATPase helps maintain cell volume. [4] (c) Explain how the Na+-glucose cotransporter allows glucose to be absorbed against its concentration gradient. [4]" },
+  { key: 'eng', label: 'Engineering', code: 'ELEC40002', title: 'Analysis and Design of Circuits', uni: 'Imperial', poss: 'Imperial’s', id: 'c5515187-00d7-4994-9cb5-5f98947b4392',
+    text: "A 12 V ideal source feeds R1 = 4 kΩ in series with a parallel pair R2 = 6 kΩ and R3 = 12 kΩ. (a) Find the total resistance and source current. (b) Find the voltage across R2 and the current in R3. (c) Calculate the power dissipated in each resistor and confirm power balance. [10 marks]" },
+  { key: 'hist', label: 'History', code: 'HY116', title: 'International Politics since 1914', uni: 'LSE', poss: 'LSE’s', id: 'a277960e-8658-4d54-a76b-4781b739a918',
+    text: "'The First World War was caused by the failure of diplomacy in July 1914, not by long-term structural forces.' Discuss." },
+  { key: 'phil', label: 'Philosophy', code: 'PHIL0006', title: 'Introduction to Moral Philosophy', uni: 'UCL', poss: 'UCL’s', id: 'b6fc8673-8dfb-475b-820b-da1c867e1e54',
+    text: "'Reason alone is never a motive to action.' Explain Hume's argument for this claim and assess whether it succeeds." },
 ];
 const isPhone = () => typeof matchMedia === 'function' && matchMedia('(max-width: 760px)').matches;
+// the typical first-year answer for a subject's question (only if it was written for that exact question)
+const sampleOf = (s) => { const x = s && s.id && HERO_SAMPLES[s.code]; return x && s.id.indexOf(x.q) === 0 ? x.a : ''; };
 
-// A typical first-year answer and what the marker actually returned for it (16 Nov 2026, guest_mark, unedited apart from trimming).
-const SAMPLE_ANSWER = `Real GDP per capita measures the value of goods and services produced per person, adjusted for inflation, so it is useful for comparing countries and seeing how living standards change over time. It is widely available and calculated in a similar way across countries, which makes comparisons easier. A country with higher GDP per capita can usually afford better healthcare, education and infrastructure.
-
-However, GDP per capita has limitations. It is an average, so it does not show how income is distributed. A country could have high GDP per capita but most of the income goes to a small group of people. It also ignores things like unpaid work, leisure time and pollution, so a country could grow quickly while people are not actually better off. It also does not show how stable the economy is, for example whether growth is followed by a recession.
-
-To capture inequality we could use the Gini coefficient, and to capture stability we could look at unemployment and inflation. Overall GDP per capita is a good starting point but should be used alongside other measures.`;
-
+// What the marker returned for the Economics sample answer (16 Nov 2026, guest_mark, unedited apart from trimming).
+// Shown, labelled as a saved result, only if live marking can't run (free marking busy or the daily budget used up).
 const SAMPLE_RESULT = {
   class: '2:2', mark_low: 50, mark_high: 54,
   headline: 'A correct but very brief answer that names the right limitations and measures without explaining or evidencing any of them, so it sits in the 2:2 band.',
@@ -112,17 +113,19 @@ function questionBody(s, authed) {
   </div>
   <p class="th-fine">Imperial and Queen Mary medicine modules are on Unizy too.</p>`;
   }
+  // the box opens with the sample answer filled in (server-rendered too, so it's there before any script runs)
+  const smp = sampleOf(s);
   return `${head}
   <p class="th-q">${esc(s.text)}</p>
-  <label class="th-lab" for="th-ans">Your answer</label>
-  <textarea id="th-ans" class="th-ans" data-ans rows="6" placeholder="Write 150–200 words. Bullet points are fine."></textarea>
-  <div class="th-meta"><span data-wc>0 words · aim for 150–200</span><span class="th-saved">Saved on this device</span></div>
+  <label class="th-lab" for="th-ans">${smp ? 'A typical first-year answer' : 'Your answer'}</label>
+  <textarea id="th-ans" class="th-ans" data-ans rows="6" placeholder="Write 150–200 words. Bullet points are fine.">${esc(smp)}</textarea>
+  <div class="th-meta"><span data-wc>${smp ? 'Sample answer · press Mark to see it marked' : '0 words · aim for 150–200'}</span><span class="th-saved">Saved on this device</span></div>
   <div class="th-err" data-err role="status" hidden></div>
   <div class="th-btns">
-    <button type="button" class="uz-btn uz-btn-gold th-go" data-mark><span>Mark my answer free</span>${ARROW}</button>
-    ${s.sample ? '<button type="button" class="th-sample" data-sample>Or see it marked with a sample answer</button>' : ''}
+    <button type="button" class="uz-btn uz-btn-gold th-go" data-mark><span>${smp ? 'Mark this answer free' : 'Mark my answer free'}</span>${ARROW}</button>
+    ${smp ? '<button type="button" class="th-sample" data-swap>Clear it and write your own</button>' : ''}
   </div>
-  <p class="th-fine">No sign-up for your first marked answer. Exam practice only, never coursework.</p>`;
+  <p class="th-fine" data-fine>${smp ? 'Watch it get marked live in about 20 seconds, then try your own. No sign-up. Exam practice only, never coursework.' : 'No sign-up for your first marked answer. Exam practice only, never coursework.'}</p>`;
 }
 const questionCard = (s, authed) => `${subjRow(s.key)}<div data-qbody>${questionBody(s, authed)}</div>`;
 
@@ -135,8 +138,8 @@ export const TRY_HTML = `
         <button type="button" class="th-replay" data-replay-intro aria-label="Replay the intro"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.8v8.4L10 6z"/></svg>Replay intro</button>
       </div>
       <h1 class="th-h">The mark scheme your uni never&nbsp;gave&nbsp;you.</h1>
-      <p class="th-subm">Answer one real exam question. See <b>your class</b> and <b>the sentences that lost marks</b> in about 20 seconds.</p>
-      <p class="th-sub">Answer a real exam-style question. In about 20 seconds you’ll see <b>your class</b>, <b>the exact sentences that lost marks</b>, and <b>3 changes to go up a class</b>, marked against your uni’s grade bands.</p>
+      <p class="th-subm">Watch an exam answer get marked in 20 seconds: <b>its class</b> and <b>where it lost marks</b>.</p>
+      <p class="th-sub">Mark the sample answer, or write your own. In about 20 seconds you’ll see <b>the class</b>, <b>the exact sentences that lost marks</b>, and <b>3 changes to go up a class</b>, marked against your uni’s grade bands.</p>
     </div>
     <div class="th-card" id="mark" data-card aria-live="polite">${questionCard(Q)}</div>
     <div class="th-extra">
@@ -181,7 +184,10 @@ function annotate(answer, lost) {
 const NEXTCLS = { Fail: 'a Third', Third: 'a 2:2', '2:2': 'a 2:1', '2:1': 'a First', First: 'a high First' };
 function saveHtml(kind, r) {
   let head, perks;
-  if (kind === 'limit') {
+  if (kind === 'busy') {
+    head = 'Free marking is busy right now';
+    perks = ['Sign up free and get 3 marked answers a day for 3 days', 'Then 1 free marked answer every week, and a plan for your weakest topics every Monday', 'No password and no card'];
+  } else if (kind === 'limit') {
     head = 'Keep practising, free';
     perks = ['You’ve used your free marked answer. Sign up and get 3 marked answers a day for 3 days', 'Then 1 free marked answer every week, and a plan for your weakest topics every Monday', 'Your answer is kept, ready to mark'];
   } else {
@@ -194,7 +200,7 @@ function saveHtml(kind, r) {
     <b class="th-savehead">${esc(head)}</b>
     ${compact ? '' : `<ul class="th-perks">${perks.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>`}
     <div class="th-saverow"><input type="email" name="email" autocomplete="email" inputmode="email" placeholder="Personal or uni email" aria-label="Your email" required>
-      <button type="submit" class="uz-btn uz-btn-gold"><span>${kind === 'limit' ? 'Keep practising, free' : 'Save my grade, free'}</span>${ARROW}</button></div>
+      <button type="submit" class="uz-btn uz-btn-gold"><span>${kind === 'limit' ? 'Keep practising, free' : kind === 'busy' ? 'Sign up free' : 'Save my grade, free'}</span>${ARROW}</button></div>
     <p class="th-saveerr" hidden></p>
     <p class="th-savefine">Takes 20 seconds: we email you a code, no password and no card.</p>
   </form>`;
@@ -207,8 +213,8 @@ function resultHtml(r, answer, opts) {
   const ccls = { First: 'c1', '1st': 'c1', '2:1': 'c21', '2:2': 'c22', Third: 'c3' }[r.class] || 'c22';
   return `
   <div class="th-rhead">
-    ${opts.sample ? '<span class="th-tag">Sample answer · real marking</span>' : '<span class="th-tag">Your answer</span>'}
-    <button type="button" class="th-back" data-back>← ${opts.sample ? 'Try your own' : 'Back to the question'}</button>
+    <span class="th-tag">${opts.sample ? 'Sample' : 'Your answer'}${opts.secs ? ` · marked in ${opts.secs} s` : opts.saved ? ' · saved marking' : ''}</span>
+    <button type="button" class="th-back" ${opts.sample ? 'data-own' : 'data-back'}>← ${opts.sample ? 'Try your own' : 'Back to the question'}</button>
   </div>
   <div class="th-grade"><span class="th-cls ${ccls}">${cls}</span><div><b>${range}</b><small>predicted mark range · ${esc(q.poss)} grade bands</small></div></div>
   <p class="th-headline">${esc(r.headline || '')}</p>
@@ -222,11 +228,13 @@ function resultHtml(r, answer, opts) {
   </div>
   <div class="th-cta">
     ${opts.sample
-      ? `<button type="button" class="uz-btn uz-btn-gold" data-back><span>Now mark my own answer free</span>${ARROW}</button>
-         <a class="th-link" href="/modules/${Q.code}?q=start" data-track-local="hero_find_open">Or practise on your own module</a>`
+      ? `<button type="button" class="uz-btn uz-btn-gold" data-own><span>Now mark my own answer free</span>${ARROW}</button>
+         <a class="th-link" href="/modules/${q.code}?q=start" data-track-local="hero_find_open">Or practise on your own module</a>`
       : saveHtml('end', r)}
   </div>
-  <p class="th-fine">${opts.sample ? 'This is real output from the Unizy marker for the sample answer, trimmed to fit.' : 'A practice estimate, not an official mark. Saved to your account when you sign up (email only, no card).'}</p>`;
+  <p class="th-fine">${opts.sample
+    ? (opts.saved ? 'Free marking is busy right now, so this is the marker’s saved result for this answer, trimmed to fit.' : 'Marked live by the Unizy marker, trimmed to fit. Your own answer is marked the same way, and your first one is free.')
+    : 'A practice estimate, not an official mark. Saved to your account when you sign up (email only, no card).'}</p>`;
 }
 
 export function mountTry(root, opts = {}) {
@@ -237,7 +245,10 @@ export function mountTry(root, opts = {}) {
   const offs = [];
   const on = (el, ev, fn, o) => { if (!el) return; el.addEventListener(ev, fn, o); offs.push(() => el.removeEventListener(ev, fn, o)); };
   const GKEY = 'unizy:guestmark', CKEY = 'unizy:guestclaim', SKEY = 'unizy:herosubj';
-  const ls = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const ls = { get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }, del: (k) => { try { localStorage.removeItem(k); } catch (e) {} } };
+  // the sample's live result is kept on the device, so pressing Mark on the same sample again shows it without a new call
+  const RKEY = (s) => 'unizy:herosample:' + s.code + ':' + String(s.id).slice(0, 8);
+  const isSample = () => { const ta = card.querySelector('[data-ans]'), smp = sampleOf(cur); return !!(ta && smp && ta.value.trim() === smp.trim()); };
   let busy = false, typedOnce = false, subjTracked = false;
   // the subject picked on a phone (remembered); laptops always show the Economics question
   let cur = (isPhone() && SUBJECTS.find((s) => s.key === ls.get(SKEY))) || Q;
@@ -247,11 +258,12 @@ export function mountTry(root, opts = {}) {
   function fillBody() {
     const ta = card.querySelector('[data-ans]');
     if (ta) {
-      ta.value = ls.get(dkey()) || '';
+      // a saved draft wins over the sample, even an empty one (after "Clear it and write your own")
+      const d = ls.get(dkey());
+      ta.value = d !== null ? d : sampleOf(cur);
       if (isPhone()) ta.placeholder = 'A short paragraph is enough (40+ words). Longer answers can score higher.';
     }
     updateWc();
-    if (opts.authed) { const b = card.querySelector('[data-mark] span'); if (b) b.textContent = 'Mark it in my dashboard'; }
   }
   // keep the picked subject in view in the sideways-scrolling chip row (without moving the page)
   function centreChip() {
@@ -272,9 +284,17 @@ export function mountTry(root, opts = {}) {
     const body = card.querySelector('[data-qbody]'); if (body) body.innerHTML = questionBody(cur, opts.authed);
     fillBody(); centreChip();
   }
+  // the label, counter, button and swap link follow what's in the box: the untouched sample, or the visitor's own answer
   function updateWc() {
     const ta = card.querySelector('[data-ans]'), wc = card.querySelector('[data-wc]'); if (!ta || !wc) return;
-    const n = words(ta.value);
+    const n = words(ta.value), smp = sampleOf(cur), sample = isSample();
+    const lab = card.querySelector('label[for="th-ans"]'), b = card.querySelector('[data-mark] span'), sw = card.querySelector('[data-swap]'), fine = card.querySelector('[data-fine]');
+    if (lab) lab.textContent = sample ? 'A typical first-year answer' : 'Your answer';
+    if (b) b.textContent = opts.authed ? 'Mark it in my dashboard' : sample ? 'Mark this answer free' : 'Mark my answer free';
+    if (sw) sw.textContent = sample ? 'Clear it and write your own' : 'Put the sample answer back';
+    if (fine && smp) fine.textContent = sample ? 'Watch it get marked live in about 20 seconds, then try your own. No sign-up. Exam practice only, never coursework.' : 'No sign-up for your first marked answer. Exam practice only, never coursework.';
+    const sv = card.querySelector('.th-saved'); if (sv) sv.hidden = sample;
+    if (sample) { wc.textContent = `Sample answer · ${n} words`; wc.classList.remove('ok'); return; }
     wc.textContent = isPhone()
       ? `${n} word${n === 1 ? '' : 's'} · ${n < 40 ? `${40 - n} more to mark it` : 'ready to mark'}`
       : `${n} word${n === 1 ? '' : 's'} · ${n < 40 ? 'aim for 150–200' : n <= 260 ? 'good length' : 'longer is fine too'}`;
@@ -306,8 +326,8 @@ export function mountTry(root, opts = {}) {
     track(kind === 'limit' ? 'guest_limit_email' : 'hero_save_email');
     location.href = `/signup?send=1&email=${encodeURIComponent(em)}&next=${encodeURIComponent(next)}`;
   });
-  function showResult(r, answer, sample, q) {
-    card.innerHTML = resultHtml(r, answer, { sample, q: q || Q });
+  function showResult(r, answer, sample, q, extra) {
+    card.innerHTML = resultHtml(r, answer, Object.assign({ sample, q: q || Q }, extra || {}));
     card.classList.add('res');
     if (innerWidth <= 900) card.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
@@ -322,7 +342,13 @@ export function mountTry(root, opts = {}) {
     if (t.hasAttribute('data-subj')) { setSubject(t.getAttribute('data-subj')); return; }
     if (t.hasAttribute('data-med')) { track('hero_med_open'); return; }
     if (t.hasAttribute('data-med-find')) { track('hero_find_open'); return; }
-    if (t.hasAttribute('data-sample')) { track('hero_sample'); showResult(SAMPLE_RESULT, SAMPLE_ANSWER, true); return; }
+    if (t.hasAttribute('data-swap')) {
+      const ta = card.querySelector('[data-ans]'); if (!ta) return;
+      if (isSample()) { ta.value = ''; ls.set(dkey(), ''); track('hero_sample_clear'); ta.focus(); } else { ta.value = sampleOf(cur); ls.del(dkey()); }
+      err(''); updateWc(); return;
+    }
+    // "Try your own" from a marked sample: back to the question with an empty box, ready to type
+    if (t.hasAttribute('data-own')) { card.classList.remove('res'); ls.set(dkey(), ''); showQuestion(true); return; }
     if (t.hasAttribute('data-back')) { card.classList.remove('res'); showQuestion(true); return; }
     if (t.hasAttribute('data-save')) { track('hero_save'); return; }
     if (t.dataset.trackLocal) { track(t.dataset.trackLocal); return; }
@@ -331,13 +357,17 @@ export function mountTry(root, opts = {}) {
 
   function submit() {
     if (busy || cur.med) return;
-    const q = cur, ta = card.querySelector('[data-ans]'), answer = (ta.value || '').trim();
+    const q = cur, ta = card.querySelector('[data-ans]'), answer = (ta.value || '').trim(), sample = isSample();
     if (opts.authed) { location.href = `/dashboard/practice/${q.code}?q=${q.id}&v=answer`; return; }
     if (words(answer) < 40) { err('Write a bit more first: at least a short paragraph (40+ words), ideally 150–200.'); ta.focus(); return; }
-    if (ls.get(GKEY)) { limit(); return; }
+    if (sample) {
+      // the sample doesn't use up the visitor's free mark; marked once on this device, its result comes straight back
+      track('hero_sample_mark');
+      try { const k = JSON.parse(ls.get(RKEY(q)) || 'null'); if (k && k.r) { showResult(k.r, answer, true, q, { secs: k.secs }); return; } } catch (x) { /* ignore */ }
+    } else if (ls.get(GKEY)) { limit(); return; }
     busy = true; err('');
     const btn = card.querySelector('[data-mark]'); btn.disabled = true;
-    const steps = ['Reading your answer…', `Checking it against ${q.poss} grade bands…`, 'Comparing it with the 2:1 and First descriptors…', 'Finding the sentences that cost marks…', 'Working out your 3 changes…', 'Nearly there…'];
+    const steps = [sample ? 'Reading the answer…' : 'Reading your answer…', `Checking it against ${q.poss} grade bands…`, 'Comparing it with the 2:1 and First descriptors…', 'Finding the sentences that cost marks…', 'Working out your 3 changes…', 'Nearly there…'];
     const t0 = Date.now(), paint = () => { btn.innerHTML = '<span class="th-spin"></span><span>' + steps[Math.min(steps.length - 1, Math.floor((Date.now() - t0) / 5000))] + '</span>'; };
     paint(); const tick = setInterval(() => { if (!btn.isConnected || !btn.disabled) { clearInterval(tick); return; } paint(); }, 1000);
     track('hero_mark_submit');
@@ -347,19 +377,43 @@ export function mountTry(root, opts = {}) {
     }).then((r) => r.json().catch(() => ({})).then((b) => ({ ok: r.ok, b })))
       .then(({ ok, b }) => {
         busy = false;
+        const secs = Math.max(1, Math.round((Date.now() - t0) / 1000));
         if (!ok) {
-          if (b.code === 'guest_used') ls.set(GKEY, 'used');
-          track('hero_mark_fail'); btn.disabled = false; btn.innerHTML = `<span>Mark my answer free</span>${ARROW}`;
+          if (b.code === 'guest_used' && !sample) ls.set(GKEY, 'used');
+          track('hero_mark_fail'); btn.disabled = false; btn.innerHTML = `<span>${sample ? 'Mark this answer free' : 'Mark my answer free'}</span>${ARROW}`;
+          if (sample) { failSample(q, answer, b.code === 'guest_used' || b.code === 'guest_busy', b.message); return; }
           if (b.code === 'guest_used' || b.code === 'guest_busy') { limit(); return; }
           err(b.message || 'Something went wrong. Try again.');
           return;
         }
+        track('hero_mark_done');
+        if (sample) {
+          ls.set(RKEY(q), JSON.stringify({ secs, r: { class: b.class, mark_low: b.mark_low, mark_high: b.mark_high, headline: b.headline, lost: b.lost, changes: b.changes } }));
+          showResult(b, answer, true, q, { secs });
+          return;
+        }
         ls.set(GKEY, 'used');
         if (b.claim && b.claim_sig) ls.set(CKEY, JSON.stringify({ code: q.code, claim: b.claim, claim_sig: b.claim_sig }));
-        track('hero_mark_done');
-        showResult(b, answer, false, q);
+        showResult(b, answer, false, q, { secs });
       })
-      .catch(() => { busy = false; track('hero_mark_fail'); btn.disabled = false; btn.innerHTML = `<span>Mark my answer free</span>${ARROW}`; err('Couldn’t reach the marker. Check your connection and try again.'); });
+      .catch(() => {
+        busy = false; track('hero_mark_fail'); btn.disabled = false; btn.innerHTML = `<span>${sample ? 'Mark this answer free' : 'Mark my answer free'}</span>${ARROW}`;
+        if (sample) { failSample(q, answer, false, null); return; }
+        err('Couldn’t reach the marker. Check your connection and try again.');
+      });
+  }
+  // the sample couldn't be marked live: Economics has a saved real result to show instead (labelled as saved); otherwise,
+  // when free marking is full for today on their network, offer sign-up (their own free mark is never counted as used)
+  function failSample(q, answer, full, msg) {
+    if (q.saved) { showResult(SAMPLE_RESULT, answer, true, q, { saved: true }); return; }
+    if (full) {
+      const e = card.querySelector('[data-err]'); if (!e) return;
+      track('hero_limit_seen');
+      e.hidden = false; e.classList.add('th-limitbox'); e.innerHTML = saveHtml('busy');
+      e.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return;
+    }
+    err(msg || 'Couldn’t reach the marker. Check your connection and try again.');
   }
 
   // find your module
