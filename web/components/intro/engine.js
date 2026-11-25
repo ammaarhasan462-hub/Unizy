@@ -224,7 +224,9 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
             const seen = new Set();
             ucl.lib.traverse((o) => {
               const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
-              ms.forEach((m) => { if (!seen.has(m) && 'envMap' in m && !m.isShaderMaterial) { seen.add(m); m.envMap = intEnv; m.envMapIntensity = 0.42; m.needsUpdate = true; } });
+              // lit materials only: the unlit ones (bulbs, flames, light shafts) would be multiplied by the reflection,
+              // dimmed and tinted, and each would compile a second program mid-scroll
+              ms.forEach((m) => { if (!seen.has(m) && 'envMap' in m && !m.isShaderMaterial && !m.isMeshBasicMaterial) { seen.add(m); m.envMap = intEnv; m.envMapIntensity = 0.42; m.needsUpdate = true; } });
             });
           }
           renderer.shadowMap.needsUpdate = true;
@@ -413,7 +415,10 @@ export function createIntro(canvas, { mobile = false, onFrame, hold = false, uni
     renderer.shadowMap.needsUpdate = true;
     startRealism();
   };
-  try { renderer.compile(cloudScene, quadCam); } catch (e) {}
+  // the clouds are only ever drawn into cloudRT: compile them for it (against the screen, it was a second program of
+  // the heaviest shader, compiled before the picker and never used)
+  try { renderer.setRenderTarget(cloudRT); renderer.compile(cloudScene, quadCam); } catch (e) {}
+  renderer.setRenderTarget(null);
   if (!streamed) {
     mergeCampus();
     scene.add(london.group, ucl.group);
