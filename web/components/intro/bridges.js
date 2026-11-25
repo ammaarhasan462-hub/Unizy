@@ -360,7 +360,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
   // ---------------------------------------------------------------- the river walls, the Embankment, the boats
   function riverside() {
     const TOP = 0.95, TIDE = water + 2.3, LIP = 0.6;
-    const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 3000 : 4500;
+    const NEAR = mobile ? 1500 : 2600, BOATS = mobile ? 2700 : 4000;
     const granite = new THREE.Color('#8f8b82'), wet = new THREE.Color('#47463d'), coping = new THREE.Color('#aaa69c'), farWall = new THREE.Color('#77736a');
     const lampPost = new THREE.Color('#1e2724');
     // is (x, z) under or beside a bridge (the walls drop their parapet there, lamps and boats keep clear)?
@@ -525,7 +525,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     };
     // the docks beyond the map (outer): their walls only out to OUT_WALL (a 1.7 m wall is under a pixel tall beyond),
     // and pleasure cruisers, houseboats and lighters moored along their quays out to OUT_BOATS
-    const OUT_WALL = mobile ? 1800 : 2600, OUT_BOATS = mobile ? 2200 : 3600, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
+    const OUT_WALL = mobile ? 1600 : 2200, OUT_BOATS = mobile ? 2000 : 3000, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
     docks.forEach(({ rings, y, lv, outer }, di) => {
       const big = Math.abs(area(rings[0])) > 1500;
       let dacc = outer ? 10 + rnd() * 40 : 0;
