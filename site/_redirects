@@ -404,9 +404,9 @@
 # Short links for bios, posts and posters: the home page counts each source (src_<name>) as an anonymous daily total.
 /tiktok  /?ref=tiktok  302
 /tt  /?ref=tiktok  302
-/ig  /?ref=instagram  302
-/insta  /?ref=instagram  302
-/instagram  /?ref=instagram  302
+/ig  /?ref=instagram#mark  302
+/insta  /?ref=instagram#mark  302
+/instagram  /?ref=instagram#mark  302
 /snap  /?ref=snapchat  302
 /wa  /?ref=whatsapp  302
 /whatsapp  /?ref=whatsapp  302

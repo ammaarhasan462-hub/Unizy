@@ -205,3 +205,9 @@ html:not(.can-intro) [data-replay-intro] { display: none !important; }
 /* while the 3D intro covers the screen, the page under it is not painted, so its animations and layers cost the
    intro nothing; Intro.jsx adds .intro-out as the intro starts to fade, so the page is there to fade onto */
 html.intro-live:not(.intro-out) body > :not(#intro-root) { visibility: hidden; }
+
+/* phones: once the page scrolls, the university tabs tuck away so they don't float over the answer box and its
+   Mark button (they're back as soon as you return to the top). UniTabs.jsx sets .is-compact when scrolled. */
+@media (max-width: 760px) {
+  .uz-tabs.is-compact { opacity: 0; visibility: hidden; pointer-events: none; translate: 0 -10px; }
+}
