@@ -376,7 +376,7 @@ def outer_docks(fr):
         if not is_dock(t) or 'building' in t:
             continue
         for outer, inners in rings_of(el, fr):
-            o = clean_ring(outer, 2.0)
+            o = clean_ring(outer, 5.0)
             if not o or len(o) < 3 or abs(area(o)) < 2500:
                 continue
             xs, zs = [p[0] for p in o], [p[1] for p in o]
@@ -393,7 +393,7 @@ def outer_docks(fr):
             seen.add(key)
             hs = []
             for hr in inners:
-                hh = clean_ring(hr, 2.0)
+                hh = clean_ring(hr, 5.0)
                 if hh and len(hh) >= 3 and abs(area(hh)) > 200:
                     hs.append(hh)
             polys.append((o, hs))
