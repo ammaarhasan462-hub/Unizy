@@ -1211,9 +1211,21 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // Clear of the river and of each other, else left out.
   let outer = [];
   {
+    // each outline drawn in by m metres over its water, so docks that meet edge to edge (Millwall's inner and outer
+    // docks, the Royal Victoria and its basin) keep a quay between them, and the far ground's holes never touch
+    const drawIn = (ring, ri, m) => {
+      const n = ring.length, sg = (ringArea(ring) > 0 ? 1 : -1) * (ri === 0 ? 1 : -1);
+      const wn = ring.map(([xa, za], i) => { const [xb, zb] = ring[(i + 1) % n], L = Math.hypot(xb - xa, zb - za) || 1; return [(-(zb - za) / L) * sg, ((xb - xa) / L) * sg]; });
+      return ring.map(([x, z], i) => {
+        const [ax, az] = wn[(i + n - 1) % n], [bx, bz] = wn[i];
+        let mx = ax + bx, mz = az + bz; const l = Math.hypot(mx, mz) || 1; mx /= l; mz /= l;
+        const k = Math.min(2, 1 / Math.max(0.5, mx * bx + mz * bz));
+        return [x + mx * m * k, z + mz * m * k];
+      });
+    };
     const cand = [];
     (data.od || []).forEach((p) => {
-      const rings = p.map(dec).filter((r2) => r2.length >= 3);
+      const rings = p.map(dec).filter((r2) => r2.length >= 3).map((r2, ri) => drawIn(r2, ri, 1.5));
       if (!rings.length || rings[0].some(([x, z], i) => i % 2 === 0 && onRiver(x, z, 3))) return;
       let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
       rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); });
@@ -1227,7 +1239,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
       // any touching or overlapping another kept one (its vertices within, or the other's within it) is left out:
       // the far ground's holes must not meet
       const near = (o) => d.bb[0] < o.bb[1] + 4 && d.bb[1] > o.bb[0] - 4 && d.bb[2] < o.bb[3] + 4 && d.bb[3] > o.bb[2] - 4;
-      const meets = (o) => near(o) && (d.rings[0].some(([x, z]) => inR(o.rings[0], x, z)) || o.rings[0].some(([x, z]) => inR(d.rings[0], x, z)) || d.rings[0].some(([x, z]) => o.rings[0].some(([u, v]) => Math.hypot(x - u, z - v) < 3)));
+      const meets = (o) => near(o) && (d.rings[0].some(([x, z]) => inR(o.rings[0], x, z)) || o.rings[0].some(([x, z]) => inR(d.rings[0], x, z)) || d.rings[0].some(([x, z]) => o.rings[0].some(([u, v]) => Math.hypot(x - u, z - v) < 1.2)));
       if (!outer.some(meets)) outer.push(d);
     });
     if (cand.length) dockLog.push(`outer ${outer.length} of ${cand.length}`);
