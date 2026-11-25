@@ -21,10 +21,10 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
- "shop_points": 5024,
+ "shop_points": 5017,
  "shopfronts": [
-  2300,
-  1575,
+  2302,
+  1573,
   500,
   387,
   220
@@ -44,10 +44,10 @@
  },
  "fronts": [
   6154,
-  479,
-  3918
+  478,
+  3919
  ],
- "shopfront_fill": 553,
+ "shopfront_fill": 554,
  "skyline": 1716,
  "river_polys": 10,
  "docks": 4,
@@ -84,7 +84,7 @@
    2634.4
   ]
  },
- "bytes": 2745597,
+ "bytes": 2745596,
  "wilkins": {
   "x": [
    -71.1,
@@ -194,9 +194,9 @@
  "areas": 1259,
  "rails": 94,
  "trees": 2831,
- "shop_points": 2981,
+ "shop_points": 2980,
  "shopfronts": [
-  904,
+  903,
   415,
   147,
   165,
@@ -217,8 +217,8 @@
  },
  "fronts": [
   8789,
-  896,
-  2437
+  897,
+  2436
  ],
  "shopfront_fill": 152,
  "skyline": 1771,
@@ -262,7 +262,7 @@
    6692.8
   ]
  },
- "bytes": 2312689,
+ "bytes": 2312681,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -364,52 +364,52 @@
 }
 {
  "site": "qmul",
- "buildings": 10517,
+ "buildings": 10493,
  "heights": {
   "h": 95,
-  "lv": 5778,
-  "guess": 409,
-  "lidar": 4235
+  "lv": 5761,
+  "guess": 401,
+  "lidar": 4236
  },
  "styles": {
-  "stock": 6685,
+  "stock": 6678,
   "church": 74,
-  "concrete": 650,
+  "concrete": 649,
   "stone": 123,
-  "redbrick": 2124,
+  "redbrick": 2125,
   "glass": 219,
-  "stucco": 135,
-  "shed": 507
+  "stucco": 136,
+  "shed": 489
  },
- "roads": 12644,
- "areas": 4332,
+ "roads": 12639,
+ "areas": 4334,
  "rails": 286,
  "trees": 2485,
- "shop_points": 1121,
+ "shop_points": 1109,
  "shopfronts": [
-  624,
-  311,
+  617,
+  309,
   111,
   127,
   35
  ],
  "eras": [
-  2013,
+  1995,
   167,
-  7630,
+  7623,
   54,
-  653
+  654
  ],
  "era_by": {
   "own": 31,
-  "street": 2418,
+  "street": 2415,
   "neighbours": 18,
-  "type": 7199
+  "type": 7196
  },
  "fronts": [
   1042,
-  7693,
-  1199
+  7689,
+  1196
  ],
  "shopfront_fill": 105,
  "skyline": 1732,
@@ -451,7 +451,7 @@
    -2743.8
   ]
  },
- "bytes": 2449383,
+ "bytes": 2448230,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -473,54 +473,54 @@
 }
 {
  "site": "lse",
- "buildings": 13547,
+ "buildings": 13551,
  "heights": {
-  "h": 1982,
-  "lv": 6820,
+  "h": 1980,
+  "lv": 6818,
   "guess": 221,
-  "lidar": 4524
+  "lidar": 4532
  },
  "styles": {
   "church": 156,
   "glass": 987,
-  "concrete": 1071,
-  "stock": 7112,
-  "stone": 1340,
+  "concrete": 1072,
+  "stock": 7114,
+  "stone": 1341,
   "redbrick": 1378,
-  "stucco": 1105,
-  "shed": 398
+  "stucco": 1106,
+  "shed": 397
  },
- "roads": 22177,
+ "roads": 22173,
  "areas": 2127,
  "rails": 350,
- "trees": 6275,
- "shop_points": 4974,
+ "trees": 6274,
+ "shop_points": 4970,
  "shopfronts": [
-  1684,
+  1687,
   1607,
-  593,
+  592,
   410,
   203
  ],
  "eras": [
   3975,
   6325,
-  1588,
-  791,
+  1591,
+  792,
   868
  ],
  "era_by": {
   "own": 1157,
-  "street": 2736,
+  "street": 2740,
   "neighbours": 455,
   "type": 7476
  },
  "fronts": [
-  4800,
-  404,
-  3303
+  4799,
+  403,
+  3304
  ],
- "shopfront_fill": 464,
+ "shopfront_fill": 465,
  "skyline": 1487,
  "river_polys": 10,
  "docks": 1,
@@ -558,7 +558,7 @@
    2509.8
   ]
  },
- "bytes": 3067294,
+ "bytes": 3067652,
  "anchor": [
   "Old Building",
   51.51432,
@@ -640,54 +640,54 @@
 }
 {
  "site": "kcl",
- "buildings": 13428,
+ "buildings": 13433,
  "heights": {
-  "h": 2312,
-  "lv": 6286,
-  "guess": 223,
-  "lidar": 4607
+  "h": 2310,
+  "lv": 6289,
+  "guess": 222,
+  "lidar": 4612
  },
  "styles": {
   "church": 283,
   "glass": 1061,
-  "concrete": 1114,
-  "stock": 6633,
-  "stucco": 1134,
+  "concrete": 1115,
+  "stock": 6636,
+  "stucco": 1135,
   "redbrick": 1360,
-  "stone": 1449,
-  "shed": 394
+  "stone": 1450,
+  "shed": 393
  },
- "roads": 21100,
+ "roads": 21093,
  "areas": 1977,
  "rails": 408,
- "trees": 6489,
- "shop_points": 4974,
+ "trees": 6488,
+ "shop_points": 4970,
  "shopfronts": [
-  1577,
-  1555,
-  573,
+  1580,
+  1556,
+  572,
   389,
   201
  ],
  "eras": [
   4213,
-  5919,
-  1540,
-  863,
+  5920,
+  1543,
+  864,
   893
  ],
  "era_by": {
   "own": 1259,
-  "street": 2542,
+  "street": 2546,
   "neighbours": 547,
-  "type": 7142
+  "type": 7143
  },
  "fronts": [
-  4365,
-  355,
-  3115
+  4364,
+  354,
+  3117
  ],
- "shopfront_fill": 442,
+ "shopfront_fill": 443,
  "skyline": 1444,
  "river_polys": 10,
  "docks": 0,
@@ -725,7 +725,7 @@
    2476.0
   ]
  },
- "bytes": 3008909,
+ "bytes": 3009215,
  "anchor": [
   "King's Building",
   51.51153,
