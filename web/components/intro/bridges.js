@@ -553,7 +553,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
               while (dacc < L) {
                 const t = dacc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
                 dacc += 45 + rnd() * 60;
-                if (L < 14 || rnd() > (mobile ? 0.3 : 0.45)) continue;
+                if (L < 14 || rnd() > (mobile ? 0.25 : 0.36)) continue;
                 const kind = DOCK_KIND[Math.floor(rnd() * DOCK_KIND.length)], u = rnd() < 0.5 ? [ux, uz] : [-ux, -uz];
                 let off = 1.0;
                 const nb = kind === 'cruiser' ? 1 : 1 + Math.floor(rnd() * 2);

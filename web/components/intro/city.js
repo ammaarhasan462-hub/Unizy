@@ -1095,7 +1095,38 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // the river (the Thames and the Lea as mapped, out to RIVER_R) runs WL metres below the streets, between granite
   // walls. Where it crosses the map, the map's ground has it cut out of its texture's alpha; beyond the map, it is cut
   // out of the far ground (farGeo, which the callers draw). If that cut fails, the river stays flush as before.
-  const rv = (data.rv || []).map((p) => p.map(dec));
+  // beyond FAR_RV metres the outline is thinned to RV_EPS (Douglas-Peucker on each run of far points; near points and
+  // the runs' ends stay): under a pixel there, and a third to a half fewer points in the far ground's triangulation,
+  // the water and the walls. If the far ground cannot be cut round the thinned outline, the full one is used.
+  const FAR_RV = 4000, RV_EPS = 7;
+  const thin = (ring) => {
+    const far = ring.map(([x, z]) => Math.hypot(x, z) > FAR_RV);
+    if (!far.some(Boolean) || far.every(Boolean) && ring.length < 12) return ring;
+    const dp = (pts) => {
+      if (pts.length < 3) return pts;
+      const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+      const st = [[0, pts.length - 1]];
+      while (st.length) {
+        const [a, b] = st.pop(); const [xa, za] = pts[a], [xb, zb] = pts[b]; const dx = xb - xa, dz = zb - za, L = Math.hypot(dx, dz) || 1;
+        let m = 0, mi = -1;
+        for (let i = a + 1; i < b; i++) { const d = Math.abs((pts[i][0] - xa) * dz - (pts[i][1] - za) * dx) / L; if (d > m) { m = d; mi = i; } }
+        if (m > RV_EPS) { keep[mi] = 1; st.push([a, mi], [mi, b]); }
+      }
+      return pts.filter((_, i) => keep[i]);
+    };
+    // start the walk at a near point, so every far run is contiguous (a ring wholly far is thinned from its first point)
+    const n = ring.length, s0 = Math.max(0, far.indexOf(false));
+    const out = []; let run = [];
+    for (let k = 0; k <= n; k++) {
+      const i = (s0 + k) % n;
+      if (k < n && far[i]) { run.push(ring[i]); continue; }
+      if (run.length) { out.push(...dp(run)); run = []; }
+      if (k < n) out.push(ring[i]);
+    }
+    return out.length >= 3 && Math.abs(ringArea(out)) > Math.abs(ringArea(ring)) * 0.9 ? out : ring;
+  };
+  const rvFull = (data.rv || []).map((p) => p.map(dec));
+  let rv = rvFull.map((rings) => rings.map(thin));
   // is (x, z) on the river as mapped, or within m metres of its bank? (exact, for the map's own water areas)
   const rvBox = rv.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
   const onRiver = (x, z, m) => rv.some((rings, i) => {
@@ -1257,6 +1288,13 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     const tries = od.length ? [...base.slice(0, -1).map((t) => [...t, ...od]), ...base] : base;
     for (let i = 0; i < tries.length && !farGeo; i++) {
       farGeo = planeCut(30000, tries[i]);
+      // the thinned river would not cut even alone: start again with its full outline
+      if (!farGeo && i === tries.length - 1 && rv !== rvFull) {
+        const k = rv; rv = rvFull;
+        tries.forEach((t) => t.forEach((h, j) => { const at = k.indexOf(h); if (at >= 0) t[j] = rvFull[at]; }));
+        i = -1;
+        dockLog.push('river unthinned');
+      }
       if (farGeo && od.length && i >= base.length - 1) outer = [];
       // if only the river alone would cut, the docks stay at street level
       if (farGeo && i === tries.length - 1) docks = [];
