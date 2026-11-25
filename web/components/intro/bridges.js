@@ -411,8 +411,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
           quad(A(TIDE), B(TIDE), B(TOP), A(TOP), g.copy(granite).multiplyScalar(tone), want);
           quad(A(water - 0.3), B(water - 0.3), B(TIDE), A(TIDE), g.copy(wet).multiplyScalar(0.9 + (tone - 0.9) * 0.6), want);
           quad([oax, 0, oaz], [obx, 0, obz], [obx, TOP, obz], [oax, TOP, oaz], g.copy(granite).multiplyScalar(tone * 0.92), [-wx, 0, -wz]);
-        } else if (d < 6500) quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
-        // beyond 6.5 km the wall is under a pixel tall in the haze, and the coping beyond 3.5 km under a pixel wide
+        } else if (d < 5500) quad(A(water - 0.3), B(water - 0.3), B(TOP), A(TOP), g.copy(farWall).multiplyScalar(tone), want);
+        // beyond 5.5 km the wall is about a pixel tall in the haze, and the coping beyond 3.5 km under a pixel wide
         if (d < 3500) quad(A(TOP), B(TOP), [obx, TOP, obz], [oax, TOP, oaz], g.copy(coping).multiplyScalar(tone), UP);
         // lamp standards on the parapet every 26 m along the Thames, near the campus
         if (pi === thames && d < NEAR) {
@@ -525,7 +525,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     };
     // the docks beyond the map (outer): their walls only out to OUT_WALL (a 1.7 m wall is under a pixel tall beyond),
     // and pleasure cruisers, houseboats and lighters moored along their quays out to OUT_BOATS
-    const OUT_WALL = mobile ? 2200 : 3200, OUT_BOATS = mobile ? 2600 : 4200, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
+    const OUT_WALL = mobile ? 1800 : 2600, OUT_BOATS = mobile ? 2200 : 3600, DOCK_KIND = ['cruiser', 'house', 'house', 'barge', 'cruiser'];
     docks.forEach(({ rings, y, lv, outer }, di) => {
       const big = Math.abs(area(rings[0])) > 1500;
       let dacc = outer ? 10 + rnd() * 40 : 0;
