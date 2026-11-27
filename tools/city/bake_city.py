@@ -511,8 +511,9 @@ PIER_R = 4600.0  # metres from the site: the boats are moored out to 4 km (bridg
 def river_piers(fr, water):
     """the river's piers, pontoons, jetties and mapped moorings (OSM man_made=pier|jetty, mooring=*) from the skyline
     extract, for the boats moored at them. Each: [flags, ...] (decimetres)
-      a pontoon or pier outline (flags & 1 == 0): [flags, cx, cz, angle (mrad), length, width, bank x, bank z]: the
-        smallest rectangle round its points over the water, and the nearest point of the bank (where the brow lands);
+      a pontoon or pier outline (flags & 1 == 0): [flags, cx, cz, angle (mrad), length, width, bank x, bank z, x0, z0,
+        ...]: the smallest rectangle round its points over the water, the nearest point of the bank (where the brow
+        lands), and its outline (anticlockwise);
       a line (flags & 1): [flags, x0, z0, x1, z1, ...]: a pier mapped as a line, or a line of moorings along a bank.
     flags: 1 a line, 2 floating, 4 moorings (houseboats), 8 a passenger pier (the river buses), 16 no mooring"""
     try:
@@ -560,7 +561,9 @@ def river_piers(fr, water):
             wp = [p for p in pts if wet(*p)]
             line = not closed
             fl = (1 if line else 0) | (16 if moor == 'no' else 0)
-            if t.get('floating') == 'yes' or (mm == 'pier' and 'Pier' in nm and t.get('floating') != 'no'):
+            # the Thames is tidal (about 7 m at London Bridge): its piers are pontoons that rise and fall, but for the
+            # jetties on piles and those mapped floating=no
+            if t.get('floating') == 'yes' or (t.get('floating') != 'no' and 'Jetty' not in nm and mm != 'jetty'):
                 fl |= 2
             if moor in ('yes', 'private', 'guest') or 'Moorings' in nm or 'Wharf' in nm and line or (t.get('floating') == 'yes' and not nm and not line):
                 fl |= 4
@@ -592,7 +595,10 @@ def river_piers(fr, water):
             d, bp = bank(mx, mz)
             if bp is None:
                 bp = (mx, mz)
-            out.append([fl, q(mx), q(mz), int(round(ang * 1000)), q(L), q(W), q(bp[0]), q(bp[1])])
+            ring = clean_ring(pts, 0.3) or pts
+            if area(ring) < 0:
+                ring = ring[::-1]
+            out.append([fl, q(mx), q(mz), int(round(ang * 1000)), q(L), q(W), q(bp[0]), q(bp[1])] + flat(ring))
     return out
 
 
