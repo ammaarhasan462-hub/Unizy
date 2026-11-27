@@ -326,8 +326,10 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     const hull = [[-hl, -hb], [hl - Bb * 0.9, -hb], [hl, 0], [hl - Bb * 0.9, hb], [-hl, hb]];
     const hc = k.hull[Math.floor(rnd() * k.hull.length)];
     const yd = wl + k.free;
+    // beyond the near ring a boat is a few pixels long: no painted band or wheelhouse
+    const far = Math.hypot(c[0], c[1]) > (mobile ? 1500 : 2600);
     prism(c, u, hull, wl - 0.5, yd, g.set(hc));
-    if (k.band) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
+    if (k.band && !far) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
     if (k.cab) {
       const c0 = -hl + k.cab[0] * Lb, c1 = -hl + k.cab[1] * Lb, cb = hb - k.cab[2];
       const ch = k.cab[3];
@@ -341,7 +343,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         const p0 = [xa + (xb - xa) * 0.08 + ox, yd + ch * 0.35, za + (zb - za) * 0.08 + oz], p1 = [xa + (xb - xa) * 0.92 + ox, yd + ch * 0.35, za + (zb - za) * 0.92 + oz];
         lampStrip(p0, p1, ch * 0.38, lit);
       }
-      if (k.cab[4]) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
+      if (k.cab[4] && !far) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
     }
     return Bb;
   };
