@@ -21,13 +21,13 @@
  "areas": 1267,
  "rails": 404,
  "trees": 3819,
- "shop_points": 5027,
+ "shop_points": 5033,
  "shopfronts": [
   2300,
-  1576,
+  1577,
   500,
   387,
-  220
+  219
  ],
  "eras": [
   3252,
@@ -52,6 +52,7 @@
  "river_polys": 10,
  "docks": 4,
  "outer_docks": 24,
+ "piers": 36,
  "river_pts": 1941,
  "bridges": [
   "Waterloo Bridge",
@@ -84,7 +85,7 @@
    2634.4
   ]
  },
- "bytes": 2738603,
+ "bytes": 2744081,
  "wilkins": {
   "x": [
    -71.1,
@@ -225,6 +226,7 @@
  "river_polys": 10,
  "docks": 0,
  "outer_docks": 6,
+ "piers": 103,
  "river_pts": 1971,
  "bridges": [
   "Chelsea Bridge",
@@ -262,7 +264,7 @@
    6692.8
   ]
  },
- "bytes": 2306112,
+ "bytes": 2318331,
  "anchor": [
   "Queen's Tower",
   51.498354,
@@ -364,58 +366,59 @@
 }
 {
  "site": "qmul",
- "buildings": 10521,
+ "buildings": 10529,
  "heights": {
   "h": 95,
-  "lv": 5778,
-  "guess": 414,
-  "lidar": 4234
+  "lv": 5801,
+  "guess": 408,
+  "lidar": 4225
  },
  "styles": {
-  "stock": 6686,
+  "stock": 6695,
   "church": 74,
-  "concrete": 652,
+  "concrete": 651,
   "stone": 123,
   "redbrick": 2124,
-  "glass": 219,
+  "glass": 220,
   "stucco": 135,
-  "shed": 508
+  "shed": 507
  },
- "roads": 12647,
+ "roads": 12657,
  "areas": 4332,
  "rails": 286,
  "trees": 2485,
- "shop_points": 1120,
+ "shop_points": 1124,
  "shopfronts": [
-  622,
-  311,
+  626,
+  314,
   111,
   127,
-  37
+  39
  ],
  "eras": [
   2014,
   167,
-  7631,
+  7640,
   54,
-  655
+  654
  ],
  "era_by": {
   "own": 31,
-  "street": 2418,
+  "street": 2423,
   "neighbours": 18,
-  "type": 7202
+  "type": 7205
  },
  "fronts": [
-  1042,
-  7692,
-  1198
+  1038,
+  7695,
+  1209
  ],
  "shopfront_fill": 104,
  "skyline": 1732,
  "river_polys": 10,
  "docks": 27,
  "outer_docks": 27,
+ "piers": 51,
  "river_pts": 1539,
  "bridges": [
   "Stratford Walk",
@@ -451,7 +454,7 @@
    -2743.8
   ]
  },
- "bytes": 2442256,
+ "bytes": 2450241,
  "anchor": [
   "Queens' Building",
   51.523634,
@@ -490,17 +493,17 @@
   "stucco": 1105,
   "shed": 398
  },
- "roads": 22170,
- "areas": 2122,
+ "roads": 22176,
+ "areas": 2123,
  "rails": 350,
  "trees": 6275,
- "shop_points": 4975,
+ "shop_points": 4982,
  "shopfronts": [
   1684,
-  1607,
+  1608,
   593,
   410,
-  203
+  202
  ],
  "eras": [
   3974,
@@ -511,9 +514,9 @@
  ],
  "era_by": {
   "own": 1157,
-  "street": 2736,
+  "street": 2738,
   "neighbours": 456,
-  "type": 7475
+  "type": 7473
  },
  "fronts": [
   4800,
@@ -525,6 +528,7 @@
  "river_polys": 10,
  "docks": 1,
  "outer_docks": 21,
+ "piers": 50,
  "river_pts": 1829,
  "bridges": [
   "Blackfriars Bridge",
@@ -558,7 +562,7 @@
    2509.8
   ]
  },
- "bytes": 3061198,
+ "bytes": 3068163,
  "anchor": [
   "Old Building",
   51.51432,
@@ -657,17 +661,17 @@
   "stone": 1450,
   "shed": 394
  },
- "roads": 21093,
+ "roads": 21095,
  "areas": 1972,
  "rails": 408,
  "trees": 6489,
- "shop_points": 4975,
+ "shop_points": 4982,
  "shopfronts": [
   1577,
-  1555,
+  1556,
   573,
   389,
-  201
+  200
  ],
  "eras": [
   4212,
@@ -678,9 +682,9 @@
  ],
  "era_by": {
   "own": 1259,
-  "street": 2542,
+  "street": 2544,
   "neighbours": 548,
-  "type": 7141
+  "type": 7139
  },
  "fronts": [
   4365,
@@ -692,6 +696,7 @@
  "river_polys": 10,
  "docks": 0,
  "outer_docks": 21,
+ "piers": 50,
  "river_pts": 1838,
  "bridges": [
   "Blackfriars Bridge",
@@ -725,7 +730,7 @@
    2476.0
   ]
  },
- "bytes": 3002908,
+ "bytes": 3009430,
  "anchor": [
   "King's Building",
   51.51153,
