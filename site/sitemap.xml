@@ -44,6 +44,8 @@
   <url><loc>https://unizy.uk/modules/COMP40008</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/DIN4000U</loc><lastmod>2026-11-24</lastmod></url>
   <url><loc>https://unizy.uk/modules/DIN4001U</loc><lastmod>2026-11-24</lastmod></url>
+  <url><loc>https://unizy.uk/modules/DIN4105</loc><lastmod>2026-11-26</lastmod></url>
+  <url><loc>https://unizy.uk/modules/DIN4106</loc><lastmod>2026-11-26</lastmod></url>
   <url><loc>https://unizy.uk/modules/EC1A3</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/EC1B3</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/ECN106</loc><lastmod>2026-11-11</lastmod></url>
@@ -303,6 +305,9 @@
   <url><loc>https://unizy.uk/modules/MEDI40009</loc><lastmod>2026-11-24</lastmod></url>
   <url><loc>https://unizy.uk/modules/MEDI40010</loc><lastmod>2026-11-24</lastmod></url>
   <url><loc>https://unizy.uk/modules/MEDI40012</loc><lastmod>2026-11-24</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MEM41B3</loc><lastmod>2026-11-26</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MEM41D1</loc><lastmod>2026-11-26</lastmod></url>
+  <url><loc>https://unizy.uk/modules/MEM41E1</loc><lastmod>2026-11-26</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0002</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0003</loc><lastmod>2026-11-23</lastmod></url>
   <url><loc>https://unizy.uk/modules/MSIN0004</loc><lastmod>2026-11-24</lastmod></url>
@@ -355,6 +360,7 @@
   <url><loc>https://unizy.uk/modules/NEUR0004</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/PALS0007</loc><lastmod>2026-11-11</lastmod></url>
   <url><loc>https://unizy.uk/modules/PALS0008</loc><lastmod>2026-11-11</lastmod></url>
+  <url><loc>https://unizy.uk/modules/PCSM50002</loc><lastmod>2026-11-26</lastmod></url>
   <url><loc>https://unizy.uk/modules/PH103</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHAS0002</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://unizy.uk/modules/PHAS0010</loc><lastmod>2026-11-12</lastmod></url>

@@ -30,6 +30,8 @@
 /modules/COMP40008  /m/COMP40008  200
 /modules/DIN4000U  /m/DIN4000U  200
 /modules/DIN4001U  /m/DIN4001U  200
+/modules/DIN4105  /m/DIN4105  200
+/modules/DIN4106  /m/DIN4106  200
 /modules/EC1A3  /m/EC1A3  200
 /modules/EC1B3  /m/EC1B3  200
 /modules/ECN106  /m/ECN106  200
@@ -289,6 +291,9 @@
 /modules/MEDI40009  /m/MEDI40009  200
 /modules/MEDI40010  /m/MEDI40010  200
 /modules/MEDI40012  /m/MEDI40012  200
+/modules/MEM41B3  /m/MEM41B3  200
+/modules/MEM41D1  /m/MEM41D1  200
+/modules/MEM41E1  /m/MEM41E1  200
 /modules/MSIN0002  /m/MSIN0002  200
 /modules/MSIN0003  /m/MSIN0003  200
 /modules/MSIN0004  /m/MSIN0004  200
@@ -341,6 +346,7 @@
 /modules/NEUR0004  /m/NEUR0004  200
 /modules/PALS0007  /m/PALS0007  200
 /modules/PALS0008  /m/PALS0008  200
+/modules/PCSM50002  /m/PCSM50002  200
 /modules/PH103  /m/PH103  200
 /modules/PHAS0002  /m/PHAS0002  200
 /modules/PHAS0010  /m/PHAS0010  200
