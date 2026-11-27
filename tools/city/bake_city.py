@@ -505,6 +505,97 @@ def outer_docks(fr):
     return polys
 
 
+PIER_R = 4600.0  # metres from the site: the boats are moored out to 4 km (bridges.js), so piers beyond are left out
+
+
+def river_piers(fr, water):
+    """the river's piers, pontoons, jetties and mapped moorings (OSM man_made=pier|jetty, mooring=*) from the skyline
+    extract, for the boats moored at them. Each: [flags, ...] (decimetres)
+      a pontoon or pier outline (flags & 1 == 0): [flags, cx, cz, angle (mrad), length, width, bank x, bank z]: the
+        smallest rectangle round its points over the water, and the nearest point of the bank (where the brow lands);
+      a line (flags & 1): [flags, x0, z0, x1, z1, ...]: a pier mapped as a line, or a line of moorings along a bank.
+    flags: 1 a line, 2 floating, 4 moorings (houseboats), 8 a passenger pier (the river buses), 16 no mooring"""
+    try:
+        sk = load_seq('skyline')
+    except FileNotFoundError:
+        return []
+    rings = [r for o, hs in water for r in [o] + hs]
+    boxes = [(min(x for x, _ in o), max(x for x, _ in o), min(z for _, z in o), max(z for _, z in o), o, hs) for o, hs in water]
+
+    def wet(x, z):
+        return any(x0 <= x <= x1 and z0 <= z <= z1 and pip(x, z, o) and not any(pip(x, z, hh) for hh in hs) for x0, x1, z0, z1, o, hs in boxes)
+
+    def bank(x, z, R=150.0):
+        best = (1e9, None)
+        for r in rings:
+            for i in range(len(r)):
+                a, b = r[i - 1], r[i]
+                if min(a[0], b[0]) > x + R or max(a[0], b[0]) < x - R or min(a[1], b[1]) > z + R or max(a[1], b[1]) < z - R:
+                    continue
+                dx, dz = b[0] - a[0], b[1] - a[1]
+                L2 = dx * dx + dz * dz or 1e-9
+                u = max(0.0, min(1.0, ((x - a[0]) * dx + (z - a[1]) * dz) / L2))
+                px, pz = a[0] + dx * u, a[1] + dz * u
+                d = math.hypot(x - px, z - pz)
+                if d < best[0]:
+                    best = (d, (px, pz))
+        return best
+
+    out, seen = [], set()
+    for el in sk:
+        t = el.get('tags', {})
+        mm = t.get('man_made')
+        if el['type'] == 'node' or not (mm in ('pier', 'jetty') or 'mooring' in t) or 'building' in t:
+            continue
+        nm = t.get('name', '')
+        moor = t.get('mooring')
+        for o, _ in rings_of(el, fr):
+            if len(o) < 2:
+                continue
+            cx, cz = centroid(o)
+            if math.hypot(cx, cz) > PIER_R:
+                continue
+            closed = len(o) > 3 and o[0] == o[-1]
+            pts = o[:-1] if closed else o
+            wp = [p for p in pts if wet(*p)]
+            line = not closed
+            fl = (1 if line else 0) | (16 if moor == 'no' else 0)
+            if t.get('floating') == 'yes' or (mm == 'pier' and 'Pier' in nm and t.get('floating') != 'no'):
+                fl |= 2
+            if moor in ('yes', 'private', 'guest') or 'Moorings' in nm or 'Wharf' in nm and line or (t.get('floating') == 'yes' and not nm and not line):
+                fl |= 4
+            if line:
+                ln = dp(pts, 0.4)
+                L = sum(math.hypot(ln[i][0] - ln[i - 1][0], ln[i][1] - ln[i - 1][1]) for i in range(1, len(ln)))
+                if L < 6:
+                    continue
+                # over the water, or (moorings) along a bank
+                if len(wp) * 2 < len(pts) and not (fl & 4 and bank(*ln[len(ln) // 2])[0] < 25):
+                    continue
+                key = (1, round(cx / 3), round(cz / 3))
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append([fl] + flat(ln))
+                continue
+            if len(wp) * 10 < len(pts) * 3 or len(wp) < 3:
+                continue
+            mx, mz, ang, L, W = min_rect(wp)
+            if L < 4 or W < 1.5 or W > 40 or L > 400:
+                continue
+            if mm == 'pier' and 'Pier' in nm and L * 2 + W * 2 >= 70 and 'Jetty' not in nm:
+                fl |= 8
+            key = (0, round(mx / 3), round(mz / 3))
+            if key in seen:
+                continue
+            seen.add(key)
+            d, bp = bank(mx, mz)
+            if bp is None:
+                bp = (mx, mz)
+            out.append([fl, q(mx), q(mz), int(round(ang * 1000)), q(L), q(W), q(bp[0]), q(bp[1])])
+    return out
+
+
 def river_bridges(site, fr, water):
     """the bridges over the river: man_made=bridge outlines from the site's extract and the skyline extract that
     cross a river surface. Each: [style, spans, paint, x, z, angle, length, width, wet from, wet to, deck height]
@@ -1367,19 +1458,20 @@ def bake(site):
     water = river_water(fr)
     bridges, bnames = river_bridges(site, fr, water)
     odocks = outer_docks(fr)
+    piers = river_piers(fr, water)
     water = thin_far(water)
     data = {
         'v': 1, 'site': site, 'attribution': '© OpenStreetMap contributors', 'licence': 'ODbL',
         'frame': {'lat0': fr.lat0, 'lon0': fr.lon0, 'rot': fr.rot, 'dx': fr.dx, 'dz': fr.dz},
         'landmarks': landmarks, 'b': out_b, 'e': ''.join(str(e) for e in eras), 'ef': ef, 'r': roads, 'a': areas, 'rl': rails, 't': trees, 'sf': sf, 'sky': sky, 'river': river,
         'rv': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in water], 'bg': bridges, 'dk': docks,
-        'od': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in odocks],
+        'od': [[flat(o)] + [flat(hh) for hh in hs] for o, hs in odocks], 'pr': piers,
     }
     p = os.path.join(OUT, f'{site}.json')
     with open(p, 'w') as f:
         json.dump(data, f, separators=(',', ':'))
     rep = {'site': site, 'buildings': len(out_b), 'heights': stats, 'styles': style_n, 'roads': len(roads), 'areas': len(areas), 'rails': len(rails),
-           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'outer_docks': len(odocks), 'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
+           'trees': len(trees) // 3, 'shop_points': len(shop_pts), 'shopfronts': sf_n, 'eras': era_n, 'era_by': era_how, 'fronts': ef_n, 'shopfront_fill': sf_fill, 'skyline': len(sky), 'river_polys': len(water), 'docks': len(docks) // 2, 'outer_docks': len(odocks), 'piers': len(piers),'river_pts': sum(len(o) + sum(len(hh) for hh in hs) for o, hs in water), 'bridges': bnames, 'landmarks': landmarks, 'bytes': os.path.getsize(p), **info}
     print(json.dumps(rep, indent=1))
     return rep
 
