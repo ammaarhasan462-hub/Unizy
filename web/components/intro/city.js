@@ -1549,15 +1549,46 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
     return true;
   };
   if (rail.i.length) {
+    // the railings by distance: a run is cut out to nothing once a pixel covers 0.3 m (railMaterial), so the runs are
+    // sorted by their distance from the campus and each render draws only the contiguous range of them that lies
+    // within sight of the camera (an annulus round the campus); none at all, and no draw call, from higher up
+    const nq = rail.p.length / 12, rad = new Float32Array(nq);
+    let hmax = 0;
+    for (let k = 0; k < nq; k++) {
+      const o = k * 12, ax = rail.p[o], az = rail.p[o + 2], bx = rail.p[o + 3], bz = rail.p[o + 5];
+      rad[k] = Math.hypot((ax + bx) / 2, (az + bz) / 2);
+      hmax = Math.max(hmax, Math.hypot(bx - ax, bz - az) / 2);
+    }
+    const ord = Array.from({ length: nq }, (_, k) => k).sort((a, b) => rad[a] - rad[b]);
+    const idx = new (nq * 4 > 65535 ? Uint32Array : Uint16Array)(nq * 6), rs = new Float32Array(nq);
+    ord.forEach((k, j) => { const b = k * 4; idx.set([b, b + 1, b + 2, b, b + 2, b + 3], j * 6); rs[j] = rad[k]; });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(rail.p, 3));
     g.setAttribute('normal', new THREE.Float32BufferAttribute(rail.n, 3));
     g.setAttribute('uv', new THREE.Float32BufferAttribute(rail.w, 2));
-    g.setIndex(rail.p.length / 3 > 65535 ? new THREE.Uint32BufferAttribute(rail.i, 1) : new THREE.Uint16BufferAttribute(rail.i, 1));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeBoundingSphere();
     const m = new THREE.Mesh(g, railMaterial());
     m.receiveShadow = true;
-    group.add(m);
+    // the renderer calls a LOD's update(camera) for every render before it looks at the LOD's children
+    const holder = new THREE.LOD(), cam = new THREE.Vector3();
+    holder.add(m);
+    const first = (r) => { let lo = 0, hi = nq; while (lo < hi) { const mid = (lo + hi) >> 1; if (rs[mid] < r) lo = mid + 1; else hi = mid; } return lo; };
+    holder.update = (camera) => {
+      cam.setFromMatrixPosition(camera.matrixWorld);
+      holder.worldToLocal(cam);
+      // how far 0.3 m is still over a pixel: at most 1.5 device pixels per CSS pixel (the engine caps it at 1.4), and
+      // at the screen's edge, where a pixel subtends least (sin(fov) = 2 tan(fov/2) cos²(fov/2)); 10% to spare
+      const hpx = (typeof window !== 'undefined' && window.innerHeight ? window.innerHeight : 1000) * 1.5;
+      const vis = (1.1 * 0.3 * hpx) / Math.sin(((camera.fov || 50) * Math.PI) / 180);
+      const dy = cam.y - 0.5;
+      if (dy >= vis) { m.visible = false; return; }
+      const rh = Math.sqrt(vis * vis - dy * dy), rc = Math.hypot(cam.x, cam.z);
+      const i0 = first(rc - rh - hmax), i1 = first(rc + rh + hmax);
+      m.visible = i1 > i0;
+      g.setDrawRange(i0 * 6, (i1 - i0) * 6);
+    };
+    group.add(holder);
   }
   group.userData.dress = { bays: nBays, railVerts: rail.p.length / 3 };
   const bx = baseBox();
@@ -1788,7 +1819,7 @@ export function* buildCityGen(city, { mobile, H, site, keep = () => true, skip =
   // the bridges over it
   // and, with the river lowered, its granite walls, the Embankment's lamps and festoons, and the boats on it
   if ((data.bg && data.bg.length) || low || docks.length) {
-    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), docks: [...docks, ...outer], crossings: docks.length ? [...roads.map((rd) => ({ pts: rd.pts, w: rd.w, rail: false })), ...(data.rl || []).map((f) => ({ pts: dec(f), w: 7, rail: true }))] : [], seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
+    try { group.add(buildBridges(data.bg || [], { mobile, water: low ? WL : 0, banks: low ? rv : null, river: (data.river || []).map(dec), docks: [...docks, ...outer], crossings: docks.length ? [...roads.map((rd) => ({ pts: rd.pts, w: rd.w, rail: false })), ...(data.rl || []).map((f) => ({ pts: dec(f), w: 7, rail: true }))] : [], piers: low ? data.pr || [] : [], seed: site === 'ucl' ? 11 : site.length * 7 }).group); } catch (e) { console.error(e); }
   }
 
   yield;

@@ -6,15 +6,15 @@
 // Beyond 2.2 km from the campus a bridge drops its small parts (footways, inner parapets, lamp posts, hangers).
 // With the river lowered (opts.water < 0, city.js) the decks run nearly level onto the banks, the piers and arches go
 // down to the water, and the same mesh carries the river walls (granite, a parapet with a coping, darker below the
-// tide line), the Embankment's lamp standards with their festoons of bulbs, and boats moored along the walls and out
-// on the river. All of it is one mesh with vertex colours, and the lamps and lit windows a second one, so the river
-// costs two draw calls.
+// tide line), the Embankment's lamp standards with their festoons of bulbs, the mapped piers and pontoons with the
+// boats moored at them, and boats out on the river. All of it is one mesh with vertex colours, and the lamps and lit
+// windows a second one, so the river costs two draw calls.
 import * as THREE from 'three';
 import { plainMaterial, rng } from './materials';
 
 const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function buildBridges(list, { mobile = false, water = 0, banks = null, river = [], docks = null, crossings = [], seed = 1 } = {}) {
+export function buildBridges(list, { mobile = false, water = 0, banks = null, river = [], docks = null, crossings = [], piers = [], seed = 1 } = {}) {
   const P = [], N = [], C = [], I = [];
   const LP = [], LI = [], LC = [];
   const BULB = new THREE.Color(3.2, 2.3, 1.35), CHAIN = new THREE.Color(3.4, 2.9, 2.1), FEST = new THREE.Color(3.0, 2.4, 1.5);
@@ -326,8 +326,10 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     const hull = [[-hl, -hb], [hl - Bb * 0.9, -hb], [hl, 0], [hl - Bb * 0.9, hb], [-hl, hb]];
     const hc = k.hull[Math.floor(rnd() * k.hull.length)];
     const yd = wl + k.free;
+    // beyond the near ring a boat is a few pixels long: no painted band or wheelhouse
+    const far = Math.hypot(c[0], c[1]) > (mobile ? 1500 : 2600);
     prism(c, u, hull, wl - 0.5, yd, g.set(hc));
-    if (k.band) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
+    if (k.band && !far) prism(c, u, hull.map(([s, v]) => [s * 1.003, v * 1.02]), yd - 0.55, yd - 0.3, g.set(k.band), false);
     if (k.cab) {
       const c0 = -hl + k.cab[0] * Lb, c1 = -hl + k.cab[1] * Lb, cb = hb - k.cab[2];
       const ch = k.cab[3];
@@ -341,7 +343,7 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         const p0 = [xa + (xb - xa) * 0.08 + ox, yd + ch * 0.35, za + (zb - za) * 0.08 + oz], p1 = [xa + (xb - xa) * 0.92 + ox, yd + ch * 0.35, za + (zb - za) * 0.92 + oz];
         lampStrip(p0, p1, ch * 0.38, lit);
       }
-      if (k.cab[4]) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
+      if (k.cab[4] && !far) prism(c, u, [[c0 + 1, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, -cb + 0.4], [c0 + 1 + (c1 - c0) * 0.25, cb - 0.4], [c0 + 1, cb - 0.4]], yd + ch, yd + ch + 1.6, g.set(cc));
     }
     return Bb;
   };
@@ -445,32 +447,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
       }
     });
 
-    // moored along the Thames' walls: houseboats, lighters and pleasure cruisers, sometimes two abreast
-    const ring = thames >= 0 ? banks[thames][0] : [];
-    if (ring.length > 2) {
-      const sg = area(ring) > 0 ? 1 : -1;
-      let acc = rnd() * 90;
-      for (let i = 0; i < ring.length; i++) {
-        const [xa, za] = ring[i], [xb, zb] = ring[(i + 1) % ring.length];
-        const L = Math.hypot(xb - xa, zb - za);
-        if (L < 0.05) continue;
-        const u = [(xb - xa) / L, (zb - za) / L], wv = [-u[1] * sg, u[0] * sg];
-        while (acc < L) {
-          const t = acc / L, x = xa + (xb - xa) * t, z = za + (zb - za) * t;
-          acc += 80 + rnd() * 70;
-          if (Math.hypot(x, z) > BOATS || rnd() > (mobile ? 0.22 : 0.34) || L < 12 || bridgeAt(x, z, 30)) continue;
-          const kind = ['house', 'barge', 'cruiser', 'house'][Math.floor(rnd() * 4)];
-          let off = 1.2;
-          const n = kind === 'cruiser' ? 1 : 1 + Math.floor(rnd() * (kind === 'barge' ? 3 : 2));
-          for (let j = 0; j < n; j++) {
-            const B = KINDS[kind].B;
-            boat([x + wv[0] * (off + B / 2), z + wv[1] * (off + B / 2)], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
-            off += B + 0.4;
-          }
-        }
-        acc -= L;
-      }
-    }
+    // the boats are moored where they really are: at the mapped piers, pontoons, jetties and moorings
+    if (piers && piers.length) piersides(bridgeAt, TOP, BOATS, NEAR);
     // river buses and pleasure boats under way, out on the stream along the Thames' centreline
     const cl = river.filter((l) => l.length > 1);
     const tot = cl.reduce((m, l) => m + l.reduce((q, p, i) => q + (i ? Math.hypot(p[0] - l[i - 1][0], p[1] - l[i - 1][1]) : 0), 0), 0);
@@ -494,6 +472,153 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         }
       }
     }
+  }
+
+  // ---------------------------------------------------------------- the piers and moorings
+  // From OpenStreetMap (baked as `pr`, see river_piers in bake_city.py): the passenger piers' pontoons with their
+  // waiting rooms and brows up to the Embankment, and a river bus alongside; the floating pontoons and moorings of the
+  // houseboats (Chelsea Reach, Cadogan Pier, Downings Roads) with the boats nose to tail; jetties on piles with lighters.
+  function piersides(bridgeAt, TOP, BOATS, NEAR) {
+    const pontSide = new THREE.Color('#2e3032'), pontDeck = new THREE.Color('#77746c'), browC = new THREE.Color('#5e5c57'), railC = new THREE.Color('#1d1f21');
+    const hutC = new THREE.Color('#d8d5cb'), hutRoof = new THREE.Color('#3b4146'), pile = new THREE.Color('#2b2621'), jettyDeck = new THREE.Color('#6a6155');
+    const PONT = water + 1.0, HUT = new THREE.Color(1.05, 0.86, 0.6);
+    const bbs = banks.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
+    const pipR = (x, z, r) => { let ins = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, zi] = r[i], [xj, zj] = r[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) ins = !ins; } return ins; };
+    const wet = (x, z) => banks.some((rings, k) => { const b = bbs[k]; return x >= b[0] && x <= b[1] && z >= b[2] && z <= b[3] && pipR(x, z, rings[0]) && !rings.slice(1).some((h) => pipR(x, z, h)); });
+    // is a boat's water clear: its middle, both ends and its outer side (o: signed, along u's left normal) all wet
+    const clear = (x, z, u, hl, o) => wet(x, z) && wet(x + u[0] * hl, z + u[1] * hl) && wet(x - u[0] * hl, z - u[1] * hl) && wet(x - u[1] * o, z + u[0] * o);
+    // boats nose to tail along a line from p (direction u), `side` metres out (signed, along u's left normal)
+    const row = (p, u, len, side, kinds, chance) => {
+      let s = 2 + rnd() * 3;
+      for (let first = true; first || s < len - 8; first = false) {
+        const kind = kinds[Math.floor(rnd() * kinds.length)], k = KINDS[kind], step = k.L[1] + 1.2 + rnd() * 3;
+        // a pontoon shorter than the boat still holds one, centred on it
+        if (s + step > len + 4 && !first) break;
+        const c = s + step > len + 4 ? len / 2 : s + step / 2, off = side + Math.sign(side) * (k.B / 2);
+        const x = p[0] + u[0] * c - u[1] * off, z = p[1] + u[1] * c + u[0] * off;
+        if (rnd() < chance && clear(x, z, u, k.L[1] / 2, Math.sign(side) * (k.B / 2 + 0.5)) && !bridgeAt(x, z, 8)) {
+          boat([x, z], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
+          // some moored two abreast
+          if (kind !== 'cruiser' && rnd() < 0.3) {
+            const o2 = off + Math.sign(side) * (k.B + 0.4), x2 = p[0] + u[0] * c - u[1] * o2, z2 = p[1] + u[1] * c + u[0] * o2;
+            if (clear(x2, z2, u, k.L[1] / 2, Math.sign(side) * (k.B / 2 + 0.5))) boat([x2, z2], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
+          }
+        }
+        s += step;
+      }
+    };
+    piers.forEach((pr) => {
+      const fl = pr[0];
+      if (fl & 1) {
+        // a line: a pier walkway over the water, or moorings along a bank
+        const pts = [];
+        for (let i = 1; i + 1 < pr.length; i += 2) pts.push([pr[i] / 10, pr[i + 1] / 10]);
+        const [mx, mz] = pts[Math.floor(pts.length / 2)];
+        if (Math.hypot(mx, mz) > BOATS) return;
+        for (let i = 1; i < pts.length; i++) {
+          const [xa, za] = pts[i - 1], [xb, zb] = pts[i], L = Math.hypot(xb - xa, zb - za);
+          if (L < 6) continue;
+          const u = [(xb - xa) / L, (zb - za) / L], nx = -u[1], nz = u[0], cx = (xa + xb) / 2, cz = (za + zb) / 2;
+          const wl = wet(cx + nx * 5, cz + nz * 5), wr = wet(cx - nx * 5, cz - nz * 5);
+          if (!wl && !wr) continue;
+          const moor = fl & 4 && !(wl && wr);
+          // a pier out in the water: a pontoon walkway along the line, boats along either side
+          if (!moor) prism([cx, cz], u, [[-L / 2, -1.3], [L / 2, -1.3], [L / 2, 1.3], [-L / 2, 1.3]], water - 0.3, PONT, pontDeck);
+          if (fl & 16) continue;
+          const kinds = fl & 4 ? ['house', 'house', 'house', 'cruiser'] : ['cruiser', 'house', 'barge'];
+          const chance = moor ? (mobile ? 0.7 : 0.9) : mobile ? 0.45 : 0.6;
+          if (wl) row([xa, za], u, L, moor ? 1.0 : 1.6, kinds, chance);
+          if (wr && !moor && rnd() < 0.6) row([xa, za], u, L, -1.6, kinds, chance);
+          if (moor && !wl) row([xa, za], u, L, -1.0, kinds, chance);
+        }
+        return;
+      }
+      // a pontoon or pier: its outline, the rectangle round it over the water, and the bank point its brow lands on
+      const [, cxd, czd, am, Ld, Wd, bxd, bzd] = pr;
+      const cx = cxd / 10, cz = czd / 10, a = am / 1000, L = Ld / 10, W = Wd / 10, bx = bxd / 10, bz = bzd / 10;
+      const d = Math.hypot(cx, cz);
+      if (d > BOATS) return;
+      const ring = [];
+      for (let i = 8; i + 1 < pr.length; i += 2) ring.push([pr[i] / 10, pr[i + 1] / 10]);
+      if (ring.length < 3) return;
+      const u = [Math.cos(a), Math.sin(a)], vv = [-u[1], u[0]];
+      const at = (s, v) => [cx + u[0] * s + vv[0] * v, cz + u[1] * s + vv[1] * v];
+      const toB = [bx - cx, bz - cz], land = Math.sign(toB[0] * vv[0] + toB[1] * vv[1]) || 1;
+      const floating = !!(fl & 2), passenger = !!(fl & 8), close = d < NEAR;
+      // the outline is anticlockwise in (x, z) (bake_city.py): an edge's outward side is its right
+      let ar = 0;
+      ring.forEach(([x0, z0], i) => { const [x1, z1] = ring[(i + 1) % ring.length]; ar += x0 * z1 - x1 * z0; });
+      const fill = Math.abs(ar / 2) / Math.max(1, L * W);
+      const y1 = floating ? PONT : TOP - 0.35, y0 = floating ? water - 0.3 : y1 - 0.5;
+      const side = floating ? pontSide : jettyDeck, top = floating ? pontDeck : jettyDeck;
+      let tris = [];
+      try { tris = THREE.ShapeUtils.triangulateShape(ring.map(([x, z]) => new THREE.Vector2(x, z)), []); } catch { tris = []; }
+      // the deck (a jetty's only over the water: on land it would stand on the street), and its sides
+      tris.forEach(([i0, i1, i2]) => {
+        const A = ring[i0], Bv = ring[i1], Cv = ring[i2];
+        if (!floating && !wet((A[0] + Bv[0] + Cv[0]) / 3, (A[1] + Bv[1] + Cv[1]) / 3)) return;
+        tri([A[0], y1, A[1]], [Bv[0], y1, Bv[1]], [Cv[0], y1, Cv[1]], top, UP);
+      });
+      const edges = [];
+      ring.forEach(([xa, za], i) => {
+        const [xb, zb] = ring[(i + 1) % ring.length], el = Math.hypot(xb - xa, zb - za);
+        if (el < 0.05) return;
+        const ue = [(xb - xa) / el, (zb - za) / el], out = [ue[1] * (ar > 0 ? 1 : -1), -ue[0] * (ar > 0 ? 1 : -1)];
+        const mx = (xa + xb) / 2, mz = (za + zb) / 2, w4 = wet(mx + out[0] * 4, mz + out[1] * 4);
+        if (!floating && !wet(mx, mz)) return;
+        quad([xa, y0, za], [xb, y0, zb], [xb, y1, zb], [xa, y1, za], side, [out[0], 0, out[1]]);
+        // a jetty's piles under its outer edges
+        if (!floating && close) for (let s = 1; s < el - 0.5; s += 7) {
+          const x = xa + ue[0] * s - out[0] * 0.4, z = za + ue[1] * s - out[1] * 0.4;
+          quad([x - 0.25, water - 0.3, z], [x + 0.25, water - 0.3, z], [x + 0.25, y0, z], [x - 0.25, y0, z], pile, [0, 0, 1]);
+          quad([x, water - 0.3, z - 0.25], [x, water - 0.3, z + 0.25], [x, y0, z + 0.25], [x, y0, z - 0.25], pile, [1, 0, 0]);
+        }
+        if (el >= 10 && w4) edges.push({ a: [xa, za], u: ue, out, el, far: Math.hypot(mx - bx, mz - bz) });
+      });
+      if (floating) {
+        // the brow: a ramp from the pontoon's nearest corner up to the top of the river wall
+        let bi = 0, bd = Infinity;
+        ring.forEach(([x, z], i) => { const dd = Math.hypot(x - bx, z - bz); if (dd < bd && wet(x, z)) { bd = dd; bi = i; } });
+        if (bd > 3 && bd < 45 && !bridgeAt(bx, bz, 2)) {
+          const n = [(bx - ring[bi][0]) / bd, (bz - ring[bi][1]) / bd];
+          const p0 = [ring[bi][0] - n[0] * 0.8, ring[bi][1] - n[1] * 0.8], p1 = [bx + n[0] * 0.5, bz + n[1] * 0.5], hw = 1.1;
+          const e = [-n[1] * hw, n[0] * hw], ya = PONT + 0.05, yb = TOP - 0.05;
+          quad([p0[0] - e[0], ya, p0[1] - e[1]], [p0[0] + e[0], ya, p0[1] + e[1]], [p1[0] + e[0], yb, p1[1] + e[1]], [p1[0] - e[0], yb, p1[1] - e[1]], browC, UP);
+          if (close) [-1, 1].forEach((sd) => {
+            const a0 = [p0[0] + e[0] * sd, p0[1] + e[1] * sd], a1 = [p1[0] + e[0] * sd, p1[1] + e[1] * sd];
+            quad([a0[0], ya, a0[1]], [a1[0], yb, a1[1]], [a1[0], yb + 1.1, a1[1]], [a0[0], ya + 1.1, a0[1]], railC, [e[0] * sd, 0, e[1] * sd]);
+          });
+        }
+        // the waiting room on a passenger pier (a rectangular pontoon): pale panels under a dark roof, lit windows
+        if (passenger && close && fill > 0.6 && L >= 18 && W >= 4) {
+          const hl = Math.min(L * 0.3, 22), hw2 = Math.min(W * 0.32, 2.4), sv = land * Math.max(0, W / 2 - hw2 - 1.2) * 0.5;
+          const c2 = at(0, sv), ya = PONT + 0.05;
+          const P2 = prism(c2, u, [[-hl, -hw2], [hl, -hw2], [hl, hw2], [-hl, hw2]], ya, ya + 2.7, hutC);
+          prism(c2, u, [[-hl - 0.6, -hw2 - 0.5], [hl + 0.6, -hw2 - 0.5], [hl + 0.6, hw2 + 0.5], [-hl - 0.6, hw2 + 0.5]], ya + 2.7, ya + 2.95, hutRoof);
+          for (const [i0, i1] of [[0, 1], [2, 3]]) {
+            const [xa, za] = P2[i0], [xb, zb] = P2[i1];
+            const ox = (xa + xb) / 2 - c2[0], oz = (za + zb) / 2 - c2[1], ol = Math.hypot(ox, oz) || 1, kx = (ox / ol) * 0.04, kz = (oz / ol) * 0.04;
+            lampStrip([xa + (xb - xa) * 0.06 + kx, ya + 0.9, za + (zb - za) * 0.06 + kz], [xa + (xb - xa) * 0.94 + kx, ya + 0.9, za + (zb - za) * 0.94 + kz], 1.3, HUT);
+          }
+          [-1, 1].forEach((sd) => { const [x, z] = at(sd * (L / 2 - 1.5), -land * (W / 2 - 0.6)); lampQuad(x, PONT + 3.2, z, 0.22); });
+        }
+      }
+      if (fl & 16 || !edges.length) return;
+      // the boats, along the outline's edges that face open water: a river bus alongside a passenger pier's outer
+      // edge, houseboats nose to tail along the moorings, lighters or a cruiser elsewhere
+      edges.sort((p, q) => q.far - p.far);
+      const along = (e, kinds, chance) => row([e.a[0] + e.out[0] * 0.6, e.a[1] + e.out[1] * 0.6], e.u, e.el, ar > 0 ? -0.01 : 0.01, kinds, chance);
+      if (passenger) {
+        const e = edges.find((q) => q.el >= 25) || edges[0];
+        if (rnd() < (mobile ? 0.55 : 0.75)) {
+          const kind = rnd() < 0.65 ? 'clipper' : 'cruiser', B = KINDS[kind].B, s = e.el / 2 + (rnd() - 0.5) * Math.max(0, e.el - 40);
+          const x = e.a[0] + e.u[0] * s + e.out[0] * (0.6 + B / 2), z = e.a[1] + e.u[1] * s + e.out[1] * (0.6 + B / 2);
+          const o = ar > 0 ? -(B / 2 + 0.5) : B / 2 + 0.5;
+          if (clear(x, z, e.u, KINDS[kind].L[1] / 2, o) && !bridgeAt(x, z, 6)) boat([x, z], rnd() < 0.5 ? e.u : [-e.u[0], -e.u[1]], kind);
+        }
+      } else if (fl & 4) edges.forEach((e) => along(e, ['house', 'house', 'house', 'cruiser'], mobile ? 0.75 : 0.95));
+      else if (rnd() < (mobile ? 0.4 : 0.55)) along(edges[0], floating ? ['cruiser', 'house', 'barge'] : ['barge', 'barge', 'house'], 0.8);
+    });
   }
 
   // ---------------------------------------------------------------- canals, locks, docks and basins
