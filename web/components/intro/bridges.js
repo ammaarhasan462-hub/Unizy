@@ -483,6 +483,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
     const bbs = banks.map((rings) => { let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; rings[0].forEach(([x, z]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }); return [x0, x1, z0, z1]; });
     const pipR = (x, z, r) => { let ins = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) { const [xi, zi] = r[i], [xj, zj] = r[j]; if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) ins = !ins; } return ins; };
     const wet = (x, z) => banks.some((rings, k) => { const b = bbs[k]; return x >= b[0] && x <= b[1] && z >= b[2] && z <= b[3] && pipR(x, z, rings[0]) && !rings.slice(1).some((h) => pipR(x, z, h)); });
+    // is a boat's water clear: its middle, both ends and its outer side (o: signed, along u's left normal) all wet
+    const clear = (x, z, u, hl, o) => wet(x, z) && wet(x + u[0] * hl, z + u[1] * hl) && wet(x - u[0] * hl, z - u[1] * hl) && wet(x - u[1] * o, z + u[0] * o);
     // boats nose to tail along a line from p (direction u), `side` metres out (signed, along u's left normal)
     const row = (p, u, len, side, kinds, chance) => {
       let s = 2 + rnd() * 3;
@@ -492,12 +494,12 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         if (s + step > len + 4 && !first) break;
         const c = s + step > len + 4 ? len / 2 : s + step / 2, off = side + Math.sign(side) * (k.B / 2);
         const x = p[0] + u[0] * c - u[1] * off, z = p[1] + u[1] * c + u[0] * off;
-        if (rnd() < chance && wet(x, z) && !bridgeAt(x, z, 8)) {
+        if (rnd() < chance && clear(x, z, u, k.L[1] / 2, Math.sign(side) * (k.B / 2 + 0.5)) && !bridgeAt(x, z, 8)) {
           boat([x, z], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
           // some moored two abreast
           if (kind !== 'cruiser' && rnd() < 0.3) {
             const o2 = off + Math.sign(side) * (k.B + 0.4), x2 = p[0] + u[0] * c - u[1] * o2, z2 = p[1] + u[1] * c + u[0] * o2;
-            if (wet(x2, z2)) boat([x2, z2], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
+            if (clear(x2, z2, u, k.L[1] / 2, Math.sign(side) * (k.B / 2 + 0.5))) boat([x2, z2], rnd() < 0.5 ? u : [-u[0], -u[1]], kind);
           }
         }
         s += step;
@@ -609,7 +611,8 @@ export function buildBridges(list, { mobile = false, water = 0, banks = null, ri
         if (rnd() < (mobile ? 0.55 : 0.75)) {
           const kind = rnd() < 0.65 ? 'clipper' : 'cruiser', B = KINDS[kind].B, s = e.el / 2 + (rnd() - 0.5) * Math.max(0, e.el - 40);
           const x = e.a[0] + e.u[0] * s + e.out[0] * (0.6 + B / 2), z = e.a[1] + e.u[1] * s + e.out[1] * (0.6 + B / 2);
-          if (wet(x, z) && !bridgeAt(x, z, 6)) boat([x, z], rnd() < 0.5 ? e.u : [-e.u[0], -e.u[1]], kind);
+          const o = ar > 0 ? -(B / 2 + 0.5) : B / 2 + 0.5;
+          if (clear(x, z, e.u, KINDS[kind].L[1] / 2, o) && !bridgeAt(x, z, 6)) boat([x, z], rnd() < 0.5 ? e.u : [-e.u[0], -e.u[1]], kind);
         }
       } else if (fl & 4) edges.forEach((e) => along(e, ['house', 'house', 'house', 'cruiser'], mobile ? 0.75 : 0.95));
       else if (rnd() < (mobile ? 0.4 : 0.55)) along(edges[0], floating ? ['cruiser', 'house', 'barge'] : ['barge', 'barge', 'house'], 0.8);
