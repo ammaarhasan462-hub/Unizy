@@ -291,5 +291,7 @@
     '.db-bubble .ua-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.db-bubble .ua-chip{font:600 12px/1 Inter,system-ui,sans-serif;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3)}';
   var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
-  window.UnizyAttach = { tray: function (key) { return trays[key] || (trays[key] = new Tray(key)); } };
+  // readText: the text of a PowerPoint (one "### Slide N" block per slide) or Word file, for the module page's slide library
+  function readText(f) { var n = (f.name || '').toLowerCase(); return /\.pptx$/.test(n) ? pptxText(f) : /\.docx$/.test(n) ? docxText(f) : Promise.reject(new Error('Add a PowerPoint or Word file.')); }
+  window.UnizyAttach = { tray: function (key) { return trays[key] || (trays[key] = new Tray(key)); }, readText: readText };
 })();

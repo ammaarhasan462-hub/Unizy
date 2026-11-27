@@ -162,6 +162,16 @@ export const TRY_HTML = `
 </section>`;
 
 function words(s) { const t = String(s || '').trim(); return t ? t.split(/\s+/).length : 0; }
+// Enough to mark? Same rule as markable() in site/assets/mark.js and the marker: a paragraph for an essay, a few lines of
+// working for a calculation (the flat 40 words turned away correct worked answers to the Engineering question).
+const QUANT_RE = /\b(calculate|compute|derive|find|solve|prove|show that|determine|estimate|sketch|simplify)\b|=/i;
+function markable(a, q) {
+  a = String(a || '').trim(); const w = words(a);
+  if (w >= 40) return true;
+  const eq = (a.match(/[=≈→⇒]/g) || []).length, dig = (a.match(/\d/g) || []).length;
+  if (a.length >= 50 && (eq >= 2 || dig >= 6)) return true;
+  return !!q && QUANT_RE.test(q.text || '') && w >= 12;
+}
 function firstSentence(s) { const t = String(s || ''); const i = t.search(/\.\s/); return i > 40 ? t.slice(0, i + 1) : t; }
 
 // The answer with each lost-marks quote highlighted and numbered.
@@ -295,10 +305,13 @@ export function mountTry(root, opts = {}) {
     if (fine && smp) fine.textContent = sample ? 'Watch it get marked live in about 20 seconds, then try your own. No sign-up. Exam practice only, never coursework.' : 'No sign-up for your first marked answer. Exam practice only, never coursework.';
     const sv = card.querySelector('.th-saved'); if (sv) sv.hidden = sample;
     if (sample) { wc.textContent = `Sample answer · ${n} words`; wc.classList.remove('ok'); return; }
-    wc.textContent = isPhone()
-      ? `${n} word${n === 1 ? '' : 's'} · ${n < 40 ? `${40 - n} more to mark it` : 'ready to mark'}`
-      : `${n} word${n === 1 ? '' : 's'} · ${n < 40 ? 'aim for 150–200' : n <= 260 ? 'good length' : 'longer is fine too'}`;
-    wc.classList.toggle('ok', n >= 40);
+    const ok = markable(ta.value, cur), quant = QUANT_RE.test(cur && cur.text || '');
+    wc.textContent = quant
+      ? `${n} word${n === 1 ? '' : 's'} · ${ok ? 'ready to mark' : 'show your working'}`
+      : isPhone()
+      ? `${n} word${n === 1 ? '' : 's'} · ${ok ? 'ready to mark' : `${40 - n} more to mark it`}`
+      : `${n} word${n === 1 ? '' : 's'} · ${!ok ? 'aim for 150–200' : n <= 260 ? 'good length' : 'longer is fine too'}`;
+    wc.classList.toggle('ok', ok);
   }
   function err(msg, html) { const e = card.querySelector('[data-err]'); if (!e) return; e.classList.remove('th-limitbox'); e.hidden = !msg; e.innerHTML = html ? msg : esc(msg); }
   function limit() {
@@ -359,7 +372,7 @@ export function mountTry(root, opts = {}) {
     if (busy || cur.med) return;
     const q = cur, ta = card.querySelector('[data-ans]'), answer = (ta.value || '').trim(), sample = isSample();
     if (opts.authed) { location.href = `/dashboard/practice/${q.code}?q=${q.id}&v=answer`; return; }
-    if (words(answer) < 40) { err('Write a bit more first: at least a short paragraph (40+ words), ideally 150–200.'); ta.focus(); return; }
+    if (!markable(answer, q)) { err(QUANT_RE.test(q.text || '') ? 'Show a bit more working first: a few lines with your equations and numbers.' : 'Write a bit more first: at least a short paragraph (40+ words), ideally 150–200.'); ta.focus(); return; }
     if (sample) {
       // the sample doesn't use up the visitor's free mark; marked once on this device, its result comes straight back
       track('hero_sample_mark');

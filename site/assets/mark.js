@@ -45,6 +45,26 @@
   function paras(s) { return esc(s).split(/\n{2,}/).map(function (p) { return '<p>' + p.replace(/\n/g, '<br>') + '</p>'; }).join(''); }
   function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
   function words(s) { var m = String(s || '').trim().match(/\S+/g); return m ? m.length : 0; }
+  // Enough to mark? A paragraph for an essay; a few lines of working for a calculation or short structured answer.
+  // Same rule as markable() in supabase/functions/marker/index.ts (the old flat 40 words turned away worked answers).
+  var QUANT_RE = /\b(calculate|compute|derive|find|solve|prove|show that|determine|estimate|evaluate the|sketch|plot|simplify|differentiate|integrate)\b|=/i;
+  var SHORT_MSG = 'Write a bit more so there’s something to mark: a paragraph for an essay, or your working for a calculation (or add a photo of it).';
+  function isQuant(c) { return !!c && (c.kind === 'problem' || c.kind === 'short' || QUANT_RE.test(c.question || '')); }
+  function markable(a, quant) {
+    a = String(a || '').trim(); var w = words(a);
+    if (w >= 40) return true;
+    var eq = (a.match(/[=≈→⇒]/g) || []).length, dig = (a.match(/\d/g) || []).length;
+    if (a.length >= 50 && (eq >= 2 || dig >= 6)) return true;
+    return quant && w >= 12;
+  }
+  // exam pace: about 1.8 minutes a mark (a 3-hour paper worth 100 marks); 45 minutes when the question shows no marks
+  function qMarks(t) { var tot = 0, m, re = /[\[(]\s*(\d{1,3})\s*marks?\s*[\])]/gi; t = String(t || ''); while ((m = re.exec(t))) tot += +m[1]; return tot; }
+  function examMinutes(c) { var mk = (c && qMarks(c.question)) || (c && c.marks) || 0; return mk ? Math.max(10, Math.min(180, Math.round(mk * 1.8))) : 45; }
+  // a drill rewrite that just copies the example paragraph: share of its 4-word runs that appear in the example
+  function copied(a, b) {
+    var g = function (s) { var w = String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean), o = {}; for (var i = 0; i + 3 < w.length; i++) o[w.slice(i, i + 4).join(' ')] = 1; return o; };
+    var A = g(a), B = g(b), n = 0, hit = 0; for (var k in A) { n++; if (B[k]) hit++; } return n >= 6 && hit / n > 0.5;
+  }
   function getSession() { try { return JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (e) { return null; } }
   function uid() { var s = getSession(); return s && s.user && s.user.id; }
   function track(ev) {
@@ -90,7 +110,7 @@
   }
   function drafts() { try { return JSON.parse(localStorage.getItem(DKEY) || '{}'); } catch (e) { return {}; } }
   function saveDraft(key, val) { var d = drafts(); if (val) d[key] = { t: val, at: Date.now() }; else delete d[key]; try { localStorage.setItem(DKEY, JSON.stringify(d)); } catch (e) {} }
-  function draftKey() { return state.mod ? state.mod.code + ':' + (state.cur && state.cur.id ? state.cur.id : 'own') : ''; }
+  function draftKey() { return state.mod ? state.mod.code + ':' + (state.cur && state.cur.id ? state.cur.id : state.cur && state.cur.myq ? 'myq:' + state.cur.myq : 'own') : ''; }
   function planHtml(t) { var pts = String(t || '').split(/\n+/).map(function (x) { return x.replace(/^\s*[•\-*]\s*/, '').trim(); }).filter(Boolean); return '<ul class="mk-plan">' + pts.map(function (p) { return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>'; }
   function signinUrl() { return '/signup?next=' + encodeURIComponent(location.pathname + location.search); }
   // Signed out: one free marked answer (per browser here; the marker also caps it per network and per day). No account needed.
@@ -210,13 +230,14 @@
         return;
       }
       if (r.v === 'answer') {
-        if (r.q === 'own') state.cur = { id: null, own: true, question: (state.cur && state.cur.own && state.cur.question) || '' };
+        if (r.q === 'own') state.cur = state.cur && state.cur.own ? state.cur : { id: null, own: true, question: '' };
         else if (state.questions) state.cur = state.questions.filter(function (x) { return x.id === r.q && x.tier !== 'foundation'; })[0] || null;
         else { render(); return; } // questions still loading; loadMap() routes again
         if (!state.cur) { go({ m: r.m }, true); return; }
         // exam simulator: strict clock from the moment the question opens, no hints until it's marked
         if (r.exam && state.exam !== r.exam) { state.exam = r.exam; timer.limit = Math.min(180, r.exam); startTimer(); track('exam_open'); }
-        else if (!r.exam && state.exam) { state.exam = 0; timer.limit = 45; }
+        else if (!r.exam && state.exam) { state.exam = 0; timer.limit = examMinutes(state.cur); }
+        if (!state.exam && !timer.on) timer.limit = examMinutes(state.cur);
         state.itab = 'scheme';
       } else if (r.v !== 'result') { state.cur = null; state.result = null; if (state.exam) { state.exam = 0; stopTimer(); timer.on = false; timer.limit = 45; } }
       if (r.v === 'result' && !state.result) { go({ m: r.m }, true); return; }
@@ -231,7 +252,7 @@
     state.mod = { code: r.m, loading: true }; state.topics = null; state.questions = null; state.cards = null; state.attempts = null; state.recalls = []; state.ratings = {}; state.open = {}; state.mapBusy = false; state.mapMsg = ''; stopPoll(); render();
     rest('ucl_modules?code=eq.' + encodeURIComponent(r.m) + '&select=code,title,level,credits,ects,faculty,department,term,summary,url,uni,programmes,year_of_study,mtype,status,exam_format').then(function (rows) {
       if (!rows || !rows.length) { state.mod = { code: r.m, missing: true }; render(); return; }
-      state.mod = rows[0]; loadMap(); loadMine(); after();
+      state.mod = rows[0]; state.papers = undefined; state.slides = null; state.myq = null; state.serr = ''; loadMap(); loadMine(); loadPapers(); after();
     }).catch(function (e) { state.err = e.message; render(); });
   }
   function setTitle() {
@@ -328,6 +349,107 @@
       if (!state.mod || state.mod.code !== code) return;
       state.ratings = {}; (rows || []).forEach(function (r) { state.ratings[r.topic_pos] = r.rating; }); render();
     }).catch(function () {});
+    loadSlides(); loadMyQ();
+  }
+  // ---------- exam technique: real past papers, the student's own slides, their saved questions (Nov 2026) ----------
+  // Official past-paper pages for this module, its department and its university (past_paper_links; we link, never copy).
+  function loadPapers() {
+    var code = state.mod.code;
+    fetch(CFG.supabaseUrl + '/rest/v1/rpc/paper_links_for', { method: 'POST', headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_code: code }) })
+      .then(function (r) { return r.ok ? r.json() : []; }).then(function (rows) { if (state.mod && state.mod.code === code) { state.papers = rows || []; render(); } }, function () { state.papers = []; });
+  }
+  function loadSlides() {
+    var code = state.mod.code;
+    rest('lecture_packs?module_key=eq.' + code + '&select=id,title,pages,created_at&order=created_at.desc&limit=40', { auth: true }).then(function (rows) {
+      if (state.mod && state.mod.code === code) { state.slides = rows || []; render(); }
+    }).catch(function () { state.slides = []; });
+  }
+  function loadMyQ() {
+    var code = state.mod.code;
+    rest('my_questions?code=eq.' + code + '&select=id,question,source,label,marks,created_at&order=created_at.desc&limit=60', { auth: true }).then(function (rows) {
+      if (state.mod && state.mod.code === code) { state.myq = rows || []; render(); }
+    }).catch(function () { state.myq = []; });
+  }
+  // Slides are read in the browser: PDFs with pdf.js (vendored in /assets/pdfjs, loaded only when needed), PowerPoint
+  // and Word with attach.js's readers, text as it is. One entry per page or slide goes to lecture-pack "store".
+  var pdfjs = null;
+  function pdfPages(f) {
+    var lib = pdfjs ? Promise.resolve(pdfjs) : import('/assets/pdfjs/pdf.min.mjs').then(function (m) { m.GlobalWorkerOptions.workerSrc = '/assets/pdfjs/pdf.worker.min.mjs'; pdfjs = m; return m; });
+    return lib.then(function (m) { return f.arrayBuffer().then(function (buf) { return m.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise; }); }).then(function (doc) {
+      var out = [], n = Math.min(doc.numPages, 300), chain = Promise.resolve();
+      for (var i = 1; i <= n; i++) (function (i) {
+        chain = chain.then(function () { return doc.getPage(i); }).then(function (pg) { return pg.getTextContent(); }).then(function (tc) {
+          var t = '', lastY = null;
+          tc.items.forEach(function (it) { var y = it.transform ? Math.round(it.transform[5]) : null; if (lastY != null && y != null && Math.abs(y - lastY) > 2) t += '\n'; else if (t && !/\s$/.test(t)) t += ' '; t += it.str || ''; if (it.hasEOL) t += '\n'; lastY = y; });
+          out.push({ n: i, text: t.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim() });
+        });
+      })(i);
+      return chain.then(function () { return out; });
+    });
+  }
+  function textPages(t, sep) {
+    if (sep) return String(t).split(/^### Slide (\d+)\s*$/m).reduce(function (acc, part, i, arr) { if (i % 2 === 1) acc.push({ n: +part, text: (arr[i + 1] || '').trim() }); return acc; }, []);
+    var out = [], s = String(t || ''), i = 0, n = 1;
+    while (i < s.length) { var end = Math.min(s.length, i + 1800); if (end < s.length) { var br = s.lastIndexOf('\n', end); if (br > i + 600) end = br; } out.push({ n: n++, text: s.slice(i, end).trim() }); i = end; }
+    return out;
+  }
+  function filePages(f) {
+    var n = (f.name || '').toLowerCase();
+    if (/\.pdf$/.test(n) || f.type === 'application/pdf') return pdfPages(f);
+    if (/\.(pptx|docx)$/.test(n)) return attachLib().then(function (A) { return A.readText(f); }).then(function (t) { return textPages(t, /\.pptx$/.test(n)); });
+    if (/\.(txt|md)$/.test(n) || /^text\//.test(f.type)) return f.text().then(function (t) { return textPages(t); });
+    return Promise.reject(new Error('Add a PDF, PowerPoint (.pptx), Word (.docx) or text file.'));
+  }
+  // attach.js (PowerPoint / Word readers) is loaded by the dashboard; on public module pages it's fetched when needed
+  function attachLib() {
+    if (window.UnizyAttach && window.UnizyAttach.readText) return Promise.resolve(window.UnizyAttach);
+    return new Promise(function (ok, no) { var s = document.createElement('script'); s.src = '/assets/attach.js?v=3'; s.onload = function () { window.UnizyAttach && window.UnizyAttach.readText ? ok(window.UnizyAttach) : no(new Error('Couldn’t read that file.')); }; s.onerror = function () { no(new Error('Couldn’t load the file reader. Check your connection.')); }; document.head.appendChild(s); });
+  }
+  function lecturePack(body) {
+    return token().then(function (t) {
+      if (!t) { var e = new Error('signin'); e.signin = true; throw e; }
+      return fetch(CFG.supabaseUrl + '/functions/v1/lecture-pack', { method: 'POST', headers: { apikey: CFG.anonKey, Authorization: 'Bearer ' + t, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (b) { if (r.ok && b.ok !== false) return b; throw new Error(b.message || 'Couldn’t save your slides. Try again.'); }); });
+    });
+  }
+  function addSlides(files) {
+    var code = state.mod.code, list = Array.prototype.slice.call(files || [], 0, 6);
+    if (!list.length) return;
+    state.serr = ''; track('slides_add');
+    var next = function (i) {
+      if (i >= list.length) { state.sbusy = ''; render(); loadSlides(); return; }
+      var f = list[i];
+      if (f.size > 60e6) { state.serr = '“' + f.name + '” is over 60 MB.'; next(i + 1); return; }
+      state.sbusy = 'Reading ' + f.name + '…'; render();
+      filePages(f).then(function (pages) {
+        pages = pages.filter(function (p) { return p.text && p.text.replace(/\s/g, '').length >= 20; });
+        if (!pages.length) throw new Error('We couldn’t find any text in “' + f.name + '”. If it’s scanned pages, add the PowerPoint or a text PDF instead.');
+        state.sbusy = 'Saving ' + plural(pages.length, 'page') + '…'; render();
+        return lecturePack({ action: 'store', code: code, title: f.name.replace(/\.[a-z0-9]+$/i, '').slice(0, 120), pages: pages.slice(0, 300) });
+      }).then(function () { track('slides_done'); next(i + 1); }, function (e) { if (e.signin) { location.href = signinUrl(); return; } track('slides_fail'); state.serr = e.message || 'Couldn’t read that file.'; next(i + 1); });
+    };
+    next(0);
+  }
+  function deleteSlides(id) {
+    if (!confirm('Remove these slides from ' + state.mod.code + '?')) return;
+    rest('lecture_packs?id=eq.' + id, { method: 'DELETE', auth: true, prefer: 'return=minimal' }).then(function () { track('slides_delete'); loadSlides(); }).catch(function (e) { state.serr = e.message; render(); });
+  }
+  function slideQuestions() {
+    state.sqbusy = true; state.serr = ''; render();
+    marker({ action: 'slide_questions', code: state.mod.code }).then(function (b) {
+      state.sqbusy = false; state.myq = (b.questions || []).concat(state.myq || []); render();
+      var el = document.getElementById('mk-myq'); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }).catch(function (e) { state.sqbusy = false; if (e.signin) { location.href = signinUrl(); return; } state.serr = e.message; state.supgrade = e.upgrade; render(); });
+  }
+  function saveMyQ(question) {
+    var c = state.cur; if (!c || !c.own || !c.paper || c.myq || !uid()) return;
+    rest('my_questions', { method: 'POST', auth: true, prefer: 'return=representation', body: { user_id: uid(), code: state.mod.code, question: question.slice(0, 6000), source: 'paper', label: (c.label || '').trim().slice(0, 120) || null, marks: qMarks(question) || null } })
+      .then(function (rows) { if (rows && rows[0]) { c.myq = rows[0].id; state.myq = [rows[0]].concat(state.myq || []); } track('paper_saved'); }).catch(function () {});
+  }
+  function openMyQ(id) {
+    var q = (state.myq || []).filter(function (x) { return x.id === id; })[0]; if (!q) return;
+    state.cur = { id: null, own: true, question: q.question, paper: q.source === 'paper', label: q.label || '', myq: q.id, marks: q.marks, fromSlides: q.source === 'slides' };
+    state.err = ''; track('myq_open'); go({ m: state.mod.code, q: 'own', v: 'answer' });
   }
   function rate(pos, rating) {
     if (!getSession()) { location.href = signinUrl(); return; }
@@ -546,20 +668,20 @@
     var smpNow = sampleFor(state.mod, state.cur); if (smpNow && answer.trim() === smpNow.trim()) track('start_sample_mark');
     if (state.cur.own && question.length < 10) { state.err = 'Paste the question you’re answering first.'; render(); return; }
     if (hasAtt && t.busy()) { state.err = 'Your attachments are still being prepared. Try again in a moment.'; render(); return; }
-    if (!hasAtt && words(answer) < 40) { state.err = 'Write at least a paragraph or two, or add photos of your answer, so there’s something to mark.'; render(); return; }
+    if (!hasAtt && !markable(answer, isQuant({ kind: state.cur.kind, question: question }))) { state.err = SHORT_MSG; track('mark_short'); render(); return; }
     if (ok && !ok.checked) { state.err = 'Tick the box to confirm this is exam practice.'; render(); return; }
     if (!getSession()) {
       if (state.cur.own) { location.href = signinUrl(); return; }
       if (!canGuest()) { state.guestErr = true; track('guest_limit_seen'); render(); var lc = document.querySelector('form[data-guestsave="limit"]'); if (lc) lc.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
       state.busy = true; state.busyAt = Date.now(); state.busyAtt = false; render();
       track('guest_mark_submit');
-      guestMarker({ action: 'guest_mark', code: state.mod.code, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true }).then(function (b) {
+      guestMarker({ action: 'guest_mark', code: state.mod.code, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), limit: timer.on ? timer.limit : null, practice: true }).then(function (b) {
         state.busy = false; stopTimer(); timer.on = false;
         if (b.refused) { state.err = b.message; render(); return; }
         try { localStorage.setItem(GKEY, String(Date.now())); if (b.claim && b.claim_sig) localStorage.setItem(CKEY, JSON.stringify({ code: state.mod.code, claim: b.claim, claim_sig: b.claim_sig })); } catch (e) {}
         state.result = b; state.result.question = question; state.result.answer = answer; state.result.guest = true;
         state.itab = 'alloc'; state.exam = 0; timer.limit = 45;
-        track('guest_mark_done');
+        // guest_mark_done is counted by the marker itself (counting it here too doubled it)
         go({ m: state.mod.code, q: state.cur.id, v: 'result' });
       }).catch(function (e) {
         state.busy = false;
@@ -573,20 +695,52 @@
     var rw = state.rewrite && state.rewrite.qkey === draftKey() ? state.rewrite : null;
     track(rw ? 'mark_rewrite' : hasAtt ? 'mark_submit_att' : 'mark_submit');
     var body = { action: 'mark', code: state.mod.code, question: question, question_id: state.cur.id, answer: answer.trim(), minutes: elapsedMin(), practice: true };
+    if (timer.on) body.limit = timer.limit; // timing feedback compares the time taken with the time allowed
+    if (state.cur.own && state.cur.paper) { body.paper = true; track('paper_own'); }
     if (rw) body.prev_id = rw.id;
     if (hasAtt) body.attachments = t.payload();
     marker(body).then(function (b) {
       state.busy = false; stopTimer(); timer.on = false;
       if (b.refused) { state.err = b.message; render(); return; }
       state.result = b; state.result.question = question; state.result.answer = b.answer || answer;
-      state.rewrite = null; state.itab = 'alloc'; state.exam = 0; timer.limit = 45;
+      state.rewrite = null; state.itab = 'alloc'; state.exam = 0; timer.limit = 45; state.drillText = null; state.drillErr = '';
+      if (state.cur.own && state.cur.paper) saveMyQ(question);
       track('mark_done'); changed();
       loadMine();
       go({ m: state.mod.code, q: state.cur.id || 'own', v: 'result' });
     }).catch(function (e) {
       state.busy = false;
       if (e.signin) { location.href = signinUrl(); return; }
+      track('mark_fail');
       state.err = e.message; state.upgrade = e.upgrade; render();
+    });
+  }
+  // Fix-it drill: rewrite only the weakest paragraph (shown next to the same paragraph one class up), put it back into
+  // the answer and mark again. The marker judges the new paragraph ("drill") and re-marks the whole answer.
+  function submitDrill() {
+    var r = state.result, nb = r && r.next_band, el = document.getElementById('mk-drill');
+    if (!r || !nb || !nb.original || !el || state.busy) return;
+    var txt = el.value.trim(); state.drillErr = ''; state.drillText = el.value; state.drillFor = r.id;
+    if (words(txt) < 15) { state.drillErr = 'Write the whole paragraph again (at least a couple of sentences).'; render(); return; }
+    if (txt === nb.original.trim()) { state.drillErr = 'Change the paragraph first, using the changes listed above.'; render(); return; }
+    if (copied(txt, nb.improved)) { state.drillErr = 'That’s very close to the example on the right. Put it in your own words, or the new mark won’t tell you much.'; render(); return; }
+    var full = String(r.answer || '');
+    if (full.indexOf(nb.original) < 0) { state.drillErr = 'We couldn’t find that paragraph in your answer any more. Use “Rewrite it and remark” instead.'; render(); return; }
+    var answer = full.replace(nb.original, txt), q = r.question;
+    state.busy = true; state.busyAt = Date.now(); state.busyAtt = false; render(); track('drill_submit');
+    var body = { action: 'mark', code: state.mod.code, question: q, question_id: state.cur && state.cur.id || null, answer: answer, practice: true, prev_id: r.id, focus: { text: txt, was: nb.original, target: nb.target } };
+    if (r.paper) body.paper = true;
+    marker(body).then(function (b) {
+      state.busy = false;
+      if (b.refused) { state.drillErr = b.message; render(); return; }
+      state.result = b; state.result.question = q; state.result.answer = b.answer || answer;
+      state.drillText = null; state.itab = 'alloc';
+      saveDraft(draftKey(), answer); // a later full rewrite starts from the improved answer
+      track('drill_done'); changed(); loadMine(); render(); window.scrollTo(0, 0);
+    }).catch(function (e) {
+      state.busy = false;
+      if (e.signin) { location.href = signinUrl(); return; }
+      state.drillErr = e.message; state.upgrade = e.upgrade; render();
     });
   }
   function startRewrite() {
@@ -723,12 +877,39 @@
     if (mm && signed) html += '<section class="mk-mastery"><div><b>' + mm.pct + '%</b><span>mastered</span></div>' + bar(mm.pct, 'big') + '<p>' + mm.started + ' of ' + mm.total + ' topics started. ' + (isMed() && instQs().length ? 'Mastery is the share of each topic’s questions you got right on your latest try.' : 'Mastery grows with quick recall and marked answers; a First on the First-class questions takes a topic to 100%.') + '</p></section>';
     if (SHOW_PARSE && HOOKS && signed) html += unitsHtml(true);
     html += mapHtml();
+    html += myqHtml() + papersHtml() + slidesHtml();
     html += attemptsHtml();
     return html;
   }
+  function papersHtml() {
+    var L = state.papers; if (L === undefined) return '';
+    var html = '<section class="mk-card mk-papers" id="mk-papers"><h2>Real past papers</h2>';
+    if (L && L.length) html += '<p class="mk-fine">Official past papers from ' + U().short + ' and its departments. Open one, pick a question, then paste it in (or photograph your answer) and get it marked as the real thing.</p><ul class="mk-plinks">' +
+      L.map(function (p) { return '<li><a href="' + esc(p.url) + '" target="_blank" rel="noopener" data-plink="1">' + esc(p.title) + '</a>' + (p.years ? ' <span class="mk-py">' + esc(p.years) + '</span>' : '') + (p.access === 'login' ? ' <em>' + esc(U().short) + ' login</em>' : '') + (p.note ? '<small>' + esc(p.note) + '</small>' : '') + '</li>'; }).join('') + '</ul>';
+    else html += '<p class="mk-fine">' + U().poss + ' past papers are usually on Moodle or the library website, behind your uni login. Open one there, then paste a question here (or photograph your answer) and get it marked as the real thing.</p>';
+    return html + '<div class="mk-row start"><button type="button" class="btn line small" data-act="paper">Practise a real past-paper question</button></div><p class="mk-fine">Real questions come with several parts, mark weights and traps that practice questions rarely copy. The marker checks every part against its marks.</p></section>';
+  }
+  function slidesHtml() {
+    var signed = !!getSession(), sl = state.slides, m = state.mod;
+    var html = '<section class="mk-card mk-slides" id="mk-slides"><h2>Your lecture slides</h2><p class="mk-fine">Add your own slides, handouts or notes for ' + esc(m.code) + '. The marker then uses your lecturer’s terms and examples when it marks you, and can write exam questions from what was actually taught this year. Only you can see them.</p>';
+    if (!signed) return html + '<div class="mk-row start"><a class="btn line small" href="' + esc(signinUrl()) + '">Sign up free to add your slides</a></div></section>';
+    if (sl && sl.length) html += '<ul class="mk-slist">' + sl.map(function (p) { return '<li><span class="mk-sic" aria-hidden="true"></span><b>' + esc(p.title) + '</b><span>' + plural(p.pages || 0, 'page') + '</span><button type="button" class="mk-clear" data-sdel="' + esc(p.id) + '">Remove</button></li>'; }).join('') + '</ul>';
+    html += '<input type="file" id="mk-sfile" accept=".pdf,.pptx,.docx,.txt,.md,application/pdf" multiple hidden>' +
+      '<div class="mk-row start mk-sbtns"><button type="button" class="btn line small" data-act="sadd"' + (state.sbusy ? ' disabled' : '') + '>' + (state.sbusy ? esc(state.sbusy) : '+ Add slides (PDF, PowerPoint, Word)') + '</button>' +
+      (sl && sl.length ? '<button type="button" class="btn primary small" data-act="sq"' + (state.sqbusy || state.sbusy ? ' disabled' : '') + '>' + (state.sqbusy ? 'Writing questions from your slides…' : 'Write exam questions from my slides') + '</button>' : '') + '</div>' +
+      (state.serr ? '<p class="mk-err">' + esc(state.serr) + (state.supgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '');
+    return html + '</section>';
+  }
+  function myqHtml() {
+    var L = state.myq; if (!L || !L.length) return '';
+    return '<section class="mk-card mk-myq" id="mk-myq"><h2>My questions</h2><p class="mk-fine">Real past-paper questions you’ve practised, and questions written from your own slides. Only you can see these.</p><ul class="mk-myql">' + L.map(function (q) {
+      var last = (state.attempts || []).filter(function (a) { return a.question === q.question && a.result; })[0];
+      return '<li><span class="mk-tag ' + (q.source === 'paper' ? 'e' : 'x') + '">' + (q.source === 'paper' ? 'Past paper' : 'From slides') + '</span><div><p>' + esc(q.question.length > 240 ? q.question.slice(0, 238) + '…' : q.question) + '</p><small>' + esc(q.label || '') + (q.marks ? (q.label ? ' · ' : '') + q.marks + ' marks' : '') + (last ? ' · last time <span class="mk-cls ' + clsSlug(last.result.class) + '">' + esc(last.result.class) + '</span>' : '') + '</small></div><button type="button" class="btn line small" data-myq="' + esc(q.id) + '">' + (last ? 'Try again' : 'Answer it') + '</button></li>';
+    }).join('') + '</ul></section>';
+  }
   function mapHtml() {
     var m = state.mod, topics = state.topics, qs = state.questions || [], signed = !!getSession();
-    var own = '<div class="mk-own"><div><b>Got a past-paper question?</b><span>Paste any question from ' + U().exam + ' past paper or problem sheet and get your answer marked.</span></div><button type="button" class="btn line small" data-act="own">Use my own question</button></div>';
+    var own = '<div class="mk-own"><div><b>Got a past-paper question?</b><span>Paste any question from ' + U().exam + ' past paper or problem sheet and get your answer marked as the real thing.</span></div><div class="mk-row start"><button type="button" class="btn line small" data-act="paper">Real past-paper question</button><button type="button" class="mk-clear" data-act="own">Or any other question</button></div></div>';
     var html = '<section class="mk-card mk-map"><div class="mk-row"><h2>Module Map</h2>' + (topics && topics.length && signed ? '<span class="mk-legend"><i class="r"></i>Not confident <i class="a"></i>Getting there <i class="g"></i>Confident</span>' : '') + '</div>';
     if (topics === null) return html + '<p class="mk-hint">Loading…</p></section>';
     if (!topics.length) {
@@ -1103,15 +1284,20 @@
     var smp = !d && !ex ? sampleFor(m, c) : null;
     var html = head() + '<div class="mk-ws"><section class="mk-card mk-answer' + (ex ? ' exam' : '') + '"><span class="mk-topic">' + (ex ? '<b class="mk-exbadge">Exam simulator</b> ' : '') + esc(m.code) + (topic ? ' · ' + esc(topic.title) : '') + (c.own ? '' : ' · ' + esc(tierName(c.tier))) + '</span>';
     if (rw) html += '<div class="mk-rwbox"><b>Rewrite challenge</b><p>Last time: <span class="mk-cls ' + clsSlug(rw.cls) + '">' + esc(rw.cls) + '</span> ' + rw.mark_low + '–' + rw.mark_high + '.' + (rw.quote ? ' Rewrite the paragraph starting “' + esc(rw.quote) + '…”' : '') + (rw.task ? ' ' + esc(rw.task) : '') + ' Then mark it again to see your new mark.</p><button type="button" class="mk-clear" data-act="norewrite">Cancel the challenge</button></div>';
-    if (c.own) html += '<label class="mk-lab" for="mk-qtext">The question (paste it from your past paper or reading list)</label><textarea id="mk-qtext" rows="3" placeholder="Paste the exam question here">' + esc(c.question || '') + '</textarea>';
-    else html += (c.id && c.id === state.starterId && !ex ? '<p class="mk-starter"><b>⏱ 5-minute question</b> Aim for 150–200 words. Bullet points are fine.</p>' : '') + '<h2 class="mk-question">' + esc(c.question) + '</h2>';
+    if (c.own) {
+      if (c.fromSlides) html += '<p class="mk-starter"><b>From your slides</b> ' + esc(c.label || 'Written from your own lecture slides.') + '</p>';
+      html += '<label class="mk-lab" for="mk-qtext">' + (c.paper ? 'The question, exactly as it is on the paper (every part, with its marks)' : 'The question (paste it from your past paper, problem sheet or reading list)') + '</label><textarea id="mk-qtext" rows="' + (c.paper ? 5 : 3) + '" placeholder="Paste the exam question here' + (c.paper ? ', e.g. “(a) Derive… [6 marks] (b) Critically evaluate… [19 marks]”' : '') + '">' + esc(c.question || '') + '</textarea>';
+      if (!c.fromSlides) html += '<label class="mk-check"><input type="checkbox" id="mk-paper"' + (c.paper ? ' checked' : '') + '> This is a real past-paper question</label>' +
+        (c.paper ? '<input type="text" id="mk-plabel" class="mk-plabel" maxlength="100" placeholder="Which paper? e.g. 2023 summer exam, Q3 (optional)" value="' + esc(c.label || '') + '" aria-label="Which paper"><p class="mk-fine">Marked as the real thing: every part against its marks, and the trap the question sets. It’s saved under My questions so you can come back to it.</p>' : '');
+    }
+    else html += (c.id && c.id === state.starterId && !ex ? (isQuant(c) ? '<p class="mk-starter"><b>⏱ Starter question</b> Show your working: equations and short lines are fine. Stuck? Do part (a) first and get it marked.</p>' : '<p class="mk-starter"><b>⏱ 5-minute question</b> Aim for 150–200 words. Bullet points are fine.</p>') : '') + '<h2 class="mk-question">' + esc(c.question) + '</h2>';
     if (c.steps && c.steps.length && !ex) {
       var n = state.steps[c.id] || 0;
       html += '<div class="mk-steps"><p class="mk-lab">Stuck? Work through it one step at a time</p>' + (n ? '<ol>' + c.steps.slice(0, n).map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ol>' : '') +
         (n < c.steps.length ? '<button type="button" class="btn line small" data-act="step">' + (n ? 'Show step ' + (n + 1) + ' of ' + c.steps.length : 'Show step 1 of ' + c.steps.length) + '</button>' : '<p class="mk-fine">That’s the full worked solution. Now write it up in your own words below.</p>') + '</div>';
     }
     var starter = c.id && c.id === state.starterId && !ex;
-    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : starter ? '<span></span>' : '<button type="button" class="btn line small" data-act="timer">Start a 45-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d ? d.t : smp) + ' words</span></div>' +
+    html += '<div class="mk-tools">' + (timer.on ? '<span id="mk-clock" class="mk-clock"></span>' : starter ? '<span></span>' : '<button type="button" class="btn line small" data-act="timer" title="' + (qMarks(c.question) ? 'About 1.8 minutes a mark, the pace of a 3-hour paper worth 100 marks' : 'Exam pace for one essay') + '">Start a ' + timer.limit + '-minute exam timer</button>') + '<span class="mk-wc" id="mk-wc">' + words(d ? d.t : smp) + ' words</span></div>' +
       (smp ? '<div class="mk-sample"><p><b>We’ve put a practice answer in the box</b> so you can see the marking straight away. Mark it as it is, or clear it and write your own to test how accurate the marking really is.</p><button type="button" class="btn line small" data-act="clearsample">Clear it and write my own</button></div>' : '') +
       '<label class="mk-lab" for="mk-answer">Your answer</label><div class="mk-abox">' + toolbarHtml() + '<textarea id="mk-answer" class="' + (state.mono ? 'mono' : '') + '" rows="18" placeholder="Write your answer as you would in the exam. Plan first if you like.' + (tray() ? ' Or add photos of a handwritten answer below.' : '') + '">' + esc(d ? d.t : smp || '') + '</textarea></div>' +
       (tray() ? tray().html() : '') +
@@ -1165,13 +1351,39 @@
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
     }, 'image/png');
   }
+  // exam technique on the result: the drill verdict, the command word, timing, and whether the student's slides were used
+  function techHtml(r) {
+    var h = '';
+    if (r.drill) h += '<div class="mk-dverd' + (r.drill.reached ? ' ok' : '') + '"><b>' + (r.drill.reached ? '✓ Your new paragraph reaches ' + esc(r.drill.target || 'the next class') : 'Not ' + esc(r.drill.target || 'the next class') + ' yet') + '</b>' + (r.drill.verdict ? '<p>' + esc(r.drill.verdict) + '</p>' : '') + '</div>';
+    if (r.command) h += '<div class="mk-cmd ' + esc(r.command.met) + '"><span class="mk-ilab">Command word</span><p class="mk-cmdw"><b>“' + esc(r.command.words) + '”</b><span>' + (r.command.met === 'yes' ? '✓ Answered' : r.command.met === 'partly' ? 'Partly answered' : '✗ Not answered') + '</span></p>' + (r.command.note ? '<p>' + esc(r.command.note) + '</p>' : '') + '</div>';
+    if (r.pacing) h += '<div class="mk-pace' + (r.pacing.finished ? ' ok' : ' warn') + '"><span class="mk-ilab">Timing</span><p class="mk-cmdw"><b>' + r.pacing.minutes + ' of ' + r.pacing.limit + ' minutes</b><span>' + (r.pacing.finished ? '✓ Finished' : 'Not finished') + '</span></p>' + (r.pacing.verdict ? '<p>' + esc(r.pacing.verdict) + '</p>' : '') + (r.pacing.tips && r.pacing.tips.length ? '<ul>' + r.pacing.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' : '') + '</div>';
+    if (r.slides) h += '<p class="mk-fine mk-slnote">Marked with ' + plural(r.slides, 'passage') + ' from your own lecture slides, so the feedback uses your lecturer’s terms.</p>';
+    return h;
+  }
+  // The weakest paragraph next to the same paragraph one class up, what changed, and the fix-it drill.
+  function nextBandHtml(r) {
+    var nb = r.next_band; if (!nb || !nb.improved) return '';
+    var cur = r.class, tgt = nb.target || 'First', same = tgt === cur;
+    var html = '<section class="mk-nb" id="mk-nb"><h3>' + (same ? 'Your weakest paragraph, made stronger' : 'What your weakest paragraph looks like at ' + esc(tgt)) + '</h3><p class="mk-fine">The same paragraph side by side: yours, and ' + (same ? 'a stronger First-class version' : 'a ' + esc(tgt) + ' version that keeps your ideas') + '. Look at what changed, not just the words.</p>' +
+      '<div class="mk-nbgrid"><div class="mk-nbcol you"><span class="mk-nblab"><span class="mk-cls ' + clsSlug(cur) + '">' + esc(cur) + '</span> Yours</span><div class="mk-prose">' + (nb.original ? paras(nb.original) : '<p class="mk-fine">' + (r.rewrite && r.rewrite.quote ? 'Your paragraph starting “' + esc(r.rewrite.quote) + '…”' : 'Your weakest paragraph') + '</p>') + '</div></div>' +
+      '<div class="mk-nbcol up"><span class="mk-nblab"><span class="mk-cls ' + clsSlug(tgt) + '">' + esc(tgt) + '</span> ' + (same ? 'Stronger' : 'One class up') + '</span><div class="mk-prose">' + paras(nb.improved) + '</div></div></div>';
+    if (nb.moves && nb.moves.length) html += '<ul class="mk-moves">' + nb.moves.map(function (m, i) { return '<li><span class="n">' + (i + 1) + '</span><div><b>' + esc(m.label) + '</b>' + (m.detail ? '<span>' + esc(m.detail) + '</span>' : '') + '</div></li>'; }).join('') + '</ul>';
+    if (r.id && nb.original) {
+      var dv = state.drillText != null && state.drillFor === r.id ? state.drillText : nb.original;
+      html += '<div class="mk-drill"><b>Fix just this paragraph</b><p>Rewrite it in your own words using the changes above (don’t copy the version on the right), then mark it again. The rest of your answer stays as it is' + (same ? '.' : ', and you’ll see whether it reaches ' + esc(tgt) + '.') + '</p>' +
+        '<textarea id="mk-drill" rows="8" aria-label="Your rewritten paragraph">' + esc(dv) + '</textarea><span class="mk-wc" id="mk-dwc">' + words(dv) + ' words</span>' +
+        (state.drillErr ? '<p class="mk-err">' + esc(state.drillErr) + (state.upgrade ? ' <a href="/pricing">See Pro</a>' : '') + '</p>' : '') +
+        '<div class="mk-row end">' + (state.busy ? '<div class="mk-busy"><span class="spin"></span><span id="mk-busytxt">' + esc(busyText()) + '</span></div>' : '<button type="button" class="btn primary" data-act="drill">Mark my new paragraph<span class="arr" aria-hidden="true">→</span></button>') + '</div></div>';
+    }
+    return html + '</section>';
+  }
   function viewResult() {
     var r = state.result, m = state.mod, ma = state.cur && state.cur.id ? modelAnswers[state.cur.id] : null, q = state.cur && state.cur.id ? (state.questions || []).filter(function (x) { return x.id === state.cur.id; })[0] : null;
     var lost = r.lost || [];
     var html = head() + '<div class="mk-ws res"><div class="mk-wsmain"><section class="mk-card mk-result"><span class="mk-topic">' + esc(m.code) + ' · Your marked answer</span><h2 class="mk-question sm">' + esc(r.question || (state.cur && state.cur.question) || '') + '</h2>' +
       '<div class="mk-gbar"><span class="mk-cls big ' + clsSlug(r.class) + '">' + esc(r.class) + '</span><div class="mk-gnum"><b>' + r.mark_low + '–' + r.mark_high + '</b><span>predicted mark · ' + esc(U().poss) + ' grade bands</span></div>' +
         '<div class="mk-gbtns">' + (r.id ? '<button type="button" class="btn primary" data-act="rewrite">Rewrite it and remark</button>' : '') + '<button type="button" class="btn line" data-act="share">Share my grade</button></div></div>' +
-      '<p class="mk-headline">' + esc(r.headline) + '</p>' +
+      '<p class="mk-headline">' + esc(r.headline) + '</p>' + techHtml(r) +
       (HOOKS && r.cards ? '<p class="mk-cardsnote">We made ' + r.cards + ' flashcard' + (r.cards === 1 ? '' : 's') + ' from what you missed. They’re in your <a href="/dashboard/cards?m=' + m.code + '">' + esc(m.code) + ' deck</a>.</p>' : '');
     // "Save this mark?": one email box. The sign-up page sends the code straight away (?send=1); once signed in,
     // claimGuest() saves this result to the new account. Google / Microsoft are one tap away on the same page.
@@ -1181,11 +1393,12 @@
       html += '<h3>Where you lost marks</h3><p class="mk-fine">Your answer, with the places you lost marks highlighted. Tap a highlight to see why.</p><div class="mk-prose mk-annot">' + annotated(text, lost) + '</div>' +
         '<ol class="mk-lostlist">' + lost.map(function (l, i) { return '<li id="mk-li' + (i + 1) + '" data-lostli="' + (i + 1) + '"><span class="n">' + (i + 1) + '</span><div>' + (l.quote ? '<q>' + esc(l.quote) + '</q>' : '') + '<p><b>Why:</b> ' + esc(l.issue) + '</p>' + (l.fix ? '<p class="fix"><b>Fix:</b> ' + esc(l.fix) + '</p>' : '') + '</div></li>'; }).join('') + '</ol>';
     } else html += '<details class="mk-det" open><summary>Your answer</summary><div class="mk-prose">' + paras(r.answer || '') + '</div></details>';
+    html += nextBandHtml(r);
     if (r.strengths && r.strengths.length) html += '<h3>What’s working</h3><ul class="mk-plain">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul>';
     if (r.changes && r.changes.length) html += '<h3>3 changes to move up a class</h3><ol class="mk-changes">' + r.changes.map(function (c) { return '<li><b>' + esc(c.change) + '</b>' + (c.why ? '<span>' + esc(c.why) + '</span>' : '') + '</li>'; }).join('') + '</ol>';
     if (r.criteria && r.criteria.length) html += '<h3>How it was judged</h3><ul class="mk-crit">' + r.criteria.map(function (c) { return '<li><span class="mk-cls ' + clsSlug(c.band) + '">' + esc(c.band) + '</span><div><b>' + esc(c.name) + '</b><p>' + esc(c.comment || '') + '</p></div></li>'; }).join('') + '</ul>';
     html += '<p class="mk-src" id="mk-src">' + srcHtml() + '</p>';
-    if (r.id) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
+    if (r.id && !(r.next_band && r.next_band.original)) html += '<div class="mk-challenge"><b>Rewrite challenge</b><p>' + (r.rewrite && r.rewrite.quote ? 'Rewrite your paragraph starting “' + esc(r.rewrite.quote) + '…”' + (r.rewrite.task ? ': ' + esc(r.rewrite.task) : '.') : 'Rewrite your weakest paragraph using the changes above.') + ' Then mark it again and see how far your mark moves.</p><button type="button" class="btn primary" data-act="rewrite">Start the rewrite</button></div>';
     if (r.guest) html += saveCard('end', r);
     html += '<div class="mk-row"><a class="btn line small" href="' + MBASE + m.code + (r.topic_pos != null ? '?t=' + r.topic_pos : '') + '" data-go="mod">Back to the Module Map</a></div></section>';
     if (r.id) html += '<section class="mk-card mk-realbox"><h3>Got a real mark for a similar answer?</h3><p>Tell us and we’ll use it to check the marker stays accurate for ' + esc(m.code) + '.</p><div class="mk-row start"><input id="mk-real" type="number" min="0" max="100" inputmode="numeric" placeholder="e.g. 64" aria-label="Your real mark"><button type="button" class="btn line small" data-real="' + r.id + '">Save</button></div><p id="mk-real-done" class="mk-fine"></p></section>';
@@ -1216,11 +1429,18 @@
     var t = e.target;
     if (t.id === 'mk-q') search(t.value);
     if (t.id === 'mk-answer') { saveDraft(draftKey(), t.value); var wc = document.getElementById('mk-wc'); if (wc) wc.textContent = words(t.value) + ' words'; }
-    if (t.id === 'mk-qtext' && state.cur) state.cur.question = t.value;
+    if (t.id === 'mk-qtext' && state.cur) {
+      state.cur.question = t.value;
+      if (!timer.on && !state.exam) { timer.limit = examMinutes(state.cur); var tb = root.querySelector('[data-act="timer"]'); if (tb) tb.textContent = 'Start a ' + timer.limit + '-minute exam timer'; }
+    }
+    if (t.id === 'mk-plabel' && state.cur) state.cur.label = t.value;
+    if (t.id === 'mk-drill') { state.drillText = t.value; state.drillFor = state.result && state.result.id; var dw = document.getElementById('mk-dwc'); if (dw) dw.textContent = words(t.value) + ' words'; }
     if (t.id === 'mk-ptext' && state.mod) state.ptext[state.mod.code] = t.value;
   });
   root.addEventListener('change', function (e) {
     if (e.target.id === 'mk-ugonly') { state.ug = e.target.checked; search(state.q); }
+    if (e.target.id === 'mk-paper' && state.cur) { state.cur.paper = e.target.checked; render(); }
+    if (e.target.id === 'mk-sfile') { addSlides(e.target.files); e.target.value = ''; }
     if (e.target.id === 'mk-exd' && HOOKS && HOOKS.setExamDate) { HOOKS.setExamDate(state.mod.code, e.target.value || null).then(render).catch(function () {}); track('exam_date'); }
   });
   root.addEventListener('mousedown', function (e) { if (e.target.closest('[data-fmt]')) e.preventDefault(); });
@@ -1266,6 +1486,9 @@
     if (a.hasAttribute('data-del')) { deleteAttempt(a.getAttribute('data-del')); return; }
     if (a.hasAttribute('data-real')) { saveReal(a.getAttribute('data-real')); return; }
     if (a.hasAttribute('data-guestsignup')) { track('guest_mark_signup'); return; }
+    if (a.hasAttribute('data-plink')) { track('paper_link'); return; }
+    if (a.hasAttribute('data-sdel')) { deleteSlides(a.getAttribute('data-sdel')); return; }
+    if (a.hasAttribute('data-myq')) { openMyQ(a.getAttribute('data-myq')); return; }
     if (a.hasAttribute('data-pick')) { var pq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-qid'); })[0]; answerInst(pq, a.getAttribute('data-pick')); render(); var nb = document.getElementById('mk-qznext'); if (nb) nb.focus(); return; }
     if (a.hasAttribute('data-over')) { var oq = (state.questions || []).filter(function (x) { return x.id === a.getAttribute('data-over'); })[0]; answerInst(oq, null, true); render(); return; }
     var act = a.getAttribute('data-act');
@@ -1276,8 +1499,12 @@
     if (act === 'qzagain') { startQuiz(state.quiz ? state.quiz.pos : null); return; }
     if (act === 'qzmiss') { var z0 = state.quiz; startQuiz(z0.pos, z0.ids.filter(function (id) { return !(state.ians[id] && state.ians[id].got); })); return; }
     if (act === 'own') { state.cur = { id: null, own: true, question: '' }; state.err = ''; go({ m: state.mod.code, q: 'own', v: 'answer' }); }
+    else if (act === 'paper') { state.cur = { id: null, own: true, question: '', paper: true }; state.err = ''; track('paper_open'); go({ m: state.mod.code, q: 'own', v: 'answer' }); }
+    else if (act === 'sadd') { if (!getSession()) { location.href = signinUrl(); return; } var sf = document.getElementById('mk-sfile'); if (sf) sf.click(); }
+    else if (act === 'sq') slideQuestions();
+    else if (act === 'drill') submitDrill();
     else if (act === 'genq') { if (!getSession()) { location.href = signinUrl(); return; } state.mapRetry = false; startMap(); }
-    else if (act === 'timer') { startTimer(); render(); }
+    else if (act === 'timer') { startTimer(); track('timer_start'); render(); }
     else if (act === 'step') { state.steps[state.cur.id] = (state.steps[state.cur.id] || 0) + 1; track('step_reveal'); render(); }
     else if (act === 'submit') submit();
     else if (act === 'share') shareCard();

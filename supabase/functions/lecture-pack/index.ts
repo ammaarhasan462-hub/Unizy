@@ -76,6 +76,32 @@ Deno.serve(async (req) => {
       return json(200, { ok: true, hits: (data || []).filter((h: any) => h.similarity > 0.3).map((h: any) => ({ pack: h.pack_id, title: h.title, page: h.page, text: h.text, sim: Math.round(h.similarity * 100) / 100 })) });
     } catch { return json(200, { ok: true, hits: [] }); }
   }
+  // ---------------------------------------------------------------- store slides for a module (no AI call)
+  // The module page sends the slide text it read in the browser (PDF via pdf.js, PowerPoint, Word, text), one entry per
+  // page or slide. Each page is embedded so the marker can quote the student's own lecturer back to them.
+  //   { action: "store", code, title, pages: [{ n, text }] }  -> { ok, id, pages }
+  if (action === "store") {
+    const code = str(body?.code, 16).toUpperCase(), title = str(body?.title, 120) || "Lecture slides";
+    if (!/^(?:[A-Z]{2,4}[0-9][0-9A-Z]{1,5}|[0-7][A-Z]{2,4}[0-9A-Z]{2,5})$/.test(code)) return json(400, { ok: false, message: "Pick a module first." });
+    const { data: mod } = await service.from("ucl_modules").select("code, title").eq("code", code).maybeSingle();
+    if (!mod) return json(404, { ok: false, message: "We couldn’t find that module." });
+    const pages = arr(body?.pages, 300).map((p: any, i: number) => ({ n: pageNum(p?.n) || i + 1, text: str(p?.text, 4000).replace(/\s+\n/g, "\n") }))
+      .filter((p: any) => p.text.replace(/\s/g, "").length >= 20);
+    if (!pages.length) return json(400, { ok: false, message: "We couldn’t find any text in that file. If it’s scanned images, add the PowerPoint or a text PDF instead." });
+    const { count } = await service.from("lecture_packs").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("module_key", code);
+    if ((count || 0) >= 40) return json(429, { ok: false, message: "You’ve added 40 files to this module. Remove some old ones first." });
+    const { data: packRow, error: packErr } = await service.from("lecture_packs").insert({ user_id: user.id, module_key: code, module_name: str(mod.title, 160), title, source: "slides", pages: pages.length, topics: null }).select("id").single();
+    if (packErr || !packRow) { console.error("store pack", packErr?.message); return json(500, { ok: false, message: "Couldn’t save your slides. Try again." }); }
+    let batch: any[] = [], stored = 0;
+    for (const p of pages) {
+      try { batch.push({ pack_id: packRow.id, user_id: user.id, module_key: code, page: p.n, text: p.text, embedding: JSON.stringify(await embed(title + " — p." + p.n + ": " + p.text)) }); stored++; }
+      catch (e) { console.error("embed", String(e).slice(0, 200)); }
+      if (batch.length >= 40) { await service.from("lecture_chunks").insert(batch); batch = []; }
+    }
+    if (batch.length) await service.from("lecture_chunks").insert(batch);
+    if (!stored) { await service.from("lecture_packs").delete().eq("id", packRow.id); return json(500, { ok: false, message: "Couldn’t read your slides just now. Try again in a minute." }); }
+    return json(200, { ok: true, id: packRow.id, pages: stored });
+  }
   if (action !== "build") return json(400, { ok: false, message: "Unknown action." });
 
   // ---------------------------------------------------------------- build a pack

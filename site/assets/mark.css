@@ -984,3 +984,56 @@ html.mk-lock{overflow:hidden}
 .mk-sicon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;display:block}
 .mk-packs[hidden]{display:none}
 @media (max-width:760px){.mk-search.mk-stick{top:var(--stick,58px)}}
+
+/* ---------- exam technique (27 Nov 2026): command word, timing, next-band paragraph, fix-it drill, past papers, slides ---------- */
+.mk-cmd,.mk-pace,.mk-dverd{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0;background:#F7F8F4}
+.mk-cmd p,.mk-pace p,.mk-dverd p{margin:4px 0 0;font-size:15px;line-height:1.5}
+.mk-cmdw{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline}
+.mk-cmdw span{font-size:13.5px;font-weight:700}
+.mk-cmd.yes,.mk-pace.ok,.mk-dverd.ok{border-color:#9CC7AE;background:#EEF6F0}.mk-cmd.yes .mk-cmdw span,.mk-pace.ok .mk-cmdw span{color:#24704A}
+.mk-cmd.partly{border-color:#E1BE7A;background:#FCF6E8}.mk-cmd.partly .mk-cmdw span{color:#8A5E1E}
+.mk-cmd.no,.mk-pace.warn{border-color:#E7B0A5;background:#FBEFEC}.mk-cmd.no .mk-cmdw span,.mk-pace.warn .mk-cmdw span{color:#9B3A28}
+.mk-pace ul{margin:8px 0 0;padding-left:20px;font-size:14.5px}.mk-pace li{margin:3px 0}
+.mk-dverd b{display:block;font-size:16px}
+.mk-slnote{margin-top:4px}
+.mk-nb{margin:26px 0 8px}
+.mk-nbgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.mk-nbcol{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff;min-width:0}
+.mk-nbcol.up{border-color:#B8862F;background:#FFFCF4}
+.mk-nbcol .mk-prose p{font-size:15px;line-height:1.55;margin:8px 0 0}
+.mk-nblab{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.mk-nblab .mk-cls{min-width:0;font-size:12.5px;padding:2px 9px}
+.mk-moves{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.mk-moves li{display:flex;gap:10px;align-items:flex-start}
+.mk-moves .n{flex:0 0 24px;height:24px;border-radius:50%;background:var(--ink);color:#F1DDA9;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.mk-moves b{display:block;font-size:15px}.mk-moves span{font-size:14px;color:var(--muted)}
+.mk-drill{border:1.5px solid var(--accent);background:#FBF5E7;border-radius:14px;padding:14px 16px;margin:16px 0 4px}
+.mk-drill p{margin:6px 0 10px;font-size:15px}
+.mk-drill textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;line-height:1.55;padding:10px 12px;border:1.5px solid #D8CBA8;border-radius:10px;background:#fff;resize:vertical;min-height:150px}
+.mk-drill .mk-wc{display:block;text-align:right;margin-top:4px}
+.mk-plabel{width:100%;box-sizing:border-box;font:inherit;font-size:15px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;margin:2px 0 0}
+.mk-own .mk-row{gap:10px;margin:0}
+.mk-plinks{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.mk-plinks li{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#FAFBF8;line-height:1.4}
+.mk-plinks a{font-weight:700;color:var(--ink)}
+.mk-plinks .mk-py{font-size:13.5px;color:var(--muted)}
+.mk-plinks em{font-style:normal;font-size:12px;font-weight:700;padding:2px 7px;border-radius:6px;background:#ECEDE6;color:#4D5B55;margin-left:4px}
+.mk-plinks small{display:block;font-size:13px;color:var(--muted);margin-top:3px}
+.mk-papers .mk-row,.mk-slides .mk-row{margin-top:14px}
+.mk-sbtns{gap:10px}
+.mk-slist{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
+.mk-slist li{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#FAFBF8;min-width:0}
+.mk-slist b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.mk-slist span:not(.mk-sic){font-size:13.5px;color:var(--muted);flex:0 0 auto}
+.mk-sic{flex:0 0 18px;height:22px;border-radius:3px;border:2px solid #3E6B5C;position:relative}
+.mk-sic:after{content:'';position:absolute;left:3px;right:3px;top:5px;height:2px;background:#3E6B5C;box-shadow:0 4px 0 #3E6B5C,0 8px 0 #3E6B5C}
+.mk-myql{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:8px}
+.mk-myql li{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;background:#FAFBF8}
+.mk-myql li>div{flex:1;min-width:0}.mk-myql p{margin:0;font-size:15px;line-height:1.45}
+.mk-myql small{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
+.mk-myql small .mk-cls{min-width:0;font-size:11.5px;padding:1px 7px}
+@media (max-width:640px){
+  .mk-nbgrid{grid-template-columns:1fr}
+  .mk-myql li{flex-wrap:wrap}.mk-myql li .btn{margin-left:auto}
+}
+.mk-drill .btn .arr,.mk-nb .btn .arr{margin-left:8px}
